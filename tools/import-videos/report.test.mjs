@@ -44,3 +44,8 @@ test("the retry file holds only the lines worth running again", () => {
   ].join("\n"));
   assert.equal(retryFile(results.slice(0, 2)), "");
 });
+
+test("a dry run's summary counts what would be imported", () => {
+  const dry = [{ ...results[0], outcome: "would import" }, { ...results[1] }];
+  assert.equal(summary(dry), "2 lines: 1 would import, 1 already imported");
+});

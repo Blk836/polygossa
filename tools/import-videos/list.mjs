@@ -26,7 +26,7 @@ export function videoId(url) {
 export function parseList(text, { languages, categories, defaultLanguage = null }) {
   const entries = [];
   text.split(/\r?\n/).forEach((raw, index) => {
-    const words = raw.replace(/(^|\s)#.*$/, "").trim().split(/\s+/).filter(Boolean);
+    const words = raw.replace(/(^|\s)#.*$/, "").split(/\s+/).filter(Boolean);
     if (words.length > 0) {
       entries.push(parseLine(index + 1, words, { languages, categories, defaultLanguage }));
     }

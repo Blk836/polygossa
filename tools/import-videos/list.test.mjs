@@ -78,3 +78,12 @@ test("anything else has no video id", () => {
     assert.equal(videoId(url), null, url);
   }
 });
+
+test("a # inside a URL is part of the URL, not a comment", () => {
+  assert.deepEqual(parse("https://youtu.be/AAAAAAAAAAA#t=30 fr")[0],
+    { line: 1, url: "https://youtu.be/AAAAAAAAAAA#t=30", language: "fr", category: null });
+});
+
+test("leading spaces and tabs are allowed", () => {
+  assert.equal(parse(" \thttps://youtu.be/AAAAAAAAAAA\tfr")[0].language, "fr");
+});

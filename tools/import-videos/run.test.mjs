@@ -95,3 +95,22 @@ test("an unexpected error is not swallowed", async () => {
   const h = harness({ [a.url]: new RangeError("bug") });
   await assert.rejects(h.go([a]), RangeError);
 });
+
+test("a fatal result has no title", async () => {
+  const h = harness({ [a.url]: new Fatal("curator token rejected") });
+  const [result] = await h.go([a]);
+  assert.equal(result.title, "");
+  assert.equal("fatal" in result, false);
+});
+
+test("printed lines show the title alone, the reason alone, or just the outcome", async () => {
+  const h = harness({
+    [a.url]: { outcome: "already imported", reason: "", title: "Un" },
+    [b.url]: { outcome: "would import", reason: "", title: "" },
+  });
+  await h.go([a, b]);
+  assert.deepEqual(h.printed, [
+    "line 1: already imported — Un https://youtu.be/AAAAAAAAAAA",
+    "line 3: would import https://youtu.be/BBBBBBBBBBB",
+  ]);
+});

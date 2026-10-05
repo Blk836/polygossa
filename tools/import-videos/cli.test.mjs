@@ -1,7 +1,7 @@
 import { after, before, beforeEach, test } from "node:test";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { main } from "./cli.mjs";
@@ -11,6 +11,7 @@ let server;
 let backend;
 let requests;
 let videos;
+let sleeps;
 
 before(async () => {
   server = createServer((req, res) => {
@@ -32,21 +33,24 @@ after(() => server.close());
 
 beforeEach(() => {
   requests = [];
+  sleeps = [];
   videos = {
     "https://youtu.be/AAAAAAAAAAA": [201, { outcome: "imported", title: "Le marché", category: "news" }],
     "https://youtu.be/BBBBBBBBBBB": [422, { code: "no_captions", message: "No Spanish captions found" }],
+    "https://youtu.be/CCCCCCCCCCC": [401, { code: "unauthorized" }],
   };
 });
 
-function listFile(text) {
-  const file = join(mkdtempSync(join(tmpdir(), "import-videos-")), "videos.txt");
+function listFile(text, name = "videos.txt") {
+  const file = join(mkdtempSync(join(tmpdir(), "import-videos-")), name);
   writeFileSync(file, text);
   return file;
 }
 
-async function cli(args, env = { CURATOR_TOKEN: "s3cret", BACKEND_URL: backend }) {
+async function cli(args, env = { CURATOR_TOKEN: "s3cret", BACKEND_URL: backend }, fetch = undefined) {
   const printed = [];
-  const code = await main(args, { env, print: (line) => printed.push(line), sleep: async () => {} });
+  const sleep = async (ms) => { sleeps.push(ms); };
+  const code = await main(args, { env, print: (line) => printed.push(line), sleep, fetch });
   return { code, out: printed.join("\n") };
 }
 
@@ -118,4 +122,60 @@ test("a missing token or list file is explained", async () => {
   const missing = await cli([join(tmpdir(), "no-such-list.txt")]);
   assert.equal(missing.code, 1);
   assert.match(missing.out, /can't read .*no-such-list\.txt/);
+});
+
+test("the results and retry files are named in the output", async () => {
+  const file = listFile(LIST);
+  const base = file.replace(/\.txt$/, "");
+  const { out } = await cli([file]);
+  assert.ok(out.includes(`Results: ${base}.results.txt`), out);
+  assert.ok(out.includes(`To retry: node tools/import-videos.mjs ${base}.retry.txt`), out);
+});
+
+test("a list file without an extension, in a folder with a dot, gets files next to it", async () => {
+  const dir = join(mkdtempSync(join(tmpdir(), "import-videos-")), "lists.v2");
+  mkdirSync(dir);
+  const file = join(dir, "french");
+  writeFileSync(file, "https://youtu.be/AAAAAAAAAAA fr\n");
+  await cli([file]);
+  assert.equal(existsSync(join(dir, "french.results.txt")), true);
+});
+
+test("videos are 2 seconds apart by default; --delay changes it, and 0 is allowed", async () => {
+  const twoVideos = "https://youtu.be/AAAAAAAAAAA fr\nhttps://youtu.be/BBBBBBBBBBB es\n";
+  await cli([listFile(twoVideos)]);
+  await cli([listFile(twoVideos), "--delay", "0.5"]);
+  const { code } = await cli([listFile(twoVideos), "--delay", "0"]);
+  assert.equal(code, 0);
+  assert.deepEqual(sleeps, [2000, 500, 0]);
+});
+
+test("an unknown option is explained, with the usage", async () => {
+  const { code, out } = await cli([listFile(LIST), "--bogus"]);
+  assert.equal(code, 1);
+  assert.match(out, /Unknown option '--bogus'/);
+  assert.match(out, /Usage:/);
+});
+
+test("the backend defaults to localhost:8080", async () => {
+  const urls = [];
+  const fetch = async (url) => { urls.push(url); return new Response("{}", { status: 401 }); };
+  await cli([listFile(LIST)], { CURATOR_TOKEN: "s3cret" }, fetch);
+  assert.deepEqual(urls, ["http://localhost:8080/api/curator/options"]);
+});
+
+test("a token rejected partway stops the run, keeps what was done and marks the rest for a retry", async () => {
+  const file = listFile("https://youtu.be/AAAAAAAAAAA fr\nhttps://youtu.be/CCCCCCCCCCC fr\nhttps://youtu.be/BBBBBBBBBBB es\n");
+  const { code, out } = await cli([file]);
+  assert.equal(code, 1);
+  assert.match(out, /3 lines: 1 imported, 2 not run\nResults: .*\nTo retry: .*\nStopped: curator token rejected$/);
+  assert.equal(readFileSync(file.replace(/\.txt$/, ".retry.txt"), "utf8"),
+    "https://youtu.be/CCCCCCCCCCC fr  # not run: curator token rejected\n"
+    + "https://youtu.be/BBBBBBBBBBB es  # not run: curator token rejected\n");
+});
+
+test("an unexpected error isn't hidden behind an exit code", async () => {
+  const file = listFile("https://youtu.be/AAAAAAAAAAA fr\n");
+  mkdirSync(file.replace(/\.txt$/, ".results.txt")); // can't be written as a file
+  await assert.rejects(cli([file]), { code: "EISDIR" });
 });

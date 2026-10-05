@@ -49,6 +49,7 @@ const cases = [
   [503, { code: "review_unavailable", message: "We couldn't check" }, { outcome: "failed", reason: "review unavailable: We couldn't check", title: "" }],
   [422, { code: "unprocessable", message: "This video isn't available" }, { outcome: "failed", reason: "This video isn't available", title: "" }],
   [500, undefined, { outcome: "failed", reason: "HTTP 500", title: "" }],
+  [300, {}, { outcome: "failed", reason: "HTTP 300", title: "" }],
 ];
 for (const [status, body, expected] of cases) {
   test(`HTTP ${status} ${body?.code ?? body?.outcome ?? ""} is reported as ${expected.outcome}`, async () => {
@@ -75,4 +76,21 @@ test("an unreachable backend stops the run", async () => {
 
 test("options that aren't usable stop the run", async () => {
   await assert.rejects(client(fakeFetch(500, {}).fetch).options(), new Fatal("could not read the backend's options (HTTP 500)"));
+});
+
+test("options missing either list stop the run", async () => {
+  for (const body of [{ languages: ["fr"] }, { categories: ["news"] }]) {
+    await assert.rejects(client(fakeFetch(200, body).fetch).options(), new Fatal("could not read the backend's options (HTTP 200)"));
+  }
+});
+
+test("trailing slashes on the backend address are dropped", async () => {
+  const { fetch, calls } = fakeFetch(200, { languages: [], categories: [] });
+  await makeClient({ baseUrl: "http://localhost:8080//", token: "t", fetch }).options();
+  assert.equal(calls[0].url, "http://localhost:8080/api/curator/options");
+});
+
+test("options from a failed request stop the run even if they look usable", async () => {
+  await assert.rejects(client(fakeFetch(500, { languages: ["fr"], categories: ["news"] }).fetch).options(),
+    new Fatal("could not read the backend's options (HTTP 500)"));
 });

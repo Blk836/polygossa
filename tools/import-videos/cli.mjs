@@ -30,14 +30,14 @@ const OPTIONS = {
 };
 
 /** Runs the tool; returns the exit code (0 when the run finished, even if some videos failed). */
-export async function main(argv, { env, print, sleep }) {
+export async function main(argv, { env, print, sleep, fetch = globalThis.fetch }) {
   const settings = settingsFrom(argv, env);
   if (typeof settings === "string") {
     print(settings);
     return 1;
   }
   try {
-    return await importList(settings, { print, sleep });
+    return await importList(settings, { print, sleep, fetch });
   } catch (error) {
     if (error instanceof Fatal) {
       print(`Stopped: ${error.message}`);
@@ -68,9 +68,9 @@ function settingsFrom(argv, env) {
     baseUrl: values.backend ?? env.BACKEND_URL ?? "http://localhost:8080" };
 }
 
-async function importList(settings, { print, sleep }) {
+async function importList(settings, { print, sleep, fetch }) {
   const text = read(settings.file);
-  const client = makeClient({ baseUrl: settings.baseUrl, token: settings.token });
+  const client = makeClient({ baseUrl: settings.baseUrl, token: settings.token, fetch });
   const options = await client.options();
   const entries = parseList(text, { ...options, defaultLanguage: settings.language?.toLowerCase() ?? null });
   const results = await run(entries, { client, delayMs: settings.delayMs, dryRun: settings.dryRun, sleep, print });

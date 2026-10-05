@@ -58,6 +58,10 @@ class NoStartupVideosTest {
         TestApi api = new TestApi(mvc, json);
         String viewer = api.signup();
         assertThat(api.get(viewer, "/api/library?kind=text&size=50", 200).get("total").asLong()).isEqualTo(8);
+        // Each starter is filed under the category its sample file names, none under "other".
+        assertThat(api.get(viewer, "/api/library?kind=text&category=other&size=50", 200).get("total").asLong()).isZero();
+        assertThat(api.get(viewer, "/api/library?kind=text&category=daily-life&size=50", 200).get("total").asLong())
+                .isEqualTo(3);
 
         // Background work after startup gets time to happen before we check it didn't.
         long videos = 0;
