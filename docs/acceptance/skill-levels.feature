@@ -65,7 +65,7 @@ Feature: Skill levels on the Progress tab (docs/ai-plan.md, section 2)
 
   Scenario: Listening shows how much I've listened
     Given I have 95 minutes of reading sessions on Spanish videos and audio texts
-    Then Listening shows "1 h 35 min listened"
+    Then Listening shows "1h 35m listened"
 
   # --- Writing (AI) ---
 

@@ -41,7 +41,7 @@ Feature: AI grading groundwork (docs/ai-plan.md, phase 0)
     Given <condition>
     When I hand in a writing test
     Then the test is saved as "ungraded" with my text intact
-    And I see "<message>" and a "Try grading again" button
+    And I see "<message>" and a "Grade it now" button
     And no grade is stored
 
     Examples:
@@ -54,7 +54,7 @@ Feature: AI grading groundwork (docs/ai-plan.md, phase 0)
   Scenario: Retrying an ungraded test once the AI is back
     Given my last test is "ungraded" because the AI service was down
     And the AI service is back
-    When I click "Try grading again"
+    When I click "Grade it now"
     Then the test is graded and shows its score
 
   # --- Daily cap (protects the budget) ---
