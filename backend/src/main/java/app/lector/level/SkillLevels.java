@@ -64,7 +64,8 @@ public final class SkillLevels {
         if (vocab < 0) {
             return Skill.none(items);
         }
-        int index = comfortIndex(finished, ITEMS_FOR_LEVEL) > vocab ? Math.min(vocab + 1, LEVELS.size() - 1) : vocab;
+        // A comfort level above vocabulary can only exist below C2, so vocab + 1 stays in range.
+        int index = comfortIndex(finished, ITEMS_FOR_LEVEL) > vocab ? vocab + 1 : vocab;
         Confidence confidence = known >= HIGH_CONFIDENCE_WORDS ? Confidence.HIGH : byItems(items);
         return new Skill(LEVELS.get(index), confidence, items);
     }
@@ -74,8 +75,8 @@ public final class SkillLevels {
         if (items == 0) {
             return Skill.none(0);
         }
-        int cap = Math.min(vocabularyIndex(language, known) + 1, LEVELS.size() - 1);
-        int index = Math.min(Math.max(cap, 0), comfortIndex(finished, Math.min(ITEMS_FOR_LEVEL, items)));
+        int cap = vocabularyIndex(language, known) + 1; // A1 with no vocabulary; past C2 is fine, comfort can't be
+        int index = Math.min(cap, comfortIndex(finished, Math.min(ITEMS_FOR_LEVEL, items)));
         return new Skill(LEVELS.get(index), byItems(items), items);
     }
 

@@ -55,6 +55,19 @@ class SkillLevelsTest {
     }
 
     @Test
+    void finishingTextsAtYourOwnLevelDoesNotRaiseReading() {
+        assertThat(SkillLevels.reading(Language.ES, 1300, Map.of("A2", 5)).level()).isEqualTo("A2");
+    }
+
+    @Test
+    void comfortIndexIsMinusOneWhenTooFewItemsAreFinished() {
+        assertThat(SkillLevels.comfortIndex(Map.of(), 3)).isEqualTo(-1);
+        assertThat(SkillLevels.comfortIndex(Map.of("A1", 2), 3)).isEqualTo(-1);
+        assertThat(SkillLevels.comfortIndex(Map.of("A1", 3), 3)).isZero();
+        assertThat(SkillLevels.comfortIndex(Map.of("C2", 3), 3)).isEqualTo(5);
+    }
+
+    @Test
     void fewerThanThreeFinishedTextsDoNotRaiseReading() {
         assertThat(SkillLevels.reading(Language.ES, 1300, Map.of("B1", 2)).level()).isEqualTo("A2");
     }
