@@ -114,9 +114,8 @@ as `test@lector.local` (Classroom plan, so every feature is unlocked). To restor
 `AUTO_LOGIN=false` (frontend) and `DEV_AUTO_LOGIN=false` (backend). The `prod` profile always disables the
 endpoint — keep it that way.
 
-Eight starter texts (one per language) are seeded into the community library for onboarding, plus the sample YouTube
-videos in `backend/src/main/resources/samples/videos.txt` (fetched from YouTube in the background after startup,
-retried on the next start if offline; `SEED_SAMPLES=false` turns both off).
+Eight starter texts (one per language) are seeded into the community library for onboarding (`SEED_SAMPLES=false`
+turns that off). No videos are seeded: videos come only from what is in the database.
 `ENFORCE_PLAN_LIMITS=false` turns off free-tier limits; plans can also be switched in **Settings**.
 
 **Brand name:** the name people see (wordmark, page titles, starter-library owner, Anki exports, launcher windows) is

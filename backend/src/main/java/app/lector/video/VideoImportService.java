@@ -54,35 +54,20 @@ public class VideoImportService {
 
     /** Must run inside a transaction so the video fields set after creation are saved. */
     public Text importVideo(User owner, VideoImport req) {
-        return importVideo(owner, req, true);
-    }
-
-    /** Imports without plan checks (used by the sample content seeder). Must run inside a transaction. */
-    public Text importUnchecked(User owner, VideoImport req) {
-        return importVideo(owner, req, false);
-    }
-
-    private Text importVideo(User owner, VideoImport req, boolean checkPlan) {
         String videoId = YouTubeUrls.videoId(req.url());
-        if (checkPlan) {
-            plans.checkCanImportText(owner); // before any calls to YouTube
-        }
+        plans.checkCanImportText(owner); // before any calls to YouTube
         Optional<YouTubeClient.Metadata> meta = youtube.metadata(videoId);
         PlayerInfo player = youtube.player(videoId);
         Transcript transcript = transcript(req, player);
         String title = orElse(req.title(), orElse(meta.map(YouTubeClient.Metadata::title).orElse(null),
                 "YouTube video " + videoId));
         String url = YouTubeUrls.watchUrl(videoId);
-        Text text = checkPlan
-                ? texts.create(owner, title, req.language(), transcript.content(), url, req.isPublic(), transcript.cues())
-                : texts.createUnchecked(owner, title, req.language(), transcript.content(), url, req.isPublic(),
-                        transcript.cues());
+        Text text = texts.create(owner, title, req.language(), transcript.content(), url, req.isPublic(),
+                transcript.cues());
         Integer duration = player.durationSeconds() != null ? player.durationSeconds() : lastCueEnd(transcript.cues());
         text.setVideo(videoId, duration);
         Category fromYouTube = Category.fromYouTube(player.youtubeCategory());
-        // Seeded samples (no plan check) keep their listed category or YouTube's, without asking the AI.
-        text.setCategory(checkPlan ? review.reviewImport(req.category(), text, fromYouTube)
-                : req.category() != null ? req.category() : fromYouTube);
+        text.setCategory(review.reviewImport(req.category(), text, fromYouTube));
         text.setTimingsJson(json.writeValueAsString(timings(texts.tokens(text), transcript.cues(), duration)));
         return text;
     }

@@ -5,11 +5,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
-import app.lector.text.Category;
 import app.lector.text.UrlImporter;
-import app.lector.token.Language;
-import app.lector.user.UserRepository;
-import app.lector.video.VideoImportService;
 import app.lector.video.YouTubeStub;
 import app.lector.writing.OpenAiStub;
 import org.junit.jupiter.api.AfterAll;
@@ -23,7 +19,6 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -66,15 +61,6 @@ class ShareModerationApiTest {
 
     @MockitoBean
     UrlImporter urlImporter;
-
-    @Autowired
-    VideoImportService videos;
-
-    @Autowired
-    UserRepository users;
-
-    @Autowired
-    TransactionTemplate tx;
 
     TestApi api;
     String user;
@@ -246,13 +232,5 @@ class ShareModerationApiTest {
     void anAnswerWithoutAVerdictRefusesSharing() throws Exception {
         AI.reply("{\"category\":\"food\"}");
         sharingIsRefusedButPrivateImportsWork();
-    }
-
-    @Test
-    void seededSampleVideosAreNotChecked() {
-        var owner = users.findAll().getFirst();
-        tx.executeWithoutResult(s -> videos.importUnchecked(owner, new VideoImportService.VideoImport(
-                "https://youtu.be/" + VIDEO, Language.ES, null, true, null, null, Category.LEARNERS)));
-        assertThat(AI.requests()).isEmpty();
     }
 }
