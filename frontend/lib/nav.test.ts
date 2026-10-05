@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { activeGroup, activeSection, dueBadge, NAV_GROUPS, tabName } from "./nav";
+import { activeGroup, activeSection, dueBadge, NAV_GROUPS, SETTINGS_SECTIONS, settingsHashRedirect, settingsSection, tabName } from "./nav";
 
 describe("nav groups", () => {
   it("has three top-level tabs: Library, Practice, Progress", () => {
@@ -103,5 +103,40 @@ describe("tabName", () => {
 describe("group keys", () => {
   it("name each tab for its icon", () => {
     expect(NAV_GROUPS.map((g) => g.key)).toEqual(["library", "practice", "progress"]);
+  });
+});
+
+describe("settings sections", () => {
+  it("are Profile, Appearance and Subscription", () => {
+    expect(SETTINGS_SECTIONS.map((s) => [s.label, s.href])).toEqual([
+      ["Profile", "/settings"],
+      ["Appearance", "/settings/appearance"],
+      ["Subscription", "/settings/subscription"],
+    ]);
+  });
+
+  it.each([
+    ["/settings", "Profile"],
+    ["/settings/appearance", "Appearance"],
+    ["/settings/subscription", "Subscription"],
+  ])("%s shows the %s settings sub-tab", (path, label) => {
+    expect(settingsSection(path)?.label).toBe(label);
+  });
+
+  it.each(["/classes", "/classes/3", "/library", "/settingsx", "/"])("%s is not a settings page", (path) => {
+    expect(settingsSection(path)).toBeUndefined();
+  });
+});
+
+describe("settingsHashRedirect", () => {
+  it.each([
+    ["#plan", "/settings/subscription"],
+    ["#appearance", "/settings/appearance"],
+  ])("%s moves to %s", (hash, href) => {
+    expect(settingsHashRedirect(hash)).toBe(href);
+  });
+
+  it.each(["", "#", "#other", "plan", "#planx"])("%s stays put", (hash) => {
+    expect(settingsHashRedirect(hash)).toBeUndefined();
   });
 });
