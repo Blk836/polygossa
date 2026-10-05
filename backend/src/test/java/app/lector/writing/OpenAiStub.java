@@ -23,10 +23,17 @@ public final class OpenAiStub implements AutoCloseable {
     private volatile boolean failing;
     private volatile String rawContent;
     private volatile long delayMillis;
+    private final java.util.Map<String, String> repliesWhen = java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>());
+    private final List<String> embeddingRequests = Collections.synchronizedList(new ArrayList<>());
+    private final java.util.Map<String, float[]> vectorsWhen = java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>());
+    private volatile float[] defaultVector = {1, 0, 0};
+    private volatile boolean embeddingsFailing;
+    private volatile String rawEmbeddingResponse;
 
     public OpenAiStub() throws IOException {
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/chat/completions", this::handle);
+        server.createContext("/embeddings", this::handleEmbedding);
         server.start();
     }
 
@@ -60,12 +67,49 @@ public final class OpenAiStub implements AutoCloseable {
         }
     }
 
+    /** The JSON object the "model" answers with when the request contains {@code marker} (first match wins). */
+    public void replyWhen(String marker, String json) {
+        repliesWhen.put(marker, json);
+    }
+
+    /** The vector /embeddings returns when the input contains {@code marker} (first match wins). */
+    public void embedWhen(String marker, float... vector) {
+        vectorsWhen.put(marker, vector);
+    }
+
+    /** The vector /embeddings returns when no marker matches. */
+    public void defaultVector(float... vector) {
+        this.defaultVector = vector;
+    }
+
+    public void setEmbeddingsFailing(boolean failing) {
+        this.embeddingsFailing = failing;
+    }
+
+    /** The whole /embeddings response body, sent as is (e.g. one without a vector). */
+    public void embeddingResponseRaw(String body) {
+        this.rawEmbeddingResponse = body;
+    }
+
+    /** Request bodies /embeddings received so far. */
+    public List<String> embeddingRequests() {
+        synchronized (embeddingRequests) {
+            return List.copyOf(embeddingRequests);
+        }
+    }
+
     public void reset() {
         requests.clear();
         reply = "{}";
         rawContent = null;
         delayMillis = 0;
         failing = false;
+        repliesWhen.clear();
+        embeddingRequests.clear();
+        vectorsWhen.clear();
+        defaultVector = new float[] {1, 0, 0};
+        embeddingsFailing = false;
+        rawEmbeddingResponse = null;
     }
 
     @Override
@@ -74,7 +118,55 @@ public final class OpenAiStub implements AutoCloseable {
     }
 
     private void handle(HttpExchange ex) throws IOException {
-        requests.add(new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+        String body = new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        requests.add(body);
+        pause();
+        if (failing) {
+            send(ex, 500, "{\"error\":\"boom\"}");
+            return;
+        }
+        String answer = reply;
+        synchronized (repliesWhen) {
+            for (var e : repliesWhen.entrySet()) {
+                if (body.contains(e.getKey())) {
+                    answer = e.getValue();
+                    break;
+                }
+            }
+        }
+        String content = JsonMapper.builder().build().writeValueAsString(rawContent != null ? rawContent : answer);
+        send(ex, 200, "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":" + content + "}}]}");
+    }
+
+    private void handleEmbedding(HttpExchange ex) throws IOException {
+        String body = new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        embeddingRequests.add(body);
+        pause();
+        if (embeddingsFailing) {
+            send(ex, 500, "{\"error\":\"boom\"}");
+            return;
+        }
+        if (rawEmbeddingResponse != null) {
+            send(ex, 200, rawEmbeddingResponse);
+            return;
+        }
+        float[] vector = defaultVector;
+        synchronized (vectorsWhen) {
+            for (var e : vectorsWhen.entrySet()) {
+                if (body.contains(e.getKey())) {
+                    vector = e.getValue();
+                    break;
+                }
+            }
+        }
+        StringBuilder values = new StringBuilder();
+        for (int i = 0; i < vector.length; i++) {
+            values.append(i == 0 ? "" : ",").append(vector[i]);
+        }
+        send(ex, 200, "{\"data\":[{\"embedding\":[" + values + "],\"index\":0}],\"usage\":{\"total_tokens\":12}}");
+    }
+
+    private void pause() {
         if (delayMillis > 0) {
             try {
                 Thread.sleep(delayMillis);
@@ -82,12 +174,6 @@ public final class OpenAiStub implements AutoCloseable {
                 Thread.currentThread().interrupt();
             }
         }
-        if (failing) {
-            send(ex, 500, "{\"error\":\"boom\"}");
-            return;
-        }
-        String content = JsonMapper.builder().build().writeValueAsString(rawContent != null ? rawContent : reply);
-        send(ex, 200, "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":" + content + "}}]}");
     }
 
     private static void send(HttpExchange ex, int status, String body) throws IOException {

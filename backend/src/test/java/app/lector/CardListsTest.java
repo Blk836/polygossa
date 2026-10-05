@@ -61,6 +61,9 @@ class CardListsTest {
         assertThat(bodiesLoadedBy("/api/library?language=fr&sort=new&page=0&size=24")).isZero();
         assertThat(bodiesLoadedBy("/api/library?language=fr&sort=popular&page=0&size=24")).isZero();
         assertThat(bodiesLoadedBy("/api/library/shelves?language=fr")).isZero();
+        api.post(me, "/api/texts/" + text + "/progress", "{\"position\":2}", 200); // fills Continue reading
+        assertThat(bodiesLoadedBy("/api/recommendations?language=fr")).isZero();
+        assertThat(bodiesLoadedBy("/api/library?language=fr&topic=cooking")).isZero();
     }
 
     @Test
