@@ -55,10 +55,10 @@ test("Classes has no settings strip", async ({ page }) => {
 });
 
 test("saving the profile updates the account menu", async ({ page }) => {
+  await page.goto("/settings"); // signs in (auto-login) before the API calls below
   const before = (await (await page.request.get("/api/me")).json()) as Me;
   const name = `Tab tester ${Date.now()}`;
   try {
-    await page.goto("/settings");
     await page.getByLabel("Name").fill(name);
     await page.getByRole("button", { name: "Save" }).click();
     await expect(page.getByText("Saved", { exact: true })).toBeVisible();
@@ -77,7 +77,7 @@ test("a failed profile save shows the error, not Saved", async ({ page }) => {
   );
   await page.goto("/settings");
   await page.getByRole("button", { name: "Save" }).click();
-  await expect(page.getByRole("alert")).toHaveText("Name is not allowed.");
+  await expect(page.getByRole("main").getByRole("alert")).toHaveText("Name is not allowed.");
   await expect(page.getByText("Saved", { exact: true })).toHaveCount(0);
 });
 
@@ -95,7 +95,7 @@ test("a failed plan switch shows the error and keeps the plan", async ({ page })
   await page.route("**/api/me/plan", (route) => route.fulfill({ status: 500, json: { code: "error", message: "Billing is down." } }));
   await page.goto("/settings/subscription");
   await planCard(page, "Pro").getByRole("button", { name: "Switch to Pro" }).click();
-  await expect(page.getByRole("alert")).toHaveText("Billing is down.");
+  await expect(page.getByRole("main").getByRole("alert")).toHaveText("Billing is down.");
   await expect(planCard(page, "Classroom").getByRole("button")).toHaveText("Current plan");
 });
 
