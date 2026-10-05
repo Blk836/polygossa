@@ -8,6 +8,7 @@ import { MilestoneCard } from "@/components/progress/milestone-card";
 import { StreakCard } from "@/components/progress/streak-card";
 import { PeriodCard } from "@/components/progress/period-card";
 import { PeriodPicker } from "@/components/progress/period-picker";
+import { SkillLevelsCard } from "@/components/progress/skill-levels-card";
 import { useDashboard } from "@/components/progress/use-dashboard";
 import { Empty, ErrorNote, PageHeader, Spinner, formatDuration } from "@/components/ui";
 import { languageName } from "@/lib/languages";
@@ -53,6 +54,12 @@ export default function DashboardPage() {
         </div>
         <MilestoneCard known={known} language={language} />
       </div>
+
+      {language && (
+        <div className="mt-4">
+          <SkillLevelsCard key={language} language={language} />
+        </div>
+      )}
 
       <div className="mt-4">
         <PeriodCard stats={data.period} />
