@@ -131,7 +131,8 @@ Feature: Skill levels on the Progress tab (docs/ai-plan.md, section 2)
     Given I switch the top-bar language from Spanish to French
     Then the levels update to French without a page reload
 
-  Scenario: Levels update after new evidence
+  Scenario: Levels update after new evidence (smoothed: see level-history.feature)
     Given Reading shows A1 with 1190 known words
     When I mark 10 more words known and reopen Progress
-    Then Reading shows A2
+    Then Reading still shows A1, with "On track for A2"
+    And after 7 more days at 1200 or more known words, Reading shows A2
