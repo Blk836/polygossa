@@ -20,6 +20,7 @@ code is the source of truth for details, so there is never a second, stale copy.
 backend/    Spring Boot 4.1 (Java 21) — REST API; Gradle module :backend, package app.lector
 frontend/   Next.js 16 + React 19 + Tailwind 4 — UI and backend-for-frontend (BFF) API routes
 tokenizer/  FastAPI sidecar — Japanese (MeCab), Chinese (jieba), Korean (KoNLPy) tokenization
+tools/      team command-line tools (plain Node, no packages): import-videos.mjs bulk-imports curated YouTube videos
 ```
 
 ## How to work here: "gauntlet" verification
@@ -39,16 +40,19 @@ so the checks must prove it is correct.
 4. Before claiming done, run and show the actual output of:
    - full test suite: `./gradlew :backend:test` (backend); `cd frontend && npm test` (Vitest, pure modules only);
      `cd frontend && npm run e2e` (Playwright, `e2e/*.spec.ts`, real Chromium against the running app — any UI change
-     needs a scenario here, since there are no component tests); `cd tokenizer && pytest` (sidecar).
+     needs a scenario here, since there are no component tests); `cd tokenizer && pytest` (sidecar);
+     `node --test "tools/**/*.test.mjs"` (tools).
    - mutation testing on changed files: `./gradlew :backend:pitest` (PIT; narrow with
      `-Ppitest.targets=app.lector.text.*`), `cd frontend && npm run mutate` (Stryker; the modules it covers are listed
-     in `stryker.config.mjs`), `cd tokenizer && mutmut run` (configured in `pyproject.toml`, **never run here** —
+     in `stryker.config.mjs`), `frontend/node_modules/.bin/stryker run tools/stryker.config.mjs` from the repo root
+     (tools/), `cd tokenizer && mutmut run` (configured in `pyproject.toml`, **never run here** —
      Python isn't installed, and mutmut 3 needs Linux/macOS/WSL). In Git Bash, append `/c/Windows/System32` to `PATH`
      (`PATH="$PATH:/c/Windows/System32"`; prepending makes `bash` resolve to WSL) before `npm run mutate`, or Stryker crashes at exit looking for `taskkill` and leaves `.stryker-tmp` behind.
    - lint + type check: `cd frontend && npx tsc --noEmit && npx eslint .`; for Java, `./gradlew :backend:compileJava`
      (javac is the type check); `cd tokenizer && ruff check .` (never run here).
    - complexity check: no function over cyclomatic complexity 10, no file over 300 lines. Enforced by
-     `./gradlew :backend:checkstyleMain` (backend), ESLint `complexity`/`max-lines` (frontend), and ruff `C90`
+     `./gradlew :backend:checkstyleMain` (backend), ESLint `complexity`/`max-lines` (frontend; for tools/, from the repo root:
+     `frontend/node_modules/.bin/eslint --no-config-lookup --rule '{"complexity":["error",10],"max-lines":["error",300]}' "tools/**/*.mjs"`), and ruff `C90`
      (tokenizer; ruff has no file-length rule).
 5. Respect module boundaries (see below). Do not add new dependencies without asking.
 6. End with a short report: what changed, every check you ran with its result,
@@ -117,6 +121,14 @@ endpoint — keep it that way.
 
 Eight starter texts (one per language) are seeded into the community library for onboarding (`SEED_SAMPLES=false`
 turns that off). No videos are seeded: videos come only from what is in the database.
+
+**Filling Explore with videos (`tools/import-videos.mjs`):** when asked to find content, search YouTube for videos
+actually *spoken* in the target language with captions in it (translated subtitles import fine but are the wrong
+language), write them to a list file (`<url> [language] [category]` per line), and run the tool against a backend
+started with `CURATOR_TOKEN` set. Use `--dry-run` first. Videos go into the community library: public, owned by the
+library account, one copy each, same AI review as the Library form. Re-running a list is safe; feed
+`<list>.retry.txt` back in for failures. Don't restart the user's IntelliJ backend to add the token: ask, or start a
+second one. Details: [tools/README.md](tools/README.md).
 `ENFORCE_PLAN_LIMITS=false` turns off free-tier limits; plans can also be switched in **Settings**.
 
 **Brand name:** the name people see (wordmark, page titles, starter-library owner, Anki exports, launcher windows) is
@@ -131,6 +143,8 @@ Optional:
 - **AI features** — set `OPENAI_API_KEY` (any OpenAI-compatible endpoint via `OPENAI_BASE_URL` / `OPENAI_MODEL`,
   embeddings via `OPENAI_EMBEDDING_MODEL`). With a key, a background job tags and embeds public texts for Explore's
   recommendations (`RECOMMEND_FEATURE_JOB=false` turns it off).
+- **Bulk video import** — set `CURATOR_TOKEN` to switch on the curator endpoints used by `tools/import-videos.mjs`
+  (off when blank).
 - **Docker** (PostgreSQL + Redis + everything): `cp .env.example .env` (set `JWT_SECRET`), then
   `docker compose up --build`. Uses the `prod` profile, so auto-login is off there.
 
@@ -141,6 +155,7 @@ Optional:
 cd frontend && npm test && npx tsc --noEmit && npx eslint . && npx next build
 cd frontend && npm run e2e   # Playwright (first time: npx playwright install chromium); reuses servers on :3000/:8080 (e.g. the IntelliJ App run) or starts them (JAVA_HOME needed)
 cd tokenizer && pip install -r requirements-dev.txt && pytest      # Python not installed on the dev machine
+node --test "tools/**/*.test.mjs"                                  # tools/
 ```
 
 Backend tests don't hit the network. Dictionary lookups call freedictionaryapi.com / Wiktionary for real, so check
