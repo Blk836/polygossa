@@ -13,7 +13,10 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
-/** Without OPENAI_API_KEY, imports keep the old default category and no AI request is attempted. */
+/**
+ * Without OPENAI_API_KEY, imports keep the old default category, sharing is not checked, and no AI request is
+ * attempted.
+ */
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:importcategorynoai;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
         "app.seed-samples=false",
@@ -57,6 +60,18 @@ class ImportCategoryWithoutAiTest {
                 "{\"title\":\"Pain\",\"language\":\"fr\",\"content\":\"Farine.\",\"isPublic\":false}", 201)
                 .get("category").asString();
         assertThat(category).isEqualTo("other");
+        assertThat(AI.requests()).isEmpty();
+    }
+
+    @Test
+    void sharedImportsAreNotChecked() throws Exception {
+        TestApi api = new TestApi(mvc, json);
+        String user = api.signupPro();
+        AI.reply("{\"appropriate\":false,\"reason\":\"x\"}");
+        boolean shared = api.post(user, "/api/texts",
+                "{\"title\":\"Pain\",\"language\":\"fr\",\"content\":\"Farine.\",\"isPublic\":true}", 201)
+                .get("isPublic").asBoolean();
+        assertThat(shared).isTrue();
         assertThat(AI.requests()).isEmpty();
     }
 }

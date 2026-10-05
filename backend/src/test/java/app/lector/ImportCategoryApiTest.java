@@ -48,7 +48,7 @@ class ImportCategoryApiTest {
         T start() throws java.io.IOException;
     }
 
-    private static <T> T start(Starter<T> starter) {
+    static <T> T start(Starter<T> starter) {
         try {
             return starter.start();
         } catch (java.io.IOException e) {
