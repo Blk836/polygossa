@@ -3,6 +3,9 @@ import { expect, test, type Page, type Route } from "@playwright/test";
 // The Skill levels card on Progress (docs/acceptance/skill-levels.feature). One test checks the card against the real
 // API for test@lector.local; the rest serve fixed levels so every state (no data, estimates, overall) is shown.
 
+// Each test sets the shared test user's language, so they run one at a time.
+test.describe.configure({ mode: "serial" });
+
 type Fixture = Record<string, unknown>;
 
 const FULL: Fixture = {

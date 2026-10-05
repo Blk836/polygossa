@@ -76,6 +76,8 @@ public class AiClient {
                     .body(JsonNode.class);
             String content = response == null ? null
                     : response.path("choices").path(0).path("message").path("content").asString(null);
+            log.info("AI call to {} used {} tokens", config.model(),
+                    response == null ? "?" : response.path("usage").path("total_tokens").asString("?"));
             if (content == null) {
                 throw new ApiException(HttpStatus.BAD_GATEWAY, "ai_error", "The AI service returned no answer");
             }
