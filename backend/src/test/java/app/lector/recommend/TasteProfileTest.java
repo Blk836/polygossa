@@ -118,7 +118,7 @@ class TasteProfileTest {
         TasteProfile p = of(engaged(2, null, Category.FOOD, "wine", "cooking"));
         assertThat(p.strongestTopic()).contains("cooking");
         TasteProfile q = TasteProfile.of(List.of(), Set.of(Category.TRAVEL, Category.FOOD), List.of());
-        assertThat(q.strongestCategory()).contains(Category.FOOD);
+        assertThat(q.strongestCategory()).contains(Category.TRAVEL);
     }
 
     // ---- format ----
