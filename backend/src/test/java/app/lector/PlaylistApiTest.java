@@ -16,19 +16,12 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /** A learner's own playlists: creating them, adding, ordering and removing items. Sharing is in PlaylistSharingApiTest. */
-@SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:playlists;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
-        "app.seed-samples=false",
-        "app.storage.dir=build/test-uploads"
-})
-@AutoConfigureMockMvc
+@ApiTest
 class PlaylistApiTest {
 
     @Autowired

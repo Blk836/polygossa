@@ -9,19 +9,13 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /** Feature: the library is scoped to one language at a time (the language picked in the top bar). */
-@SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:langscope;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
-        "app.seed-samples=false"
-})
-@AutoConfigureMockMvc
+@ApiTest
 class LanguageScopeApiTest {
 
     @Autowired

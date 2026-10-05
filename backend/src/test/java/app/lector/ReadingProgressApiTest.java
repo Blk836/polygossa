@@ -5,20 +5,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /** POST /api/texts/{id}/progress: how far the viewer has read, shown on Library/Explore cards and used to resume. */
-@SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:progress;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
-        "app.seed-samples=false",
-        "app.storage.dir=build/test-uploads"
-})
-@AutoConfigureMockMvc
+@ApiTest
 class ReadingProgressApiTest {
 
     // Ten words; word n is token 2n (each followed by a space, the last by "."), so token 19 is the final ".".

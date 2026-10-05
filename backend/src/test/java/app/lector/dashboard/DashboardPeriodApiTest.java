@@ -2,22 +2,16 @@ package app.lector.dashboard;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import app.lector.ApiTest;
 import app.lector.TestApi;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /** GET /api/dashboard?period=…: the Progress page's stats for the last week, month, quarter, year or all time. */
-@SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:dashperiod;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
-        "app.seed-samples=false",
-        "app.storage.dir=build/test-uploads"
-})
-@AutoConfigureMockMvc
+@ApiTest
 class DashboardPeriodApiTest {
 
     @Autowired

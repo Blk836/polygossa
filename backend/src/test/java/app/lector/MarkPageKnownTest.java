@@ -5,19 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /** POST /api/texts/{id}/mark-known: the reader's "turning the page marks its new words known". */
-@SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:markpage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
-        "app.seed-samples=false",
-        "app.storage.dir=build/test-uploads"
-})
-@AutoConfigureMockMvc
+@ApiTest
 class MarkPageKnownTest {
 
     // Tokens: El(0) ' '(1) gato(2) ' '(3) come(4) '. '(5) La(6) ' '(7) casa(8) ' '(9) come(10) '.'(11)
