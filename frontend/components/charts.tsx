@@ -38,7 +38,7 @@ function Frame({ title, unit, points, children }: { title: string; unit: string;
   return (
     <figure className="viz rounded-xl border border-line bg-card p-4">
       <figcaption className="mb-2 flex items-baseline justify-between gap-2">
-        <span className="text-sm font-medium">{title}</span>
+        <h2 className="text-sm font-medium">{title}</h2>
         <button className="text-xs text-muted underline" onClick={() => setTable(!table)} aria-pressed={table}>
           {table ? "Chart" : "Table"}
         </button>
