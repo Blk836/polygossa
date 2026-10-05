@@ -135,23 +135,25 @@ test.describe("landing page", () => {
   });
 });
 
+// Choosing a language sets the account's target language, which the API can't clear again (null is ignored) and other
+// specs rely on the test account having none, so PATCH /api/me is stubbed and checked instead of sent.
 test.describe("onboarding with a language chosen on the landing page", () => {
-  let original: string | null = null;
-
-  test.beforeEach(async ({ page }) => {
+  test("?lang=de starts at step 2 with German selected and sets German as the target language", async ({ page }) => {
     await page.goto("/library");
-    original = (await (await page.request.get("/api/me")).json()).targetLanguage;
-  });
-
-  test.afterEach(async ({ page }) => {
-    await page.request.patch("/api/me", { data: { targetLanguage: original } });
-  });
-
-  test("?lang=de starts at step 2 with German selected", async ({ page }) => {
+    const me = await (await page.request.get("/api/me")).json();
+    const patches: unknown[] = [];
+    await page.route("**/api/me", (route) => {
+      if (route.request().method() !== "PATCH") return route.fallback();
+      const body = route.request().postDataJSON();
+      patches.push(body);
+      return route.fulfill({ json: { ...me, ...body } });
+    });
     await page.goto("/onboarding?lang=de");
     await expect(page.getByRole("button", { name: /Deutsch/ })).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByRole("heading", { name: "Pick something to read" })).toBeVisible();
-    await expect.poll(async () => (await (await page.request.get("/api/me")).json()).targetLanguage).toBe("de");
+    await expect(page.getByRole("main").getByRole("button").filter({ hasText: "words →" }).or(page.getByText("No starter texts yet"))).not.toHaveCount(0);
+    expect(patches.length).toBeGreaterThan(0); // React strict mode (dev) may run the effect twice
+    for (const body of patches) expect(body).toMatchObject({ targetLanguage: "de" });
   });
 
   test.describe("without a usable language", () => {
