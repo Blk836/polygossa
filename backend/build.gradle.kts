@@ -44,8 +44,15 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+// The suite is CPU-bound (booting apps and JIT-compiling them), so test classes run in several JVMs at once, each
+// with the quick C1-only JIT and a single-threaded GC so they don't fight over cores: measured on a 6-core machine,
+// 132 s serially with default flags, 73 s with 4 JVMs and these flags. Each JVM holds up to 512 MB of cached apps,
+// so it never uses more than 4. -Ptest.forks=N overrides the count.
 tasks.test {
     useJUnitPlatform()
+    maxParallelForks = (findProperty("test.forks") as String?)?.toInt()
+        ?: (Runtime.getRuntime().availableProcessors() - 2).coerceIn(1, 4)
+    jvmArgs("-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC")
 }
 
 checkstyle {
