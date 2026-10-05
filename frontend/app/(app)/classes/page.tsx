@@ -64,7 +64,7 @@ function CreateForm({ canTeach, defaultLanguage, onCreated, onError }: {
         </div>
       ) : (
         <p className="mt-2 text-sm text-muted">
-          Teachers on the <Link href="/settings#plan" className="underline">Classroom plan</Link> can create classes, assign texts and see student progress.
+          Teachers on the <Link href="/settings/subscription" className="underline">Classroom plan</Link> can create classes, assign texts and see student progress.
         </p>
       )}
     </form>

@@ -11,7 +11,7 @@ import { useMe } from "./me-context";
 import { useDueCount, useHeaderStats } from "./nav-data";
 import { Logo } from "./ui";
 import { BRAND } from "@/lib/brand";
-import { activeGroup, activeSection, dueBadge, NAV_GROUPS, tabName, type NavGroup } from "@/lib/nav";
+import { activeGroup, activeSection, dueBadge, NAV_GROUPS, SETTINGS_SECTIONS, settingsSection, tabName, type NavGroup, type NavSection } from "@/lib/nav";
 
 const ICONS: Record<NavGroup["key"], ComponentType<SVGProps<SVGSVGElement>>> = {
   library: BookIcon,
@@ -34,22 +34,19 @@ function TabLabel({ group, due }: { group: NavGroup; due: number | null }) {
   );
 }
 
-/** Sub-tabs for the current tab's pages (Library: My texts, Explore, Playlists; Practice: Review, Words, Write). */
-function SectionTabs({ pathname }: { pathname: string }) {
-  const section = activeSection(pathname);
-  const group = activeGroup(pathname);
-  if (!section || !group) return null;
+/** A strip of sub-tabs under the header, the current one underlined. */
+function SubTabs({ label, sections, current }: { label: string; sections: NavSection[]; current: NavSection }) {
   return (
-    <nav aria-label="Section" className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4">
-      {group.sections.map((s) => {
-        const current = s.href === section.href;
+    <nav aria-label={label} className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4">
+      {sections.map((s) => {
+        const here = s.href === current.href;
         return (
           <Link
             key={s.href}
             href={s.href}
-            aria-current={current ? "page" : undefined}
+            aria-current={here ? "page" : undefined}
             className={`relative shrink-0 px-3 py-2 text-sm transition ${
-              current ? "font-medium text-ink after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-rubric" : "text-muted hover:text-ink"
+              here ? "font-medium text-ink after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-rubric" : "text-muted hover:text-ink"
             }`}
           >
             {s.label}
@@ -58,6 +55,19 @@ function SectionTabs({ pathname }: { pathname: string }) {
       })}
     </nav>
   );
+}
+
+/**
+ * Sub-tabs for the current page: the tab's pages (Library: Mine, Saved, Explore, Playlists; Practice: Review, Words,
+ * Write), or Settings' (Profile, Appearance, Subscription).
+ */
+function SectionTabs({ pathname }: { pathname: string }) {
+  const section = activeSection(pathname);
+  const group = activeGroup(pathname);
+  if (section && group) return <SubTabs label="Section" sections={group.sections} current={section} />;
+  const setting = settingsSection(pathname);
+  if (setting) return <SubTabs label="Settings pages" sections={SETTINGS_SECTIONS} current={setting} />;
+  return null;
 }
 
 export function AppNav() {

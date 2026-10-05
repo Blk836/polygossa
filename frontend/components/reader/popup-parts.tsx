@@ -153,7 +153,7 @@ export function ExtraActions({ sentenceState, onSaveSentence, isPro, aiBusy, onT
           <button onClick={onExample} disabled={aiBusy} className={actionButton}>{aiBusy ? "Thinking…" : "AI example"}</button>
         </>
       ) : (
-        <Link href="/settings#plan" className="rounded-lg px-2.5 py-1.5 text-muted underline">AI examples with Pro</Link>
+        <Link href="/settings/subscription" className="rounded-lg px-2.5 py-1.5 text-muted underline">AI examples with Pro</Link>
       )}
       {onPlay && (
         <button onClick={onPlay} className={`ml-auto flex items-center gap-1 ${actionButton}`}>

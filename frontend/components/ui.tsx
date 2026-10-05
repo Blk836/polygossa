@@ -97,7 +97,7 @@ export function UpgradeNote({ message }: { message: string }) {
   return (
     <div className="rounded-lg border border-warn/40 bg-warn-soft p-3 text-sm text-ink">
       <p>{message}</p>
-      <Link href="/settings#plan" className="mt-1 inline-block font-medium underline">
+      <Link href="/settings/subscription" className="mt-1 inline-block font-medium underline">
         See plans
       </Link>
     </div>

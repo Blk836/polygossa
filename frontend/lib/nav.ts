@@ -1,5 +1,5 @@
 // The app's top-level navigation: three tabs (read, practise, see progress), two of them with a sub-tab strip.
-// Settings and Classes live in the account menu instead. Pure data and helpers, unit-tested.
+// Settings and Classes live in the account menu instead; Settings has its own sub-tab strip. Pure data and helpers, unit-tested.
 
 export interface NavSection {
   href: string;
@@ -52,10 +52,38 @@ export function activeGroup(pathname: string): NavGroup | undefined {
   return NAV_GROUPS.find((g) => [g.href, ...g.sections.map((s) => s.href), ...(g.also ?? [])].some((href) => isUnder(pathname, href)));
 }
 
+/** The most specific section containing `pathname` (/library/saved is Saved, not Mine). */
+function mostSpecific(sections: NavSection[], pathname: string): NavSection | undefined {
+  const matches = sections.filter((s) => isUnder(pathname, s.href));
+  return matches.sort((a, b) => b.href.length - a.href.length)[0];
+}
+
 /** The sub-tab for this page (the most specific match: /library/saved is Saved, not Mine); undefined without a strip. */
 export function activeSection(pathname: string): NavSection | undefined {
-  const matches = NAV_GROUPS.flatMap((g) => g.sections).filter((s) => isUnder(pathname, s.href));
-  return matches.sort((a, b) => b.href.length - a.href.length)[0];
+  return mostSpecific(NAV_GROUPS.flatMap((g) => g.sections), pathname);
+}
+
+/** Settings' sub-tabs, reached from the account menu rather than a top-level tab. */
+export const SETTINGS_SECTIONS: NavSection[] = [
+  { href: "/settings", label: "Profile" },
+  { href: "/settings/appearance", label: "Appearance" },
+  { href: "/settings/subscription", label: "Subscription" },
+];
+
+/** The Settings sub-tab for this page; undefined outside Settings. */
+export function settingsSection(pathname: string): NavSection | undefined {
+  return mostSpecific(SETTINGS_SECTIONS, pathname);
+}
+
+/** Anchors on the old single Settings page, for bookmarks made before it was split into sub-tabs. */
+const OLD_SETTINGS_ANCHORS: Record<string, string> = {
+  "#plan": "/settings/subscription",
+  "#appearance": "/settings/appearance",
+};
+
+/** Where an old /settings#anchor now lives; undefined for any other hash. */
+export function settingsHashRedirect(hash: string): string | undefined {
+  return Object.hasOwn(OLD_SETTINGS_ANCHORS, hash) ? OLD_SETTINGS_ANCHORS[hash] : undefined;
 }
 
 /** Text for the due-cards badge on Practice: nothing when none are due, capped at "99+". */
