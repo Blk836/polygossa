@@ -284,6 +284,53 @@ class RecommendationShelvesApiTest {
     }
 
     @Test
+    void continueReadingOnlyHoldsMyLanguage() throws Exception {
+        long french = fx.publicText(author, "Bonjour", "food");
+        long spanish = fx.text(author, "Hola", "es", "food", RecommendFixture.content(19, 1), true);
+        progress(french, 10);
+        progress(spanish, 10);
+        assertThat(ids(shelf(fx.recommendations(learner), "continue"))).containsExactly(french);
+        assertThat(ids(shelf(api.get(learner, "/api/recommendations", 200), "continue"))).contains(french, spanish);
+    }
+
+    @Autowired
+    app.lector.session.ReadingSessionRepository sessions;
+
+    @Autowired
+    app.lector.user.UserRepository users;
+
+    @Autowired
+    app.lector.text.TextRepository texts;
+
+    @Autowired
+    org.springframework.transaction.support.TransactionTemplate tx;
+
+    @Test
+    void timeSpentReadingCountsTowardsItsCategory() throws Exception {
+        long read = fx.text(author, "Read for long", "es", "travel", RecommendFixture.content(19, 1), true);
+        long travel = fx.publicText(author, "Travel", "travel");
+        long learnerId = api.get(learner, "/api/me", 200).get("id").asLong();
+        tx.executeWithoutResult(s -> {
+            var session = new app.lector.session.ReadingSession(users.findById(learnerId).orElseThrow(),
+                    texts.findById(read).orElseThrow());
+            session.setDurationSeconds(1200);
+            sessions.save(session);
+        });
+        JsonNode topic = shelf(fx.recommendations(learner), "topic");
+        assertThat(topic.get("category").asString()).isEqualTo("travel");
+        assertThat(ids(topic)).containsExactly(travel);
+    }
+
+    @Test
+    void aNotInterestedAloneKeepsStretchToMyTopics() throws Exception {
+        long dull = fx.publicText(author, "Dull news", "news");
+        fx.text(author, "News 88", "news", 22, 3, true);
+        assertThat(shelf(fx.recommendations(learner), "stretch")).isNotNull();
+        api.put(learner, "/api/recommendations/not-interested/" + dull, "", 204);
+        assertThat(shelf(fx.recommendations(learner), "stretch")).isNull();
+    }
+
+    @Test
     void withoutAnOpenAiKeyTheFeatureJobSendsNothing() throws Exception {
         fx.publicText(author, "Public", "food");
         assertThat(job.runOnce()).isZero();

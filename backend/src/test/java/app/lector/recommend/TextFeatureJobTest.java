@@ -132,6 +132,15 @@ class TextFeatureJobTest {
     }
 
     @Test
+    void theScheduleDoesNothingWhileTheJobIsSwitchedOff() throws Exception {
+        long id = fx.publicText(author, "Pas encore", "food");
+        job.scheduled(); // app.recommend.feature-job=false in tests
+        assertThat(features.findByTextId(id)).isEmpty();
+        job.runOnce();
+        assertThat(features.findByTextId(id)).isPresent();
+    }
+
+    @Test
     void theBacklogIsTakenTwentyAtATime() throws Exception {
         for (int i = 0; i < 25; i++) {
             fx.publicText(author, "T" + i, "food");

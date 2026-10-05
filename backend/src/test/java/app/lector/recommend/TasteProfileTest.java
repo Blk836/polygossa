@@ -161,6 +161,14 @@ class TasteProfileTest {
     }
 
     @Test
+    void lengthBucketBoundaries() {
+        assertThat(TasteProfile.bucket(299)).isZero();
+        assertThat(TasteProfile.bucket(300)).isEqualTo(1);
+        assertThat(TasteProfile.bucket(1499)).isEqualTo(1);
+        assertThat(TasteProfile.bucket(1500)).isEqualTo(2);
+    }
+
+    @Test
     void noPositiveHistoryMeansNeutralFormat() {
         assertThat(of().formatAffinity(true, 100)).isZero();
         assertThat(of(format(-4, true, 100)).formatAffinity(true, 100)).isZero();

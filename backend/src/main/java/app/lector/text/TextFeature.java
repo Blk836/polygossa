@@ -80,9 +80,6 @@ public class TextFeature {
 
     /** The tag in its stored form (trimmed, lower case, single spaces), or null when it isn't a valid tag. */
     public static String normaliseTopic(String raw) {
-        if (raw == null) {
-            return null;
-        }
         String topic = raw.strip().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
         return TOPIC.matcher(topic).matches() ? topic : null;
     }

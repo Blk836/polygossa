@@ -39,10 +39,6 @@ public class EmbeddingClient {
                 .build();
     }
 
-    public boolean enabled() {
-        return config.enabled();
-    }
-
     /** The model vectors come from; vectors of different models must not be compared. */
     public String model() {
         return config.embeddingModel();
