@@ -21,6 +21,8 @@ public final class OpenAiStub implements AutoCloseable {
     private final List<String> requests = Collections.synchronizedList(new ArrayList<>());
     private volatile String reply = "{}";
     private volatile boolean failing;
+    private volatile String rawContent;
+    private volatile long delayMillis;
 
     public OpenAiStub() throws IOException {
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
@@ -37,6 +39,16 @@ public final class OpenAiStub implements AutoCloseable {
         this.reply = json;
     }
 
+    /** The assistant message content sent as is, e.g. text that isn't JSON. */
+    public void replyRaw(String content) {
+        this.rawContent = content;
+    }
+
+    /** Waits this long before answering, to exceed the client's timeout. */
+    public void delay(java.time.Duration delay) {
+        this.delayMillis = delay.toMillis();
+    }
+
     public void setFailing(boolean failing) {
         this.failing = failing;
     }
@@ -51,6 +63,8 @@ public final class OpenAiStub implements AutoCloseable {
     public void reset() {
         requests.clear();
         reply = "{}";
+        rawContent = null;
+        delayMillis = 0;
         failing = false;
     }
 
@@ -61,11 +75,18 @@ public final class OpenAiStub implements AutoCloseable {
 
     private void handle(HttpExchange ex) throws IOException {
         requests.add(new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+        if (delayMillis > 0) {
+            try {
+                Thread.sleep(delayMillis);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
         if (failing) {
             send(ex, 500, "{\"error\":\"boom\"}");
             return;
         }
-        String content = JsonMapper.builder().build().writeValueAsString(reply);
+        String content = JsonMapper.builder().build().writeValueAsString(rawContent != null ? rawContent : reply);
         send(ex, 200, "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":" + content + "}}]}");
     }
 

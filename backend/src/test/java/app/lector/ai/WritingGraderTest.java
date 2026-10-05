@@ -76,4 +76,19 @@ class WritingGraderTest {
         assertThat(capped.summary()).isEqualTo("Nice");
         assertThat(capped.rubric()).isEqualTo(g.rubric());
     }
+
+    @Test
+    void anUnknownLevelIsDroppedRatherThanShown() {
+        assertThat(WritingGrader.parse(json("{\"level\": \"Z9\"}"), "o").level()).isNull();
+        assertThat(WritingGrader.parse(json("{\"level\": \"B3\"}"), "o").level()).isNull();
+        assertThat(WritingGrader.parse(json("{\"level\": \"\"}"), "o").level()).isNull();
+        assertThat(WritingGrader.parse(json("{\"level\": 4}"), "o").level()).isNull();
+    }
+
+    @Test
+    void levelsAreNormalisedToTheSixCefrBands() {
+        assertThat(WritingGrader.parse(json("{\"level\": \" b2 \"}"), "o").level()).isEqualTo("B2");
+        assertThat(WritingGrader.parse(json("{\"level\": \"C2\"}"), "o").level()).isEqualTo("C2");
+        assertThat(WritingGrader.parse(json("{\"level\": \"A1\"}"), "o").level()).isEqualTo("A1");
+    }
 }

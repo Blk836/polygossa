@@ -25,7 +25,9 @@ import tools.jackson.databind.ObjectMapper;
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:writingtest;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
         "app.seed-samples=false",
-        "app.openai.api-key=test-key"
+        "app.openai.api-key=test-key",
+        "app.openai.model=test-model",
+        "app.openai.timeout=2s"
 })
 @AutoConfigureMockMvc
 class WritingTestApiTest {
@@ -231,6 +233,89 @@ class WritingTestApiTest {
     void aTestStillInProgressCannotBeGraded() throws Exception {
         long id = start(user, "fr", "A1", 201).get("id").asLong();
         api.post(user, "/api/writing/tests/" + id + "/grade", "{}", 409);
+    }
+
+    // ---- writing situations stay a fixed bank shared by everyone ----
+
+    @Test
+    void everyUserDrawsSituationsFromTheSameBankWithoutAskingTheAi() throws Exception {
+        var bank = PromptBank.load().forLevel("B1").stream().map(PromptBank.Prompt::situation).toList();
+        String first = start(user, "fr", "B1", 201).get("prompt").asString();
+        String second = start(api.signupPro(), "fr", "B1", 201).get("prompt").asString();
+        assertThat(bank).contains(first, second);
+        assertThat(AI.requests()).isEmpty();
+    }
+
+    // ---- consistent grading ----
+
+    @Test
+    void gradingAsksForDeterministicOutputFromTheConfiguredModel() throws Exception {
+        submit(user, start(user, "fr", "A1", 201).get("id").asLong(), words(30), 200);
+        JsonNode request = json.readTree(AI.requests().getFirst());
+        assertThat(request.get("temperature").asDouble()).isZero();
+        assertThat(request.get("model").asString()).isEqualTo("test-model");
+    }
+
+    @Test
+    void aGradedTestRecordsWhatGradedIt() throws Exception {
+        long id = start(user, "fr", "A1", 201).get("id").asLong();
+        JsonNode graded = submit(user, id, words(30), 200);
+        assertThat(graded.get("gradeModel").asString()).isEqualTo("test-model");
+        assertThat(graded.get("gradePromptVersion").asString()).isEqualTo(app.lector.ai.WritingGrader.PROMPT_VERSION);
+        JsonNode later = api.get(user, "/api/writing/tests/" + id, 200);
+        assertThat(later.get("gradeModel").asString()).isEqualTo("test-model");
+        assertThat(later.get("grade").get("score").asInt()).isEqualTo(76);
+    }
+
+    @Test
+    void anUngradedTestRecordsNoGrader() throws Exception {
+        AI.setFailing(true);
+        JsonNode saved = submit(user, start(user, "fr", "A1", 201).get("id").asLong(), words(30), 200);
+        assertThat(saved.has("gradeModel")).isFalse();
+        assertThat(saved.has("gradePromptVersion")).isFalse();
+    }
+
+    @Test
+    void gradesFromTheAiAreKeptInBounds() throws Exception {
+        AI.reply("""
+                {"score": 140, "level": "Z9", "rubric": {"task": {"score": 5}, "grammar": {"score": 9},
+                 "vocabulary": {"score": 5}, "coherence": {"score": 5}}}
+                """);
+        JsonNode grade = submit(user, start(user, "fr", "A1", 201).get("id").asLong(), words(30), 200).get("grade");
+        assertThat(grade.get("score").asInt()).isEqualTo(100);
+        assertThat(grade.get("rubric").get(1).get("score").asInt()).isEqualTo(5);
+        assertThat(grade.path("level").isNull() || grade.path("level").isMissingNode()).isTrue();
+    }
+
+    // ---- grading failures that keep the writing ----
+
+    @Test
+    void aSlowAiServiceTimesOutAndTheWritingIsKept() throws Exception {
+        long id = start(user, "fr", "A1", 201).get("id").asLong();
+        AI.delay(Duration.ofSeconds(4));
+        JsonNode saved = submit(user, id, words(30), 200);
+        assertThat(saved.get("status").asString()).isEqualTo("ungraded");
+        assertThat(saved.get("gradeError").asString()).isEqualTo("The AI service is unavailable right now");
+        assertThat(saved.get("content").asString()).isEqualTo(words(30));
+        assertThat(saved.has("grade")).isFalse();
+    }
+
+    @Test
+    void anUnreadableAiAnswerKeepsTheWriting() throws Exception {
+        long id = start(user, "fr", "A1", 201).get("id").asLong();
+        AI.replyRaw("Sure! Here is the grade: great job");
+        JsonNode saved = submit(user, id, words(30), 200);
+        assertThat(saved.get("status").asString()).isEqualTo("ungraded");
+        assertThat(saved.get("gradeError").asString()).isEqualTo("The AI service returned an unreadable answer");
+        assertThat(saved.has("grade")).isFalse();
+    }
+
+    @Test
+    void anAiOutageMessageIsShownWithTheWriting() throws Exception {
+        long id = start(user, "fr", "A1", 201).get("id").asLong();
+        AI.setFailing(true);
+        JsonNode saved = submit(user, id, words(30), 200);
+        assertThat(saved.get("gradeError").asString()).isEqualTo("The AI service is unavailable right now");
     }
 
     // ---- history ----

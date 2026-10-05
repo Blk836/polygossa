@@ -27,6 +27,16 @@ class WritingTestWithoutAiTest {
     ObjectMapper json;
 
     @Test
+    void startingATestWorksWithoutAKey() throws Exception {
+        TestApi api = new TestApi(mvc, json);
+        JsonNode t = api.post(api.signupPro(), "/api/writing/tests", "{\"language\":\"es\",\"level\":\"A2\"}", 201);
+        assertThat(t.get("status").asString()).isEqualTo("in_progress");
+        assertThat(app.lector.writing.PromptBank.load().forLevel("A2"))
+                .extracting(PromptBank.Prompt::situation).contains(t.get("prompt").asString());
+        assertThat(t.get("timeLimitSeconds").asInt()).isEqualTo(300);
+    }
+
+    @Test
     void writingIsSavedUngradedWithAnExplanation() throws Exception {
         TestApi api = new TestApi(mvc, json);
         String user = api.signupPro();
@@ -34,7 +44,8 @@ class WritingTestWithoutAiTest {
         JsonNode saved = api.post(user, "/api/writing/tests/" + id + "/submit",
                 "{\"content\":\"" + "mot ".repeat(30).strip() + "\"}", 200);
         assertThat(saved.get("status").asString()).isEqualTo("ungraded");
-        assertThat(saved.get("gradeError").asString()).contains("OPENAI_API_KEY");
+        assertThat(saved.get("gradeError").asString()).contains("AI features are not configured").contains("OPENAI_API_KEY");
+        assertThat(saved.has("grade")).isFalse();
         assertThat(saved.get("wordCount").asInt()).isEqualTo(30);
     }
 }
