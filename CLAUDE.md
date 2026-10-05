@@ -86,6 +86,7 @@ when the tokenizer sidecar isn't running, so no external services are needed.
 
 In IntelliJ, run the shared **App** configuration (`.idea/runConfigurations/`): a compound of **Backend**
 (Gradle `:backend:bootRun`) and **Frontend** (`npm run dev` in `frontend/`), each in its own Run tab; stop them there.
+It also runs **Open browser** (`scripts/open-when-ready.ps1`), which opens http://localhost:3000 once both servers answer.
 Or from a terminal:
 
 ```bash
