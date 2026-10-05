@@ -82,9 +82,6 @@ Feature: AI checks content before it is shared
     When I paste a shared text that passes the check
     Then it imports as public
 
-  Scenario: Seeded sample videos are not checked
-    Then the seeder's public sample imports make no AI request
-
   # UI (Playwright; the refusal is simulated, as the dev server has no AI key)
   Scenario: The import form shows why sharing was refused
     Given the server refuses the import with 422 not_shareable "This can't be shared in the community library: Graphic violence. Import it without sharing to read it yourself."

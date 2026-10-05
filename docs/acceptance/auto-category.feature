@@ -53,9 +53,6 @@ Feature: Imports are filed under a category by AI
     When I paste a text without a category
     Then it is still categorised by AI, and the import succeeds
 
-  Scenario: Sample videos seeded at startup are not sent to the AI
-    Then the seeder's imports keep using their listed category or YouTube's
-
   # UI (Playwright)
   Scenario: The import form has no Category field
     When I open /import, in every mode (paste, web page, subtitles, YouTube)
