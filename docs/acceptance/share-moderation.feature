@@ -94,4 +94,4 @@ Feature: AI checks content before it is shared
   Scenario: The library card shows why sharing was refused
     Given a private text of mine, and the server refuses to share it with that message
     When I click Share on its card
-    Then the message is shown and the card still says Private
+    Then the message is shown, the card still offers "Share", and the text stays private
