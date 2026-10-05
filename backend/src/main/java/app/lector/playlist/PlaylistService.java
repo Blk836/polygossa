@@ -37,14 +37,17 @@ public class PlaylistService {
 
     private final PlaylistRepository playlists;
     private final PlaylistItemRepository items;
+    private final PlaylistBookmarkRepository bookmarks;
     private final TextService texts;
     private final ProgressService progress;
     private final Clock clock;
 
-    public PlaylistService(PlaylistRepository playlists, PlaylistItemRepository items, TextService texts,
-                           ProgressService progress, Clock clock) {
+    public PlaylistService(PlaylistRepository playlists, PlaylistItemRepository items,
+                           PlaylistBookmarkRepository bookmarks, TextService texts, ProgressService progress,
+                           Clock clock) {
         this.playlists = playlists;
         this.items = items;
+        this.bookmarks = bookmarks;
         this.texts = texts;
         this.progress = progress;
         this.clock = clock;
@@ -65,6 +68,12 @@ public class PlaylistService {
         return summaries(user, found, null).stream().filter(s -> s.itemCount() > 0).toList();
     }
 
+    /** Playlists the user saved and can still see, newest save first. */
+    @Transactional(readOnly = true)
+    public List<PlaylistSummary> saved(User user, Language language) {
+        return summaries(user, bookmarks.findSaved(user.getId(), language), null);
+    }
+
     @Transactional(readOnly = true)
     public PlaylistDetail detail(User user, Long id) {
         Playlist playlist = loadVisible(user, id);
@@ -75,7 +84,8 @@ public class PlaylistService {
                 .toList());
         int privateItems = playlist.isOwnedBy(user) ? (int) readable.stream().filter(t -> !t.isPublic()).count() : 0;
         Set<Long> done = progress.completedTextIds(user, readable.stream().map(Text::getId).toList());
-        return new PlaylistDetail(summary(user, playlist, readable, done, null), summaries, privateItems);
+        boolean saved = !bookmarks.savedAmong(user.getId(), List.of(id)).isEmpty();
+        return new PlaylistDetail(summary(user, playlist, readable, done, null, saved), summaries, privateItems);
     }
 
     // ---- changes (owner only) ----
@@ -88,7 +98,7 @@ public class PlaylistService {
         Playlist playlist = new Playlist(user, title(title), language, clock.instant());
         playlist.setDescription(description(description));
         playlists.save(playlist);
-        return summary(user, playlist, List.of(), Set.of(), null);
+        return summary(user, playlist, List.of(), Set.of(), null, false);
     }
 
     @Transactional
@@ -111,7 +121,24 @@ public class PlaylistService {
     public void delete(User user, Long id) {
         Playlist playlist = loadOwned(user, id);
         items.deleteByPlaylistId(id);
+        bookmarks.deleteByPlaylistId(id);
         playlists.delete(playlist);
+    }
+
+    // ---- saving (anyone who can see the playlist) ----
+
+    /** Saves a playlist the user can see; saving one that is already saved changes nothing. */
+    @Transactional
+    public void bookmark(User user, Long id) {
+        Playlist playlist = loadVisible(user, id);
+        if (bookmarks.findByUserIdAndPlaylistId(user.getId(), id).isEmpty()) {
+            bookmarks.save(new PlaylistBookmark(user, playlist, clock.instant()));
+        }
+    }
+
+    @Transactional
+    public void unbookmark(User user, Long id) {
+        bookmarks.findByUserIdAndPlaylistId(user.getId(), id).ifPresent(bookmarks::delete);
     }
 
     /** Appends a text the owner can read; adding one that is already there changes nothing. */
@@ -208,8 +235,9 @@ public class PlaylistService {
         if (list.isEmpty()) {
             return List.of();
         }
-        Map<Long, List<PlaylistItem>> byPlaylist = items.findForPlaylists(list.stream().map(Playlist::getId).toList())
-                .stream().collect(Collectors.groupingBy(i -> i.getPlaylist().getId()));
+        List<Long> ids = list.stream().map(Playlist::getId).toList();
+        Set<Long> saved = new HashSet<>(bookmarks.savedAmong(user.getId(), ids));
+        Map<Long, List<PlaylistItem>> byPlaylist = items.findForPlaylists(ids).stream().collect(Collectors.groupingBy(i -> i.getPlaylist().getId()));
         Map<Long, List<Text>> readable = new HashMap<>();
         Set<Long> allTexts = new LinkedHashSet<>();
         for (Playlist p : list) {
@@ -218,11 +246,13 @@ public class PlaylistService {
             r.forEach(t -> allTexts.add(t.getId()));
         }
         Set<Long> done = progress.completedTextIds(user, allTexts);
-        return list.stream().map(p -> summary(user, p, readable.get(p.getId()), done, containing)).toList();
+        return list.stream()
+                .map(p -> summary(user, p, readable.get(p.getId()), done, containing, saved.contains(p.getId())))
+                .toList();
     }
 
     private static PlaylistSummary summary(User user, Playlist p, List<Text> readable, Set<Long> done,
-                                           Long containing) {
+                                           Long containing, boolean saved) {
         User owner = p.getOwner();
         int completedCount = (int) readable.stream().filter(t -> done.contains(t.getId())).count();
         String thumbnail = readable.stream().filter(Text::isVideo).findFirst()
@@ -233,6 +263,6 @@ public class PlaylistService {
                 t.isVideo() ? VideoViews.thumbnailUrl(t.getVideoId()) : null, t.getCategory())).toList();
         return new PlaylistSummary(p.getId(), p.getTitle(), p.getDescription(), p.getLanguage(), p.isPublic(),
                 new OwnerDto(owner.getId(), owner.getDisplayName()), p.isOwnedBy(user), readable.size(),
-                completedCount, thumbnail, covers, p.getCreatedAt(), p.getUpdatedAt(), contains);
+                completedCount, thumbnail, covers, p.getCreatedAt(), p.getUpdatedAt(), contains, saved);
     }
 }

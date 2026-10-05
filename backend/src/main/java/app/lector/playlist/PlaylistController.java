@@ -56,6 +56,13 @@ public class PlaylistController {
         return service.shared(currentUser.load(principal), language, q);
     }
 
+    /** Playlists you saved (yours or shared ones) that you can still see, newest save first. */
+    @GetMapping("/saved")
+    public List<PlaylistSummary> saved(@AuthenticationPrincipal AuthUser principal,
+                                       @RequestParam(required = false) Language language) {
+        return service.saved(currentUser.load(principal), language);
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public PlaylistSummary create(@AuthenticationPrincipal AuthUser principal,
@@ -97,5 +104,17 @@ public class PlaylistController {
     public void reorder(@AuthenticationPrincipal AuthUser principal, @PathVariable Long id,
                         @Valid @RequestBody ReorderRequest req) {
         service.reorder(currentUser.load(principal), id, req.textIds());
+    }
+
+    @PutMapping("/{id}/bookmark")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void bookmark(@AuthenticationPrincipal AuthUser principal, @PathVariable Long id) {
+        service.bookmark(currentUser.load(principal), id);
+    }
+
+    @DeleteMapping("/{id}/bookmark")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void unbookmark(@AuthenticationPrincipal AuthUser principal, @PathVariable Long id) {
+        service.unbookmark(currentUser.load(principal), id);
     }
 }
