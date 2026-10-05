@@ -38,7 +38,9 @@ public record AppProperties(
             @DefaultValue("gpt-4o-mini") String model,
             @DefaultValue("30s") Duration timeout,
             /* AI calls each user may make per day (their local day); protects the AI budget. */
-            @DefaultValue("30") int dailyLimit) {
+            @DefaultValue("30") int dailyLimit,
+            /* Model for /embeddings (Explore recommendations). */
+            @DefaultValue("text-embedding-3-small") String embeddingModel) {
 
         public boolean enabled() {
             return apiKey != null && !apiKey.isBlank();

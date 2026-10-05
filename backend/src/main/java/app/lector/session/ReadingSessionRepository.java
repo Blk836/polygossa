@@ -51,6 +51,21 @@ public interface ReadingSessionRepository extends JpaRepository<ReadingSession, 
     @Query("select distinct s.text.id from ReadingSession s where s.user.id = :userId and s.text.id in :textIds")
     List<Long> openedTextIds(@Param("userId") Long userId, @Param("textIds") Collection<Long> textIds);
 
+    /** Time a user spent on each text, and when they last read it. */
+    interface TextTime {
+        Long getTextId();
+        long getSeconds();
+        Instant getLastActive();
+    }
+
+    @Query("select s.text.id as textId, coalesce(sum(s.durationSeconds), 0) as seconds, max(s.lastActiveAt) as lastActive "
+            + "from ReadingSession s where s.user.id = :userId and s.text is not null group by s.text.id")
+    List<TextTime> timeByText(@Param("userId") Long userId);
+
+    /** Users who read anything since a moment. */
+    @Query("select distinct s.user.id from ReadingSession s where s.lastActiveAt >= :since")
+    List<Long> activeUserIds(@Param("since") Instant since);
+
     @Query("select max(s.lastActiveAt) from ReadingSession s where s.user.id = :userId")
     Instant lastActive(@Param("userId") Long userId);
 

@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -54,6 +55,7 @@ public class TextService {
     private final StorageService storage;
     private final ObjectMapper json;
     private final UniqueWordsCache uniqueWords;
+    private final ApplicationEventPublisher events;
 
     public TextService(TextRepository texts, VocabularyRepository vocabulary, SentenceCardRepository sentences,
                        ReadingSessionRepository sessions, ReadingProgressRepository progress,
@@ -61,7 +63,7 @@ public class TextService {
                        AssignmentRepository assignments,
                        WritingSubmissionRepository writings, TokenizationService tokenizer, PlanService plans,
                        StorageService storage, ObjectMapper json,
-                       UniqueWordsCache uniqueWords) {
+                       UniqueWordsCache uniqueWords, ApplicationEventPublisher events) {
         this.texts = texts;
         this.vocabulary = vocabulary;
         this.sentences = sentences;
@@ -76,6 +78,7 @@ public class TextService {
         this.storage = storage;
         this.json = json;
         this.uniqueWords = uniqueWords;
+        this.events = events;
     }
 
     // ---- creation ----
@@ -287,6 +290,7 @@ public class TextService {
         reactions.deleteByTextId(id);
         playlistItems.deleteByTextId(id);
         assignments.deleteByTextId(id);
+        events.publishEvent(new TextDeleted(id));
         storage.delete(text.getAudioFile());
         texts.delete(text);
     }

@@ -121,6 +121,23 @@ class TasteProfileTest {
         assertThat(q.strongestCategory()).contains(Category.TRAVEL);
     }
 
+    @Test
+    void topicsAndCategoriesByStrengthListOnlyPositiveOnes() {
+        TasteProfile p = of(engaged(2, null, Category.FOOD, "cooking"), engaged(3, null, Category.TRAVEL, "wine"),
+                engaged(-1, null, Category.NEWS, "politics"));
+        assertThat(p.topicsByStrength()).containsExactly("wine", "cooking");
+        assertThat(p.categoriesByStrength()).containsExactly(Category.TRAVEL, Category.FOOD);
+    }
+
+    @Test
+    void theFavouriteTagIsTheItemsTagILikeMost() {
+        TasteProfile p = of(engaged(2, null, Category.FOOD, "cooking"), engaged(3, null, Category.FOOD, "wine"),
+                engaged(-1, null, Category.NEWS, "politics"));
+        assertThat(p.favouriteTag(List.of("cooking", "wine", "cheese"))).contains("wine");
+        assertThat(p.favouriteTag(List.of("politics", "cheese"))).isEmpty();
+        assertThat(p.favouriteTag(List.of())).isEmpty();
+    }
+
     // ---- format ----
 
     @Test

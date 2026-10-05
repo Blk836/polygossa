@@ -60,6 +60,18 @@ public class ReadingProgress {
         return text.getId();
     }
 
+    public Long getUserId() {
+        return user.getId();
+    }
+
+    public Text getText() {
+        return text;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
     public int getPosition() {
         return position;
     }

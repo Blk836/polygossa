@@ -85,7 +85,7 @@ class TextFeatureJobTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        now = Instant.now();
+        now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS); // what the database stores
         CLOCK.set(now);
         AI.reset();
         AI.reply(TAGS);

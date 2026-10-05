@@ -54,6 +54,10 @@ app:
     base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
     model: ${OPENAI_MODEL:gpt-4o-mini}
     daily-limit: ${AI_DAILY_LIMIT:30}
+    embedding-model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+  # Explore recommendations: score weights and the background job that tags and embeds public texts.
+  recommend:
+    feature-job: ${RECOMMEND_FEATURE_JOB:true}
   billing:
     enforce-limits: ${ENFORCE_PLAN_LIMITS:true}
   cors-origins: ${CORS_ORIGINS:http://localhost:3000}

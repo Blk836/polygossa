@@ -85,8 +85,7 @@ public final class Scoring {
 
     /** The part that adds most to the score (the first, in {@link Part} order, on a tie). */
     public static Part strongest(Parts p, Weights w) {
-        double[] weighted = {w.interest() * p.interest(), w.topic() * p.topic(), w.comprehend() * p.comprehension(),
-                w.level() * p.level(), w.popular() * p.popular(), w.fresh() * p.fresh(), w.format() * p.format()};
+        double[] weighted = weighted(p, w);
         int best = 0;
         for (int i = 1; i < weighted.length; i++) {
             if (weighted[i] > weighted[best]) {
@@ -94,5 +93,11 @@ public final class Scoring {
             }
         }
         return Part.values()[best];
+    }
+
+    /** What each part adds to the score, in {@link Part} order. */
+    public static double[] weighted(Parts p, Weights w) {
+        return new double[] {w.interest() * p.interest(), w.topic() * p.topic(), w.comprehend() * p.comprehension(),
+                w.level() * p.level(), w.popular() * p.popular(), w.fresh() * p.fresh(), w.format() * p.format()};
     }
 }

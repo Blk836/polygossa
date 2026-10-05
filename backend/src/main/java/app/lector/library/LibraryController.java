@@ -1,28 +1,25 @@
 package app.lector.library;
 
 import app.lector.common.ApiException;
-import app.lector.progress.ProgressService;
 import app.lector.text.Category;
 import app.lector.text.DifficultyEstimator;
 import app.lector.text.LibraryFilter;
 import app.lector.text.MediaKind;
 import app.lector.text.Text;
 import app.lector.text.TextDtos.TextSummary;
+import app.lector.text.TextFeature;
 import app.lector.text.TextRepository;
 import app.lector.text.TextService;
 import app.lector.token.Language;
 import app.lector.user.AuthUser;
 import app.lector.user.CurrentUser;
 import app.lector.user.User;
-import app.lector.vocab.WordStatus;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -54,15 +51,15 @@ public class LibraryController {
     private final TextService textService;
     private final TextReactionRepository reactions;
     private final CurrentUser currentUser;
-    private final ProgressService progress;
+    private final LibraryCards cards;
 
     public LibraryController(TextRepository texts, TextService textService, TextReactionRepository reactions,
-                             CurrentUser currentUser, ProgressService progress) {
+                             CurrentUser currentUser, LibraryCards cards) {
         this.texts = texts;
         this.textService = textService;
         this.reactions = reactions;
         this.currentUser = currentUser;
-        this.progress = progress;
+        this.cards = cards;
     }
 
     @GetMapping
@@ -73,6 +70,7 @@ public class LibraryController {
                               @RequestParam(required = false) String q,
                               @RequestParam(required = false) MediaKind kind,
                               @RequestParam(required = false) Category category,
+                              @RequestParam(required = false) String topic,
                               @RequestParam(defaultValue = "new") String sort,
                               @RequestParam(defaultValue = "0") int page,
                               @RequestParam(defaultValue = "20") int size) {
@@ -80,9 +78,10 @@ public class LibraryController {
         String lvl = level(level);
         String pattern = q == null || q.isBlank() ? null : "%" + q.strip().toLowerCase(Locale.ROOT) + "%";
         var pageable = PageRequest.of(Math.max(0, page), Math.min(Math.max(1, size), 50));
+        String tagged = topicPattern(topic);
         Page<Text> result = "popular".equals(sort)
-                ? texts.searchPublicPopular(language, lvl, pattern, code(kind), category, pageable)
-                : texts.searchPublicNewest(language, lvl, pattern, code(kind), category, pageable);
+                ? texts.searchPublicPopular(language, lvl, pattern, code(kind), category, tagged, pageable)
+                : texts.searchPublicNewest(language, lvl, pattern, code(kind), category, tagged, pageable);
         return new LibraryPage(summaries(user, result.getContent()), result.getTotalElements(), result.getNumber(),
                 result.getSize());
     }
@@ -168,6 +167,18 @@ public class LibraryController {
         return lvl;
     }
 
+    /** A LIKE pattern for items tagged with this topic; null for no topic filter. */
+    private static String topicPattern(String topic) {
+        if (topic == null || topic.isBlank()) {
+            return null;
+        }
+        String normalised = TextFeature.normaliseTopic(topic);
+        if (normalised == null) {
+            throw ApiException.badRequest("topic must be 1–40 letters, digits, spaces, hyphens or apostrophes");
+        }
+        return TextFeature.topicPattern(normalised);
+    }
+
     private static String code(MediaKind kind) {
         return kind == null ? null : kind.code();
     }
@@ -186,21 +197,6 @@ public class LibraryController {
     }
 
     private List<TextSummary> summaries(User user, List<Text> page) {
-        if (page.isEmpty()) {
-            return List.of();
-        }
-        Set<Long> ids = page.stream().map(Text::getId).collect(Collectors.toSet());
-        Map<Long, Long> likes = reactions.likeCounts(ids).stream()
-                .collect(Collectors.toMap(TextReactionRepository.TextCount::getTextId, TextReactionRepository.TextCount::getCount));
-        Set<Long> liked = new HashSet<>();
-        Set<Long> bookmarked = new HashSet<>();
-        for (TextReaction r : reactions.findMine(user.getId(), ids)) {
-            (r.getType() == TextReaction.Type.LIKE ? liked : bookmarked).add(r.getText().getId());
-        }
-        Map<Language, Map<String, WordStatus>> statusCache = new HashMap<>();
-        return progress.attach(user, page.stream()
-                .map(t -> textService.summarize(user, t, textService.statsFor(user, t, statusCache),
-                        likes.getOrDefault(t.getId(), 0L), liked.contains(t.getId()), bookmarked.contains(t.getId())))
-                .toList());
+        return cards.summaries(user, page, new HashMap<>());
     }
 }

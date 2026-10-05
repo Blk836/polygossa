@@ -54,4 +54,5 @@ public class TextReaction {
     public Long getId() { return id; }
     public Text getText() { return text; }
     public Type getType() { return type; }
+    public Instant getCreatedAt() { return createdAt; }
 }

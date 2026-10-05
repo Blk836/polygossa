@@ -94,4 +94,15 @@ public interface VocabularyRepository extends JpaRepository<VocabularyEntry, Lon
     @Modifying
     @Query("update VocabularyEntry v set v.sourceText = null where v.sourceText.id = :textId")
     void detachText(@Param("textId") Long textId);
+
+    /** Words each user came to know since a moment. */
+    interface UserCount {
+        Long getUserId();
+
+        long getCount();
+    }
+
+    @Query("select v.user.id as userId, count(v) as count from VocabularyEntry v where v.knownAt >= :since "
+            + "and v.status = app.lector.vocab.WordStatus.KNOWN group by v.user.id")
+    List<UserCount> knownSinceByUser(@Param("since") java.time.Instant since);
 }

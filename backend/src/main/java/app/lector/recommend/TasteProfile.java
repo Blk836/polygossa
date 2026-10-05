@@ -86,21 +86,38 @@ public final class TasteProfile {
     }
 
     public Optional<String> strongestTopic() {
-        return strongest(false);
+        return topicsByStrength().stream().findFirst();
     }
 
     public Optional<Category> strongestCategory() {
-        return strongest(true).map(k -> Category.parse(k.substring(CATEGORY.length())));
+        return categoriesByStrength().stream().findFirst();
     }
 
-    private Optional<String> strongest(boolean categories) {
+    /** Tags with a positive weight, strongest first (alphabetical on a tie). */
+    public List<String> topicsByStrength() {
+        return byStrength(false, Map.Entry.comparingByKey());
+    }
+
+    /** Categories with a positive weight, strongest first (shelf order on a tie). */
+    public List<Category> categoriesByStrength() {
+        return byStrength(true, Comparator.comparing((Map.Entry<String, Double> e) -> category(e.getKey())))
+                .stream().map(TasteProfile::category).toList();
+    }
+
+    /** Of these tags, the one the learner likes most, if they like any. */
+    public Optional<String> favouriteTag(Collection<String> tags) {
+        return topicsByStrength().stream().filter(tags::contains).findFirst();
+    }
+
+    private List<String> byStrength(boolean categories, Comparator<Map.Entry<String, Double>> tieBreak) {
         Comparator<Map.Entry<String, Double>> byWeight = Map.Entry.comparingByValue();
-        Comparator<Map.Entry<String, Double>> order = categories
-                ? byWeight.reversed().thenComparing(e -> Category.parse(e.getKey().substring(CATEGORY.length())))
-                : byWeight.reversed().thenComparing(Map.Entry.comparingByKey());
         return weights.entrySet().stream()
                 .filter(e -> e.getKey().startsWith(CATEGORY) == categories && e.getValue() > 0)
-                .min(order).map(Map.Entry::getKey);
+                .sorted(byWeight.reversed().thenComparing(tieBreak)).map(Map.Entry::getKey).toList();
+    }
+
+    private static Category category(String key) {
+        return Category.parse(key.substring(CATEGORY.length()));
     }
 
     /** -1…1: how much more the learner enjoyed this kind (video or text) and length than the others. */

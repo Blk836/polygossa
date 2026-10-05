@@ -21,6 +21,14 @@ public interface TextReactionRepository extends JpaRepository<TextReaction, Long
             + "where r.text.id in :textIds and r.type = app.lector.library.TextReaction.Type.LIKE group by r.text.id")
     List<TextCount> likeCounts(@Param("textIds") Collection<Long> textIds);
 
+    @Query("select r.text.id as textId, count(r) as count from TextReaction r where r.text.id in :textIds "
+            + "and r.type = app.lector.library.TextReaction.Type.LIKE and r.createdAt >= :since group by r.text.id")
+    List<TextCount> likeCountsSince(@Param("textIds") Collection<Long> textIds, @Param("since") java.time.Instant since);
+
+    /** Every like and bookmark of one user. */
+    @Query("select r from TextReaction r where r.user.id = :userId")
+    List<TextReaction> findAllMine(@Param("userId") Long userId);
+
     @Query("select r from TextReaction r where r.user.id = :userId and r.text.id in :textIds")
     List<TextReaction> findMine(@Param("userId") Long userId, @Param("textIds") Collection<Long> textIds);
 

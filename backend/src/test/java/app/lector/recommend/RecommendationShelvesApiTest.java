@@ -69,7 +69,7 @@ class RecommendationShelvesApiTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        now = Instant.now();
+        now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS); // what the database stores
         CLOCK.set(now);
         api = new TestApi(mvc, json);
         fx = new RecommendFixture(api);
