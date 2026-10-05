@@ -5,9 +5,8 @@ import { Suspense, useState, type FormEvent } from "react";
 import { useMe } from "@/components/me-context";
 import { Button, FailureNote, Field, PageHeader, inputClass, selectClass } from "@/components/ui";
 import { ApiError, api, errorMessage } from "@/lib/api";
-import { CATEGORIES } from "@/lib/categories";
 import { LANGUAGES } from "@/lib/languages";
-import type { Category, TextSummary } from "@/lib/types";
+import type { TextSummary } from "@/lib/types";
 
 type Mode = "paste" | "url" | "subtitles" | "youtube";
 
@@ -30,8 +29,6 @@ interface Draft {
   file: File | null;
   transcript: string;
   isPublic: boolean;
-  /** "" lets YouTube's own category decide (videos) or files it under Other. */
-  category: Category | "";
 }
 
 /** A YouTube import: captions are fetched unless the user supplies a subtitle file or a transcript. */
@@ -41,7 +38,6 @@ function submitYouTube(d: Draft): Promise<TextSummary> {
   form.append("language", d.language);
   form.append("isPublic", String(d.isPublic));
   if (d.title) form.append("title", d.title);
-  if (d.category) form.append("category", d.category);
   if (d.file) form.append("file", d.file);
   else if (d.transcript.trim()) form.append("transcript", d.transcript);
   return api("texts/import-youtube", { body: form });
@@ -51,10 +47,10 @@ function submitYouTube(d: Draft): Promise<TextSummary> {
 function submitImport(mode: Mode, d: Draft): Promise<TextSummary> {
   if (mode === "youtube") return submitYouTube(d);
   if (mode === "paste") {
-    return api("texts", { body: { title: d.title, language: d.language, content: d.content, isPublic: d.isPublic, category: d.category || undefined } });
+    return api("texts", { body: { title: d.title, language: d.language, content: d.content, isPublic: d.isPublic } });
   }
   if (mode === "url") {
-    return api("texts/import-url", { body: { url: d.url, language: d.language, title: d.title || undefined, isPublic: d.isPublic, category: d.category || undefined } });
+    return api("texts/import-url", { body: { url: d.url, language: d.language, title: d.title || undefined, isPublic: d.isPublic } });
   }
   if (!d.file) return Promise.reject(new Error("Choose a subtitle file"));
   const form = new FormData();
@@ -62,7 +58,6 @@ function submitImport(mode: Mode, d: Draft): Promise<TextSummary> {
   form.append("language", d.language);
   form.append("isPublic", String(d.isPublic));
   if (d.title) form.append("title", d.title);
-  if (d.category) form.append("category", d.category);
   return api("texts/import-subtitles", { body: form });
 }
 
@@ -128,7 +123,6 @@ function ImportForm() {
     file: null,
     transcript: "",
     isPublic: false,
-    category: "",
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<ApiError | string | null>(null);
@@ -171,12 +165,6 @@ function ImportForm() {
         </Field>
       </div>
       <SourceInput mode={mode} draft={draft} update={update} />
-      <Field label="Category" hint={mode === "youtube" ? "Automatic uses the video's YouTube category." : "Where it appears in Explore if you share it."}>
-        <select className={`${selectClass} sm:w-64`} value={draft.category} onChange={(e) => update({ category: e.target.value as Draft["category"] })}>
-          <option value="">{mode === "youtube" ? "Automatic" : "Other"}</option>
-          {CATEGORIES.filter((c) => c.code !== "other").map((c) => <option key={c.code} value={c.code}>{c.label}</option>)}
-        </select>
-      </Field>
 
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" checked={draft.isPublic} onChange={(e) => update({ isPublic: e.target.checked })} />
