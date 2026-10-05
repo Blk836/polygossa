@@ -84,7 +84,7 @@ test.describe("landing page", () => {
     const pricing = page.locator("#pricing");
     await expect(pricing).toContainText("5 imported texts");
     await expect(pricing).toContainText("500 saved words");
-    for (const plan of ["Free", "Pro", "Classroom"]) await expect(pricing.getByRole("heading", { name: plan })).toBeVisible();
+    for (const plan of ["Free", "Pro", "Classroom"]) await expect(pricing.getByRole("heading", { name: plan, exact: true })).toBeVisible();
     const ctas = pricing.getByRole("link");
     await expect(ctas).toHaveCount(3);
     for (const href of await ctas.evaluateAll((as) => as.map((a) => a.getAttribute("href")))) expect(href).toBe("/signup");
