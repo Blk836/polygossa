@@ -1,4 +1,4 @@
-Feature: AI grading groundwork (docs/ai-plan.md, phase 0)
+Feature: AI grading groundwork (see docs/architecture/ai.md)
   Switch on real AI grading safely: consistent marks, a record of what marked them, a daily cap per user so the
   $5 budget can't be drained, and no change to the writing situations, which stay a fixed bank shared by everyone.
   Backend tests use a stub AI server and never call OpenAI.

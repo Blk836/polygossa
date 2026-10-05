@@ -1,4 +1,4 @@
-Feature: Skill levels on the Progress tab (docs/ai-plan.md, section 2)
+Feature: Skill levels on the Progress tab (see docs/architecture/progress-and-levels.md)
   Separate Reading, Listening and Writing levels per language, recomputed from evidence every time Progress loads.
   Reading and Listening come from vocabulary and finished content (no AI). Writing comes from the AI's grades of
   writing tests. Each level has a confidence and says what it is based on.

@@ -1,4 +1,4 @@
-Feature: Explore recommendations (docs/ai-plan.md, section 3)
+Feature: Explore recommendations (see docs/architecture/library-and-explore.md)
   Explore ranks public content by how likely a learner is to start it, keep reading and learn from it: interest
   (what they engaged with, AI topic tags and embeddings) and comprehensibility (known-word share, level). AI only
   produces features once per text in the background; ranking is plain, deterministic code over stored features, so

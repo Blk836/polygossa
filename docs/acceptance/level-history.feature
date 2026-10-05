@@ -1,4 +1,4 @@
-Feature: Level history and smoothing (docs/ai-plan.md, section 2)
+Feature: Level history and smoothing (see docs/roadmap.md)
   Shown levels move only once the evidence has held for a while, so a level doesn't flicker when a learner hovers
   around a threshold or has one good or bad writing test. Each day's shown levels are recorded, and Progress shows
   when each level changed.

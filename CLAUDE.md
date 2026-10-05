@@ -4,9 +4,16 @@ A web app for learning languages by reading authentic content: import texts, cli
 personal vocabulary, review it with spaced repetition, and watch your known-word count grow.
 
 Docs:
-- [Product plan](docs/plan.md)
-- [Architecture](docs/architecture.md)
-- [Plan coverage](docs/plan-coverage.md): which code implements each plan item, and the open-question decisions
+- [Architecture](docs/architecture/README.md): **read this first in a new session.** The high-level map: what each
+  product area does for learners and roughly how it is built, plus the product decisions taken.
+- [Product plan](docs/plan.md): the original vision. [Roadmap](docs/roadmap.md): designed but not built yet.
+- [Acceptance scenarios](docs/acceptance/): the agreed Gherkin scenarios per feature.
+
+**Keeping the docs true is part of every change.** `docs/architecture/` must always describe the product as it is:
+when a change alters what the product does or how the pieces fit together, update the relevant page in the same
+commit (and move shipped items out of `docs/roadmap.md`). Keep it high level (product behaviour first, then the tech
+in a few lines); never copy code-level detail such as endpoint lists, class inventories or constants into docs. The
+code is the source of truth for details, so there is never a second, stale copy.
 
 ```
 backend/    Spring Boot 4.1 (Java 21) — REST API; Gradle module :backend, package app.lector
@@ -121,7 +128,9 @@ fails on any copy outside `lib/brand.ts`. Internal identifiers (package `app.lec
 Optional:
 - **Tokenizer sidecar** — `cd tokenizer && pip install -r requirements.txt && uvicorn app.main:app --port 8000`,
   then start the backend with `TOKENIZER_URL=http://localhost:8000`. KoNLPy needs a Java runtime.
-- **AI features** — set `OPENAI_API_KEY` (any OpenAI-compatible endpoint via `OPENAI_BASE_URL` / `OPENAI_MODEL`).
+- **AI features** — set `OPENAI_API_KEY` (any OpenAI-compatible endpoint via `OPENAI_BASE_URL` / `OPENAI_MODEL`,
+  embeddings via `OPENAI_EMBEDDING_MODEL`). With a key, a background job tags and embeds public texts for Explore's
+  recommendations (`RECOMMEND_FEATURE_JOB=false` turns it off).
 - **Docker** (PostgreSQL + Redis + everything): `cp .env.example .env` (set `JWT_SECRET`), then
   `docker compose up --build`. Uses the `prod` profile, so auto-login is off there.
 
@@ -149,6 +158,11 @@ those against a running backend.
   maps them to `{code, message}`.
 - Library items have one `Category` (fixed list; `other` also covers rows from before categories existed).
 - Deadlines use the injected `Clock` bean, never `Instant.now()`, so tests can move time.
+- AI: tests never call OpenAI; `OpenAiStub` (`writing/` test package) answers chat and `/embeddings` requests, including
+  slow, failing and malformed replies. The recommendation feature job never runs on its schedule in tests
+  (`src/test/resources/application.properties`); tests call `TextFeatureJob.runOnce()`. The dev OpenAI key lives only in
+  the working copy of `.idea/runConfigurations/Backend.xml`, which git is told to ignore
+  (`git update-index --skip-worktree`): never stage it.
 - Plan gating goes through `PlanService` (`require(user, Feature)`, `checkCanImportText`, `checkCanSaveWord`).
 - Text access: load via `TextService.loadReadable` / `loadOwned`, never the repository directly from controllers
   (owner, public, or assigned-to-a-class rules).
@@ -179,6 +193,9 @@ those against a running backend.
   `TextCard` (`lib/card-layout.ts`).
 - E2E tests run as `test@lector.local` (auto-login) against the dev database: create any data a test needs through
   `page.request` and delete it afterwards.
+- That test account normally has **no target language** and no interests. Never change them in a test: `PATCH /api/me`
+  can't clear the language again (null means no change) and other specs rely on it being unset. Stub those requests
+  in the browser instead (`page.route`, as in `e2e/progress-levels.spec.ts`).
 - The React lint rules forbid setting state synchronously in effects and calling `Date.now()` during render: fetch
   inside the effect with `.then` and a `cancelled` flag, as in the existing pages.
 
