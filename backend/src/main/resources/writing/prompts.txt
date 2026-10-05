@@ -1,0 +1,38 @@
+# Writing-test situations: "<id>|<situation>" per line, grouped by CEFR level (the id starts with the level).
+# Each is answerable in about five minutes and names the points the learner must cover, so grading can check them.
+A1-01|Introduce yourself to a new classmate. Say your name, where you live, and one thing you like to do.
+A1-02|Write a short message to a friend about your day today. Say what you ate and what you did after work or school.
+A1-03|Describe your room. Say what furniture is in it, what colour the walls are, and what you like about it.
+A1-04|Write a postcard from a holiday. Say where you are, what the weather is like, and one thing you saw.
+A1-05|Describe a member of your family. Say who they are, what they look like, and what they like doing.
+A1-06|Write a shopping list note to a flatmate. Ask them to buy three things and say why you need each one.
+A2-01|You are inviting a friend to your birthday party. Say when and where it is, what you will do, and what they should bring.
+A2-02|Describe your last weekend. Say where you went, who you were with, and what you enjoyed most.
+A2-03|Write an email to a hotel. Ask if they have a room for two nights next month, the price, and whether breakfast is included.
+A2-04|Describe your daily routine on a weekday, from the morning until you go to bed.
+A2-05|Tell a friend about a restaurant you went to recently. Say what you ate, what it cost, and whether you would go back.
+A2-06|You missed a class. Write a message to your teacher explaining why, and ask what you need to do to catch up.
+B1-01|You missed your friend's birthday party. Write them a message apologising, explaining what happened, and suggesting another way to celebrate together.
+B1-02|Write a review of a film or series you watched recently. Say what it is about, what you liked or disliked, and who you would recommend it to.
+B1-03|A friend wants to visit your city for a weekend. Recommend two places to visit and one thing to eat, and explain why.
+B1-04|Describe a problem you had with something you bought online and how you solved it (or how you wish it had been solved).
+B1-05|Your neighbour plays loud music late at night. Write them a polite note explaining the problem and proposing a solution.
+B1-06|Describe a skill you would like to learn. Explain why it interests you and how you plan to learn it.
+B2-01|Your city is considering banning cars from the centre. Write a short opinion for a local website: are you for or against it, and why? Give two arguments.
+B2-02|Write to a company applying for a summer job. Say which job you want, what relevant experience you have, and why you would be a good fit.
+B2-03|Some people think working from home is better than working in an office. Discuss one advantage and one disadvantage, then give your own view.
+B2-04|Describe a decision that changed your life. Explain the situation, what you decided, and what you learned from it.
+B2-05|A friend is stressed about exams. Write them a message with practical advice on how to manage their time and stay calm.
+B2-06|Should social media platforms be allowed for children under 13? Give your opinion with at least two reasons.
+C1-01|Write a short proposal to your manager suggesting a four-day working week. Outline the benefits, anticipate one objection, and respond to it.
+C1-02|"Tourism does more harm than good to popular cities." To what extent do you agree? Present a balanced argument and a conclusion.
+C1-03|Write a complaint to a train company about a seriously delayed journey. Describe what happened, its consequences for you, and the compensation you expect.
+C1-04|Reflect on how learning a foreign language has changed the way you see your own language or culture.
+C1-05|Your local library may close because of budget cuts. Write a letter to the council arguing that it should stay open, with specific reasons.
+C1-06|Describe a technology you think will change everyday life in the next ten years, and assess its risks as well as its benefits.
+C2-01|"Success is mostly a matter of luck." Write a nuanced response that weighs this claim, using examples to support your position.
+C2-02|Write the opening of an editorial on whether cities should prioritise housing affordability over historic preservation.
+C2-03|Explain to a non-specialist a complex topic you know well, using an analogy to make it accessible.
+C2-04|Critically assess the idea that people should be paid a universal basic income, considering economic and social effects.
+C2-05|Write a reflective piece on a book, film or work of art that challenged an assumption you held, and how your view changed.
+C2-06|Argue for or against the claim that schools should stop giving grades, addressing the strongest counter-argument.

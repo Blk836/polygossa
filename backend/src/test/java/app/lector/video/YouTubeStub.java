@@ -1,0 +1,188 @@
+package app.lector.video;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * A local stand-in for youtube.com: oEmbed, the watch page (API key), the innertube player endpoint and timed-text
+ * captions. Videos are registered per test; unknown videos get oEmbed 400, like YouTube.
+ */
+public final class YouTubeStub implements AutoCloseable {
+
+    public static final String API_KEY = "AIzaTestKey";
+
+    /** A fake video. {@code captions} maps a language code to srv3 XML; {@code oembedStatus} 200 means available. */
+    public record Video(String title, int oembedStatus, Integer lengthSeconds, Map<String, String> captions) {
+
+        public static Video withCaptions(String title, int lengthSeconds, String lang, String srv3) {
+            return new Video(title, 200, lengthSeconds, Map.of(lang, srv3));
+        }
+    }
+
+    private static final Pattern VIDEO_ID = Pattern.compile("\"videoId\"\\s*:\\s*\"([^\"]+)\"");
+
+    private final HttpServer server;
+    private final Map<String, Video> videos = new ConcurrentHashMap<>();
+    private final Map<String, String> categories = new ConcurrentHashMap<>();
+    private final List<String> requests = Collections.synchronizedList(new ArrayList<>());
+    private volatile boolean down;
+
+    public YouTubeStub() throws IOException {
+        server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/", this::handle);
+        server.start();
+    }
+
+    public String baseUrl() {
+        return "http://127.0.0.1:" + server.getAddress().getPort();
+    }
+
+    public void add(String id, Video video) {
+        videos.put(id, video);
+    }
+
+    /** YouTube's own category for a video (e.g. "Education"), shown in its watch page's player microformat. */
+    public void setCategory(String id, String youtubeCategory) {
+        categories.put(id, youtubeCategory);
+    }
+
+    /** When down, every endpoint answers 503. */
+    public void setDown(boolean down) {
+        this.down = down;
+    }
+
+    /** Request paths (with query) received so far, e.g. "/api/timedtext?v=…". */
+    public List<String> requests() {
+        synchronized (requests) {
+            return List.copyOf(requests);
+        }
+    }
+
+    public void reset() {
+        videos.clear();
+        categories.clear();
+        requests.clear();
+        down = false;
+    }
+
+    public static String srv3(String... timedLines) {
+        StringBuilder sb = new StringBuilder("<?xml version=\"1.0\" encoding=\"utf-8\" ?><timedtext format=\"3\"><body>");
+        for (String line : timedLines) {
+            String[] parts = line.split("\\|", 3);
+            sb.append("<p t=\"").append(parts[0]).append("\" d=\"").append(parts[1]).append("\">")
+                    .append(parts[2]).append("</p>\n");
+        }
+        return sb.append("</body></timedtext>").toString();
+    }
+
+    @Override
+    public void close() {
+        server.stop(0);
+    }
+
+    private void handle(HttpExchange ex) throws IOException {
+        String query = ex.getRequestURI().getRawQuery();
+        String path = ex.getRequestURI().getPath();
+        requests.add(path + (query == null ? "" : "?" + query));
+        if (down) {
+            send(ex, 503, "text/plain", "down");
+            return;
+        }
+        Map<String, String> params = params(query);
+        switch (path) {
+            case "/oembed" -> oembed(ex, params.getOrDefault("url", ""));
+            case "/watch" -> send(ex, 200, "text/html", "<html><script>ytcfg.set({\"INNERTUBE_API_KEY\":\""
+                    + API_KEY + "\"});</script>" + microformat(params.get("v")) + "</html>");
+            case "/youtubei/v1/player" -> player(ex, params);
+            case "/api/timedtext" -> timedText(ex, params);
+            default -> send(ex, 404, "text/plain", "?");
+        }
+    }
+
+    private String microformat(String id) {
+        String category = id == null ? null : categories.get(id);
+        return category == null ? "" : "<script>var ytInitialPlayerResponse = {\"microformat\":{\"playerMicroformatRenderer\":"
+                + "{\"title\":{\"simpleText\":\"x\"},\"category\":\"" + category + "\"}}};</script>";
+    }
+
+    private void oembed(HttpExchange ex, String url) throws IOException {
+        Video v = videos.get(url.replaceAll(".*v=", ""));
+        if (v == null) {
+            send(ex, 400, "text/plain", "Bad Request");
+        } else if (v.oembedStatus() != 200) {
+            send(ex, v.oembedStatus(), "text/plain", "Unauthorized");
+        } else {
+            send(ex, 200, "application/json", "{\"title\":\"" + v.title() + "\",\"thumbnail_url\":\"https://i.ytimg.com/x.jpg\"}");
+        }
+    }
+
+    private void player(HttpExchange ex, Map<String, String> params) throws IOException {
+        String body = new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        Matcher m = VIDEO_ID.matcher(body);
+        Video v = m.find() ? videos.get(m.group(1)) : null;
+        if (!API_KEY.equals(params.get("key")) || !"POST".equals(ex.getRequestMethod()) || v == null) {
+            send(ex, 400, "application/json", "{}");
+            return;
+        }
+        StringBuilder tracks = new StringBuilder();
+        for (String lang : v.captions().keySet()) {
+            if (!tracks.isEmpty()) {
+                tracks.append(',');
+            }
+            tracks.append("{\"baseUrl\":\"").append(baseUrl()).append("/api/timedtext?v=").append(m.group(1))
+                    .append("\\u0026lang=").append(lang).append("\",\"languageCode\":\"").append(lang).append("\"}");
+        }
+        String length = v.lengthSeconds() == null ? "" : ",\"videoDetails\":{\"lengthSeconds\":\"" + v.lengthSeconds() + "\"}";
+        send(ex, 200, "application/json", "{\"playabilityStatus\":{\"status\":\"OK\"}" + length
+                + ",\"captions\":{\"playerCaptionsTracklistRenderer\":{\"captionTracks\":[" + tracks + "]}}}");
+    }
+
+    private void timedText(HttpExchange ex, Map<String, String> params) throws IOException {
+        Video v = videos.get(params.getOrDefault("v", ""));
+        String xml = v == null ? null : v.captions().get(params.getOrDefault("lang", ""));
+        if (xml == null) {
+            send(ex, 404, "text/plain", "");
+        } else {
+            send(ex, 200, "text/xml; charset=utf-8", xml);
+        }
+    }
+
+    private static Map<String, String> params(String query) {
+        Map<String, String> out = new LinkedHashMap<>();
+        if (query == null) {
+            return out;
+        }
+        for (String pair : query.split("&")) {
+            int eq = pair.indexOf('=');
+            if (eq > 0) {
+                out.put(pair.substring(0, eq), URLDecoder.decode(pair.substring(eq + 1), StandardCharsets.UTF_8));
+            }
+        }
+        return out;
+    }
+
+    private static void send(HttpExchange ex, int status, String type, String body) throws IOException {
+        byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
+        ex.getResponseHeaders().add("Content-Type", type);
+        ex.sendResponseHeaders(status, bytes.length == 0 ? -1 : bytes.length);
+        if (bytes.length > 0) {
+            try (OutputStream out = ex.getResponseBody()) {
+                out.write(bytes);
+            }
+        }
+        ex.close();
+    }
+}

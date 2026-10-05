@@ -1,0 +1,24 @@
+# Production: PostgreSQL primary datastore, Redis for dictionary response caching.
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+  cache:
+    type: redis
+    redis:
+      time-to-live: 30d
+  data:
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}
+
+management:
+  health:
+    redis:
+      enabled: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+  # Never allow credential-free login in production.
+  dev-auto-login: false

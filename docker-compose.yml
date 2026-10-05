@@ -1,0 +1,65 @@
+# Full stack: PostgreSQL, Redis, the Spring Boot API, the CJK tokenizer sidecar and the Next.js frontend.
+#   cp .env.example .env   # set JWT_SECRET (and OPENAI_API_KEY for AI features)
+#   docker compose up --build
+# Then open http://localhost:3000
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: lector
+      POSTGRES_USER: lector
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lector}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lector"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+
+  tokenizer:
+    build: ./tokenizer
+    environment:
+      BRAND_NAME: ${BRAND_NAME:-}
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/lector
+      DATABASE_USER: lector
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-lector}
+      REDIS_URL: redis://redis:6379
+      TOKENIZER_URL: http://tokenizer:8000
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env (32+ characters)}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      CORS_ORIGINS: http://localhost:3000
+      BRAND_NAME: ${BRAND_NAME:-}
+    volumes:
+      - uploads:/data/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      tokenizer:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        BRAND_NAME: ${BRAND_NAME:-}
+    environment:
+      BACKEND_URL: http://backend:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  uploads:

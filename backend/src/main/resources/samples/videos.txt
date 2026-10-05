@@ -1,0 +1,3 @@
+# Sample YouTube videos seeded into the community library: "<language> <YouTube link> <category>" per line.
+# Transcripts are fetched from YouTube at startup (never stored here); see SampleVideoSeeder.
+fr https://www.youtube.com/watch?v=AqxY-gvgiqM learners

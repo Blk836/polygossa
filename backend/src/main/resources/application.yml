@@ -1,0 +1,61 @@
+# Development defaults: file-based H2 and in-memory caching so the API runs with no external services.
+# See application-prod.yml for PostgreSQL + Redis.
+spring:
+  application:
+    name: lector
+  datasource:
+    url: ${DATABASE_URL:jdbc:h2:file:./data/lector;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH}
+    username: ${DATABASE_USER:sa}
+    password: ${DATABASE_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+  jackson:
+    deserialization:
+      # Jackson 3 rejects absent primitive fields by default; treat them as false/0 instead.
+      fail-on-null-for-primitives: false
+  cache:
+    type: simple
+    cache-names: dictionary
+  data:
+    redis:
+      repositories:
+        enabled: false
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 55MB
+
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  health:
+    redis:
+      enabled: false
+
+app:
+  brand:
+    name: ${BRAND_NAME:Polygossa}
+  jwt:
+    secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
+    ttl: 7d
+  tokenizer:
+    url: ${TOKENIZER_URL:}
+  storage:
+    dir: ${STORAGE_DIR:./data/uploads}
+  openai:
+    api-key: ${OPENAI_API_KEY:}
+    base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+    model: ${OPENAI_MODEL:gpt-4o-mini}
+  billing:
+    enforce-limits: ${ENFORCE_PLAN_LIMITS:true}
+  cors-origins: ${CORS_ORIGINS:http://localhost:3000}
+  seed-samples: ${SEED_SAMPLES:true}
+  # Auto-login to a test account (development only; see application-prod.yml).
+  dev-auto-login: ${DEV_AUTO_LOGIN:true}

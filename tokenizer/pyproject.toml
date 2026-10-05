@@ -1,0 +1,16 @@
+# Tool configuration only; dependencies live in requirements*.txt.
+
+# Mutation testing: `mutmut run`, then `mutmut results` (mutmut 3 needs Linux/macOS or WSL).
+[tool.mutmut]
+paths_to_mutate = ["app/"]
+tests_dir = ["tests/"]
+
+# Lint + complexity: `ruff check .` (C90 = mccabe cyclomatic complexity; gauntlet limit is 10).
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "C90"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10

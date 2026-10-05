@@ -1,0 +1,70 @@
+plugins {
+    java
+    checkstyle
+    id("info.solidsoft.pitest") version "1.19.0"
+    id("org.springframework.boot") version "4.1.1"
+    id("io.spring.dependency-management") version "1.1.7"
+}
+
+group = "app.lector"
+version = "0.1.0"
+
+repositories {
+    mavenCentral()
+}
+
+tasks.withType<JavaCompile> {
+    options.release = 21
+    options.compilerArgs.add("-parameters")
+}
+
+dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-cache")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-restclient")
+
+    implementation("io.jsonwebtoken:jjwt-api:0.13.0")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
+
+    implementation("org.jsoup:jsoup:1.23.2")
+    implementation("org.xerial:sqlite-jdbc:3.53.4.0")
+
+    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("com.h2database:h2")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-security-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+checkstyle {
+    toolVersion = "14.3.0"
+    configFile = rootProject.file("config/checkstyle/checkstyle.xml")
+    isIgnoreFailures = false
+    maxWarnings = 0
+}
+
+// Mutation testing: ./gradlew :backend:pitest (report in build/reports/pitest). Limit to changed classes with
+// -Ppitest.targets=app.lector.text.*,app.lector.srs.SrsScheduler
+pitest {
+    pitestVersion = "1.30.0"
+    junit5PluginVersion = "1.2.3"
+    targetClasses = (findProperty("pitest.targets") as String?)?.split(",") ?: listOf("app.lector.*")
+    targetTests = listOf("app.lector.*")
+    excludedClasses = listOf("app.lector.LectorApplication")
+    threads = 4
+    outputFormats = listOf("HTML", "XML")
+    timestampedReports = false
+    mutationThreshold = (findProperty("pitest.threshold") as String?)?.toInt() ?: 0
+}

@@ -1,0 +1,294 @@
+// Shapes of the Spring Boot API's JSON responses.
+
+export type LanguageCode = "es" | "fr" | "de" | "it" | "pt" | "ja" | "zh" | "ko";
+export type WordStatus = "learning" | "known" | "ignored";
+export type EntryKind = "word" | "phrase";
+export type Tier = "FREE" | "PRO" | "CLASSROOM";
+export type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+export type MediaKind = "text" | "video";
+
+export interface PlanInfo {
+  tier: Tier;
+  effectiveTier: Tier;
+  sponsoredByClassroom: boolean;
+  limits: { texts: number | null; savedWords: number | null };
+  usage: { texts: number; savedWords: number };
+}
+
+export interface Me {
+  id: number;
+  email: string;
+  displayName: string;
+  targetLanguage: LanguageCode | null;
+  dailyReviewGoal: number;
+  timezone: string;
+  plan: PlanInfo;
+}
+
+export interface KnownStats {
+  uniqueWords: number;
+  known: number;
+  learning: number;
+  ignored: number;
+  unseen: number;
+  knownPercent: number;
+}
+
+export interface TextSummary {
+  id: number;
+  title: string;
+  language: LanguageCode;
+  cefrLevel: CefrLevel;
+  wordCount: number;
+  uniqueWordCount: number;
+  isPublic: boolean;
+  sourceUrl?: string;
+  createdAt: string;
+  owner: { id: number; displayName: string };
+  mine: boolean;
+  hasAudio: boolean;
+  likes?: number;
+  liked?: boolean;
+  bookmarked?: boolean;
+  stats?: KnownStats;
+  kind: MediaKind;
+  /** Present for videos only. */
+  video?: { videoId: string; thumbnailUrl: string; durationSeconds?: number };
+  category: Category;
+  /** How far the viewer has read; absent until they open it. */
+  progress?: ReadingProgress;
+}
+
+/** `position`: the token to resume at; `percent`: words before the furthest point reached (100 once finished). */
+export interface ReadingProgress {
+  position: number;
+  percent: number;
+  completed: boolean;
+}
+
+/** Library categories; see lib/categories.ts for labels. "other" holds anything uncategorised. */
+export type Category =
+  | "learners" | "daily-life" | "stories" | "news" | "culture" | "travel" | "food" | "science" | "history"
+  | "entertainment" | "other";
+
+/** One Explore shelf: the newest public items in a category and how many there are in all. */
+export interface Shelf {
+  category: Category;
+  total: number;
+  items: TextSummary[];
+}
+
+export interface Token {
+  index: number;
+  text: string;
+  word: boolean;
+  normalized?: string;
+  lemma?: string;
+  reading?: string;
+  sentence: number;
+}
+
+export interface WordTiming {
+  i: number; // token index
+  s: number; // start ms
+  e: number; // end ms
+}
+
+export interface TextDetail {
+  text: TextSummary;
+  tokens: Token[];
+  statuses: Record<string, WordStatus>;
+  phrases: { term: string; status: WordStatus }[];
+  audio: { src: string; contentType?: string; timings: WordTiming[]; hasCues: boolean } | null;
+  /** Present for videos: the YouTube id and word timings that drive highlighting while it plays. */
+  video: { videoId: string; durationSeconds?: number; timings: WordTiming[]; hasCues: boolean } | null;
+  speechLocale: string;
+}
+
+export interface Sense {
+  partOfSpeech: string;
+  definition: string;
+  examples: string[];
+}
+
+export interface DictionaryResult {
+  term: string;
+  language: LanguageCode;
+  found: boolean;
+  pronunciation?: string | null;
+  senses: Sense[];
+  lemma?: string | null;
+  source?: string | null;
+  sourceUrl?: string | null;
+}
+
+export interface VocabularyEntry {
+  id: number;
+  term: string;
+  displayTerm: string;
+  language: LanguageCode;
+  kind: EntryKind;
+  status: WordStatus;
+  definition?: string;
+  partOfSpeech?: string;
+  pronunciation?: string;
+  example?: string;
+  contextSentence?: string;
+  sourceText?: { id: number; title: string };
+  createdAt: string;
+  updatedAt: string;
+  dueAt?: string;
+}
+
+export interface Page<T> {
+  items: T[];
+  total: number;
+  page: number;
+  size: number;
+}
+
+export interface SentenceCard {
+  id: number;
+  language: LanguageCode;
+  sentence: string;
+  translation?: string;
+  notes?: string;
+  sourceTextId?: number;
+  sourceTextTitle?: string;
+  createdAt: string;
+  dueAt: string;
+}
+
+export interface ReviewCard {
+  type: "word" | "sentence";
+  id: number;
+  language: LanguageCode;
+  front: string;
+  definition?: string;
+  pronunciation?: string;
+  partOfSpeech?: string;
+  context?: string;
+  example?: string;
+  translation?: string;
+  notes?: string;
+  sourceTextId?: number;
+  sourceTextTitle?: string;
+  dueAt: string;
+  repetitions: number;
+}
+
+export interface ReviewStats {
+  dueWords: number;
+  dueSentences: number;
+  reviewedToday: number;
+  dailyGoal: number;
+  goalMet: boolean;
+  streak: number;
+  history: { day: string; count: number }[];
+}
+
+export type { Activity, ActivityDay, ActivityPeriod, Dashboard, PeriodStats, Streak } from "./dashboard-types";
+
+export interface ClassSummary {
+  id: number;
+  name: string;
+  language: LanguageCode;
+  role: "teacher" | "student";
+  teacherName: string;
+  joinCode?: string;
+  studentCount: number;
+  createdAt: string;
+}
+
+export interface Assignment {
+  id: number;
+  textId: number;
+  textTitle: string;
+  cefrLevel: CefrLevel;
+  wordCount: number;
+  dueDate?: string;
+  note?: string;
+  assignedAt: string;
+  opened?: boolean;
+  completed?: boolean;
+}
+
+export interface ClassDetail {
+  info: ClassSummary;
+  assignments: Assignment[];
+  students: { id: number; displayName: string; email: string; joinedAt: string }[];
+}
+
+export interface StudentProgress {
+  id: number;
+  displayName: string;
+  knownWords: number;
+  learningWords: number;
+  wordsAdded7d: number;
+  wordsAdded30d: number;
+  sessions: number;
+  readingSeconds: number;
+  assignmentsOpened: number;
+  assignmentsCompleted: number;
+  lastActive?: string;
+}
+
+export interface ClassProgress {
+  assignmentCount: number;
+  students: StudentProgress[];
+  averageKnownWords: number;
+  averageReadingMinutes: number;
+  assignmentCompletionRate: number;
+}
+
+export interface WritingFeedback {
+  correctedText: string;
+  corrections: { original: string; corrected: string; explanation: string }[];
+  overallComment: string;
+  level?: string;
+}
+
+export interface WritingSubmission {
+  id: number;
+  textId?: number;
+  language: LanguageCode;
+  content: string;
+  feedback?: WritingFeedback;
+  createdAt: string;
+}
+
+export interface RubricScore {
+  criterion: "task" | "grammar" | "vocabulary" | "coherence";
+  /** 1–5 */
+  score: number;
+  comment: string;
+}
+
+export interface WritingGrade {
+  /** 0–100; capped in proportion when the answer was shorter than the minimum. */
+  score: number;
+  level: CefrLevel | null;
+  rubric: RubricScore[];
+  corrections: { original: string; corrected: string; explanation: string }[];
+  correctedText: string;
+  summary: string;
+}
+
+/** A timed writing test (GET/POST /api/writing/tests). */
+export interface WritingTest {
+  id: number;
+  language: LanguageCode;
+  level: CefrLevel;
+  prompt: string;
+  minWords: number;
+  unit: "words" | "characters";
+  timeLimitSeconds: number;
+  startedAt: string;
+  deadline: string;
+  status: "in_progress" | "expired" | "ungraded" | "graded";
+  content?: string;
+  wordCount?: number;
+  submittedAt?: string;
+  grade?: WritingGrade;
+  gradeError?: string;
+}

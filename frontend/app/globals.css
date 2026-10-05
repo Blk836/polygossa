@@ -1,0 +1,276 @@
+@import "tailwindcss";
+
+/* "Ink & rubric": a reading-room palette. Warm paper and deep ink-navy by day, midnight ink and cream by night.
+   `accent` is the ink used for actions (buttons, links, selection); `rubric` is the vermilion of a scribe's
+   red-ink headings, kept for small brand highlights (logo, active tab, the word you're on, streaks).
+   Word-status colours follow LingQ in the reader: new = blue, learning = yellow, known and ignored = no highlight.
+   The known/ignored tokens still colour status buttons, badges and progress bars elsewhere.
+
+   Every colour is light-dark(light, dark). `color-scheme` picks the side: the OS by default, or the choice made in
+   Settings via <html data-theme>. Components use these tokens, never Tailwind's `dark:` variant (OS-only). */
+:root {
+  color-scheme: light dark;
+
+  --paper: light-dark(#f6f1e7, #141729);
+  --card: light-dark(#fffcf6, #1c2036);
+  --ink: light-dark(#1d2033, #ede6d6);
+  --muted: light-dark(#625f6b, #a3a2b8);
+  --line: light-dark(#e3dac8, #2e3352);
+  --accent: light-dark(#26336b, #aab6f2);
+  --accent-ink: light-dark(#fffcf6, #141729);
+  --accent-soft: light-dark(#e2e5f3, #283063);
+  --rubric: light-dark(#b8401f, #ff8c66);
+  --danger: light-dark(#a11d2e, #ff8a95);
+
+  --good: light-dark(#2f6b3a, #8fd19a);
+  --good-soft: light-dark(#e1eedd, #1f3a2a);
+  --warn: light-dark(#8a5a00, #f2c26b);
+  --warn-soft: light-dark(#f8ebcb, #3d3218);
+  --bad: light-dark(#a3302a, #ff9a8f);
+  --bad-soft: light-dark(#f8e0dc, #44242a);
+
+  --w-new: light-dark(#d4e6fa, #1d3a5f);
+  --w-learning: light-dark(#fbe3a4, #574319);
+  --w-learning-line: light-dark(#c48612, #e8b04a);
+  --w-known: light-dark(#dcebd6, #213d2c);
+  --w-known-line: light-dark(#4f8a4a, #7fbf7a);
+  --w-ignored: light-dark(#dde4f2, #26335a);
+  --w-ignored-line: light-dark(#4767a8, #8fa8de);
+  --w-active: light-dark(#f8d8ca, #5a2e2a);
+  --w-audio: light-dark(#fdf0c6, #3b3622);
+
+  /* Text covers: one quiet tint per library category (see lib/categories.ts). */
+  --cover-learners: light-dark(#e4e7f6, #252b52);
+  --cover-daily-life: light-dark(#f3e6d3, #3a2f22);
+  --cover-stories: light-dark(#ecdff0, #33263d);
+  --cover-news: light-dark(#e1e8eb, #243037);
+  --cover-culture: light-dark(#f5dcd5, #43282a);
+  --cover-travel: light-dark(#dbecef, #1f3539);
+  --cover-food: light-dark(#f6e7c8, #3d3219);
+  --cover-science: light-dark(#dfeee5, #1f3729);
+  --cover-history: light-dark(#ece3d6, #352d24);
+  --cover-entertainment: light-dark(#f6dde6, #40232f);
+  --cover-other: light-dark(#ebe7df, #272a3c);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-rubric: var(--rubric);
+  --color-danger: var(--danger);
+  --color-good: var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-learning: var(--w-learning);
+  --color-known: var(--w-known);
+  --color-ignored: var(--w-ignored);
+  --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Menlo, monospace;
+  --font-display: var(--font-fraunces), var(--font-literata), Georgia, serif;
+  --font-reading: var(--font-literata), Georgia, "Noto Serif", "Noto Serif CJK JP", serif;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+::selection {
+  background: var(--w-active);
+}
+
+/* ---- charts (recessive grid/axes) ---- */
+.viz {
+  --viz-series-1: light-dark(#26336b, #aab6f2);
+  --viz-grid: light-dark(#ebe4d6, #262a45);
+  --viz-text: var(--ink);
+  --viz-text-muted: var(--muted);
+}
+
+/* ---- reader word tokens ---- */
+.w {
+  border-radius: 0.25rem;
+  padding: 0 0.06em;
+  margin: 0 -0.06em;
+  cursor: pointer;
+  transition: background-color 120ms, box-shadow 120ms;
+  -webkit-tap-highlight-color: transparent;
+}
+.w:hover {
+  box-shadow: inset 0 -2px 0 var(--rubric);
+}
+.w-new {
+  background: var(--w-new);
+}
+.w-learning {
+  background: var(--w-learning);
+}
+/* .w-known and .w-ignored have no highlight. Quiet colours hides the new-word blue too. */
+.reader-quiet .w-new {
+  background: transparent;
+}
+.w-selected {
+  background: var(--w-active) !important;
+  box-shadow: 0 0 0 2px var(--rubric);
+}
+.w.w-speaking {
+  box-shadow: 0 0 0 2px var(--w-learning-line);
+  background: var(--w-audio);
+}
+.p-learning {
+  text-decoration: underline 2px var(--w-learning-line);
+  text-underline-offset: 4px;
+}
+
+.reading {
+  font-family: var(--font-reading);
+  line-height: 1.9;
+}
+.reading-cjk {
+  line-height: 2.1;
+  letter-spacing: 0.02em;
+}
+
+/* ---- text covers: a ruled "page" in the category's tint, for texts that have no thumbnail ---- */
+.cover {
+  background-color: var(--cover-other);
+  background-image: repeating-linear-gradient(to bottom, transparent 0 21px, color-mix(in srgb, var(--ink) 8%, transparent) 21px 22px);
+}
+.cover-learners {
+  background-color: var(--cover-learners);
+}
+.cover-daily-life {
+  background-color: var(--cover-daily-life);
+}
+.cover-stories {
+  background-color: var(--cover-stories);
+}
+.cover-news {
+  background-color: var(--cover-news);
+}
+.cover-culture {
+  background-color: var(--cover-culture);
+}
+.cover-travel {
+  background-color: var(--cover-travel);
+}
+.cover-food {
+  background-color: var(--cover-food);
+}
+.cover-science {
+  background-color: var(--cover-science);
+}
+.cover-history {
+  background-color: var(--cover-history);
+}
+.cover-entertainment {
+  background-color: var(--cover-entertainment);
+}
+.cover-other {
+  background-color: var(--cover-other);
+}
+
+/* Keep the bottom sheet / audio bar clear of iOS home indicator */
+.safe-bottom {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+/* The header streak flame flickers while the streak is at risk (components/header-stats.tsx). */
+@keyframes streak-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.streak-flicker {
+  animation: streak-flicker 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .streak-flicker {
+    animation: none;
+  }
+}
+
+/* Dropdowns look like the cards (classes: selectClass / chipSelectClass in components/ui.tsx). Where the browser
+   supports customisable selects (Chrome), the open list is drawn as a rounded card too; elsewhere it stays native,
+   with the app's chevron on the closed box. */
+@layer base {
+  select {
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' fill='none' stroke='%23858393' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.6rem center;
+    background-size: 0.75rem;
+  }
+}
+@supports not (appearance: base-select) {
+  select {
+    padding-right: 2rem;
+  }
+}
+@supports (appearance: base-select) {
+  select,
+  ::picker(select) {
+    appearance: base-select;
+  }
+  select {
+    background-image: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  select::picker-icon {
+    content: "";
+    width: 0.75rem;
+    height: 0.75rem;
+    background-color: var(--muted);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' fill='none' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E") center / contain no-repeat;
+    transition: rotate 150ms ease;
+  }
+  select:open::picker-icon {
+    rotate: 180deg;
+  }
+  ::picker(select) {
+    margin-block: 0.375rem;
+    padding: 0.25rem;
+    border: 1px solid var(--line);
+    border-radius: 0.75rem;
+    background-color: var(--card);
+    color: var(--ink);
+    box-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.3);
+  }
+  option {
+    gap: 0.5rem;
+    padding: 0.4rem 0.65rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+  option:hover,
+  option:focus-visible {
+    background-color: var(--paper);
+    outline: none;
+  }
+  option:checked {
+    font-weight: 600;
+  }
+  option::checkmark {
+    color: var(--rubric);
+  }
+}
