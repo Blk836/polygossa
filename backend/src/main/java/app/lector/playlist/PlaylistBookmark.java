@@ -41,6 +41,4 @@ public class PlaylistBookmark {
         this.playlist = playlist;
         this.createdAt = now;
     }
-
-    public Playlist getPlaylist() { return playlist; }
 }
