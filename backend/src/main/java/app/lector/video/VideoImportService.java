@@ -81,7 +81,7 @@ public class VideoImportService {
         text.setVideo(videoId, duration);
         Category fromYouTube = Category.fromYouTube(player.youtubeCategory());
         // Seeded samples (no plan check) keep their listed category or YouTube's, without asking the AI.
-        text.setCategory(checkPlan ? review.categoryFor(req.category(), text, fromYouTube)
+        text.setCategory(checkPlan ? review.reviewImport(req.category(), text, fromYouTube)
                 : req.category() != null ? req.category() : fromYouTube);
         text.setTimingsJson(json.writeValueAsString(timings(texts.tokens(text), transcript.cues(), duration)));
         return text;

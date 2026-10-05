@@ -1,27 +1,37 @@
 package app.lector.text;
 
 import app.lector.ai.AiClient;
+import app.lector.common.ApiException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 
 /**
- * Looks at an import with AI: files it under one of the fixed categories when the importer didn't choose one.
- * Never fails an import: without AI, or with an answer it can't use, the caller's fallback category applies. Not
- * counted against the user's daily AI allowance (the user didn't ask for it).
+ * Looks at content with AI, in one request: files a new import under one of the fixed categories when the importer
+ * didn't choose one, and checks that content about to be shared is appropriate for everyone. Only shared content is
+ * checked. Categorising never fails an import (the caller's fallback applies), but sharing is refused when the check
+ * can't run; without AI configured nothing is asked. Neither counts against the user's daily AI allowance.
  */
 @Service
 public class ContentReview {
 
     private static final Logger log = LoggerFactory.getLogger(ContentReview.class);
 
-    /** How much of the content the AI sees when picking a category. */
+    /** How much of the content the AI sees when only picking a category. */
     static final int CATEGORY_EXCERPT = 2_000;
+    /** How much of the content the AI sees when checking it may be shared. */
+    static final int MODERATION_EXCERPT = 8_000;
+
+    static final String AFTER_IMPORT_REFUSED = "Import it without sharing to read it yourself.";
+    static final String AFTER_SHARE_REFUSED = "It stays private in your library.";
 
     private static final Map<Category, String> MEANING = Map.ofEntries(
             Map.entry(Category.LEARNERS, "lessons, graded readers and material made for language learners"),
@@ -39,35 +49,86 @@ public class ContentReview {
     private static final String CATEGORIES = Arrays.stream(Category.values())
             .map(c -> "- " + c.code() + ": " + MEANING.get(c)).collect(Collectors.joining("\n"));
 
+    private static final String RULES = "Decide whether it is appropriate to share with every learner in a public "
+            + "library. Not appropriate: sexually explicit content, graphic violence or gore, hate speech or "
+            + "harassment, encouraging self-harm or crime, spam or scams, private people's personal data. News, "
+            + "history and fiction that deal with hard subjects are fine.";
+
     private final AiClient ai;
 
     public ContentReview(AiClient ai) {
         this.ai = ai;
     }
 
-    /** The category to file a new import under: the one chosen, else the AI's pick, else {@code fallback}. */
-    public Category categoryFor(Category chosen, Text text, Category fallback) {
-        if (chosen != null) {
-            return chosen;
+    /**
+     * Reviews a new import: if it is shared, refuses it unless the AI finds it appropriate; returns the category to
+     * file it under (the one chosen, else the AI's pick, else {@code fallback}). Must run in the import's
+     * transaction, so a refusal saves nothing.
+     */
+    public Category reviewImport(Category chosen, Text text, Category fallback) {
+        boolean categorise = chosen == null;
+        boolean moderate = text.isPublic();
+        if (!ai.enabled() || !(categorise || moderate)) {
+            return categorise ? fallback : chosen;
         }
-        return askCategory(text).orElse(fallback);
+        Optional<JsonNode> answer = ask(text, categorise, moderate);
+        if (moderate) {
+            requireShareable(answer, AFTER_IMPORT_REFUSED);
+        }
+        return categorise ? answer.flatMap(ContentReview::category).orElse(fallback) : chosen;
     }
 
-    private Optional<Category> askCategory(Text text) {
-        if (!ai.enabled()) {
+    /** Before a private text is shared: refuses it unless the AI finds it appropriate. Public texts pass. */
+    public void checkSharing(Text text) {
+        if (text.isPublic() || !ai.enabled()) {
+            return;
+        }
+        requireShareable(ask(text, false, true), AFTER_SHARE_REFUSED);
+    }
+
+    private Optional<JsonNode> ask(Text text, boolean categorise, boolean moderate) {
+        try {
+            return Optional.of(ai.completeJson(prompt(categorise, moderate),
+                    "Language: " + text.getLanguage().displayName() + "\nTitle: " + text.getTitle() + "\n\n"
+                            + excerpt(text.getContent(), moderate ? MODERATION_EXCERPT : CATEGORY_EXCERPT),
+                    0));
+        } catch (RuntimeException e) {
+            log.warn("Could not review text {} with AI: {}", text.getId(), e.getMessage());
             return Optional.empty();
         }
+    }
+
+    static String prompt(boolean categorise, boolean moderate) {
+        StringBuilder system = new StringBuilder("You review texts for a language-learning library.");
+        List<String> fields = new ArrayList<>();
+        if (categorise) {
+            system.append(" File the text under exactly one category:\n").append(CATEGORIES).append('\n');
+            fields.add("\"category\": one of the codes above");
+        }
+        if (moderate) {
+            system.append(' ').append(RULES);
+            fields.add("\"appropriate\": boolean, \"reason\": short English reason when not appropriate");
+        }
+        return system.append(" Reply with JSON: {").append(String.join(", ", fields)).append("}.").toString();
+    }
+
+    private static Optional<Category> category(JsonNode answer) {
         try {
-            JsonNode answer = ai.completeJson(
-                    "You file texts for a language-learning library under exactly one category. Categories:\n"
-                            + CATEGORIES + "\nReply with JSON: {\"category\": one of the codes above}.",
-                    "Language: " + text.getLanguage().displayName() + "\nTitle: " + text.getTitle() + "\n\n"
-                            + excerpt(text.getContent(), CATEGORY_EXCERPT),
-                    0);
             return Optional.of(Category.parse(answer.path("category").asString("")));
-        } catch (RuntimeException e) {
-            log.warn("Could not categorise text {} with AI: {}", text.getId(), e.getMessage());
+        } catch (IllegalArgumentException e) {
             return Optional.empty();
+        }
+    }
+
+    private static void requireShareable(Optional<JsonNode> answer, String afterRefusal) {
+        JsonNode verdict = answer.map(a -> a.path("appropriate")).filter(JsonNode::isBoolean)
+                .orElseThrow(() -> new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "review_unavailable",
+                        "We couldn't check this content for sharing right now; try again, or import it without sharing."));
+        if (!verdict.asBoolean()) {
+            String reason = answer.get().path("reason").asString("").strip().replaceAll("[.\\s]+$", "");
+            throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "not_shareable",
+                    "This can't be shared in the community library" + (reason.isEmpty() ? "" : ": " + reason)
+                            + ". " + afterRefusal);
         }
     }
 

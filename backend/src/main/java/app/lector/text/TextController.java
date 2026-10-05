@@ -97,7 +97,7 @@ public class TextController {
     public TextSummary create(@AuthenticationPrincipal AuthUser principal, @Valid @RequestBody CreateTextRequest req) {
         User user = currentUser.load(principal);
         Text text = service.create(user, req.title(), req.language(), req.content(), null, req.isPublic(), null);
-        text.setCategory(review.categoryFor(req.category(), text, null));
+        text.setCategory(review.reviewImport(req.category(), text, null));
         return service.statsSummary(user, text);
     }
 
@@ -109,7 +109,7 @@ public class TextController {
         UrlImporter.Article article = urlImporter.fetch(req.url());
         String title = req.title() != null && !req.title().isBlank() ? req.title() : article.title();
         Text text = service.create(user, title, req.language(), article.body(), article.url(), req.isPublic(), null);
-        text.setCategory(review.categoryFor(req.category(), text, null));
+        text.setCategory(review.reviewImport(req.category(), text, null));
         return service.statsSummary(user, text);
     }
 
@@ -124,7 +124,7 @@ public class TextController {
                                        @RequestParam(value = "category", required = false) Category category) {
         User user = currentUser.load(principal);
         Text text = service.importSubtitles(user, file, title, language, isPublic);
-        text.setCategory(review.categoryFor(category, text, null));
+        text.setCategory(review.reviewImport(category, text, null));
         return service.statsSummary(user, text);
     }
 
@@ -139,6 +139,9 @@ public class TextController {
     public TextSummary update(@AuthenticationPrincipal AuthUser principal, @PathVariable Long id,
                               @RequestBody UpdateTextRequest req) {
         User user = currentUser.load(principal);
+        if (Boolean.TRUE.equals(req.isPublic())) {
+            review.checkSharing(service.loadOwned(user, id)); // before anything changes
+        }
         return service.statsSummary(user, service.update(user, id, req.title(), req.isPublic(), req.category()));
     }
 
