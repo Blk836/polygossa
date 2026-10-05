@@ -3,6 +3,7 @@ package app.lector.video;
 import app.lector.common.ApiException;
 import app.lector.text.AudioAligner;
 import app.lector.text.Category;
+import app.lector.text.ContentReview;
 import app.lector.text.SubtitleParser;
 import app.lector.text.SubtitleParser.Cue;
 import app.lector.text.Text;
@@ -29,7 +30,7 @@ public class VideoImportService {
 
     /**
      * The import form. {@code file} (subtitles) wins over {@code transcript}, which wins over fetched captions; with no
-     * {@code category}, YouTube's own category decides.
+     * {@code category}, AI picks one from the transcript, else YouTube's own category decides.
      */
     public record VideoImport(String url, Language language, String title, boolean isPublic, MultipartFile file,
                               String transcript, Category category) {}
@@ -40,12 +41,15 @@ public class VideoImportService {
     private final PlanService plans;
     private final YouTubeClient youtube;
     private final ObjectMapper json;
+    private final ContentReview review;
 
-    public VideoImportService(TextService texts, PlanService plans, YouTubeClient youtube, ObjectMapper json) {
+    public VideoImportService(TextService texts, PlanService plans, YouTubeClient youtube, ObjectMapper json,
+                              ContentReview review) {
         this.texts = texts;
         this.plans = plans;
         this.youtube = youtube;
         this.json = json;
+        this.review = review;
     }
 
     /** Must run inside a transaction so the video fields set after creation are saved. */
@@ -75,7 +79,10 @@ public class VideoImportService {
                         transcript.cues());
         Integer duration = player.durationSeconds() != null ? player.durationSeconds() : lastCueEnd(transcript.cues());
         text.setVideo(videoId, duration);
-        text.setCategory(req.category() != null ? req.category() : Category.fromYouTube(player.youtubeCategory()));
+        Category fromYouTube = Category.fromYouTube(player.youtubeCategory());
+        // Seeded samples (no plan check) keep their listed category or YouTube's, without asking the AI.
+        text.setCategory(checkPlan ? review.categoryFor(req.category(), text, fromYouTube)
+                : req.category() != null ? req.category() : fromYouTube);
         text.setTimingsJson(json.writeValueAsString(timings(texts.tokens(text), transcript.cues(), duration)));
         return text;
     }

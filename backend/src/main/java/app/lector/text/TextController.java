@@ -67,10 +67,11 @@ public class TextController {
     private final TextAudioService audio;
     private final VocabularyService vocabulary;
     private final ProgressService progress;
+    private final ContentReview review;
 
     public TextController(TextService service, UrlImporter urlImporter, CurrentUser currentUser,
                           StorageService storage, TextAudioService audio, VocabularyService vocabulary,
-                          ProgressService progress) {
+                          ProgressService progress, ContentReview review) {
         this.service = service;
         this.urlImporter = urlImporter;
         this.currentUser = currentUser;
@@ -78,6 +79,7 @@ public class TextController {
         this.audio = audio;
         this.vocabulary = vocabulary;
         this.progress = progress;
+        this.review = review;
     }
 
     @GetMapping
@@ -95,7 +97,7 @@ public class TextController {
     public TextSummary create(@AuthenticationPrincipal AuthUser principal, @Valid @RequestBody CreateTextRequest req) {
         User user = currentUser.load(principal);
         Text text = service.create(user, req.title(), req.language(), req.content(), null, req.isPublic(), null);
-        text.setCategory(req.category());
+        text.setCategory(review.categoryFor(req.category(), text, null));
         return service.statsSummary(user, text);
     }
 
@@ -107,7 +109,7 @@ public class TextController {
         UrlImporter.Article article = urlImporter.fetch(req.url());
         String title = req.title() != null && !req.title().isBlank() ? req.title() : article.title();
         Text text = service.create(user, title, req.language(), article.body(), article.url(), req.isPublic(), null);
-        text.setCategory(req.category());
+        text.setCategory(review.categoryFor(req.category(), text, null));
         return service.statsSummary(user, text);
     }
 
@@ -122,7 +124,7 @@ public class TextController {
                                        @RequestParam(value = "category", required = false) Category category) {
         User user = currentUser.load(principal);
         Text text = service.importSubtitles(user, file, title, language, isPublic);
-        text.setCategory(category);
+        text.setCategory(review.categoryFor(category, text, null));
         return service.statsSummary(user, text);
     }
 
