@@ -10,16 +10,11 @@ import app.lector.video.YouTubeStub;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -27,36 +22,14 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /** Scenarios for importing YouTube videos and browsing texts and videos together. */
-@SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:video;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
-        "app.seed-samples=false"
-})
-@AutoConfigureMockMvc
+@YouTubeApiTest
 class VideoApiTest {
 
     private static final String ID = "dQw4w9WgXcQ";
     private static final String URL = "https://www.youtube.com/watch?v=" + ID;
     private static final String CAPTIONS = YouTubeStub.srv3(
             "1000|2000|Hola amigos.", "4000|3000|Hoy hablamos de la comida.");
-    private static final YouTubeStub STUB = startStub();
-
-    private static YouTubeStub startStub() {
-        try {
-            return new YouTubeStub();
-        } catch (java.io.IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    @DynamicPropertySource
-    static void youtube(DynamicPropertyRegistry registry) {
-        registry.add("app.youtube.base-url", STUB::baseUrl);
-    }
-
-    @AfterAll
-    static void stop() {
-        STUB.close();
-    }
+    private static final YouTubeStub STUB = YouTubeApiTest.STUB;
 
     @Autowired
     MockMvc mvc;

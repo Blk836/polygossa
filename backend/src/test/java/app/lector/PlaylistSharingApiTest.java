@@ -6,41 +6,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 import app.lector.writing.MutableClock;
-import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /** Sharing playlists: who can see them, which of their items others see, and who can change them. */
-@SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:playlistsharing;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
-        "app.seed-samples=false",
-        "app.storage.dir=build/test-uploads"
-})
-@AutoConfigureMockMvc
+@ClockApiTest
 class PlaylistSharingApiTest {
 
-    static final MutableClock CLOCK = new MutableClock();
-
-    @TestConfiguration
-    static class Clocks {
-        @Bean
-        @Primary
-        Clock testClock() {
-            return CLOCK;
-        }
-    }
+    static final MutableClock CLOCK = TestClock.CLOCK;
 
     @Autowired
     MockMvc mvc;

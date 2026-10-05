@@ -9,50 +9,22 @@ import app.lector.video.YouTubeStub;
 import jakarta.persistence.EntityManagerFactory;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /** Feature: texts and videos are filed under a small set of categories, and Explore shows them as shelves. */
-@SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:category;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
-        "app.seed-samples=false",
-        "spring.jpa.properties.hibernate.generate_statistics=true"
-})
-@AutoConfigureMockMvc
+@YouTubeApiTest
 class CategoryApiTest {
 
     private static final String VIDEO = "dQw4w9WgXcQ";
-    private static final YouTubeStub STUB = startStub();
-
-    private static YouTubeStub startStub() {
-        try {
-            return new YouTubeStub();
-        } catch (java.io.IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    @DynamicPropertySource
-    static void youtube(DynamicPropertyRegistry registry) {
-        registry.add("app.youtube.base-url", STUB::baseUrl);
-    }
-
-    @AfterAll
-    static void stop() {
-        STUB.close();
-    }
+    private static final YouTubeStub STUB = YouTubeApiTest.STUB;
 
     @Autowired
     MockMvc mvc;

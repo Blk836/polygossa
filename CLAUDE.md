@@ -173,6 +173,11 @@ those against a running backend.
   maps them to `{code, message}`.
 - Library items have one `Category` (fixed list; `other` also covers rows from before categories existed).
 - Deadlines use the injected `Clock` bean, never `Instant.now()`, so tests can move time.
+- Booting the app is most of a backend test run's cost, and Spring only reuses a booted app between classes with an
+  identical setup. So API tests use a shared setup: `@ApiTest`, `@ClockApiTest` (movable `TestClock`, reset before
+  each test) or `@YouTubeApiTest` (shared `YouTubeStub`; `reset()` it, never close it). Give a class its own
+  `@SpringBootTest`, `@DynamicPropertySource`, `@MockitoBean` or `@TestConfiguration` only when it needs settings or
+  beans the shared ones can't have. Test classes run in parallel JVMs, so don't rely on run order.
 - AI: tests never call OpenAI; `OpenAiStub` (`writing/` test package) answers chat and `/embeddings` requests, including
   slow, failing and malformed replies. The recommendation feature job never runs on its schedule in tests
   (`src/test/resources/application.properties`); tests call `TextFeatureJob.runOnce()`. The dev OpenAI key lives only in

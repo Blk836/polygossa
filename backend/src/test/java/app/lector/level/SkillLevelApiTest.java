@@ -2,6 +2,7 @@ package app.lector.level;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import app.lector.ApiTest;
 import app.lector.TestApi;
 import app.lector.ai.WritingGrader.Grade;
 import app.lector.progress.ReadingProgress;
@@ -27,18 +28,12 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /** Feature: Reading, Listening and Writing levels on the Progress tab, from the learner's own evidence. */
-@SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:skilllevels;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
-        "app.seed-samples=false"
-})
-@AutoConfigureMockMvc
+@ApiTest
 class SkillLevelApiTest {
 
     @Autowired MockMvc mvc;

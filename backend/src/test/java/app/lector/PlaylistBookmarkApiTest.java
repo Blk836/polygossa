@@ -8,19 +8,12 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /** Saving (bookmarking) playlists, like texts in Explore: who can save which, and the Saved list. */
-@SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:playlistbookmarks;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
-        "app.seed-samples=false",
-        "app.storage.dir=build/test-uploads"
-})
-@AutoConfigureMockMvc
+@ApiTest
 class PlaylistBookmarkApiTest {
 
     @Autowired
