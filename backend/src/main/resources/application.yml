@@ -64,3 +64,5 @@ app:
   seed-samples: ${SEED_SAMPLES:true}
   # Auto-login to a test account (development only; see application-prod.yml).
   dev-auto-login: ${DEV_AUTO_LOGIN:true}
+  # Shared secret for the bulk video importer (tools/import-videos.mjs); blank turns its endpoints off.
+  curator-token: ${CURATOR_TOKEN:}

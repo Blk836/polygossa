@@ -125,7 +125,7 @@ class CuratedVideoImportApiTest {
             Text t = texts.findById(saved.getFirst().getId()).orElseThrow();
             assertThat(t.isPublic()).isTrue();
             assertThat(t.getVideoId()).isEqualTo(FR);
-            assertThat(t.getTimingsJson()).contains("\"start");
+            assertThat(t.getTimingsJson()).contains("\"s\":");
         });
     }
 

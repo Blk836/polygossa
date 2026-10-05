@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
@@ -37,6 +38,12 @@ public class VideoImportService {
 
     private record Transcript(String content, List<Cue> cues) {}
 
+    /** {@link TextService#create} or {@link TextService#createUnchecked}. */
+    private interface Creator {
+        Text create(User owner, String title, Language language, String content, String sourceUrl, boolean isPublic,
+                    List<Cue> cues);
+    }
+
     private final TextService texts;
     private final PlanService plans;
     private final YouTubeClient youtube;
@@ -56,13 +63,22 @@ public class VideoImportService {
     public Text importVideo(User owner, VideoImport req) {
         String videoId = YouTubeUrls.videoId(req.url());
         plans.checkCanImportText(owner); // before any calls to YouTube
+        return save(owner, videoId, req, texts::create);
+    }
+
+    /** For the community library account (curated videos): as {@link #importVideo}, without plan limits. */
+    public Text importForLibrary(User library, VideoImport req) {
+        return save(library, YouTubeUrls.videoId(req.url()), req, texts::createUnchecked);
+    }
+
+    private Text save(User owner, String videoId, VideoImport req, Creator creator) {
         Optional<YouTubeClient.Metadata> meta = youtube.metadata(videoId);
         PlayerInfo player = youtube.player(videoId);
         Transcript transcript = transcript(req, player);
         String title = orElse(req.title(), orElse(meta.map(YouTubeClient.Metadata::title).orElse(null),
                 "YouTube video " + videoId));
         String url = YouTubeUrls.watchUrl(videoId);
-        Text text = texts.create(owner, title, req.language(), transcript.content(), url, req.isPublic(),
+        Text text = creator.create(owner, title, req.language(), transcript.content(), url, req.isPublic(),
                 transcript.cues());
         Integer duration = player.durationSeconds() != null ? player.durationSeconds() : lastCueEnd(transcript.cues());
         text.setVideo(videoId, duration);
@@ -84,7 +100,7 @@ public class VideoImportService {
                 .map(youtube::captions)
                 .orElse(List.of());
         if (cues.isEmpty()) {
-            throw ApiException.unprocessable("No " + req.language().displayName()
+            throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "no_captions", "No " + req.language().displayName()
                     + " captions found — upload a subtitle file or paste the transcript");
         }
         SubtitleParser.Parsed joined = SubtitleParser.join(cues);

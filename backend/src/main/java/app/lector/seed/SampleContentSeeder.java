@@ -7,21 +7,19 @@ import app.lector.text.Text;
 import app.lector.text.TextRepository;
 import app.lector.text.TextService;
 import app.lector.token.Language;
+import app.lector.user.LibraryAccount;
 import app.lector.user.User;
-import app.lector.user.UserRepository;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class SampleContentSeeder implements ApplicationRunner {
 
-    public static final String LIBRARY_EMAIL = "library@lector.local";
+    public static final String LIBRARY_EMAIL = LibraryAccount.EMAIL;
 
     private static final Logger log = LoggerFactory.getLogger(SampleContentSeeder.class);
     private static final String CATEGORY_PREFIX = "category:";
@@ -41,19 +39,17 @@ public class SampleContentSeeder implements ApplicationRunner {
 
     private final AppProperties props;
     private final Brand brand;
-    private final UserRepository users;
+    private final LibraryAccount account;
     private final TextService texts;
     private final TextRepository repository;
-    private final PasswordEncoder passwordEncoder;
 
-    public SampleContentSeeder(AppProperties props, Brand brand, UserRepository users, TextService texts,
-                               TextRepository repository, PasswordEncoder passwordEncoder) {
+    public SampleContentSeeder(AppProperties props, Brand brand, LibraryAccount account, TextService texts,
+                               TextRepository repository) {
         this.repository = repository;
         this.props = props;
         this.brand = brand;
-        this.users = users;
+        this.account = account;
         this.texts = texts;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -62,15 +58,13 @@ public class SampleContentSeeder implements ApplicationRunner {
         if (!props.seedSamples()) {
             return;
         }
-        Optional<User> existing = users.findByEmailIgnoreCase(LIBRARY_EMAIL);
+        Optional<User> existing = account.find();
         if (existing.isPresent()) {
             existing.get().setDisplayName(brand.libraryName()); // follows a brand rename
             refile(existing.get());
             return;
         }
-        // Random password: the account exists only to own shared starter content and can't be logged into.
-        User library = users.save(new User(LIBRARY_EMAIL, passwordEncoder.encode(UUID.randomUUID().toString()),
-                brand.libraryName()));
+        User library = account.getOrCreate();
         List<Starter> starters = starters();
         for (Starter s : starters) {
             texts.createUnchecked(library, s.title(), s.language(), s.body(), null, true, null).setCategory(s.category());
