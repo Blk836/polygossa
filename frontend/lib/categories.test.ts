@@ -104,3 +104,10 @@ describe("topic filter (AI topic tags)", () => {
     expect(gridHeading("café", null, 3, "cooking")).toEqual({ title: "“café”", subtitle: "3 results" });
   });
 });
+
+describe("shelves query", () => {
+  it("ignores the category and search, which only apply to the grid", () => {
+    expect(exploreQuery({ language: "fr", category: "food", level: "", kind: "all", sort: "new", query: "café", page: 3 }, 24, true))
+      .toBe("library/shelves?language=fr");
+  });
+});
