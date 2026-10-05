@@ -37,6 +37,11 @@ public interface ReadingSessionRepository extends JpaRepository<ReadingSession, 
             + "and s.language = :language")
     long secondsByUserAndLanguage(@Param("userId") Long userId, @Param("language") Language language);
 
+    /** Time spent on videos and texts with audio in a language. */
+    @Query("select coalesce(sum(s.durationSeconds), 0) from ReadingSession s join s.text t where s.user.id = :userId "
+            + "and s.language = :language and (t.videoId is not null or t.audioFile is not null or t.audioUrl is not null)")
+    long listeningSeconds(@Param("userId") Long userId, @Param("language") Language language);
+
     /** Ids of texts among {@code textIds} the user has finished. */
     @Query("select distinct s.text.id from ReadingSession s where s.user.id = :userId and s.completed = true "
             + "and s.text.id in :textIds")

@@ -18,6 +18,9 @@ public interface WritingTestRepository extends JpaRepository<WritingTest, Long> 
 
     List<WritingTest> findTop20ByUserIdAndLevelOrderByStartedAtDesc(Long userId, String level);
 
+    List<WritingTest> findTop20ByUserIdAndLanguageAndGradeJsonIsNotNullOrderBySubmittedAtDesc(Long userId,
+                                                                                          Language language);
+
     @Query("select t.submittedAt from WritingTest t where t.user.id = :userId and t.submittedAt >= :since")
     List<Instant> findSubmittedSince(@Param("userId") Long userId, @Param("since") Instant since);
 }

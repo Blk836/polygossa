@@ -163,7 +163,9 @@ class SkillLevelApiTest {
         assertThat(l.get("knownWords").asLong()).isEqualTo(100);
         assertThat(level(l.get("reading"))).isEqualTo("A1");
         assertThat(level(l.get("listening"))).isNull();
-        assertThat(level(levels("fr").get("reading"))).isEqualTo("C1");
+        JsonNode fr = levels("fr");
+        assertThat(level(fr.get("reading"))).isEqualTo("B2");
+        assertThat(level(fr.get("listening"))).isEqualTo("C1");
     }
 
     @Test

@@ -153,7 +153,9 @@ class SkillLevelsTest {
         assertThat(SkillLevels.writing(List.of("C1", "C1", "A1", "A1", "A1")).level()).isEqualTo("C1");
         // A1 has 3+2+1 = 6 of 15, under half
         assertThat(SkillLevels.writing(List.of("A2", "A2", "A1", "A1", "A1")).level()).isEqualTo("A2");
-        // exactly half goes to the lower level
+        // exactly half (7 of 14) goes to the lower level
+        assertThat(SkillLevels.writing(List.of("A1", "B2", "B2", "A1")).level()).isEqualTo("A1");
+        assertThat(SkillLevels.writing(List.of("B2", "A1", "A1", "B2")).level()).isEqualTo("A1");
         assertThat(SkillLevels.writing(List.of("A1", "B2")).level()).isEqualTo("A1");
         assertThat(SkillLevels.writing(List.of("B2", "A1")).level()).isEqualTo("B2");
     }
