@@ -40,8 +40,8 @@ class ShelfBuilderTest {
         assertThat(reason(0, 0.9, true)).isEqualTo(Reason.simple("similar"));
         assertThat(reason(1, 0.9, true)).isEqualTo(Reason.topic("cooking"));
         assertThat(reason(2, 0.9, true)).isEqualTo(Reason.known(96.0));
-        assertThat(reason(3, 0.9, true)).isEqualTo(Reason.level("B1"));
-        assertThat(reason(4, 0.9, true)).isEqualTo(Reason.popular(4));
+        assertThat(reason(3, 0.9, true)).extracting(Reason::kind, Reason::level).containsExactly("level", "B1");
+        assertThat(reason(4, 0.9, true)).extracting(Reason::kind, Reason::likes).containsExactly("popular", 4L);
         assertThat(reason(5, 0.9, true)).isEqualTo(Reason.simple("new"));
         assertThat(reason(6, 0.9, true)).isEqualTo(Reason.simple("similar"));
     }

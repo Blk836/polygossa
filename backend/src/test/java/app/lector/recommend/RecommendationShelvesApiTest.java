@@ -284,6 +284,15 @@ class RecommendationShelvesApiTest {
     }
 
     @Test
+    void aTextNoLongerSharedDropsOutOfContinueReading() throws Exception {
+        long a = fx.publicText(author, "Soon private", "food");
+        progress(a, 10);
+        assertThat(ids(shelf(fx.recommendations(learner), "continue"))).containsExactly(a);
+        api.patch(author, "/api/texts/" + a, "{\"isPublic\":false}", 200);
+        assertThat(shelf(fx.recommendations(learner), "continue")).isNull();
+    }
+
+    @Test
     void continueReadingOnlyHoldsMyLanguage() throws Exception {
         long french = fx.publicText(author, "Bonjour", "food");
         long spanish = fx.text(author, "Hola", "es", "food", RecommendFixture.content(19, 1), true);
