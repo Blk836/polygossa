@@ -52,7 +52,7 @@ function Playlists({ language }: { language: string }) {
       {!lists && !error && <Spinner />}
       {lists?.length === 0 && <NoPlaylists tab={tab} name={name} searched={!!query} />}
       <div className={cardGridClass(layout)} data-testid="playlist-grid">
-        {lists?.map((p) => <PlaylistCard key={p.id} playlist={p} layout={layout} />)}
+        {lists?.map((p) => <PlaylistCard key={p.id} playlist={p} layout={layout} saveable={tab === "shared"} />)}
       </div>
     </div>
   );

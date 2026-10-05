@@ -7,8 +7,12 @@ import { languageName } from "@/lib/languages";
 import { itemsLabel, nextUp, playlistReadHref, startLabel } from "@/lib/playlists";
 import type { PlaylistDetail, PlaylistSummary } from "@/lib/playlist-types";
 import { Button, ErrorNote, Field, LinkButton, inputClass } from "../ui";
+import { SavePlaylistButton } from "./save-playlist";
 
-/** Title, description and progress, the Start / Continue button, and for the owner: edit, share, copy link, delete. */
+/**
+ * Title, description and progress, the Start / Continue button, and for the owner: edit, share, copy link, delete;
+ * for everyone else: Save.
+ */
 export function PlaylistHeader({ detail, onChanged, onDeleted }: {
   detail: PlaylistDetail;
   onChanged: (p: PlaylistSummary) => void;
@@ -31,6 +35,7 @@ export function PlaylistHeader({ detail, onChanged, onDeleted }: {
       <Meta playlist={p} />
       <div className="mt-4 flex flex-wrap items-center gap-2">
         {next && <LinkButton href={playlistReadHref(next.id, p.id)}>{startLabel(detail.items)}</LinkButton>}
+        {!p.mine && <SavePlaylistButton playlist={p} className="text-sm" />}
         {p.mine && !editing && <OwnerTools playlist={p} onChanged={onChanged} onDeleted={onDeleted} onEdit={() => setEditing(true)} />}
       </div>
       {p.mine && p.isPublic && <PrivateNote count={detail.privateItems} />}

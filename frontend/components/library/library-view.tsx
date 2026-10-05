@@ -19,7 +19,7 @@ import { withKind, withLanguage } from "@/lib/media";
 import type { TextSummary } from "@/lib/types";
 
 function subtitle(view: View, used: number, limit: number | null, language: string): string {
-  if (view === "saved") return "Texts and videos you saved from Explore";
+  if (view === "saved") return "Texts, videos and playlists you saved from Explore";
   if (limit !== null) return `${used} of ${limit} texts and videos on the free plan (all languages)`;
   return language ? `Your ${languageName(language)} texts and videos` : "Your texts and videos";
 }
@@ -115,7 +115,7 @@ function Library({ view, language }: { view: View; language: string }) {
         subtitle={subtitle(view, me.plan.usage.texts, me.plan.limits.texts, language)}
         actions={<><CardLayoutPicker /><LinkButton href={importHref(language)}>+ Import</LinkButton></>}
       />
-      <PlaylistShelf source="mine" language={language} hidden={view !== "mine"} />
+      <PlaylistShelf source={view} language={language} />
       <FilterBar categories={texts ? categoriesIn(texts) : []} filters={filters} onChange={setFilters} count={shown?.length ?? 0} />
       <ErrorNote message={error} />
       {shown ? (

@@ -7,6 +7,7 @@ import { deck, itemsLabel } from "@/lib/playlists";
 import type { PlaylistCover, PlaylistSummary } from "@/lib/playlist-types";
 import { PlaylistIcon } from "../icons";
 import { PlaylistPane } from "./playlist-pane";
+import { SavePlaylistButton } from "./save-playlist";
 
 const TITLE: Record<CardLayout, string> = {
   cards: "line-clamp-2 text-[17px]",
@@ -56,12 +57,22 @@ function Tag() {
 const FRAME: Record<CardLayout, string> = { cards: "flex flex-col", compact: "flex flex-col", list: "flex items-center gap-3 p-2" };
 const COVER: Record<CardLayout, string> = { cards: "", compact: "", list: "w-28 shrink-0 rounded-lg sm:w-36" };
 const BODY: Record<CardLayout, string> = { cards: "gap-1.5 p-3.5", compact: "gap-1 p-2.5", list: "gap-1" };
+const SAVE: Record<CardLayout, string> = {
+  cards: "mx-3.5 mb-3 flex justify-end border-t border-line pt-2",
+  compact: "mx-2.5 mb-2 flex justify-end border-t border-line pt-1.5",
+  list: "shrink-0",
+};
 
 /**
  * A playlist as one card, the size of a text card: a fanned deck of its first episodes under a "Playlist" tag, then
- * its title and progress. Clicking it opens the side pane listing every episode.
+ * its title and progress. Clicking it opens the side pane listing every episode. `saveable` adds a Save button.
  */
-export function PlaylistCard({ playlist, layout = "cards", className = "" }: { playlist: PlaylistSummary; layout?: CardLayout; className?: string }) {
+export function PlaylistCard({ playlist, layout = "cards", className = "", saveable = false }: {
+  playlist: PlaylistSummary;
+  layout?: CardLayout;
+  className?: string;
+  saveable?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   return (
     <article
@@ -76,13 +87,14 @@ export function PlaylistCard({ playlist, layout = "cards", className = "" }: { p
         <Meta playlist={playlist} list={layout === "list"} />
         <button
           type="button" onClick={() => setOpen(true)} aria-haspopup="dialog" lang={playlist.language}
-          className={`${TITLE[layout]} text-left font-reading leading-snug font-semibold group-hover:text-accent after:absolute after:inset-0`}
+          className={`${TITLE[layout]} cursor-pointer text-left font-reading leading-snug font-semibold group-hover:text-accent after:absolute after:inset-0`}
         >
           {playlist.title}
         </button>
         {!playlist.mine && <p className="-mt-1 truncate text-xs text-muted">by {playlist.owner.displayName}</p>}
         {playlist.completedCount > 0 && <p className="text-xs text-muted">{itemsLabel(playlist)}</p>}
       </div>
+      {saveable && <div className={SAVE[layout]}><SavePlaylistButton playlist={playlist} /></div>}
       {open && <PlaylistPane playlist={playlist} onClose={() => setOpen(false)} />}
     </article>
   );
