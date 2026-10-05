@@ -1,8 +1,10 @@
 package app.lector.ai;
 
+import app.lector.text.DifficultyEstimator;
 import app.lector.token.Language;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 
@@ -11,6 +13,9 @@ import tools.jackson.databind.JsonNode;
 public class WritingGrader {
 
     public static final List<String> CRITERIA = List.of("task", "grammar", "vocabulary", "coherence");
+
+    /** Stored with each grade; change it whenever the prompt changes, so old and new grades can be told apart. */
+    public static final String PROMPT_VERSION = "2026-10-05";
 
     /** One rubric line, scored 1–5. */
     public record RubricScore(String criterion, int score, String comment) {}
@@ -36,6 +41,11 @@ public class WritingGrader {
         this.ai = ai;
     }
 
+    /** The model that grades, stored with each grade. */
+    public String model() {
+        return ai.model();
+    }
+
     public Grade grade(Submission s) {
         String lang = s.language().displayName();
         JsonNode r = ai.completeJson(
@@ -51,7 +61,8 @@ public class WritingGrader {
                         + "(at most 8, most important first), \"correctedText\": string, \"summary\": string "
                         + "(2-3 sentences: main strength, main thing to work on)}.",
                 "Situation: " + s.situation() + "\nLength: " + s.count() + " " + s.unit() + " (minimum " + s.minimum()
-                        + ")\n\nAnswer:\n" + s.content());
+                        + ")\n\nAnswer:\n" + s.content(),
+                0);
         return parse(r, s.content());
     }
 
@@ -72,8 +83,14 @@ public class WritingGrader {
             corrections.add(new Correction(c.path("original").asString(""), c.path("corrected").asString(""),
                     c.path("explanation").asString("")));
         }
-        return new Grade(score, r.path("level").asString(null), rubric, corrections,
+        return new Grade(score, level(r.path("level")), rubric, corrections,
                 r.path("correctedText").asString(original), r.path("summary").asString(""));
+    }
+
+    /** One of A1–C2, or null for anything else the model might say. */
+    private static String level(JsonNode node) {
+        String level = node.isString() ? node.asString().strip().toUpperCase(Locale.ROOT) : "";
+        return DifficultyEstimator.LEVELS.contains(level) ? level : null;
     }
 
     private static int clamp(int value, int min, int max) {

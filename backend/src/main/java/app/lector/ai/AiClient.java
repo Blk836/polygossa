@@ -21,6 +21,8 @@ public class AiClient {
 
     private static final Logger log = LoggerFactory.getLogger(AiClient.class);
 
+    private static final double DEFAULT_TEMPERATURE = 0.3;
+
     private final AppProperties.OpenAi config;
     private final RestClient http;
     private final ObjectMapper json;
@@ -42,15 +44,25 @@ public class AiClient {
         return config.enabled();
     }
 
+    /** The model requests go to, recorded with results that depend on it. */
+    public String model() {
+        return config.model();
+    }
+
     /** Sends a system + user prompt and parses the assistant's reply as a JSON object. */
     public JsonNode completeJson(String system, String user) {
+        return completeJson(system, user, DEFAULT_TEMPERATURE);
+    }
+
+    /** As {@link #completeJson(String, String)}; temperature 0 asks for the same answer to the same input. */
+    public JsonNode completeJson(String system, String user, double temperature) {
         if (!enabled()) {
             throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "ai_disabled",
                     "AI features are not configured on this server (set OPENAI_API_KEY)");
         }
         Map<String, Object> request = Map.of(
                 "model", config.model(),
-                "temperature", 0.3,
+                "temperature", temperature,
                 "response_format", Map.of("type", "json_object"),
                 "messages", List.of(
                         Map.of("role", "system", "content", system),

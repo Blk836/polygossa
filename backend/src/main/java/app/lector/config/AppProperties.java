@@ -36,7 +36,9 @@ public record AppProperties(
             @DefaultValue("") String apiKey,
             @DefaultValue("https://api.openai.com/v1") String baseUrl,
             @DefaultValue("gpt-4o-mini") String model,
-            @DefaultValue("30s") Duration timeout) {
+            @DefaultValue("30s") Duration timeout,
+            /* AI calls each user may make per day (their local day); protects the AI budget. */
+            @DefaultValue("30") int dailyLimit) {
 
         public boolean enabled() {
             return apiKey != null && !apiKey.isBlank();

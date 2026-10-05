@@ -291,4 +291,7 @@ export interface WritingTest {
   submittedAt?: string;
   grade?: WritingGrade;
   gradeError?: string;
+  /** The AI model and grading-prompt version that produced the grade. */
+  gradeModel?: string;
+  gradePromptVersion?: string;
 }

@@ -53,6 +53,7 @@ app:
     api-key: ${OPENAI_API_KEY:}
     base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
     model: ${OPENAI_MODEL:gpt-4o-mini}
+    daily-limit: ${AI_DAILY_LIMIT:30}
   billing:
     enforce-limits: ${ENFORCE_PLAN_LIMITS:true}
   cors-origins: ${CORS_ORIGINS:http://localhost:3000}

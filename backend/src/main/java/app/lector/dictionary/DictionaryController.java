@@ -1,5 +1,6 @@
 package app.lector.dictionary;
 
+import app.lector.ai.AiAllowance;
 import app.lector.ai.AiTutor;
 import app.lector.token.Language;
 import app.lector.token.TokenizationService;
@@ -32,12 +33,15 @@ public class DictionaryController {
 
     private final DictionaryClient dictionary;
     private final AiTutor ai;
+    private final AiAllowance allowance;
     private final PlanService plans;
     private final CurrentUser currentUser;
 
-    public DictionaryController(DictionaryClient dictionary, AiTutor ai, PlanService plans, CurrentUser currentUser) {
+    public DictionaryController(DictionaryClient dictionary, AiTutor ai, AiAllowance allowance, PlanService plans,
+                                CurrentUser currentUser) {
         this.dictionary = dictionary;
         this.ai = ai;
+        this.allowance = allowance;
         this.plans = plans;
         this.currentUser = currentUser;
     }
@@ -69,7 +73,7 @@ public class DictionaryController {
         }
         User user = currentUser.load(principal);
         if (!result.found() && ai.enabled() && plans.hasFeature(user, PlanService.Feature.AI)) {
-            result = ai.define(language, surface, context);
+            result = allowance.call(user, () -> ai.define(language, surface, context));
         }
         return result.found() ? result : DictionaryResult.notFound(TokenizationService.normalize(surface, language),
                 language.code());
@@ -81,15 +85,17 @@ public class DictionaryController {
                                    @RequestParam Language language,
                                    @RequestParam String term,
                                    @RequestParam(required = false) String definition) {
-        plans.require(currentUser.load(principal), PlanService.Feature.AI);
-        return ai.example(language, term, definition);
+        User user = currentUser.load(principal);
+        plans.require(user, PlanService.Feature.AI);
+        return allowance.call(user, () -> ai.example(language, term, definition));
     }
 
     /** AI translation of a phrase or mined sentence (Pro). */
     @PostMapping("/translate")
     public TranslateResponse translate(@AuthenticationPrincipal AuthUser principal,
                                        @Valid @RequestBody TranslateRequest req) {
-        plans.require(currentUser.load(principal), PlanService.Feature.AI);
-        return new TranslateResponse(ai.translate(req.language(), req.text()));
+        User user = currentUser.load(principal);
+        plans.require(user, PlanService.Feature.AI);
+        return new TranslateResponse(allowance.call(user, () -> ai.translate(req.language(), req.text())));
     }
 }

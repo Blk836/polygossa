@@ -1,5 +1,6 @@
 package app.lector.writing;
 
+import app.lector.ai.AiAllowance;
 import app.lector.ai.WritingGrader;
 import app.lector.ai.WritingGrader.Grade;
 import app.lector.common.ApiException;
@@ -28,20 +29,23 @@ public class WritingTestService {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record TestDto(Long id, Language language, String level, String prompt, int minWords, String unit,
                           int timeLimitSeconds, Instant startedAt, Instant deadline, String status, String content,
-                          Integer wordCount, Instant submittedAt, Grade grade, String gradeError) {}
+                          Integer wordCount, Instant submittedAt, Grade grade, String gradeError, String gradeModel,
+                          String gradePromptVersion) {}
 
     private final WritingTestRepository tests;
     private final WritingGrader grader;
+    private final AiAllowance allowance;
     private final PlanService plans;
     private final Clock clock;
     private final ObjectMapper json;
     private final PromptBank bank = PromptBank.load();
     private final Random random = new Random();
 
-    public WritingTestService(WritingTestRepository tests, WritingGrader grader, PlanService plans, Clock clock,
-                              ObjectMapper json) {
+    public WritingTestService(WritingTestRepository tests, WritingGrader grader, AiAllowance allowance,
+                              PlanService plans, Clock clock, ObjectMapper json) {
         this.tests = tests;
         this.grader = grader;
+        this.allowance = allowance;
         this.plans = plans;
         this.clock = clock;
         this.json = json;
@@ -115,10 +119,11 @@ public class WritingTestService {
     private void tryGrade(WritingTest test) {
         String unit = WritingRules.unit(test.getLanguage());
         try {
-            Grade grade = grader.grade(new WritingGrader.Submission(test.getLanguage(), test.getLevel(),
-                    test.getSituation(), test.getMinimum(), unit, test.getWordCount(), test.getContent()));
+            Grade grade = allowance.call(test.getUser(), () -> grader.grade(new WritingGrader.Submission(
+                    test.getLanguage(), test.getLevel(), test.getSituation(), test.getMinimum(), unit,
+                    test.getWordCount(), test.getContent())));
             Grade capped = grade.withScore(WritingRules.capForLength(grade.score(), test.getWordCount(), test.getMinimum()));
-            test.graded(json.writeValueAsString(capped));
+            test.graded(json.writeValueAsString(capped), grader.model(), WritingGrader.PROMPT_VERSION);
         } catch (ApiException e) {
             test.gradingFailed(e.getMessage());
         }
@@ -145,6 +150,6 @@ public class WritingTestService {
         return new TestDto(t.getId(), t.getLanguage(), t.getLevel(), t.getSituation(), t.getMinimum(),
                 WritingRules.unit(t.getLanguage()), (int) WritingRules.TIME_LIMIT.toSeconds(), t.getStartedAt(),
                 t.getDeadline(), status(t), t.getContent(), handedIn ? t.getWordCount() : null, t.getSubmittedAt(),
-                grade, grade == null ? t.getGradeError() : null);
+                grade, grade == null ? t.getGradeError() : null, t.getGradeModel(), t.getGradePromptVersion());
     }
 }

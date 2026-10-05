@@ -39,15 +39,17 @@ public class WritingController {
 
     private final WritingSubmissionRepository repo;
     private final AiTutor tutor;
+    private final AiAllowance allowance;
     private final TextService texts;
     private final PlanService plans;
     private final CurrentUser currentUser;
     private final ObjectMapper json;
 
-    public WritingController(WritingSubmissionRepository repo, AiTutor tutor, TextService texts, PlanService plans,
-                             CurrentUser currentUser, ObjectMapper json) {
+    public WritingController(WritingSubmissionRepository repo, AiTutor tutor, AiAllowance allowance, TextService texts,
+                             PlanService plans, CurrentUser currentUser, ObjectMapper json) {
         this.repo = repo;
         this.tutor = tutor;
+        this.allowance = allowance;
         this.texts = texts;
         this.plans = plans;
         this.currentUser = currentUser;
@@ -64,7 +66,8 @@ public class WritingController {
         String excerpt = text == null ? null
                 : text.getContent().length() > EXCERPT_CHARS ? text.getContent().substring(0, EXCERPT_CHARS) + "…"
                 : text.getContent();
-        AiTutor.Feedback feedback = tutor.writingFeedback(req.language(), excerpt, req.content().strip());
+        AiTutor.Feedback feedback = allowance.call(user,
+                () -> tutor.writingFeedback(req.language(), excerpt, req.content().strip()));
         WritingSubmission submission = new WritingSubmission(user, text, req.language(), req.content().strip());
         submission.setFeedbackJson(json.writeValueAsString(feedback));
         return toDto(repo.save(submission));

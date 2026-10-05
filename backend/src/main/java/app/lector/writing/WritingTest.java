@@ -63,6 +63,11 @@ public class WritingTest {
     /** Why the last grading attempt failed, while ungraded. */
     private String gradeError;
 
+    /** The model and grading-prompt version that produced {@link #gradeJson}. */
+    private String gradeModel;
+
+    private String gradePromptVersion;
+
     protected WritingTest() {}
 
     public WritingTest(User user, Language language, String level, PromptBank.Prompt prompt, int minimum,
@@ -91,6 +96,8 @@ public class WritingTest {
     public Instant getSubmittedAt() { return submittedAt; }
     public String getGradeJson() { return gradeJson; }
     public String getGradeError() { return gradeError; }
+    public String getGradeModel() { return gradeModel; }
+    public String getGradePromptVersion() { return gradePromptVersion; }
 
     public void handIn(String content, int wordCount, Instant at) {
         this.content = content;
@@ -98,8 +105,10 @@ public class WritingTest {
         this.submittedAt = at;
     }
 
-    public void graded(String gradeJson) {
+    public void graded(String gradeJson, String model, String promptVersion) {
         this.gradeJson = gradeJson;
+        this.gradeModel = model;
+        this.gradePromptVersion = promptVersion;
         this.gradeError = null;
     }
 
