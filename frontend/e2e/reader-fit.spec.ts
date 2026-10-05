@@ -103,9 +103,10 @@ test.describe("pages fit the window", () => {
   });
 
   test("a short text that fits stays on one page with no page controls", async ({ page }) => {
-    created = await createText(page, 60);
+    // Words are random letters, so 60 of them wrap to anything from 7 to 10 lines and the longest don't fit; 40 always do.
+    created = await createText(page, 40);
     await openReader(page, `/read/${created.id}`);
-    await expect(wordsShown(page)).toHaveCount(60);
+    await expect(wordsShown(page)).toHaveCount(40);
     await expect(page.getByRole("navigation", { name: "Pages" })).toHaveCount(0);
     expect(await overflow(page)).toBeLessThanOrEqual(0);
   });

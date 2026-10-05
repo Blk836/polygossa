@@ -214,7 +214,8 @@ test("a word's status shows on every page", async ({ page }) => {
 
 test("stepping to the next sentence turns to the page holding it", async ({ page }) => {
   const id = await createText(page);
-  await addSyncedAudio(page, id);
+  // Stepping plays on from the sentence: a second a word keeps the first word of page 2 spoken while it's checked.
+  await addSyncedAudio(page, id, WORDS);
   await openReader(page, `/read/${id}`);
   for (let n = 0; n < PAGE / PER_SENTENCE; n++) await page.keyboard.press("]"); // past the last sentence of page 1
   await expect(pager(page)).toContainText("Page 2 of 4");

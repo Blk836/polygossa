@@ -26,6 +26,9 @@ async function openProgress(page: Page) {
   return asked;
 }
 
+/** The periods asked for, in order. Dev mode's Strict Mode runs each effect twice, so one choice can ask twice in a row. */
+const distinct = (asked: string[]) => asked.filter((p, i) => p !== asked[i - 1]);
+
 const picker = (page: Page) => page.getByRole("combobox", { name: "Period" });
 const stats = (page: Page, label: string) => page.getByRole("region", { name: label });
 
@@ -35,7 +38,7 @@ test("offers last week, month, quarter, year and all time, starting on last week
   await expect(picker(page)).toHaveValue("week");
   await expect(stats(page, "Last week").getByRole("heading")).toHaveText("Last week");
   await expect(stats(page, "Last week").getByTestId("days-practised")).toHaveText(/^\d+ of 7$/);
-  expect(asked).toEqual(["week"]);
+  expect(distinct(asked)).toEqual(["week"]);
 });
 
 test("choosing last month shows the month's stats and growth", async ({ page }) => {
@@ -47,7 +50,7 @@ test("choosing last month shows the month's stats and growth", async ({ page }) 
   await expect(month.getByTestId("words-learned")).not.toHaveText("0");
   await expect(month).toContainText(/the month before|start today/);
   await expect(page.getByRole("heading", { name: /words — last month$/ })).toBeVisible();
-  expect(asked).toEqual(["week", "month"]);
+  expect(distinct(asked)).toEqual(["week", "month"]);
 });
 
 test("all time compares against nothing and counts days since joining", async ({ page }) => {
@@ -73,6 +76,7 @@ test("a failing period request keeps the last stats and says so", async ({ page 
   await expect(stats(page, "Last week")).toBeVisible();
   await page.route("**/api/dashboard?*period=quarter*", (route) => route.fulfill({ status: 500, json: { code: "internal", message: "Something went wrong" } }));
   await picker(page).selectOption("quarter");
-  await expect(page.getByRole("alert")).toContainText("Something went wrong");
+  // Next.js keeps its own (empty) route announcer alert on every page, so pick ours by its message.
+  await expect(page.getByRole("alert").filter({ hasText: "Something went wrong" })).toBeVisible();
   await expect(page.getByTestId("streak-count")).toBeVisible();
 });

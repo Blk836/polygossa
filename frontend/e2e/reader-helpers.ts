@@ -89,6 +89,8 @@ export async function createVideo(page: Page, words = 1000): Promise<Created> {
   return { ...base, id: (await res.json()).id };
 }
 
+const CLEANUP_BATCH = 8;
+
 /** Deletes the text and every vocabulary entry made from its words. */
 export async function cleanUp(page: Page, created: Created | null) {
   if (!created) return;
@@ -97,7 +99,10 @@ export async function cleanUp(page: Page, created: Created | null) {
     const items = (found.items ?? []) as { id: number; term: string }[];
     const mine = items.filter((e) => e.term.startsWith(created.prefix));
     if (mine.length === 0) break;
-    for (const e of mine) await page.request.delete(`/api/vocabulary/${e.id}`);
+    // A page turn can save hundreds of words: delete a few at a time, not one round trip after another.
+    for (let k = 0; k < mine.length; k += CLEANUP_BATCH) {
+      await Promise.all(mine.slice(k, k + CLEANUP_BATCH).map((e) => page.request.delete(`/api/vocabulary/${e.id}`)));
+    }
   }
   await page.request.delete(`/api/texts/${created.id}`);
 }
@@ -143,12 +148,12 @@ export function silentWav(seconds: number): Buffer {
   return b;
 }
 
-/** Uploads a minute of silence and spreads the words over it. */
-export async function addSyncedAudio(page: Page, id: number) {
+/** Uploads `seconds` of silence (a minute by default) and spreads the words over it. */
+export async function addSyncedAudio(page: Page, id: number, seconds = 60) {
   const upload = await page.request.post(`/api/texts/${id}/audio`, {
-    multipart: { file: { name: "silence.wav", mimeType: "audio/wav", buffer: silentWav(60) } },
+    multipart: { file: { name: "silence.wav", mimeType: "audio/wav", buffer: silentWav(seconds) } },
   });
   expect(upload.ok(), await upload.text()).toBe(true);
-  const align = await page.request.post(`/api/texts/${id}/timings/auto`, { data: { durationMs: 60_000 } });
+  const align = await page.request.post(`/api/texts/${id}/timings/auto`, { data: { durationMs: seconds * 1000 } });
   expect(align.ok(), await align.text()).toBe(true);
 }

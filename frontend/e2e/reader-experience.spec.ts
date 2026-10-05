@@ -208,7 +208,8 @@ test.describe("the shared player bar", () => {
   });
 
   test("[ ] and R step between sentences and replay", async ({ page }) => {
-    await openWithAudio(page);
+    // Stepping plays on from the sentence: 40 words over the minute keep each word spoken for 1.5s while it's checked.
+    await openWithAudio(page, 40);
     await page.keyboard.press("]");
     await expect(wordAt(page, PER_SENTENCE)).toHaveClass(/w-speaking/);
     await page.keyboard.press("]");
