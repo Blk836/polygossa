@@ -188,6 +188,7 @@ export interface ReviewStats {
 }
 
 export type { Activity, ActivityDay, ActivityPeriod, Dashboard, PeriodStats, Streak } from "./dashboard-types";
+export type { LevelConfidence, Skill, SkillKey, SkillLevels } from "./level-types";
 
 export interface ClassSummary {
   id: number;
@@ -294,29 +295,4 @@ export interface WritingTest {
   /** The AI model and grading-prompt version that produced the grade. */
   gradeModel?: string;
   gradePromptVersion?: string;
-}
-
-/** How sure a skill level is, from how much evidence it rests on. */
-export type LevelConfidence = "low" | "medium" | "high";
-
-/** One skill's level; `level` and `confidence` are absent when there isn't enough data. */
-export interface Skill {
-  level?: CefrLevel;
-  confidence?: LevelConfidence;
-  /** Finished texts (Reading), finished videos and audio (Listening) or graded tests (Writing). */
-  evidence: number;
-}
-
-export type SkillKey = "reading" | "listening" | "writing";
-
-/** GET /api/levels: Reading, Listening and Writing levels in one language. */
-export interface SkillLevels {
-  language: LanguageCode;
-  knownWords: number;
-  listeningSeconds: number;
-  reading: Skill;
-  listening: Skill;
-  writing: Skill;
-  /** The average of the skills with a level; absent when none has. */
-  overall?: { level: CefrLevel; basedOn: SkillKey[] };
 }
