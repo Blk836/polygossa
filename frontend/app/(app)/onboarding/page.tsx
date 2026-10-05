@@ -1,34 +1,60 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useMe } from "@/components/me-context";
 import { Button, ErrorNote, LevelBadge, Spinner } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
+import { parseLanguage } from "@/lib/landing";
 import { LANGUAGES } from "@/lib/languages";
 import type { LanguageCode, Me, TextSummary } from "@/lib/types";
 
-/** Two steps to reading: pick a language, pick a starter text. */
+/** Sets the target language and fetches a few starter texts in it. */
+function startLanguage(code: LanguageCode) {
+  return Promise.all([
+    api<Me>("me", {
+      method: "PATCH",
+      body: { targetLanguage: code, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+    }),
+    api<{ items: TextSummary[] }>(`library?language=${code}&size=6`),
+  ]);
+}
+
+/**
+ * Two steps to reading: pick a language, pick a starter text. A language picked on the landing page arrives as
+ * ?lang= (through sign-up) and skips straight to step 2.
+ */
 export default function OnboardingPage() {
   const router = useRouter();
   const { setMe } = useMe();
-  const [language, setLanguage] = useState<LanguageCode | null>(null);
+  const params = useSearchParams();
+  const [preset] = useState(() => parseLanguage(params.get("lang")));
+  const [language, setLanguage] = useState<LanguageCode | null>(preset);
   const [texts, setTexts] = useState<TextSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!preset) return;
+    let cancelled = false;
+    startLanguage(preset)
+      .then(([me, page]) => {
+        if (cancelled) return;
+        setMe(me);
+        setTexts(page.items);
+      })
+      .catch((e) => !cancelled && setError(errorMessage(e)));
+    return () => {
+      cancelled = true;
+    };
+  }, [preset, setMe]);
 
   async function choose(code: LanguageCode) {
     setLanguage(code);
     setTexts(null);
     setError(null);
     try {
-      const [me, page] = await Promise.all([
-        api<Me>("me", {
-          method: "PATCH",
-          body: { targetLanguage: code, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone },
-        }),
-        api<{ items: TextSummary[] }>(`library?language=${code}&size=6`),
-      ]);
+      const [me, page] = await startLanguage(code);
       setMe(me);
       setTexts(page.items);
     } catch (e) {
@@ -45,6 +71,7 @@ export default function OnboardingPage() {
           <button
             key={l.code}
             onClick={() => choose(l.code)}
+            aria-pressed={language === l.code}
             className={`rounded-xl border p-4 text-left transition ${
               language === l.code ? "border-accent bg-accent-soft" : "border-line bg-card hover:border-accent/50"
             }`}
