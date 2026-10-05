@@ -5,10 +5,12 @@ const TOKEN_COOKIE = "lector_token";
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8080";
 const PUBLIC_PATHS = ["/", "/login", "/signup"];
 const AUTH_PAGES = ["/login", "/signup"];
+/** The landing page: always shown as it is, signed in or not, so auto-login (dev) never hides it. */
+const LANDING = "/";
 
 /**
- * Development auto-login: with no session, sign in to the backend's test account and continue. On by default; set
- * AUTO_LOGIN=false to restore the normal login flow. The backend only honours it when app.dev-auto-login is enabled
+ * Development auto-login: with no session, sign in to the backend's test account and continue (everywhere but the
+ * landing page, which stays visible). On by default; set AUTO_LOGIN=false to restore the normal login flow. The backend only honours it when app.dev-auto-login is enabled
  * (never in the prod profile), so if it's refused we fall through to the regular login page.
  */
 const AUTO_LOGIN = process.env.AUTO_LOGIN !== "false";
@@ -50,11 +52,11 @@ function signedOut(request: NextRequest): NextResponse {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  if (pathname === LANDING) return NextResponse.next();
   if (!request.cookies.has(TOKEN_COOKIE)) {
     return (AUTO_LOGIN && (await autoLogin(request))) || signedOut(request);
   }
-  const skipToApp = AUTH_PAGES.includes(pathname) || (AUTO_LOGIN && pathname === "/");
-  return skipToApp ? NextResponse.redirect(new URL("/library", request.url)) : NextResponse.next();
+  return AUTH_PAGES.includes(pathname) ? NextResponse.redirect(new URL("/library", request.url)) : NextResponse.next();
 }
 
 export const config = {
