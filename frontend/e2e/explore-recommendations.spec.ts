@@ -47,7 +47,7 @@ async function serve(page: Page, body: Json) {
   return events;
 }
 
-const shelf = (page: Page, name: string | RegExp) => page.getByRole("region", { name });
+const shelf = (page: Page, name: string | RegExp) => page.getByRole("region", { name, exact: typeof name === "string" });
 
 test("For you comes from the real API, each card says why, and Not interested removes a card", async ({ page }) => {
   await page.goto("/community");
