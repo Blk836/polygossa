@@ -10,19 +10,13 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /** Caption annotations ("[musique]") are not words, in new imports and, after the startup backfill, old ones. */
-@SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:annotations;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
-        "app.seed-samples=false",
-        "app.storage.dir=build/test-uploads"
-})
-@AutoConfigureMockMvc
+@ApiTest
 class AnnotationTokensTest {
 
     private static final String CONTENT = "[musique] Bonjour à tous.";
@@ -38,6 +32,10 @@ class AnnotationTokensTest {
 
     @Autowired
     AnnotationBackfill backfill;
+
+    /** A text's body loads lazily, so changes made here to a stored text need a transaction. */
+    @Autowired
+    TransactionTemplate tx;
 
     TestApi api;
     String token;
@@ -58,7 +56,10 @@ class AnnotationTokensTest {
 
     /** Stores the tokens and counts a text imported before annotations were recognised would have. */
     private void makeLegacy(long id) {
-        Text text = texts.findById(id).orElseThrow();
+        tx.executeWithoutResult(status -> makeLegacy(texts.findById(id).orElseThrow()));
+    }
+
+    private void makeLegacy(Text text) {
         List<Token> legacy = List.of(
                 new Token(0, "[", false, null, null, null, 0),
                 new Token(1, "musique", true, "musique", null, null, 0),
@@ -117,9 +118,11 @@ class AnnotationTokensTest {
     @Test
     void theBackfillLeavesTextsWithoutAnnotationsAlone() throws Exception {
         long id = api.createText(token, "fr", "Bonjour à tous.", false);
-        Text before = texts.findById(id).orElseThrow();
-        before.setWordCount(99); // a stale count proves the text was not rewritten
-        texts.save(before);
+        tx.executeWithoutResult(status -> {
+            Text before = texts.findById(id).orElseThrow();
+            before.setWordCount(99); // a stale count proves the text was not rewritten
+            texts.save(before);
+        });
 
         backfill.run(null);
 

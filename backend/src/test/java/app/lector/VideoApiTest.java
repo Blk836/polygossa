@@ -22,6 +22,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
+import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -65,6 +66,9 @@ class VideoApiTest {
 
     @Autowired
     TextRepository texts;
+
+    @Autowired
+    TransactionTemplate tx;
 
     TestApi api;
     String user;
@@ -328,10 +332,13 @@ class VideoApiTest {
         assertThat(timings).isEqualTo(json.readTree(stored));
     }
 
+    /** A text's body loads lazily, so changing a stored text's timings needs a transaction. */
     private void storeTimings(long id, String timingsJson) {
-        var text = texts.findById(id).orElseThrow();
-        text.setTimingsJson(timingsJson);
-        texts.save(text);
+        tx.executeWithoutResult(status -> {
+            var text = texts.findById(id).orElseThrow();
+            text.setTimingsJson(timingsJson);
+            texts.save(text);
+        });
     }
 
     // ---- Feature: Library and Explore cover texts and videos ----

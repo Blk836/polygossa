@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -52,13 +53,15 @@ public class TextService {
     private final PlanService plans;
     private final StorageService storage;
     private final ObjectMapper json;
+    private final UniqueWordsCache uniqueWords;
 
     public TextService(TextRepository texts, VocabularyRepository vocabulary, SentenceCardRepository sentences,
                        ReadingSessionRepository sessions, ReadingProgressRepository progress,
                        TextReactionRepository reactions, PlaylistItemRepository playlistItems,
                        AssignmentRepository assignments,
                        WritingSubmissionRepository writings, TokenizationService tokenizer, PlanService plans,
-                       StorageService storage, ObjectMapper json) {
+                       StorageService storage, ObjectMapper json,
+                       UniqueWordsCache uniqueWords) {
         this.texts = texts;
         this.vocabulary = vocabulary;
         this.sentences = sentences;
@@ -72,6 +75,7 @@ public class TextService {
         this.plans = plans;
         this.storage = storage;
         this.json = json;
+        this.uniqueWords = uniqueWords;
     }
 
     // ---- creation ----
@@ -103,6 +107,7 @@ public class TextService {
         Text text = new Text(owner, trimmedTitle.length() > 250 ? trimmedTitle.substring(0, 250) : trimmedTitle,
                 language, clean);
         text.setTokensJson(json.writeValueAsString(tokens));
+        text.setWordsJson(KnownWords.wordsJson(tokens, json));
         text.setSourceUrl(sourceUrl);
         text.setPublic(isPublic);
         text.setCefrLevel(estimate.level());
@@ -222,7 +227,10 @@ public class TextService {
             }
             return m;
         });
-        return stats(tokens(text), statuses);
+        // A row the startup migration hasn't given its words yet falls back to the tokens (loading the body).
+        Set<String> words = text.getWordsJson() == null ? UniqueWordsCache.distinct(tokens(text))
+                : uniqueWords.words(text.getId(), text.getWordsJson(), stored -> KnownWords.readWords(stored, json));
+        return KnownWords.stats(words, statuses);
     }
 
     static KnownStats stats(List<Token> tokens, Map<String, WordStatus> statuses) {

@@ -17,6 +17,7 @@ import app.lector.user.User;
 import app.lector.vocab.WordStatus;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -95,25 +96,24 @@ public class LibraryController {
                                @RequestParam(required = false) MediaKind kind) {
         User user = currentUser.load(principal);
         String lvl = level(level);
-        List<Page<Text>> pages = new ArrayList<>();
-        List<Text> all = new ArrayList<>();
-        for (Category category : Category.values()) {
-            Page<Text> page = texts.searchPublicNewest(language, lvl, null, code(kind), category,
-                    PageRequest.of(0, SHELF_SIZE));
-            pages.add(page);
-            all.addAll(page.getContent());
+        // Ids and categories of everything matching, newest first; only the texts that make a shelf are loaded.
+        Map<Category, Long> totals = new EnumMap<>(Category.class);
+        Map<Category, List<Long>> shelfIds = new EnumMap<>(Category.class);
+        for (TextRepository.ShelfEntry entry : texts.findPublicShelfEntries(language, lvl, code(kind))) {
+            Category category = entry.getCategory() == null ? Category.OTHER : entry.getCategory();
+            totals.merge(category, 1L, Long::sum);
+            List<Long> ids = shelfIds.computeIfAbsent(category, c -> new ArrayList<>());
+            if (ids.size() < SHELF_SIZE) {
+                ids.add(entry.getId());
+            }
         }
+        List<Text> all = texts.findAllById(shelfIds.values().stream().flatMap(List::stream).toList());
         // One summaries() call for every shelf, so the viewer's word statuses are loaded once.
         Map<Long, TextSummary> byId = summaries(user, all).stream()
                 .collect(Collectors.toMap(TextSummary::id, s -> s));
         List<Shelf> out = new ArrayList<>();
-        for (int i = 0; i < pages.size(); i++) {
-            Page<Text> page = pages.get(i);
-            if (page.getTotalElements() > 0) {
-                out.add(new Shelf(Category.values()[i], page.getTotalElements(),
-                        page.getContent().stream().map(t -> byId.get(t.getId())).toList()));
-            }
-        }
+        shelfIds.forEach((category, ids) ->
+                out.add(new Shelf(category, totals.get(category), ids.stream().map(byId::get).toList())));
         return out;
     }
 

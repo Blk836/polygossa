@@ -20,8 +20,12 @@ public interface TextRepository extends JpaRepository<Text, Long> {
 
     List<Text> findByOwnerIdAndLanguageAndTitle(Long ownerId, Language language, String title);
 
+    /** Texts without their stored distinct words (rows from before they were kept); see TextBodyMigration. */
+    @Query("select t.id from Text t where t.wordsJson is null")
+    List<Long> findIdsWithoutWords();
+
     /** Texts with an opening square bracket of any width: the ones that may hold caption annotations. */
-    @Query("select t from Text t where t.content like '%[%' or t.content like '%［%' or t.content like '%【%'")
+    @Query("select t from Text t where t.body.content like '%[%' or t.body.content like '%［%' or t.body.content like '%【%'")
     List<Text> findWithSquareBrackets();
 
     /**
@@ -44,6 +48,29 @@ public interface TextRepository extends JpaRepository<Text, Long> {
                                   @Param("q") String q, @Param("kind") String kind,
                                   @Param("category") Category category,
                                   Pageable pageable);
+
+    /** The id and category (null if uncategorised) of a public item. */
+    interface ShelfEntry {
+        Long getId();
+
+        Category getCategory();
+    }
+
+    /**
+     * Every public item matching the filters, newest first, as ids and categories only: Explore's shelves pick and count
+     * their items from one query instead of one per category.
+     */
+    @Query("""
+            select t.id as id, t.category as category from Text t
+            where t.isPublic = true
+              and (:language is null or t.language = :language)
+              and (:level is null or t.cefrLevel = :level)
+              and (:kind is null or (:kind = 'video' and t.videoId is not null)
+                   or (:kind = 'text' and t.videoId is null))
+            order by t.createdAt desc
+            """)
+    List<ShelfEntry> findPublicShelfEntries(@Param("language") Language language, @Param("level") String level,
+                                            @Param("kind") String kind);
 
     /** Public community content, most liked first. */
     @Query("""

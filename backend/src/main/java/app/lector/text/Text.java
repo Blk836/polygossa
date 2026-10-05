@@ -2,6 +2,7 @@ package app.lector.text;
 
 import app.lector.token.Language;
 import app.lector.user.User;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 
@@ -39,12 +41,14 @@ public class Text {
     @Column(nullable = false)
     private Language language;
 
-    @Column(nullable = false, columnDefinition = "text")
-    private String content;
+    /** Content, tokens, timings and cues: loaded only when one of them is read, never for a list of cards. */
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "body_id")
+    private TextBody body;
 
-    /** JSON array of {@link app.lector.token.Token}; computed once at import time. */
-    @Column(nullable = false, columnDefinition = "text")
-    private String tokensJson;
+    /** JSON array of the distinct normalised words, kept beside the card's other figures for its known-word counts. */
+    @Column(columnDefinition = "text")
+    private String wordsJson;
 
     private String sourceUrl;
 
@@ -65,14 +69,6 @@ public class Text {
 
     /** External audio URL when the user links audio rather than uploading it. */
     private String audioUrl;
-
-    /** JSON array of {tokenIndex, startMs, endMs} aligning words to audio, or null. */
-    @Column(columnDefinition = "text")
-    private String timingsJson;
-
-    /** JSON array of subtitle cues {startMs, endMs, text} kept from SRT/VTT imports, used for audio alignment. */
-    @Column(columnDefinition = "text")
-    private String cuesJson;
 
     /** YouTube video id when this item is a video (its content is then the transcript), otherwise null. */
     @Column(length = 16)
@@ -95,7 +91,7 @@ public class Text {
         this.owner = owner;
         this.title = title;
         this.language = language;
-        this.content = content;
+        this.body = new TextBody(content);
     }
 
     public Long getId() { return id; }
@@ -103,9 +99,11 @@ public class Text {
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
     public Language getLanguage() { return language; }
-    public String getContent() { return content; }
-    public String getTokensJson() { return tokensJson; }
-    public void setTokensJson(String tokensJson) { this.tokensJson = tokensJson; }
+    public String getContent() { return body.getContent(); }
+    public String getTokensJson() { return body.getTokensJson(); }
+    public void setTokensJson(String tokensJson) { body.setTokensJson(tokensJson); }
+    public String getWordsJson() { return wordsJson; }
+    public void setWordsJson(String wordsJson) { this.wordsJson = wordsJson; }
     public String getSourceUrl() { return sourceUrl; }
     public void setSourceUrl(String sourceUrl) { this.sourceUrl = sourceUrl; }
     public boolean isPublic() { return isPublic; }
@@ -122,10 +120,10 @@ public class Text {
     public void setAudioContentType(String audioContentType) { this.audioContentType = audioContentType; }
     public String getAudioUrl() { return audioUrl; }
     public void setAudioUrl(String audioUrl) { this.audioUrl = audioUrl; }
-    public String getTimingsJson() { return timingsJson; }
-    public void setTimingsJson(String timingsJson) { this.timingsJson = timingsJson; }
-    public String getCuesJson() { return cuesJson; }
-    public void setCuesJson(String cuesJson) { this.cuesJson = cuesJson; }
+    public String getTimingsJson() { return body.getTimingsJson(); }
+    public void setTimingsJson(String timingsJson) { body.setTimingsJson(timingsJson); }
+    public String getCuesJson() { return body.getCuesJson(); }
+    public void setCuesJson(String cuesJson) { body.setCuesJson(cuesJson); }
     public Category getCategory() { return category == null ? Category.OTHER : category; }
     public void setCategory(Category category) { this.category = category; }
     public String getVideoId() { return videoId; }

@@ -44,6 +44,7 @@ public class AnnotationBackfill implements ApplicationRunner {
             }
             DifficultyEstimator.Estimate estimate = DifficultyEstimator.estimate(text.getLanguage(), unmarked);
             text.setTokensJson(json.writeValueAsString(unmarked));
+            text.setWordsJson(KnownWords.wordsJson(unmarked, json));
             text.setCefrLevel(estimate.level());
             text.setWordCount(estimate.wordCount());
             text.setUniqueWordCount(estimate.uniqueWordCount());

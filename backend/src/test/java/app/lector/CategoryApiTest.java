@@ -4,11 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 
+import app.lector.text.Category;
 import app.lector.video.YouTubeStub;
+import jakarta.persistence.EntityManagerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,7 +27,8 @@ import tools.jackson.databind.ObjectMapper;
 /** Feature: texts and videos are filed under a small set of categories, and Explore shows them as shelves. */
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:category;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
-        "app.seed-samples=false"
+        "app.seed-samples=false",
+        "spring.jpa.properties.hibernate.generate_statistics=true"
 })
 @AutoConfigureMockMvc
 class CategoryApiTest {
@@ -54,6 +59,9 @@ class CategoryApiTest {
 
     @Autowired
     ObjectMapper json;
+
+    @Autowired
+    EntityManagerFactory entityManagerFactory;
 
     TestApi api;
     String user;
@@ -206,6 +214,21 @@ class CategoryApiTest {
         assertThat(api.get(user, "/api/library/shelves?language=ko&kind=text", 200)).hasSize(1);
         assertThat(api.get(user, "/api/library/shelves?language=ko&level=C2", 200)).isEmpty();
         api.get(user, "/api/library/shelves?level=Z9", 400);
+    }
+
+    @Test
+    void shelvesDoNotRunAQueryPerCategory() throws Exception {
+        String author = api.signupPro();
+        for (Category category : Category.values()) {
+            create(author, "it", category.code(), true);
+        }
+        Statistics stats = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        stats.clear();
+        JsonNode shelves = api.get(user, "/api/library/shelves?language=it", 200);
+        assertThat(shelves).hasSize(Category.values().length);
+        // Every public row is read in full to test the filters (H2 keeps the text inline), so a query per category
+        // re-read them all: Explore's front page took seconds once there were a few long transcripts.
+        assertThat(stats.getQueryExecutionCount()).isLessThan(Category.values().length);
     }
 
     @Test
