@@ -47,6 +47,10 @@ so the checks must prove it is correct.
 6. End with a short report: what changed, every check you ran with its result,
    surviving mutants (and why they're acceptable, if any), and anything you're
    unsure about. "Should work" is not an acceptable status.
+7. Commit each incremental change to git as you go (e.g. scenarios, failing tests, implementation, a fix): one
+   focused commit per step with a message saying what changed and why. Small commits make it easy to diff changes
+   over time and bisect to the commit that broke something. Don't batch unrelated work into one commit, and list the
+   commits in the final report.
 
 If a required check has no tooling (marked above), say so in the report. Adding that tooling is a new dependency, so
 ask first.
