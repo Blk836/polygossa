@@ -84,3 +84,23 @@ describe("gridHeading", () => {
     expect(gridHeading("café", null, null)).toEqual({ title: "“café”", subtitle: "Searching…" });
   });
 });
+
+describe("topic filter (AI topic tags)", () => {
+  const f = { language: "fr", category: null, level: "", kind: "all" as const, sort: "new" as const, query: "", page: 0 };
+
+  it("adds the topic to the grid query, never to the shelves", () => {
+    expect(exploreQuery({ ...f, topic: "climate change" }, 24)).toBe("library?sort=new&page=0&size=24&language=fr&topic=climate+change");
+    expect(exploreQuery({ ...f, topic: "cooking" }, 24, true)).toBe("library/shelves?language=fr");
+    expect(exploreQuery({ ...f, topic: null }, 24)).toBe("library?sort=new&page=0&size=24&language=fr");
+  });
+
+  it("heads the grid with the topic and how many items have it", () => {
+    expect(gridHeading("", null, 3, "cooking")).toEqual({ title: "cooking", subtitle: "3 items about cooking" });
+    expect(gridHeading("", null, 1, "cooking")).toEqual({ title: "cooking", subtitle: "1 item about cooking" });
+    expect(gridHeading("", null, null, "cooking")).toEqual({ title: "cooking", subtitle: "Items about cooking" });
+  });
+
+  it("lets a search win over the topic", () => {
+    expect(gridHeading("café", null, 3, "cooking")).toEqual({ title: "“café”", subtitle: "3 results" });
+  });
+});
