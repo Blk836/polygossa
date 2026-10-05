@@ -3,7 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 /**
  * Browser tests for layout and other things Vitest's node environment can't see.
  * They need the backend (login is auto-bypassed in dev); both servers are reused if already running
- * (e.g. via start.bat), otherwise started here — the backend needs JAVA_HOME set to a JDK 21+.
+ * (e.g. the IntelliJ App run config), otherwise started here — the backend needs JAVA_HOME set to a JDK 21+.
  */
 export default defineConfig({
   testDir: "./e2e",

@@ -12,7 +12,6 @@ Docs:
 backend/    Spring Boot 4.1 (Java 21) — REST API; Gradle module :backend, package app.lector
 frontend/   Next.js 16 + React 19 + Tailwind 4 — UI and backend-for-frontend (BFF) API routes
 tokenizer/  FastAPI sidecar — Japanese (MeCab), Chinese (jieba), Korean (KoNLPy) tokenization
-start.bat   double-click launcher → scripts/start.ps1 (`start.bat -Check` = dry run)
 ```
 
 ## How to work here: "gauntlet" verification
@@ -85,15 +84,22 @@ If it can't be reproduced, say so and ask instead of guessing. Pick the browser 
 The backend defaults to a file-based H2 database and in-memory caching, and falls back to built-in CJK segmentation
 when the tokenizer sidecar isn't running, so no external services are needed.
 
-On Windows, double-click `start.bat`: it starts both servers in their own windows and opens the browser. Or manually:
+In IntelliJ, run the shared **App** configuration (`.idea/runConfigurations/`): a compound of **Backend**
+(Gradle `:backend:bootRun`) and **Frontend** (`npm run dev` in `frontend/`), each in its own Run tab; stop them there.
+Or from a terminal:
 
 ```bash
 ./gradlew :backend:bootRun                 # API on :8080 (needs JDK 21+)
 cd frontend && npm install && npm run dev  # web app on :3000
 ```
 
-Gradle needs JDK 21+. `java` isn't on PATH on the dev machine; set `JAVA_HOME` to a JDK under `~/.jdks`
-(e.g. `openjdk-26.0.1`) or `C:\Program Files\Java`. `start.bat` finds one automatically.
+Gradle needs JDK 21+. The IntelliJ project SDK and Gradle JVM are the `openjdk-26` SDK (`~/.jdks/openjdk-26.0.1`).
+`java` isn't on PATH on the dev machine, so from a terminal set `JAVA_HOME` to that JDK first.
+
+**Claude managing the servers:** check what's listening before starting anything
+(`Get-NetTCPConnection -State Listen -LocalPort 8080,3000`). If the servers are already up (e.g. the user's IntelliJ
+run), reuse them. Otherwise start them with the commands above as background tasks, and stop those tasks when done.
+Don't kill servers you didn't start without asking: they may be the user's IntelliJ run.
 
 **Login is currently bypassed.** With no session, `frontend/proxy.ts` calls `POST /api/auth/dev-login` and signs in
 as `test@lector.local` (Classroom plan, so every feature is unlocked). To restore normal sign-up/login, set
@@ -123,7 +129,7 @@ Optional:
 ```bash
 ./gradlew :backend:test                                           # unit + MockMvc integration tests
 cd frontend && npm test && npx tsc --noEmit && npx eslint . && npx next build
-cd frontend && npm run e2e   # Playwright (first time: npx playwright install chromium); reuses servers on :3000/:8080 (e.g. start.bat) or starts them (JAVA_HOME needed)
+cd frontend && npm run e2e   # Playwright (first time: npx playwright install chromium); reuses servers on :3000/:8080 (e.g. the IntelliJ App run) or starts them (JAVA_HOME needed)
 cd tokenizer && pip install -r requirements-dev.txt && pytest      # Python not installed on the dev machine
 ```
 
