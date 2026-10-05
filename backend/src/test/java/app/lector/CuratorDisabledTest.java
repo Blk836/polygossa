@@ -1,0 +1,43 @@
+package app.lector;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import tools.jackson.databind.ObjectMapper;
+
+/** Scenario: without a curator token on the backend, bulk import is off and looks as if it doesn't exist. */
+@SpringBootTest(properties = {
+        "spring.datasource.url=jdbc:h2:mem:curatordisabled;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "app.seed-samples=false",
+        "app.curator-token="
+})
+@AutoConfigureMockMvc
+class CuratorDisabledTest {
+
+    @Autowired
+    MockMvc mvc;
+
+    @Autowired
+    ObjectMapper json;
+
+    @Test
+    void everyCuratorRequestIsNotFound() throws Exception {
+        TestApi api = new TestApi(mvc, json);
+        String learner = api.signup();
+        for (String token : new String[] {"", "anything"}) {
+            api.send(MockMvcRequestBuilders.post("/api/curator/videos").contentType(MediaType.APPLICATION_JSON)
+                    .header(CuratedVideoImportApiTest.HEADER, token)
+                    .content(CuratedVideoImportApiTest.body("https://youtu.be/AAAAAAAAAAA", "fr", null, false)), null, 404);
+            api.send(MockMvcRequestBuilders.get("/api/curator/options").header(CuratedVideoImportApiTest.HEADER, token),
+                    null, 404);
+        }
+        api.send(MockMvcRequestBuilders.get("/api/curator/options"), learner, 404);
+        assertThat(api.get(learner, "/api/library?kind=video&size=50", 200).get("total").asLong()).isZero();
+    }
+}
