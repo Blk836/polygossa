@@ -1,21 +1,7 @@
 // Sample sentences for the landing page's try-it-now reader, one per language. Words carry a short gloss; `k` marks
 // words a beginner would already know (shown without a highlight), the rest start as new (blue).
-import type { DemoToken } from "./landing";
+import { demoSentence as sentence, type DemoToken } from "./landing";
 import type { LanguageCode } from "./types";
-
-type Gloss = [text: string, meaning: string, pos: string, opts?: { k?: boolean; r?: string }];
-
-/** Builds tokens from glossed words, joined by `gap` (a space, or nothing for Chinese and Japanese). */
-function sentence(words: (Gloss | string)[], gap = " "): DemoToken[] {
-  return words.flatMap((w, i): DemoToken[] => {
-    const token: DemoToken = typeof w === "string"
-      ? { text: w }
-      : { text: w[0], word: { meaning: w[1], pos: w[2], reading: w[3]?.r, known: w[3]?.k } };
-    const next = words[i + 1];
-    const spaced = gap && next !== undefined && typeof next !== "string";
-    return spaced ? [token, { text: gap }] : [token];
-  });
-}
 
 const K = { k: true };
 

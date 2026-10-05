@@ -1,6 +1,6 @@
 // Mutation testing (npm run mutate). Covers the modules with unit tests: the reader's text, transcript, paging
 // (and fitting pages to the screen), settings and audio logic, word colour classes, vocabulary/review query helpers and the API client,
-// library media helpers, the video playback clock and YouTube play states, categories, theme, card layout and card status (difficulty, reading progress), playlists, the header nav and its streak/known-words figures, library filters, brand name, progress (streak, milestones, calendar), skill levels and writing tests. React components are covered by the
+// library media helpers, the video playback clock and YouTube play states, categories, theme, card layout and card status (difficulty, reading progress), playlists, the header nav and its streak/known-words figures, library filters, the landing page (sign-up links, demo reader), brand name, progress (streak, milestones, calendar), skill levels and writing tests. React components are covered by the
 // Playwright suite (e2e/) instead.
 /** @type {import("@stryker-mutator/api/core").PartialStrykerOptions} */
 const config = {
@@ -21,6 +21,7 @@ const config = {
     "lib/nav.ts",
     "lib/header-stats.ts",
     "lib/library-filters.ts",
+    "lib/landing.ts",
     "components/reader/reader-text.ts",
     "components/reader/audio-sync.ts",
     "components/reader/reader-pages.ts",

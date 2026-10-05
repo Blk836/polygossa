@@ -29,6 +29,20 @@ export interface DemoToken {
   word?: { meaning: string; pos: string; reading?: string; known?: boolean };
 }
 
+/** A glossed word: text, meaning, part of speech, and optionally k (already known) and r (reading). */
+export type DemoGloss = [text: string, meaning: string, pos: string, opts?: { k?: boolean; r?: string }];
+
+/** Builds demo tokens from glossed words and punctuation, joined by `gap` (a space, or nothing for Chinese and Japanese). */
+export function demoSentence(words: (DemoGloss | string)[], gap = " "): DemoToken[] {
+  const glossed = ([text, meaning, pos, { r, k } = {}]: DemoGloss): DemoToken => ({ text, word: { meaning, pos, reading: r, known: k } });
+  return words.flatMap((w, i): DemoToken[] => {
+    const token = typeof w === "string" ? { text: w } : glossed(w);
+    const next = words[i + 1];
+    const spaced = gap && next !== undefined && typeof next !== "string";
+    return spaced ? [token, { text: gap }] : [token];
+  });
+}
+
 export interface DemoState {
   /** Status of each word token, by token index. */
   statuses: Record<number, DemoStatus>;

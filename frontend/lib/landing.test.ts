@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  closeWord, demoCounts, initialDemoState, onboardingPath, parseLanguage, selectWord, setDemoStatus, signupHref, type DemoToken,
+  closeWord, demoCounts, demoSentence, initialDemoState, onboardingPath, parseLanguage, selectWord, setDemoStatus, signupHref, type DemoToken,
 } from "./landing";
 import { DEMOS } from "./landing-demos";
 import { LANGUAGES } from "./languages";
@@ -81,6 +81,32 @@ describe("the demo reader", () => {
   it("rounds the percentage", () => {
     const three: DemoToken[] = [0, 1, 2].map((i) => ({ text: `w${i}`, word: { meaning: "", pos: "", known: i === 0 } }));
     expect(demoCounts(initialDemoState(three)).percent).toBe(33);
+  });
+});
+
+describe("demoSentence", () => {
+  it("spaces words, attaches punctuation, and carries glosses", () => {
+    expect(demoSentence([["Hola", "hello", "interjection"], ",", ["amigo", "friend", "noun", { k: true }], ["mío", "mine", "pronoun"], "!"]))
+      .toEqual([
+        { text: "Hola", word: { meaning: "hello", pos: "interjection", reading: undefined, known: undefined } },
+        { text: "," },
+        { text: " " },
+        { text: "amigo", word: { meaning: "friend", pos: "noun", reading: undefined, known: true } },
+        { text: " " },
+        { text: "mío", word: { meaning: "mine", pos: "pronoun", reading: undefined, known: undefined } },
+        { text: "!" },
+      ]);
+  });
+
+  it("joins without a gap when the gap is empty, keeping readings", () => {
+    expect(demoSentence([["我", "I", "pronoun", { r: "wǒ" }], ["好", "good", "adjective"]], "")).toEqual([
+      { text: "我", word: { meaning: "I", pos: "pronoun", reading: "wǒ", known: undefined } },
+      { text: "好", word: { meaning: "good", pos: "adjective", reading: undefined, known: undefined } },
+    ]);
+  });
+
+  it("adds no gap after the last word", () => {
+    expect(demoSentence([["sí", "yes", "adverb"]])).toHaveLength(1);
   });
 });
 
