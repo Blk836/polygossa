@@ -48,28 +48,39 @@ export interface ExploreFilters {
   sort: "new" | "popular";
   query: string;
   page: number;
+  /** An AI topic tag to filter by (from a "More about" shelf); grid only. */
+  topic?: string | null;
 }
+
+/** Filters the shelves ignore: they show every category, and have no search or topic. */
+const GRID_ONLY = new Set(["category", "q", "topic"]);
 
 /** The API path for Explore: shelves (front page, no paging/search) or one page of the filtered grid. */
 export function exploreQuery(f: ExploreFilters, pageSize: number, shelves = false): string {
   const params = shelves ? new URLSearchParams() : new URLSearchParams({ sort: f.sort, page: String(f.page), size: String(pageSize) });
-  const optional: [string, string | null][] = [
+  const optional: [string, string | null | undefined][] = [
     ["language", f.language],
-    ["category", shelves ? null : f.category],
+    ["category", f.category],
     ["level", f.level],
     ["kind", f.kind === "all" ? null : f.kind],
-    ["q", shelves ? null : f.query],
+    ["q", f.query],
+    ["topic", f.topic],
   ];
-  for (const [key, value] of optional) if (value) params.set(key, value);
+  for (const [key, value] of optional) if (value && !(shelves && GRID_ONLY.has(key))) params.set(key, value);
   const qs = params.toString();
   return (shelves ? "library/shelves" : "library") + (qs ? `?${qs}` : "");
 }
 
-/** Title and subtitle above Explore's grid: the search, or the chosen category. */
-export function gridHeading(query: string, category: Category | null, total: number | null): { title: string; subtitle: string } {
+/** Title and subtitle above Explore's grid: the search, else the topic, else the chosen category. */
+export function gridHeading(query: string, category: Category | null, total: number | null, topic?: string | null): { title: string; subtitle: string } {
   const info = categoryInfo(category);
-  if (!query) return { title: info?.label ?? "All", subtitle: info?.blurb ?? "" };
+  if (!query) return topic ? topicHeading(topic, total) : { title: info?.label ?? "All", subtitle: info?.blurb ?? "" };
   if (total === null) return { title: `“${query}”`, subtitle: "Searching…" };
   const count = `${total} result${total === 1 ? "" : "s"}`;
   return { title: `“${query}”`, subtitle: info ? `${count} in ${info.label}` : count };
+}
+
+function topicHeading(topic: string, total: number | null): { title: string; subtitle: string } {
+  if (total === null) return { title: topic, subtitle: `Items about ${topic}` };
+  return { title: topic, subtitle: `${total} item${total === 1 ? "" : "s"} about ${topic}` };
 }

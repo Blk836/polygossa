@@ -6,7 +6,9 @@ import { useCardLayout } from "@/components/card-layout-context";
 import { KindFilterTabs } from "@/components/kind-filter";
 import { CategoryChips } from "@/components/library/category-chips";
 import { ReactionButtons } from "@/components/library/reaction-buttons";
+import { RecommendedShelfRow } from "@/components/library/recommended-shelf";
 import { ShelfRow } from "@/components/library/shelf";
+import { useRecommendations } from "@/components/library/use-recommendations";
 import { useMe } from "@/components/me-context";
 import { AddToPlaylist } from "@/components/playlists/add-to-playlist";
 import { PlaylistShelf } from "@/components/playlists/playlist-shelf";
@@ -17,6 +19,7 @@ import { cardGridClass } from "@/lib/card-layout";
 import { CATEGORIES, exploreQuery, gridHeading, type ExploreFilters } from "@/lib/categories";
 import { CEFR_LEVELS, languageName } from "@/lib/languages";
 import { toggleReaction, type Reaction } from "@/lib/media";
+import type { RecommendedShelf } from "@/lib/recommendations";
 import type { Shelf, TextSummary } from "@/lib/types";
 
 const PAGE_SIZE = 24;
@@ -31,11 +34,12 @@ export default function ExplorePage() {
 }
 
 function Explore({ language }: { language: string }) {
-  const [f, setF] = useState<ExploreFilters>({ language, category: null, level: "", kind: "all", sort: "new", query: "", page: 0 });
+  const [f, setF] = useState<ExploreFilters>({ language, category: null, level: "", kind: "all", sort: "new", query: "", page: 0, topic: null });
   const [shelves, setShelves] = useState<Shelf[] | null>(null);
   const [grid, setGrid] = useState<Grid | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const showShelves = f.category === null && f.query === "";
+  const recs = useRecommendations(language, setError);
+  const showShelves = f.category === null && f.query === "" && !f.topic;
   const set = (patch: Partial<ExploreFilters>) => setF((prev) => ({ ...prev, page: 0, ...patch }));
 
   // Shelves (and the category counts) follow language, level and type only.
@@ -66,6 +70,7 @@ function Explore({ language }: { language: string }) {
     const apply = (x: TextSummary) => (x.id === t.id ? toggleReaction(x, reaction) : x);
     setShelves((s) => s?.map((shelf) => ({ ...shelf, items: shelf.items.map(apply) })) ?? null);
     setGrid((g) => g && { ...g, items: g.items.map(apply) });
+    recs.mapTexts(apply);
     try {
       await api(`library/${t.id}/${reaction}`, { method: on ? "DELETE" : "PUT" });
     } catch (e) {
@@ -85,9 +90,18 @@ function Explore({ language }: { language: string }) {
         actions={<CardLayoutPicker />}
       />
       <Toolbar f={f} set={set} />
-      <div className="mb-7"><CategoryChips options={options} value={f.category} counts={counts} onChange={(category) => set({ category })} /></div>
+      <div className="mb-7"><CategoryChips options={options} value={f.category} counts={counts} onChange={(category) => set({ category, topic: null })} /></div>
 
       <ErrorNote message={error} />
+      {showShelves && (
+        <RecommendedShelves
+          shelves={recs.shelves}
+          actions={actions}
+          onOpen={recs.open}
+          onNotInterested={(t) => void recs.notInterested(t)}
+          onSeeAll={(s) => set(s.topic ? { topic: s.topic } : { category: s.category ?? null })}
+        />
+      )}
       {showShelves && <PlaylistShelf source="shared" language={language} />}
       {showShelves ? (
         <ShelvesView shelves={shelves} actions={actions} onSeeAll={(category) => set({ category })} />
@@ -102,7 +116,7 @@ function Toolbar({ f, set }: { f: ExploreFilters; set: (patch: Partial<ExploreFi
   const [q, setQ] = useState(f.query);
   return (
     <div className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-center">
-      <form className="flex-1" onSubmit={(e) => { e.preventDefault(); set({ query: q.trim() }); }}>
+      <form className="flex-1" onSubmit={(e) => { e.preventDefault(); set({ query: q.trim(), topic: null }); }}>
         <input className={inputClass} type="search" placeholder="Search titles…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search titles" />
       </form>
       <div className="flex gap-2">
@@ -125,7 +139,7 @@ function GridView({ f, grid, error, actions, set, onPage }: {
   set: (patch: Partial<ExploreFilters>) => void;
   onPage: (page: number) => void;
 }) {
-  const heading = gridHeading(f.query, f.category, grid?.total ?? null);
+  const heading = gridHeading(f.query, f.category, grid?.total ?? null, f.topic);
   const { layout } = useCardLayout();
   return (
     <>
@@ -159,4 +173,28 @@ function ShelvesView({ shelves, actions, onSeeAll }: {
     return <Empty title="Nothing shared in this language yet">Share one of your own texts or videos from your library to get things started.</Empty>;
   }
   return <>{shelves.map((s) => <ShelfRow key={s.category} shelf={s} actions={actions} onSeeAll={() => onSeeAll(s.category)} />)}</>;
+}
+
+/** The personalised shelves above the category shelves; nothing while loading or when there are none. */
+function RecommendedShelves({ shelves, actions, onOpen, onNotInterested, onSeeAll }: {
+  shelves: RecommendedShelf[] | null;
+  actions: (t: TextSummary) => ReactNode;
+  onOpen: (shelf: RecommendedShelf["id"], t: TextSummary, position: number) => void;
+  onNotInterested: (t: TextSummary) => void;
+  onSeeAll: (shelf: RecommendedShelf) => void;
+}) {
+  return (
+    <>
+      {shelves?.map((s) => (
+        <RecommendedShelfRow
+          key={s.id}
+          shelf={s}
+          actions={actions}
+          onOpen={(t, position) => onOpen(s.id, t, position)}
+          onNotInterested={onNotInterested}
+          onSeeAll={s.id === "topic" ? () => onSeeAll(s) : undefined}
+        />
+      ))}
+    </>
+  );
 }

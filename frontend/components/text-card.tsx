@@ -25,11 +25,11 @@ const TITLE: Record<CardLayout, string> = {
 };
 
 /** Video thumbnail, or for texts a ruled "page" in the category's tint with the title's first letter; reading progress along its bottom edge. */
-function Cover({ text, layout, href, className = "" }: { text: TextSummary; layout: CardLayout; href: string; className?: string }) {
+function Cover({ text, layout, href, onOpen, className = "" }: { text: TextSummary; layout: CardLayout; href: string; onOpen?: () => void; className?: string }) {
   const length = formatVideoLength(text.video?.durationSeconds);
   return (
     <div data-cover className={`relative aspect-[16/9] overflow-hidden ${className}`}>
-      <Link href={href} tabIndex={-1} aria-hidden className={`absolute inset-0 block ${text.video ? "bg-line" : `cover cover-${text.category}`}`}>
+      <Link href={href} onClick={onOpen} tabIndex={-1} aria-hidden className={`absolute inset-0 block ${text.video ? "bg-line" : `cover cover-${text.category}`}`}>
         {text.video ? (
           <Image src={text.video.thumbnailUrl} alt="" fill sizes={COVER_SIZES[layout]} className="object-cover transition duration-300 group-hover:scale-[1.03]" />
         ) : (
@@ -104,15 +104,19 @@ function Meta({ text }: { text: TextSummary }) {
   );
 }
 
-function Title({ text, layout, href }: { text: TextSummary; layout: CardLayout; href: string }) {
+function Title({ text, layout, href, onOpen }: { text: TextSummary; layout: CardLayout; href: string; onOpen?: () => void }) {
   return (
-    <Link href={href} className={`${TITLE[layout]} font-reading leading-snug font-semibold group-hover:text-accent`} lang={text.language}>
+    <Link href={href} onClick={onOpen} className={`${TITLE[layout]} font-reading leading-snug font-semibold group-hover:text-accent`} lang={text.language}>
       {text.title}
     </Link>
   );
 }
 
 const Owner = ({ text }: { text: TextSummary }) => <p className="-mt-1 truncate text-xs text-muted">by {text.owner.displayName}</p>;
+
+/** Why a recommended card is on its shelf ("96% known words"). */
+const ReasonLine = ({ reason }: { reason?: string }) =>
+  reason ? <p data-testid="reason" className="truncate text-xs font-medium text-accent">{reason}</p> : null;
 
 interface CardProps {
   text: TextSummary;
@@ -123,18 +127,23 @@ interface CardProps {
   className?: string;
   /** Where the cover and title lead; the reader by default. */
   href?: string;
+  /** A short line saying why the card is recommended. */
+  reason?: string;
+  /** Called when the cover or title is followed (recommendation logging). */
+  onOpen?: () => void;
 }
 
-export function TextCard({ text, actions, showOwner, layout = "cards", className = "", href = `/read/${text.id}` }: CardProps) {
-  if (layout === "list") return <TextRow text={text} actions={actions} showOwner={showOwner} className={className} href={href} />;
+export function TextCard({ text, actions, showOwner, layout = "cards", className = "", href = `/read/${text.id}`, reason, onOpen }: CardProps) {
+  if (layout === "list") return <TextRow text={text} actions={actions} showOwner={showOwner} className={className} href={href} reason={reason} onOpen={onOpen} />;
   const compact = layout === "compact";
   return (
     <article className={`group flex flex-col overflow-hidden rounded-xl border border-line bg-card transition hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md ${className}`}>
-      <Cover text={text} layout={layout} href={href} />
+      <Cover text={text} layout={layout} href={href} onOpen={onOpen} />
       <div className={`flex flex-1 flex-col ${compact ? "gap-1.5 p-2.5" : "gap-2 p-3.5"}`}>
         <Meta text={text} />
-        <Title text={text} layout={layout} href={href} />
+        <Title text={text} layout={layout} href={href} onOpen={onOpen} />
         {showOwner && <Owner text={text} />}
+        <ReasonLine reason={reason} />
         <div className="mt-auto space-y-2 pt-1">
           <DifficultyChip text={text} />
           {actions && <div className="flex flex-wrap items-center gap-1 border-t border-line pt-2">{actions}</div>}
@@ -145,14 +154,15 @@ export function TextCard({ text, actions, showOwner, layout = "cards", className
 }
 
 /** List layout: thumbnail, then title and progress; actions sit on the right, or wrap underneath on phones. */
-function TextRow({ text, actions, showOwner, className, href }: Omit<CardProps, "layout" | "href"> & { href: string }) {
+function TextRow({ text, actions, showOwner, className, href, reason, onOpen }: Omit<CardProps, "layout" | "href"> & { href: string }) {
   return (
     <article className={`group flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-line bg-card p-2 transition hover:border-accent/40 hover:shadow-sm sm:flex-nowrap sm:pr-3 ${className}`}>
-      <Cover text={text} layout="list" href={href} className="w-28 shrink-0 rounded-lg sm:w-36" />
+      <Cover text={text} layout="list" href={href} onOpen={onOpen} className="w-28 shrink-0 rounded-lg sm:w-36" />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <Meta text={text} />
-        <Title text={text} layout="list" href={href} />
+        <Title text={text} layout="list" href={href} onOpen={onOpen} />
         {showOwner && <Owner text={text} />}
+        <ReasonLine reason={reason} />
         <div className="max-w-xs"><DifficultyChip text={text} /></div>
       </div>
       {actions && (

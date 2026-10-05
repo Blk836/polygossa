@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { InterestPicker } from "@/components/interest-picker";
 import { useMe } from "@/components/me-context";
 import { Button, ErrorNote, LevelBadge, Spinner } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
@@ -22,7 +23,8 @@ function startLanguage(code: LanguageCode) {
 }
 
 /**
- * Two steps to reading: pick a language, pick a starter text. A language picked on the landing page arrives as
+ * Two steps to reading: pick a language, then (optionally saying what you like, for Explore's recommendations)
+ * pick a starter text. A language picked on the landing page arrives as
  * ?lang= (through sign-up) and skips straight to step 2.
  */
 export default function OnboardingPage() {
@@ -81,6 +83,8 @@ export default function OnboardingPage() {
           </button>
         ))}
       </div>
+
+      {language && <InterestPicker />}
 
       {language && (
         <div className="mt-8">
