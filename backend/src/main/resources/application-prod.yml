@@ -20,5 +20,8 @@ management:
 app:
   jwt:
     secret: ${JWT_SECRET}
+  # Forum admins must be named explicitly in production.
+  forum:
+    admins: ${FORUM_ADMINS:}
   # Never allow credential-free login in production.
   dev-auto-login: false

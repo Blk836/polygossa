@@ -64,5 +64,8 @@ app:
   seed-samples: ${SEED_SAMPLES:true}
   # Auto-login to a test account (development only; see application-prod.yml).
   dev-auto-login: ${DEV_AUTO_LOGIN:true}
+  # The forum team: emails (comma-separated) that post announcements and moderate. Dev: the shared test account.
+  forum:
+    admins: ${FORUM_ADMINS:test@lector.local}
   # Shared secret for the bulk video importer (tools/import-videos.mjs); blank turns its endpoints off.
   curator-token: ${CURATOR_TOKEN:}
