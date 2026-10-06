@@ -88,4 +88,27 @@ class ReadlangParserTest {
         assertThat(ReadlangParser.delimiter("word")).isEqualTo(',');
         assertThat(ReadlangParser.delimiter("\"a;b;c\",d")).isEqualTo(',');
     }
+
+    @Test
+    void theFirstColumnOfEachKindWins() {
+        String csv = "Word,Translation,Context,Word,Translation,Context\nmaison,house,Une maison,x,y,z\n";
+        assertThat(ReadlangParser.parse(csv)).containsExactly(learning("maison", "house", "Une maison"));
+    }
+
+    @Test
+    void sentenceAndExampleHeadersNameTheContext() {
+        assertThat(ReadlangParser.parse("word,sentence\nchat,Le chat\n")).containsExactly(learning("chat", null, "Le chat"));
+        assertThat(ReadlangParser.parse("word,example\nchat,Le chat\n")).containsExactly(learning("chat", null, "Le chat"));
+        assertThat(ReadlangParser.parse("word,notes\nchat,Le chat\n")).containsExactly(learning("chat", null, null));
+    }
+
+    @Test
+    void aDoubledQuoteAtTheVeryEndIsAQuote() {
+        assertThat(ReadlangParser.parse("maison,\"house\"\"\"")).containsExactly(learning("maison", "house\"", null));
+    }
+
+    @Test
+    void aTieWithoutAnySeparatorKeepsTheComma() {
+        assertThat(ReadlangParser.delimiter("\"a,b\"")).isEqualTo(',');
+    }
 }

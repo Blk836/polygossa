@@ -104,6 +104,8 @@ class ForumApiTest {
         assertThat(created.get("replies").asInt()).isZero();
         assertThat(created.get("pinned").asBoolean()).isFalse();
         assertThat(created.get("locked").asBoolean()).isFalse();
+        assertThat(created.get("createdAt").isNull()).isFalse();
+        assertThat(created.get("lastPostAt").asString()).isEqualTo(created.get("createdAt").asString());
         JsonNode shown = show(other, created.get("id").asLong());
         assertThat(shown.get("thread").get("title").asString()).isEqualTo(title);
         assertThat(shown.get("posts")).hasSize(1);

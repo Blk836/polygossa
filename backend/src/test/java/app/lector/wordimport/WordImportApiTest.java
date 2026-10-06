@@ -133,6 +133,7 @@ class WordImportApiTest {
         assertThat(started.get("language").asString()).isEqualTo("fr");
         assertThat(started.get("state").asString()).isIn("queued", "running", "done");
         assertThat(started.toString()).doesNotContain(key);
+        assertThat(started.get("createdAt").isNull()).isFalse();
 
         JsonNode done = await(me, started);
         assertThat(done.get("state").asString()).isEqualTo("done");
@@ -212,6 +213,14 @@ class WordImportApiTest {
         counts(done, 2, 2, 0, 0, 0);
         assertThat(words(me, "fr")).containsEntry("maison", "learning").containsEntry("chat", "learning");
         assertThat(word(me, "fr", "maison").get("definition").asString()).isEqualTo("house");
+    }
+
+    @Test
+    void termsOverFiveHundredCharactersAreLeftOut() throws Exception {
+        String longest = "a".repeat(500);
+        JsonNode done = await(me, startReadlang(me, longest + ",x\n" + "b".repeat(501) + ",y\n", "fr", 202));
+        counts(done, 2, 1, 0, 0, 0);
+        assertThat(words(me, "fr")).containsOnlyKeys(longest);
     }
 
     @Test
