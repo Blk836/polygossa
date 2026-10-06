@@ -25,6 +25,7 @@ describe("initialOf", () => {
 
   it("falls back to the second choice, then a question mark", () => {
     expect(initialOf("", "zoe@x.co")).toBe("Z");
+    expect(initialOf("", "  zoe@x.co")).toBe("Z");
     expect(initialOf("   ", "")).toBe("?");
     expect(initialOf("")).toBe("?");
   });
@@ -95,6 +96,15 @@ describe("crop", () => {
   it("zooming scales the offset so the same point stays at the centre", () => {
     const moved = { zoom: 1, x: 20, y: 0 };
     expect(zoomCrop(landscape, FRAME, moved, 2)).toEqual({ zoom: 2, x: 40, y: 0 });
+  });
+
+  it("zooming from any zoom scales the offset by the change, on both axes", () => {
+    expect(zoomCrop(landscape, FRAME, { zoom: 2, x: 20, y: 0 }, 4)).toEqual({ zoom: 4, x: 40, y: 0 });
+    expect(zoomCrop(portrait, FRAME, { zoom: 1, x: 0, y: 20 }, 2)).toEqual({ zoom: 2, x: 0, y: 40 });
+  });
+
+  it("moving a portrait photo down shows more of its top", () => {
+    expect(sourceSquare(portrait, FRAME, { zoom: 1, x: 0, y: 30 })).toEqual({ x: 0, y: 60, size: 600 });
   });
 
   it("zooming out pulls the image back so it still fills the frame", () => {
