@@ -88,11 +88,11 @@ class WordImportApiTest {
         }
     }
 
-    /** term → status of my words in a language. */
+    /** term → status of my words in a language (sorted by term: many words share an update time, so "recent" pages can overlap). */
     private Map<String, String> words(String user, String language) throws Exception {
         Map<String, String> out = new HashMap<>();
         for (int page = 0; page * 200 < out.size() + 200; page++) {
-            JsonNode result = api.get(user, "/api/vocabulary?language=" + language + "&size=200&page=" + page, 200);
+            JsonNode result = api.get(user, "/api/vocabulary?language=" + language + "&size=200&sort=alpha&page=" + page, 200);
             result.get("items").forEach(w -> out.put(w.get("term").asString(), w.get("status").asString()));
             if (out.size() >= result.get("total").asLong()) {
                 return out;
