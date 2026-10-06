@@ -46,7 +46,8 @@ so the checks must prove it is correct.
      classes changed since that commit, e.g. the one before the task's first commit; `-Ppitest.targets=app.lector.text.*`
      names them directly, and no property mutates everything), `cd frontend && npm run mutate` (Stryker; the modules it
      covers are listed in `stryker.config.mjs`; incremental: it reuses the last run's results for unchanged code and
-     tests and still reports the whole score; `npm run mutate -- --force` re-runs everything), `frontend/node_modules/.bin/stryker run tools/stryker.config.mjs` from the repo root
+     tests and still reports the whole score; `npm run mutate -- --force` re-runs everything, and resets a score that
+     looks too low: a reused result can go stale after a test file broke and was fixed, which only lowers the score), `frontend/node_modules/.bin/stryker run tools/stryker.config.mjs` from the repo root
      (tools/), `cd tokenizer && mutmut run` (configured in `pyproject.toml`, **never run here** —
      Python isn't installed, and mutmut 3 needs Linux/macOS/WSL). In Git Bash, append `/c/Windows/System32` to `PATH`
      (`PATH="$PATH:/c/Windows/System32"`; prepending makes `bash` resolve to WSL) before `npm run mutate`, or Stryker crashes at exit looking for `taskkill` and leaves `.stryker-tmp` behind.
@@ -113,8 +114,14 @@ Gradle needs JDK 21+. The IntelliJ project SDK and Gradle JVM are the `openjdk-2
 
 **Claude managing the servers:** check what's listening before starting anything
 (`Get-NetTCPConnection -State Listen -LocalPort 8080,3000`). If the servers are already up (e.g. the user's IntelliJ
-run), reuse them. Otherwise start them with the commands above as background tasks, and stop those tasks when done.
+run), reuse them. Otherwise start them with the commands above as background tasks, and stop them when done:
+stopping the task leaves the Java/Node processes it launched running, so stop those too and check the ports are free.
 Don't kill servers you didn't start without asking: they may be the user's IntelliJ run.
+
+**Heavy runs:** the machine has 16 GB, and IntelliJ plus the dev servers take a good share. The backend suite (4 JVMs)
+and PIT (4 workers, each booting apps) each need several GB, so run them one at a time, and never while another
+Gradle test/pitest run (another session's, say) uses this checkout: they share `backend/build/`, and result files
+vanish mid-run, failing tests that pass alone.
 
 **Login is currently bypassed.** With no session, `frontend/proxy.ts` calls `POST /api/auth/dev-login` and signs in
 as `test@lector.local` (Classroom plan, so every feature is unlocked). To restore normal sign-up/login, set
@@ -179,7 +186,9 @@ those against a running backend.
   identical setup. So API tests use a shared setup: `@ApiTest`, `@ClockApiTest` (movable `TestClock`, reset before
   each test) or `@YouTubeApiTest` (shared `YouTubeStub`; `reset()` it, never close it). Give a class its own
   `@SpringBootTest`, `@DynamicPropertySource`, `@MockitoBean` or `@TestConfiguration` only when it needs settings or
-  beans the shared ones can't have. Test classes run in parallel JVMs, so don't rely on run order.
+  beans the shared ones can't have, or when its results depend on everything in the database (the recommendation
+  tests rank every public text, so other classes' texts on a shared database break them). Test classes run in
+  parallel JVMs, so don't rely on run order.
 - AI: tests never call OpenAI; `OpenAiStub` (`writing/` test package) answers chat and `/embeddings` requests, including
   slow, failing and malformed replies. The recommendation feature job never runs on its schedule in tests
   (`src/test/resources/application.properties`); tests call `TextFeatureJob.runOnce()`. The dev OpenAI key lives only in
@@ -214,7 +223,9 @@ those against a running backend.
   `lector_card_layout` cookie like the theme; lay item grids out with `cardGridClass(layout)` and pass `layout` to
   `TextCard` (`lib/card-layout.ts`).
 - E2E tests run as `test@lector.local` (auto-login) against the dev database: create any data a test needs through
-  `page.request` and delete it afterwards.
+  `page.request` and delete it afterwards. Other data in that database shows up too (e.g. imported public playlists),
+  so scroll an element into view before measuring it rather than assuming where it sits. The suite runs on Playwright's
+  default 3 workers: the single dev server is the bottleneck, and 4 workers were slower and flakier.
 - That test account normally has **no target language** and no interests. Never change them in a test: `PATCH /api/me`
   can't clear the language again (null means no change) and other specs rely on it being unset. Stub those requests
   in the browser instead (`page.route`, as in `e2e/progress-levels.spec.ts`).
