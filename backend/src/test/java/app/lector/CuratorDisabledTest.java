@@ -2,22 +2,19 @@ package app.lector;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import app.lector.user.LibraryAccount;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import tools.jackson.databind.ObjectMapper;
 
-/** Scenario: without a curator token on the backend, bulk import is off and looks as if it doesn't exist. */
-@SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:curatordisabled;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
-        "app.seed-samples=false",
-        "app.curator-token="
-})
-@AutoConfigureMockMvc
+/**
+ * Scenario: without a curator token on the backend, bulk import is off and looks as if it doesn't exist. The shared
+ * {@link ApiTest} app runs with no curator token.
+ */
+@ApiTest
 class CuratorDisabledTest {
 
     @Autowired
@@ -25,6 +22,9 @@ class CuratorDisabledTest {
 
     @Autowired
     ObjectMapper json;
+
+    @Autowired
+    LibraryAccount library;
 
     @Test
     void everyCuratorRequestIsNotFound() throws Exception {
@@ -38,6 +38,6 @@ class CuratorDisabledTest {
                     null, 404);
         }
         api.send(MockMvcRequestBuilders.get("/api/curator/options"), learner, 404);
-        assertThat(api.get(learner, "/api/library?kind=video&size=50", 200).get("total").asLong()).isZero();
+        assertThat(library.find()).isEmpty(); // nothing was imported, so the library account was never created
     }
 }

@@ -8,16 +8,12 @@ import app.lector.text.Text;
 import app.lector.text.TextRepository;
 import app.lector.user.UserRepository;
 import app.lector.video.YouTubeStub;
+import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -28,31 +24,16 @@ import tools.jackson.databind.ObjectMapper;
  * Feature: bulk-importing curated YouTube videos (docs/acceptance/bulk-video-import.feature), the backend side: the
  * curator endpoint the tools/ importer calls. No AI here, so videos are filed by YouTube's own category.
  */
-@SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:curatedvideos;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
-        "app.seed-samples=false",
-        "app.curator-token=" + CuratedVideoImportApiTest.TOKEN,
-        "app.billing.enforce-limits=true",
-        "app.billing.free-text-limit=2"
-})
-@AutoConfigureMockMvc
+@YouTubeApiTest
 class CuratedVideoImportApiTest {
 
-    static final String TOKEN = "curator-secret";
+    static final String TOKEN = YouTubeApiTest.CURATOR_TOKEN;
     static final String HEADER = "X-Curator-Token";
     private static final String FR = "AAAAAAAAAAA";
     private static final String ES = "BBBBBBBBBBB";
-    private static final YouTubeStub YOUTUBE = ImportCategoryApiTest.start(YouTubeStub::new);
-
-    @DynamicPropertySource
-    static void stubs(DynamicPropertyRegistry registry) {
-        registry.add("app.youtube.base-url", YOUTUBE::baseUrl);
-    }
-
-    @AfterAll
-    static void stop() {
-        YOUTUBE.close();
-    }
+    /** The free plan's import limit (the default; plan limits are on in tests). */
+    private static final int FREE_LIMIT = 5;
+    private static final YouTubeStub YOUTUBE = YouTubeApiTest.STUB;
 
     @Autowired
     MockMvc mvc;
@@ -203,12 +184,11 @@ class CuratedVideoImportApiTest {
 
     @Test
     void planLimitsDoNotApplyToTheLibraryAccount() throws Exception {
-        String[] ids = {FR, ES, "DDDDDDDDDDD"};
-        YOUTUBE.add(ids[2], YouTubeStub.Video.withCaptions("Le parc", 30, "fr", YouTubeStub.srv3("0|2000|Il fait beau.")));
+        List<String> ids = moreFrenchVideos(FREE_LIMIT + 1);
         for (String id : ids) {
-            curate("https://youtu.be/" + id, id.equals(ES) ? "es" : "fr", null, 201);
+            curate("https://youtu.be/" + id, "fr", null, 201);
         }
-        assertThat(libraryVideos()).hasSize(3); // more than the free limit of 2
+        assertThat(libraryVideos()).hasSize(FREE_LIMIT + 1);
     }
 
     @Test
@@ -256,15 +236,30 @@ class CuratedVideoImportApiTest {
 
     @Test
     void theNormalLibraryImportIsStillPrivateAndLimited() throws Exception {
-        String learner = api.signup(); // free plan: 2 imports here
-        JsonNode first = api.send(multipart("/api/texts/import-youtube").param("url", "https://youtu.be/" + FR)
-                .param("language", "fr"), learner, 201);
-        assertThat(first.get("isPublic").asBoolean()).isFalse();
-        assertThat(first.get("mine").asBoolean()).isTrue();
-        api.send(multipart("/api/texts/import-youtube").param("url", "https://youtu.be/" + ES).param("language", "es"),
-                learner, 201);
-        api.send(multipart("/api/texts/import-youtube").param("url", "https://youtu.be/" + FR).param("language", "fr"),
-                learner, 402);
+        String learner = api.signup(); // free plan
+        List<String> ids = moreFrenchVideos(FREE_LIMIT + 1);
+        for (String id : ids.subList(0, FREE_LIMIT)) {
+            JsonNode imported = learnerImport(learner, id, 201);
+            assertThat(imported.get("isPublic").asBoolean()).isFalse();
+            assertThat(imported.get("mine").asBoolean()).isTrue();
+        }
+        learnerImport(learner, ids.getLast(), 402);
         assertThat(libraryVideos()).isEmpty();
+    }
+
+    private JsonNode learnerImport(String learner, String id, int status) throws Exception {
+        return api.send(multipart("/api/texts/import-youtube").param("url", "https://youtu.be/" + id)
+                .param("language", "fr"), learner, status);
+    }
+
+    /** Registers {@code count} more French videos with captions and returns their ids. */
+    private static List<String> moreFrenchVideos(int count) {
+        List<String> ids = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            String id = String.format("VID%08d", i);
+            YOUTUBE.add(id, YouTubeStub.Video.withCaptions("Vidéo " + i, 30, "fr", YouTubeStub.srv3("0|2000|Il fait beau.")));
+            ids.add(id);
+        }
+        return ids;
     }
 }

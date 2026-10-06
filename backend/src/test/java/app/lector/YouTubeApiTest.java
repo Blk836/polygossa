@@ -26,11 +26,15 @@ import org.springframework.test.context.DynamicPropertyRegistrar;
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:apiyoutube;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
         "app.seed-samples=false",
-        "spring.jpa.properties.hibernate.generate_statistics=true"
+        "spring.jpa.properties.hibernate.generate_statistics=true",
+        // Switches on the curator endpoints (bulk video import); nothing else here calls them.
+        "app.curator-token=" + YouTubeApiTest.CURATOR_TOKEN
 })
 @AutoConfigureMockMvc
 @Import(YouTubeApiTest.Config.class)
 public @interface YouTubeApiTest {
+
+    String CURATOR_TOKEN = "curator-secret";
 
     YouTubeStub STUB = Config.start();
 
