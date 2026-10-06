@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { anyActive, importHeadline, importCounts, isActive, type WordImportJob } from "./word-import";
+import { anyActive, importButtonLabel, importHeadline, importCounts, isActive, type WordImportJob } from "./word-import";
 
 const job = (over: Partial<WordImportJob> = {}): WordImportJob => ({
   id: 1,
@@ -62,5 +62,34 @@ describe("importCounts", () => {
   it("shows words found so far while running", () => {
     expect(importCounts(job({ state: "running", found: 400, added: 400, updated: 0, unchanged: 0 })))
       .toBe("400 found · 400 added · 0 updated · 0 unchanged");
+  });
+});
+
+describe("importCounts before the first words arrive", () => {
+  it.each(["queued", "running"] as const)("says it is fetching while %s with nothing found yet", (state) => {
+    const empty = { state, found: 0, added: 0, updated: 0, unchanged: 0 };
+    expect(importCounts(job(empty))).toBe("Fetching your words from LingQ…");
+    expect(importCounts(job({ ...empty, source: "readlang" }))).toBe("Fetching your words from Readlang…");
+  });
+
+  it("shows the counts once a word is found, and for a finished import with none", () => {
+    expect(importCounts(job({ state: "running", found: 1, added: 1, updated: 0, unchanged: 0 })))
+      .toBe("1 found · 1 added · 0 updated · 0 unchanged");
+    expect(importCounts(job({ state: "done", found: 0, added: 0, updated: 0, unchanged: 0 })))
+      .toBe("0 found · 0 added · 0 updated · 0 unchanged");
+    expect(importCounts(job({ state: "failed", found: 0, added: 0, updated: 0, unchanged: 0 })))
+      .toBe("0 found · 0 added · 0 updated · 0 unchanged");
+  });
+});
+
+describe("importButtonLabel", () => {
+  it("names the source when idle", () => {
+    expect(importButtonLabel("lingq", "idle")).toBe("Import from LingQ");
+    expect(importButtonLabel("readlang", "idle")).toBe("Import from Readlang");
+  });
+
+  it("says Starting… while the start is sent, and Importing… while one runs", () => {
+    expect(importButtonLabel("lingq", "starting")).toBe("Starting…");
+    expect(importButtonLabel("readlang", "busy")).toBe("Importing…");
   });
 });
