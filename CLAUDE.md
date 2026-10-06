@@ -117,6 +117,10 @@ Gradle needs JDK 21+. The IntelliJ project SDK and Gradle JVM are the `openjdk-2
 run), reuse them. Otherwise start them with the commands above as background tasks, and stop them when done:
 stopping the task leaves the Java/Node processes it launched running, so stop those too and check the ports are free.
 Don't kill servers you didn't start without asking: they may be the user's IntelliJ run.
+**Exception: duplicates.** If you see more than one frontend (`next dev`/`next start`) or more than one backend
+(`bootRun`/the backend jar) running for this project, stop the extras: they overload the machine. Keep the one in use
+(the IntelliJ run on :3000/:8080, if there is one) and stop the others, e.g. a leftover `next start` on another port.
+The e2e suite's own server on :3210 is not a duplicate while a Playwright run is using it.
 
 **Heavy runs:** the machine has 16 GB, and IntelliJ plus the dev servers take a good share. The backend suite (4 JVMs)
 and PIT (4 workers, each booting apps) each need several GB, so run them one at a time, and never while another
