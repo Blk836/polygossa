@@ -48,7 +48,8 @@ export async function pick(page: Page, buffer: Buffer, name: string, mimeType = 
 }
 
 export const cropDialog = (page: Page) => page.getByRole("dialog", { name: "Crop your photo" });
-export const profileAvatar = (page: Page) => page.getByRole("region", { name: "Profile photo" }).getByTestId("avatar");
+export const photoSection = (page: Page) => page.getByRole("region", { name: "Profile photo" });
+export const profileAvatar = (page: Page) => photoSection(page).getByTestId("avatar");
 export const accountButton = (page: Page) => page.getByRole("banner").getByRole("button", { name: "Account" });
 
 /** Picks an image and saves it through the crop dialog as it opens (centred, zoom 1). */

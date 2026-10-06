@@ -1,5 +1,5 @@
 // Response types for /api/playlists, kept in sync with PlaylistDtos.
-import type { Category, LanguageCode, TextSummary } from "./types";
+import type { Category, LanguageCode, Person, TextSummary } from "./types";
 
 /** One of a playlist's first items, drawn as a card in its deck. */
 export interface PlaylistCover {
@@ -17,7 +17,7 @@ export interface PlaylistSummary {
   description?: string;
   language: LanguageCode;
   isPublic: boolean;
-  owner: { id: number; displayName: string };
+  owner: Person;
   mine: boolean;
   itemCount: number;
   completedCount: number;

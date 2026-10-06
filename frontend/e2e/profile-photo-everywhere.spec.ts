@@ -90,7 +90,7 @@ test("Explore cards and the reader show the sharer's photo", async () => {
   const { page } = teacher;
   await page.goto("/community");
   await page.getByRole("searchbox", { name: "Search titles" }).fill(`Photo text ${tag}`);
-  await expect(page.getByText(anaTitle)).toBeVisible();
+  await expect(page.getByRole("link", { name: anaTitle }).first()).toBeVisible(); // a card can show on a shelf and in the results
   await expectPhotos(page.getByRole("main"));
 
   await page.goto(`/read/${anaText}`);

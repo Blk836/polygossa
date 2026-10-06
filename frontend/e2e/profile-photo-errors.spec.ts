@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { accountButton, cropDialog, me, pick, profileAvatar, signUp, stripes, uploadPhoto, type Person } from "./photo-helpers";
+import { accountButton, cropDialog, me, photoSection, pick, profileAvatar, signUp, stripes, uploadPhoto, type Person } from "./photo-helpers";
 
 // Feature: Profile photo (docs/acceptance/profile-photo.feature): failure paths, phone width and dark mode.
 
@@ -19,7 +19,7 @@ test.describe("on a desktop", () => {
     const { page } = ana;
     for (const [name, mimeType] of [["cv.pdf", "application/pdf"], ["notes.txt", "text/plain"]]) {
       await pick(page, Buffer.from("not an image"), name, mimeType);
-      await expect(page.getByRole("alert")).toHaveText("Please choose a JPEG, PNG or WebP image");
+      await expect(photoSection(page).getByRole("alert")).toHaveText("Please choose a JPEG, PNG or WebP image");
       await expect(cropDialog(page)).toHaveCount(0);
     }
     expect((await me(page)).photoUrl).toBeNull();
@@ -28,7 +28,7 @@ test.describe("on a desktop", () => {
   test("an image the browser can't read is refused", async () => {
     const { page } = ana;
     await pick(page, Buffer.from([0xff, 0xd8, 0xff, 1, 2, 3, 4, 5]), "photo.jpg");
-    await expect(page.getByRole("alert")).toHaveText("That image couldn't be read. Try another one.");
+    await expect(photoSection(page).getByRole("alert")).toHaveText("That image couldn't be read. Try another one.");
     await expect(cropDialog(page)).toHaveCount(0);
     await expect(profileAvatar(page)).toHaveText("A");
   });
@@ -36,7 +36,7 @@ test.describe("on a desktop", () => {
   test("an image over 20 MB is refused", async () => {
     const { page } = ana;
     await pick(page, Buffer.alloc(20 * 1024 * 1024 + 1), "huge.png");
-    await expect(page.getByRole("alert")).toHaveText("That image is too large (max 20 MB)");
+    await expect(photoSection(page).getByRole("alert")).toHaveText("That image is too large (max 20 MB)");
     await expect(cropDialog(page)).toHaveCount(0);
   });
 
@@ -68,7 +68,7 @@ test.describe("on a desktop", () => {
     await uploadPhoto(page, await stripes(page, 300, 300));
     await page.route("**/api/me/photo", (route) => (route.request().method() === "DELETE" ? route.abort() : route.continue()));
     await page.getByRole("button", { name: "Remove photo" }).click();
-    await expect(page.getByRole("alert")).toBeVisible();
+    await expect(photoSection(page).getByRole("alert")).toBeVisible();
     await expect(profileAvatar(page)).toHaveAttribute("data-photo", "yes");
     await expect(page.getByRole("button", { name: "Remove photo" })).toBeEnabled();
   });

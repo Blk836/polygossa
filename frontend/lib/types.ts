@@ -23,7 +23,11 @@ export interface Me {
   dailyReviewGoal: number;
   timezone: string;
   plan: PlanInfo;
+  photoUrl: string | null; // the profile photo, served through the BFF; null for none
 }
+
+/** Someone named in the app (an owner, author or student), with their profile photo or null. */
+export type Person = { id: number; displayName: string; photoUrl: string | null };
 
 export interface KnownStats {
   uniqueWords: number;
@@ -44,7 +48,7 @@ export interface TextSummary {
   isPublic: boolean;
   sourceUrl?: string;
   createdAt: string;
-  owner: { id: number; displayName: string };
+  owner: Person;
   mine: boolean;
   hasAudio: boolean;
   likes?: number;
@@ -190,57 +194,7 @@ export interface ReviewStats {
 export type { Activity, ActivityDay, ActivityPeriod, Dashboard, PeriodStats, Streak } from "./dashboard-types";
 export type { LevelConfidence, Skill, SkillKey, SkillLevels } from "./level-types";
 
-export interface ClassSummary {
-  id: number;
-  name: string;
-  language: LanguageCode;
-  role: "teacher" | "student";
-  teacherName: string;
-  joinCode?: string;
-  studentCount: number;
-  createdAt: string;
-}
-
-export interface Assignment {
-  id: number;
-  textId: number;
-  textTitle: string;
-  cefrLevel: CefrLevel;
-  wordCount: number;
-  dueDate?: string;
-  note?: string;
-  assignedAt: string;
-  opened?: boolean;
-  completed?: boolean;
-}
-
-export interface ClassDetail {
-  info: ClassSummary;
-  assignments: Assignment[];
-  students: { id: number; displayName: string; email: string; joinedAt: string }[];
-}
-
-export interface StudentProgress {
-  id: number;
-  displayName: string;
-  knownWords: number;
-  learningWords: number;
-  wordsAdded7d: number;
-  wordsAdded30d: number;
-  sessions: number;
-  readingSeconds: number;
-  assignmentsOpened: number;
-  assignmentsCompleted: number;
-  lastActive?: string;
-}
-
-export interface ClassProgress {
-  assignmentCount: number;
-  students: StudentProgress[];
-  averageKnownWords: number;
-  averageReadingMinutes: number;
-  assignmentCompletionRate: number;
-}
+export type { Assignment, ClassDetail, ClassProgress, ClassSummary, StudentProgress } from "./class-types";
 
 export interface WritingFeedback {
   correctedText: string;

@@ -5,6 +5,7 @@ export type ForumCategory = "announcements" | "bugs" | "ideas" | "general";
 export interface ForumAuthor {
   id: number;
   name: string;
+  photoUrl: string | null;
 }
 
 export interface ThreadSummary {
