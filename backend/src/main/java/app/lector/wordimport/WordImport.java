@@ -108,6 +108,7 @@ public class WordImport {
     }
 
     public Long getId() { return id; }
+    public Long getUserId() { return userId; }
     public Source getSource() { return source; }
     public Language getLanguage() { return language; }
     public State getState() { return state; }

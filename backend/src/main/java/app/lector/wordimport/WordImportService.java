@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,12 +30,14 @@ import org.springframework.web.multipart.MultipartFile;
  * Imports a learner's words from LingQ (official API, their API key) or Readlang (their exported word list) in the
  * background: starting one queues it and returns at once; the Vocabulary page polls its progress. One import per
  * learner at a time. A LingQ key is only held in memory by the running task, never stored or logged.
+ *
+ * <p>The history keeps the latest attempt that matters per source and language: a success replaces every earlier row
+ * for them, a failure replaces only earlier failures (the last success stays).
  */
 @Service
 public class WordImportService {
 
     static final int MAX_FILE_BYTES = 5 * 1024 * 1024;
-    static final int RECENT = 5;
     static final int BATCH = 500;
     static final String INTERRUPTED = "Interrupted: please start it again";
     static final String UNEXPECTED = "Something went wrong. Try again later.";
@@ -100,7 +102,7 @@ public class WordImportService {
     }
 
     public List<WordImportDto> recent(User user) {
-        return jobs.findByUserIdOrderByIdDesc(user.getId(), PageRequest.of(0, RECENT)).stream()
+        return jobs.findByUserIdOrderByIdDesc(user.getId()).stream()
                 .map(WordImportDto::of).toList();
     }
 
@@ -114,7 +116,7 @@ public class WordImportService {
     public void markInterrupted() {
         for (WordImport job : jobs.findByStateIn(ACTIVE)) {
             job.fail(INTERRUPTED, clock.instant());
-            jobs.save(job);
+            replaceEarlier(jobs.save(job));
         }
     }
 
@@ -140,12 +142,12 @@ public class WordImportService {
                 ImportCounts counts = importer.importWords(userId, language, words);
                 update(jobId, job -> job.record(words.size(), counts));
             });
-            update(jobId, job -> job.finish(clock.instant()));
+            end(jobId, job -> job.finish(clock.instant()));
         } catch (LingqException | ApiException e) {
-            update(jobId, job -> job.fail(e.getMessage(), clock.instant()));
+            end(jobId, job -> job.fail(e.getMessage(), clock.instant()));
         } catch (RuntimeException e) {
             log.warn("Word import {} failed", jobId, e);
-            update(jobId, job -> job.fail(UNEXPECTED, clock.instant()));
+            end(jobId, job -> job.fail(UNEXPECTED, clock.instant()));
         }
     }
 
@@ -154,6 +156,22 @@ public class WordImportService {
             change.accept(job);
             jobs.save(job);
         });
+    }
+
+    /** Finishes or fails the import, then drops the history rows it replaces. */
+    private void end(Long jobId, Consumer<WordImport> change) {
+        jobs.findById(jobId).ifPresent(job -> {
+            change.accept(job);
+            replaceEarlier(jobs.save(job));
+        });
+    }
+
+    private void replaceEarlier(WordImport ended) {
+        boolean succeeded = ended.getState() == WordImport.State.DONE;
+        jobs.deleteAll(jobs.findByUserIdAndSource(ended.getUserId(), ended.getSource()).stream()
+                .filter(old -> old.getId() < ended.getId() && Objects.equals(old.getLanguage(), ended.getLanguage()))
+                .filter(old -> succeeded || old.getState() == WordImport.State.FAILED)
+                .toList());
     }
 
     private static Language language(String code) {
