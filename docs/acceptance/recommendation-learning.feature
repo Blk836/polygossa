@@ -60,10 +60,17 @@ Feature: Recommendations, next steps: learned weights and interests in Settings
     When the weights are learned
     Then no part gets credit for it: position is a term of the fit but not a weight
 
+  Scenario: Only clear evidence earns a part weight
+    Given a part's effect on opening is not clearly above zero (less than 3 standard errors) or is negative
+    Then its learned weight is 0 (a part never counts against an item, and noise earns nothing)
+
+  Scenario: A part that never varies keeps its configured weight
+    Given every example has the same value for a part (e.g. interest is 0 everywhere because nothing is embedded yet)
+    Then the data says nothing about it, so its learned weight is its configured weight
+
   Scenario: Learned weights are on the configured scale
     When the weights are learned
-    Then negative weights become 0 (a part never counts against an item)
-    And the learned weights add up to the same total as the configured ones, so the "shown, never opened" penalty
+    Then the learned weights add up to the same total as the configured ones, so the "shown, never opened" penalty
       keeps its meaning
 
   Scenario: Not enough data
@@ -71,8 +78,8 @@ Feature: Recommendations, next steps: learned weights and interests in Settings
     When the weights are learned
     Then there is no learned result, and ranking keeps the configured weights
 
-  Scenario: Every part learned as 0
-    Given the fit gives every part a weight of 0 or less
+  Scenario: No part clearly matters
+    Given no varying part has a clearly positive effect
     Then there is no learned result, and ranking keeps the configured weights
 
   Scenario: Reading the fit
