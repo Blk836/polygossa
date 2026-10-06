@@ -118,6 +118,6 @@ test("a failed import says why, and words over the plan limit link to the plans"
 test("while an import runs, starting another is disabled", async ({ page }) => {
   await stubList(page, [[job({ state: "running", found: 10, added: 10 })]]);
   await openImport(page);
-  await expect(panel(page).getByRole("button", { name: "Import from LingQ" })).toBeDisabled();
+  await expect(panel(page).getByRole("button", { name: "Importing…" })).toBeDisabled();
   await expect(panel(page)).toContainText("you can leave this page, it keeps going");
 });

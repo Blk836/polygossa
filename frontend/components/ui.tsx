@@ -75,11 +75,16 @@ export function Badge({ children, className = "" }: { children: ReactNode; class
   return <span className={`rounded-full border border-line px-2 py-0.5 text-xs text-muted ${className}`}>{children}</span>;
 }
 
-export function Spinner({ className = "" }: { className?: string }) {
+/**
+ * A small spinning ring; with "reduce motion" on, a still dot. Pass {@code decorative} when text next to it already
+ * says what is happening, so screen readers don't also hear "Loading".
+ */
+export function Spinner({ className = "", decorative = false }: { className?: string; decorative?: boolean }) {
   return (
     <span
-      className={`inline-block size-4 animate-spin rounded-full border-2 border-current border-t-transparent ${className}`}
-      aria-label="Loading"
+      data-testid="spinner"
+      className={`inline-block size-4 shrink-0 rounded-full border-2 border-current border-t-transparent motion-safe:animate-spin motion-reduce:border-t-current motion-reduce:bg-current ${className}`}
+      {...(decorative ? { "aria-hidden": true } : { "aria-label": "Loading" })}
     />
   );
 }

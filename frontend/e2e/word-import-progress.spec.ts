@@ -61,8 +61,13 @@ test("a rejected start puts the button back and shows the error", async ({ page 
 
 test("a running import spins on its row and the button until it is done, then the word list refreshes", async ({ page }) => {
   await page.route("**/api/word-imports/lingq", (route) => route.fulfill({ status: 202, json: job({ state: "queued" }) }));
-  await stubList(page, [[], [job({})], [job({ found: 120, added: 120 })], [job({ state: "done", found: 450, added: 450 })]]);
+  // The test moves the import along: nothing yet, started, words arriving, done.
+  const stages = [[], [job({})], [job({ found: 120, added: 120 })], [job({ state: "done", found: 450, added: 450 })]];
+  let stage = 0;
+  await page.route("**/api/word-imports", (route) => route.fulfill({ json: stages[stage] }));
   await openImport(page);
+  await expect(panel(page).getByRole("button", { name: "Import from LingQ" })).toBeEnabled();
+  stage = 1;
   await panel(page).getByLabel("LingQ API key").fill("abc123");
   await panel(page).getByRole("button", { name: "Import from LingQ" }).click();
   await expect(row(page)).toContainText("LingQ · French · Importing…");
@@ -72,8 +77,10 @@ test("a running import spins on its row and the button until it is done, then th
   await expect(button).toBeDisabled();
   await expect(button.locator(spinner)).toBeVisible();
   await expect(panel(page)).toContainText("you can leave this page, it keeps going");
+  stage = 2;
   await expect(row(page)).toContainText("120 found · 120 added", { timeout: 10_000 });
   const refreshed = page.waitForRequest((r) => r.method() === "GET" && /\/api\/vocabulary\?/.test(r.url()), { timeout: 10_000 });
+  stage = 3;
   await expect(row(page)).toContainText("LingQ · French · Done", { timeout: 10_000 });
   await refreshed;
   await expect(row(page)).toContainText("450 found · 450 added");
@@ -83,9 +90,12 @@ test("a running import spins on its row and the button until it is done, then th
 
 test("a failed import stops spinning, says why and frees the button", async ({ page }) => {
   const reason = "LingQ didn't accept this API key. Copy it again from lingq.com/accounts/apikey.";
-  await stubList(page, [[job({})], [job({ state: "failed", error: reason })]]);
+  let failed = false;
+  await page.route("**/api/word-imports", (route) =>
+    route.fulfill({ json: [failed ? job({ state: "failed", error: reason }) : job({})] }));
   await openImport(page);
   await expect(row(page).locator(spinner)).toBeVisible();
+  failed = true;
   await expect(row(page)).toContainText("LingQ · French · Failed", { timeout: 10_000 });
   await expect(row(page)).toContainText(reason);
   await expect(panel(page).locator(spinner)).toHaveCount(0);

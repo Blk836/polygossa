@@ -1,17 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Button, ErrorNote, Field, inputClass, selectClass } from "@/components/ui";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { Button, ErrorNote, Field, Spinner, inputClass, selectClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import { LANGUAGES } from "@/lib/languages";
-import { POLL_MS, anyActive, importCounts, importHeadline, type WordImportJob } from "@/lib/word-import";
+import { POLL_MS, anyActive, importButtonLabel, importCounts, importHeadline, isActive, type WordImportJob } from "@/lib/word-import";
 
 type Source = "lingq" | "readlang";
 
 /**
  * Importing words from LingQ (API key) or Readlang (exported word list). Imports run on the server; this shows the
  * last few and refreshes them every couple of seconds while one is going, calling {@code onImported} when it ends.
+ * A running import spins on its row and on the button; screen readers hear "Importing" once, not every refresh.
  */
 export function WordImports({ open, defaultLanguage, onImported }: { open: boolean; defaultLanguage: string; onImported: () => void }) {
   const [jobs, setJobs] = useState<WordImportJob[]>([]);
@@ -37,39 +38,56 @@ export function WordImports({ open, defaultLanguage, onImported }: { open: boole
     };
   }, [reload, onImported]);
 
+  // The started job shows at once, so the button goes from Starting… straight to Importing…; the reload then polls it.
+  const started = useCallback((job: WordImportJob) => {
+    setJobs((list) => [job, ...list.filter((j) => j.id !== job.id)]);
+    setReload((r) => r + 1);
+  }, []);
+
   if (!open && jobs.length === 0) return null;
+  const busy = anyActive(jobs);
   return (
     <section aria-label="Import words" className="mb-4 space-y-3">
-      {open && <ImportForm defaultLanguage={defaultLanguage} busy={anyActive(jobs)} onStarted={() => setReload((r) => r + 1)} />}
+      <p role="status" className="sr-only">{busy ? "Importing" : ""}</p>
+      {open && <ImportForm defaultLanguage={defaultLanguage} busy={busy} onStarted={started} />}
       {jobs.length > 0 && <ImportList jobs={jobs} />}
     </section>
   );
 }
 
-function ImportForm({ defaultLanguage, busy, onStarted }: { defaultLanguage: string; busy: boolean; onStarted: () => void }) {
+function ImportForm({ defaultLanguage, busy, onStarted }: { defaultLanguage: string; busy: boolean; onStarted: (job: WordImportJob) => void }) {
   const [source, setSource] = useState<Source>("lingq");
   const [language, setLanguage] = useState(defaultLanguage);
   const [apiKey, setApiKey] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [starting, setStarting] = useState(false);
+  const phase = starting ? "starting" : busy ? "busy" : "idle";
 
   async function submit(e: FormEvent) {
     e.preventDefault();
+    if (phase !== "idle") return;
     setError(null);
+    setStarting(true);
     try {
-      if (source === "lingq") {
-        await api("word-imports/lingq", { body: { apiKey: apiKey.trim(), language: language || null } });
-        setApiKey("");
-      } else {
-        const form = new FormData();
-        if (file) form.append("file", file);
-        form.append("language", language);
-        await api("word-imports/readlang", { body: form });
-      }
-      onStarted();
+      onStarted(await start());
     } catch (err) {
       setError(errorMessage(err));
+    } finally {
+      setStarting(false);
     }
+  }
+
+  async function start(): Promise<WordImportJob> {
+    if (source === "lingq") {
+      const job = await api<WordImportJob>("word-imports/lingq", { body: { apiKey: apiKey.trim(), language: language || null } });
+      setApiKey("");
+      return job;
+    }
+    const form = new FormData();
+    if (file) form.append("file", file);
+    form.append("language", language);
+    return api<WordImportJob>("word-imports/readlang", { body: form });
   }
 
   return (
@@ -100,7 +118,10 @@ function ImportForm({ defaultLanguage, busy, onStarted }: { defaultLanguage: str
         </Field>
       </div>
       <ErrorNote message={error} />
-      <Button type="submit" disabled={busy}>{source === "lingq" ? "Import from LingQ" : "Import from Readlang"}</Button>
+      <Button type="submit" disabled={phase !== "idle"}>
+        {phase !== "idle" && <Spinner decorative />}
+        {importButtonLabel(source, phase)}
+      </Button>
       {busy && <p className="text-sm text-muted">An import is running: you can leave this page, it keeps going.</p>}
     </form>
   );
@@ -111,7 +132,10 @@ function ImportList({ jobs }: { jobs: WordImportJob[] }) {
     <ul className="divide-y divide-line rounded-xl border border-line bg-card text-sm">
       {jobs.map((job) => (
         <li key={job.id} data-testid="word-import" className="p-3">
-          <p className="font-medium">{importHeadline(job)}</p>
+          <p className="flex items-center gap-2 font-medium">
+            {isActive(job) && <Spinner decorative className="text-accent" />}
+            {importHeadline(job)}
+          </p>
           <p className="text-muted">{importCounts(job)}</p>
           {job.error && <p className="text-bad">{job.error}</p>}
           {job.overLimit > 0 && <Link href="/settings/subscription" className="underline">See plans</Link>}

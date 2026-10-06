@@ -38,9 +38,22 @@ export function importHeadline(job: WordImportJob): string {
   return `${SOURCES[job.source]} · ${language} · ${STATES[job.state]}`;
 }
 
-/** "254 found · 250 added · 3 updated · 1 unchanged", plus any words over the Free plan's limit. */
+/**
+ * "254 found · 250 added · 3 updated · 1 unchanged", plus any words over the Free plan's limit. Until the first
+ * words arrive, a running import says it is fetching them instead of showing a row of zeros.
+ */
 export function importCounts(job: WordImportJob): string {
+  if (isActive(job) && job.found === 0) return `Fetching your words from ${SOURCES[job.source]}…`;
   const parts = [`${job.found} found`, `${job.added} added`, `${job.updated} updated`, `${job.unchanged} unchanged`];
   if (job.overLimit > 0) parts.push(`${job.overLimit} over the Free plan's limit`);
   return parts.join(" · ");
+}
+
+/** The Import button: idle, sending the start, or waiting for a running import. */
+export type ImportPhase = "idle" | "starting" | "busy";
+
+export function importButtonLabel(source: WordImportJob["source"], phase: ImportPhase): string {
+  if (phase === "starting") return "Starting…";
+  if (phase === "busy") return "Importing…";
+  return `Import from ${SOURCES[source]}`;
 }
