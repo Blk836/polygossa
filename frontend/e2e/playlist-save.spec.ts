@@ -109,6 +109,8 @@ test("a save the server rejects goes back to Save", async ({ page }) => {
 test("hovering a playlist card shows the pointer, like a text card", async ({ page }) => {
   await sharedPlaylist(page);
   await page.goto("/community");
+  // Other playlists in the dev database can push the card below the fold, where elementFromPoint finds nothing.
+  await card(page).scrollIntoViewIfNeeded();
   const box = (await card(page).boundingBox())!;
   for (const y of [0.3, 0.6]) {
     const cursor = await page.evaluate(([x, y]) => getComputedStyle(document.elementFromPoint(x, y)!).cursor, [box.x + box.width / 2, box.y + box.height * y]);

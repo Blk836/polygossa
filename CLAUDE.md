@@ -39,7 +39,7 @@ so the checks must prove it is correct.
    something pass. If a test seems wrong, stop and tell me why.
 4. Before claiming done, run and show the actual output of:
    - full test suite: `./gradlew :backend:test` (backend); `cd frontend && npm test` (Vitest, pure modules only);
-     `cd frontend && npm run e2e` (Playwright, `e2e/*.spec.ts`, real Chromium against the running app — any UI change
+     `cd frontend && npm run e2e` (Playwright, `e2e/*.spec.ts`, real Chromium against a production build — any UI change
      needs a scenario here, since there are no component tests); `cd tokenizer && pytest` (sidecar);
      `node --test "tools/**/*.test.mjs"` (tools).
    - mutation testing on changed files: `./gradlew :backend:pitest -Ppitest.since=<commit>` (PIT on just the main
@@ -164,7 +164,10 @@ Optional:
 ```bash
 ./gradlew :backend:test                                           # unit + MockMvc integration tests
 cd frontend && npm test && npx tsc --noEmit && npx eslint . && npx next build
-cd frontend && npm run e2e   # Playwright (first time: npx playwright install chromium); reuses servers on :3000/:8080 (e.g. the IntelliJ App run) or starts them (JAVA_HOME needed)
+cd frontend && npm run e2e   # Playwright (first time: npx playwright install chromium); ~4.5 min. Runs against a production build on :3210
+                             # (scripts/e2e-server.mjs: rebuilt only when sources change; a next dev on :3000 keeps running),
+                             # reuses a backend on :8080 (e.g. the IntelliJ App run) or starts one (JAVA_HOME needed).
+                             # E2E_BASE_URL=http://localhost:3000 points it at the dev server instead, for debugging.
 cd tokenizer && pip install -r requirements-dev.txt && pytest      # Python not installed on the dev machine
 node --test "tools/**/*.test.mjs"                                  # tools/
 ```
@@ -226,8 +229,12 @@ those against a running backend.
   `TextCard` (`lib/card-layout.ts`).
 - E2E tests run as `test@lector.local` (auto-login) against the dev database: create any data a test needs through
   `page.request` and delete it afterwards. Other data in that database shows up too (e.g. imported public playlists),
-  so scroll an element into view before measuring it rather than assuming where it sits. The suite runs on Playwright's
-  default 3 workers: the single dev server is the bottleneck, and 4 workers were slower and flakier.
+  so scroll an element into view before measuring it rather than assuming where it sits. Never hard-code the port:
+  use `test.info().project.use.baseURL` for cookies and extra browser contexts. The suite runs on Playwright's default
+  3 workers: it is CPU-bound on the 6-core dev machine (IntelliJ alone was using about 2 cores), and 4–5 workers were no
+  faster and made timing-sensitive tests flaky. It went from 12 to 4.5 minutes by testing a production build instead
+  of next dev, and by fixing what the backend profile (JFR) showed: per-row projection proxies, a per-cue transcript
+  scan, and YouTube downloads repeated for every video import.
 - That test account normally has **no target language** and no interests. Never change them in a test: `PATCH /api/me`
   can't clear the language again (null means no change) and other specs rely on it being unset. Stub those requests
   in the browser instead (`page.route`, as in `e2e/progress-levels.spec.ts`).

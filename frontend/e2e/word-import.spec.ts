@@ -59,12 +59,12 @@ test("a LingQ import sends the key once, clears it, and shows progress until don
     sent = route.request().postDataJSON();
     await route.fulfill({ status: 202, json: job({ state: "queued" }) });
   });
-  // Nothing before the start; then running for three polls (about 4 seconds), then done.
+  // Nothing before the start; running on the first look after it, then done on the next poll.
   await page.route("**/api/word-imports", (route) => {
     if (route.request().method() !== "GET") return route.fallback();
     if (sent === null) return route.fulfill({ json: [] });
     polls++;
-    return route.fulfill({ json: [polls <= 3 ? job({ found: 200, added: 200 }) : job({ state: "done", found: 450, added: 450 })] });
+    return route.fulfill({ json: [polls <= 1 ? job({ found: 200, added: 200 }) : job({ state: "done", found: 450, added: 450 })] });
   });
   await openImport(page);
   await panel(page).getByLabel("LingQ API key").fill("abc123secret");

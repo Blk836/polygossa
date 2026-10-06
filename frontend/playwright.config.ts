@@ -16,8 +16,8 @@ if (process.platform === "win32" && process.env.SystemRoot) {
   if (!path.toLowerCase().split(";").includes(system32.toLowerCase())) process.env.PATH = `${path};${system32}`;
 }
 
-const external = process.env.E2E_BASE_URL;
-const port = process.env.E2E_PORT ?? "3210";
+const external = process.env.E2E_BASE_URL || undefined;
+const port = process.env.E2E_PORT || "3210";
 const baseURL = external ?? `http://localhost:${port}`;
 
 export default defineConfig({

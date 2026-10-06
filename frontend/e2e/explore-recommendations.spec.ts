@@ -113,7 +113,7 @@ test("Not interested removes the card from every shelf at once", async ({ page }
   await stretchCard.getByRole("button", { name: "Not interested" }).click();
   await expect(shelf(page, "Stretch")).toHaveCount(0);
   await expect(shelf(page, /Because you liked/)).toHaveCount(0);
-  expect(marked).toEqual([`PUT ${cards[3].id}`]);
+  await expect.poll(() => marked).toEqual([`PUT ${cards[3].id}`]);
 });
 
 test("See all on a topic shelf shows Explore filtered by that topic", async ({ page }) => {
