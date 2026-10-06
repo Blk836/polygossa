@@ -159,7 +159,8 @@ test.describe("mobile", () => {
   });
 
   test("compact shows two cards per row", async ({ page }) => {
-    await page.goto("/library");
+    await createOwnText(page);
+    await page.reload();
     await option(page, "Compact").click();
     await expect.poll(() => columns(grid(page))).toBe(2);
   });
