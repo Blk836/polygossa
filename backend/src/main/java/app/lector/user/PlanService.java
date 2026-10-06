@@ -88,6 +88,14 @@ public class PlanService {
         }
     }
 
+    /** How many more words this learner can put in "learning" (Long.MAX_VALUE when unlimited). */
+    public long savedWordsLeft(User user) {
+        if (!isLimited(user)) {
+            return Long.MAX_VALUE;
+        }
+        return Math.max(0, billing.freeWordLimit() - vocabulary.countByUserIdAndStatus(user.getId(), WordStatus.LEARNING));
+    }
+
     public PlanInfo describe(User user) {
         Tier effective = effectiveTier(user);
         boolean limited = isLimited(user);

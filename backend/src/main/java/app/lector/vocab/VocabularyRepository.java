@@ -28,6 +28,8 @@ public interface VocabularyRepository extends JpaRepository<VocabularyEntry, Lon
 
     Optional<VocabularyEntry> findByUserIdAndLanguageAndTerm(Long userId, Language language, String term);
 
+    List<VocabularyEntry> findByUserIdAndLanguageAndTermIn(Long userId, Language language, java.util.Collection<String> terms);
+
     @Query("select v.id as id, v.term as term, v.status as status, v.kind as kind from VocabularyEntry v "
             + "where v.user.id = :userId and v.language = :language")
     List<TermStatus> findTermStatuses(@Param("userId") Long userId, @Param("language") Language language);

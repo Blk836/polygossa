@@ -91,8 +91,12 @@ class WordImportApiTest {
     /** term → status of my words in a language. */
     private Map<String, String> words(String user, String language) throws Exception {
         Map<String, String> out = new HashMap<>();
-        for (JsonNode w : api.get(user, "/api/vocabulary?language=" + language + "&size=1000", 200).get("items")) {
-            out.put(w.get("term").asString(), w.get("status").asString());
+        for (int page = 0; page * 200 < out.size() + 200; page++) {
+            JsonNode result = api.get(user, "/api/vocabulary?language=" + language + "&size=200&page=" + page, 200);
+            result.get("items").forEach(w -> out.put(w.get("term").asString(), w.get("status").asString()));
+            if (out.size() >= result.get("total").asLong()) {
+                return out;
+            }
         }
         return out;
     }

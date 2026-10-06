@@ -107,6 +107,13 @@ public class VocabularyEntry {
         touch();
     }
 
+    /** Marks an imported word known as of {@code knownAt} (when it was learned elsewhere, not now). */
+    public void knownSince(Instant knownAt) {
+        status = WordStatus.KNOWN;
+        this.knownAt = knownAt;
+        touch();
+    }
+
     public void touch() {
         updatedAt = Instant.now();
     }
