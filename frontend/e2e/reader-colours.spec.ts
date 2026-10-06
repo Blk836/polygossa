@@ -47,6 +47,18 @@ async function expectBackground(page: Page, word: Locator, token: string | null)
   await expect.poll(() => word.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(want);
 }
 
+/**
+ * Waits for the word being spoken to show the audio colour. Read in one go on whichever word is speaking: playback
+ * runs on (about half a second a word), so by a second look the highlight may have moved to the next word.
+ */
+async function expectSpeakingBackground(page: Page) {
+  const want = await tokenColour(page, "--w-audio");
+  await expect.poll(() => page.evaluate(() => {
+    const word = document.querySelector("article .w-speaking");
+    return word ? getComputedStyle(word).backgroundColor : "no word speaking";
+  })).toBe(want);
+}
+
 async function saveStatus(page: Page, c: Created, term: string, status: string, kind = "word") {
   const res = await page.request.post("/api/vocabulary", { data: { language: c.language, term, displayTerm: term, kind, status } });
   expect(res.ok(), await res.text()).toBe(true);
@@ -178,7 +190,7 @@ test.describe("quiet colours", () => {
       await openReader(page, `/read/${created.id}`);
       await page.keyboard.press("]");
       await expect(wordAt(page, PER_SENTENCE)).toHaveClass(/w-speaking/);
-      await expectBackground(page, wordAt(page, PER_SENTENCE), "--w-audio");
+      await expectSpeakingBackground(page);
     }
   });
 });
