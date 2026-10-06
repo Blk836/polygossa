@@ -5,18 +5,21 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 import { Button, ErrorNote, Field, Spinner, inputClass, selectClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import { LANGUAGES } from "@/lib/languages";
-import { POLL_MS, anyActive, importButtonLabel, importCounts, importHeadline, isActive, type WordImportJob } from "@/lib/word-import";
+import { POLL_MS, anyActive, importButtonLabel, importCounts, importHeadline, isActive, visibleImports, type WordImportJob } from "@/lib/word-import";
 
 type Source = "lingq" | "readlang";
 
 /**
  * Importing words from LingQ (API key) or Readlang (exported word list). Imports run on the server; this shows the
- * last few and refreshes them every couple of seconds while one is going, calling {@code onImported} when it ends.
+ * history for the form's source and language (and any running import), refreshing every couple of seconds while one
+ * is going and calling {@code onImported} when it ends.
  * A running import spins on its row and on the button; screen readers hear "Importing" once, not every refresh.
  */
 export function WordImports({ open, defaultLanguage, onImported }: { open: boolean; defaultLanguage: string; onImported: () => void }) {
   const [jobs, setJobs] = useState<WordImportJob[]>([]);
   const [reload, setReload] = useState(0);
+  const [source, setSource] = useState<Source>("lingq");
+  const [language, setLanguage] = useState(defaultLanguage);
   const wasActive = useRef(false);
 
   useEffect(() => {
@@ -44,20 +47,28 @@ export function WordImports({ open, defaultLanguage, onImported }: { open: boole
     setReload((r) => r + 1);
   }, []);
 
-  if (!open && jobs.length === 0) return null;
+  const shown = visibleImports(jobs, { open, source, language });
+  if (!open && shown.length === 0) return null;
   const busy = anyActive(jobs);
+  const choice = { source, language, setSource, setLanguage };
   return (
     <section aria-label="Import words" className="mb-4 space-y-3">
       <p role="status" className="sr-only">{busy ? "Importing" : ""}</p>
-      {open && <ImportForm defaultLanguage={defaultLanguage} busy={busy} onStarted={started} />}
-      {jobs.length > 0 && <ImportList jobs={jobs} />}
+      {open && <ImportForm choice={choice} busy={busy} onStarted={started} />}
+      {shown.length > 0 && <ImportList jobs={shown} />}
     </section>
   );
 }
 
-function ImportForm({ defaultLanguage, busy, onStarted }: { defaultLanguage: string; busy: boolean; onStarted: (job: WordImportJob) => void }) {
-  const [source, setSource] = useState<Source>("lingq");
-  const [language, setLanguage] = useState(defaultLanguage);
+interface Choice {
+  source: Source;
+  language: string;
+  setSource: (source: Source) => void;
+  setLanguage: (language: string) => void;
+}
+
+function ImportForm({ choice, busy, onStarted }: { choice: Choice; busy: boolean; onStarted: (job: WordImportJob) => void }) {
+  const { source, language, setSource, setLanguage } = choice;
   const [apiKey, setApiKey] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);

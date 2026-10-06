@@ -32,6 +32,21 @@ export function anyActive(jobs: WordImportJob[]): boolean {
   return jobs.some(isActive);
 }
 
+/** What the import form is set to: a source, and a language code ("" = all languages). */
+export interface ImportChoice {
+  open: boolean;
+  source: WordImportJob["source"];
+  language: string;
+}
+
+/**
+ * The rows the Words page shows: a running import always, so it can be followed; with the form open, also the
+ * history for the form's source and language (the server keeps the last success and latest failure for each).
+ */
+export function visibleImports(jobs: WordImportJob[], { open, source, language }: ImportChoice): WordImportJob[] {
+  return jobs.filter((job) => isActive(job) || (open && job.source === source && job.language === (language || null)));
+}
+
 /** "LingQ · French · Done". */
 export function importHeadline(job: WordImportJob): string {
   const language = job.language ? languageName(job.language) : "All languages";
