@@ -206,6 +206,15 @@ body {
   }
 }
 
+/* Everything clickable shows the hand, as links do: Tailwind 4 leaves buttons on the default arrow. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary {
+    cursor: pointer;
+  }
+}
+
 /* Dropdowns look like the cards (classes: selectClass / chipSelectClass in components/ui.tsx). Where the browser
    supports customisable selects (Chrome), the open list is drawn as a rounded card too; elsewhere it stays native,
    with the app's chevron on the closed box. */
