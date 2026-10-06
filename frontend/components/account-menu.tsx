@@ -16,6 +16,7 @@ const PLAN_NAMES: Record<Tier, string> = { FREE: "Free", PRO: "Pro", CLASSROOM: 
 const ITEMS = [
   { href: "/settings", label: "Settings" },
   { href: "/classes", label: "Classes" },
+  { href: "/forum", label: "Forum" },
 ];
 
 const itemClass = "block w-full px-3 py-2 text-left text-sm hover:bg-paper focus:bg-paper focus:outline-none";
@@ -30,7 +31,7 @@ function moveFocus(e: KeyboardEvent<HTMLDivElement>) {
   items[(at + step + items.length) % items.length]?.focus();
 }
 
-/** The avatar menu: who's signed in, their plan, Settings, Classes and signing out. */
+/** The avatar menu: who's signed in, their plan, Settings, Classes, the Forum and signing out. */
 export function AccountMenu() {
   const { me } = useMe();
   const pathname = usePathname();

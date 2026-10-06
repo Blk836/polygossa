@@ -73,13 +73,13 @@ test.describe("account menu", () => {
   const menuButton = (page: Page) => page.getByRole("button", { name: "Account" });
   const menu = (page: Page) => page.getByRole("menu", { name: "Account" });
 
-  test("holds Settings, Classes and the plan; the plan is no longer in the top bar", async ({ page }) => {
+  test("holds Settings, Classes, the Forum and the plan; the plan is no longer in the top bar", async ({ page }) => {
     await page.goto("/library");
     await expect(page.getByRole("banner").getByText("Classroom", { exact: true })).toHaveCount(0);
     await expect(menu(page)).toHaveCount(0);
     await menuButton(page).click();
     await expect(menuButton(page)).toHaveAttribute("aria-expanded", "true");
-    await expect(menu(page).getByRole("menuitem")).toHaveText(["Settings", "Classes"]);
+    await expect(menu(page).getByRole("menuitem")).toHaveText(["Settings", "Classes", "Forum"]);
     await expect(menu(page).getByTestId("account-plan")).toHaveText("Classroom plan");
     await expect(menu(page)).toContainText("test@lector.local");
     // The auto-login test account would just be signed straight back in.
