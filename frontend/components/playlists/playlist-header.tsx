@@ -1,5 +1,6 @@
 "use client";
 
+import { Named } from "@/components/avatar";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { api, errorMessage } from "@/lib/api";
@@ -47,7 +48,7 @@ function Meta({ playlist: p }: { playlist: PlaylistSummary }) {
   return (
     <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted">
       <span>{languageName(p.language)} playlist</span>
-      {!p.mine && <span>· by {p.owner.displayName}</span>}
+      {!p.mine && <span>· by <Named name={p.owner.displayName} photoUrl={p.owner.photoUrl} /></span>}
       <span>· {itemsLabel(p)}</span>
       {p.mine && <span data-testid="playlist-status" className="rounded bg-accent-soft px-1.5 py-0.5 text-xs text-ink">{p.isPublic ? "Shared" : "Private"}</span>}
     </div>

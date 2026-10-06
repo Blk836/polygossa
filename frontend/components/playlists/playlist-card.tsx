@@ -1,5 +1,6 @@
 "use client";
 
+import { Named } from "@/components/avatar";
 import Image from "next/image";
 import { useState } from "react";
 import type { CardLayout } from "@/lib/card-layout";
@@ -91,7 +92,7 @@ export function PlaylistCard({ playlist, layout = "cards", className = "", savea
         >
           {playlist.title}
         </button>
-        {!playlist.mine && <p className="-mt-1 truncate text-xs text-muted">by {playlist.owner.displayName}</p>}
+        {!playlist.mine && <p className="-mt-1 truncate text-xs text-muted">by <Named name={playlist.owner.displayName} photoUrl={playlist.owner.photoUrl} /></p>}
         {playlist.completedCount > 0 && <p className="text-xs text-muted">{itemsLabel(playlist)}</p>}
       </div>
       {saveable && <div className={SAVE[layout]}><SavePlaylistButton playlist={playlist} /></div>}

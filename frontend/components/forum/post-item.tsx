@@ -1,5 +1,6 @@
 "use client";
 
+import { Named } from "@/components/avatar";
 import { useState } from "react";
 import { Button, ErrorNote, inputClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
@@ -43,7 +44,7 @@ export function PostItem({ post, first, canDelete, onChanged, onDeleted }: {
   return (
     <li data-testid="forum-post" className="p-4">
       <p className="text-xs text-muted">
-        <span className="font-medium text-ink">{post.author.name}</span> · {new Date(post.createdAt).toLocaleString()}
+        <Named name={post.author.name} photoUrl={post.author.photoUrl} size="sm" className="font-medium text-ink" /> · {new Date(post.createdAt).toLocaleString()}
         {post.editedAt && " · edited"}
       </p>
       {editing ? (

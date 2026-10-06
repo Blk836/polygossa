@@ -1,5 +1,6 @@
 "use client";
 
+import { Named } from "@/components/avatar";
 import Link from "next/link";
 import { languageName } from "@/lib/languages";
 import { playlistReadHref } from "@/lib/playlists";
@@ -36,7 +37,7 @@ export function ReaderHeader({ text, playlist, stats, settings, onSettings, audi
         <LevelBadge level={text.cefrLevel} />
         <span>{languageName(text.language)}</span>
         <span>· {text.wordCount.toLocaleString()} words</span>
-        {!text.mine && <span>· shared by {text.owner.displayName}</span>}
+        {!text.mine && <span>· shared by <Named name={text.owner.displayName} photoUrl={text.owner.photoUrl} /></span>}
         {text.sourceUrl && <a href={text.sourceUrl} target="_blank" rel="noreferrer" className="underline">source</a>}
       </div>
       <div className="mt-3 rounded-xl border border-line bg-card p-3">

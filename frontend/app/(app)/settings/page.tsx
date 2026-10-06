@@ -3,13 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { useMe } from "@/components/me-context";
+import { ProfilePhoto } from "@/components/settings/profile-photo";
 import { Button, ErrorNote, Field, inputClass, selectClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import { LANGUAGES } from "@/lib/languages";
 import { settingsHashRedirect } from "@/lib/nav";
 import type { Me } from "@/lib/types";
 
-/** Settings' Profile tab: name, language, daily goal and time zone. */
+/** Settings' Profile tab: photo, name, language, daily goal and time zone. */
 export default function ProfilePage() {
   const { me, setMe } = useMe();
   const router = useRouter();
@@ -39,29 +40,32 @@ export default function ProfilePage() {
   }
 
   return (
-    <form onSubmit={save} className="space-y-4 rounded-xl border border-line bg-card p-5">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Name"><input className={inputClass} value={displayName} onChange={(e) => setDisplayName(e.target.value)} required maxLength={80} /></Field>
-        <Field label="Email"><input className={inputClass} value={me.email} disabled /></Field>
-        <Field label="Main language you're learning">
-          <select className={selectClass} value={targetLanguage} onChange={(e) => setTargetLanguage(e.target.value)}>
-            <option value="">—</option>
-            {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
-          </select>
-        </Field>
-        <Field label="Daily review goal" hint="Cards per day that count toward your streak">
-          <input type="number" min={1} max={500} className={inputClass} value={goal} onChange={(e) => setGoal(Number(e.target.value))} />
-        </Field>
-        <Field label="Time zone" hint="Decides when your day (and streak) rolls over">
-          <input className={inputClass} value={timezone} onChange={(e) => setTimezone(e.target.value)} />
-        </Field>
-      </div>
-      <ErrorNote message={error} />
-      <div className="flex items-center gap-3">
-        <Button type="submit">Save</Button>
-        <button type="button" className="text-sm text-muted underline" onClick={() => setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone)}>Use this device&apos;s time zone</button>
-        {saved && <span className="text-sm text-accent">Saved</span>}
-      </div>
-    </form>
+    <div className="space-y-4">
+      <ProfilePhoto />
+      <form onSubmit={save} className="space-y-4 rounded-xl border border-line bg-card p-5">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Name"><input className={inputClass} value={displayName} onChange={(e) => setDisplayName(e.target.value)} required maxLength={80} /></Field>
+          <Field label="Email"><input className={inputClass} value={me.email} disabled /></Field>
+          <Field label="Main language you're learning">
+            <select className={selectClass} value={targetLanguage} onChange={(e) => setTargetLanguage(e.target.value)}>
+              <option value="">—</option>
+              {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
+            </select>
+          </Field>
+          <Field label="Daily review goal" hint="Cards per day that count toward your streak">
+            <input type="number" min={1} max={500} className={inputClass} value={goal} onChange={(e) => setGoal(Number(e.target.value))} />
+          </Field>
+          <Field label="Time zone" hint="Decides when your day (and streak) rolls over">
+            <input className={inputClass} value={timezone} onChange={(e) => setTimezone(e.target.value)} />
+          </Field>
+        </div>
+        <ErrorNote message={error} />
+        <div className="flex items-center gap-3">
+          <Button type="submit">Save</Button>
+          <button type="button" className="text-sm text-muted underline" onClick={() => setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone)}>Use this device&apos;s time zone</button>
+          {saved && <span className="text-sm text-accent">Saved</span>}
+        </div>
+      </form>
+    </div>
   );
 }

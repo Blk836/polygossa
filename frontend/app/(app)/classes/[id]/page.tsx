@@ -1,5 +1,6 @@
 "use client";
 
+import { Named } from "@/components/avatar";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
@@ -97,7 +98,7 @@ function ProgressTable({ classId }: { classId: number }) {
             <tbody>
               {p.students.map((s) => (
                 <tr key={s.id} className="border-b border-line last:border-0">
-                  <td className="p-3 font-medium">{s.displayName}</td>
+                  <td className="p-3 font-medium"><Named name={s.displayName} photoUrl={s.photoUrl} size="sm" /></td>
                   <td className="p-3 text-right tabular-nums">{s.knownWords}</td>
                   <td className="p-3 text-right tabular-nums">{s.learningWords}</td>
                   <td className="p-3 text-right tabular-nums">{s.wordsAdded7d} / {s.wordsAdded30d}</td>
@@ -201,8 +202,8 @@ export default function ClassPage() {
           {detail.students.length > 0 && (
             <ul className="mt-4 flex flex-wrap gap-2 text-sm">
               {detail.students.map((s) => (
-                <li key={s.id} className="flex items-center gap-2 rounded-full border border-line bg-card py-1 pr-1 pl-3">
-                  {s.displayName}
+                <li key={s.id} className="flex items-center gap-2 rounded-full border border-line bg-card py-1 pr-1 pl-1">
+                  <Named name={s.displayName} photoUrl={s.photoUrl} size="sm" />
                   <button className="rounded-full px-2 text-muted hover:text-danger" aria-label={`Remove ${s.displayName}`}
                     onClick={() => act(() => api(`classes/${id}/members/${s.id}`, { method: "DELETE" }))}>✕</button>
                 </li>

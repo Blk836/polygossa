@@ -1,5 +1,6 @@
 "use client";
 
+import { Named } from "@/components/avatar";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -112,7 +113,7 @@ function Title({ text, layout, href, onOpen }: { text: TextSummary; layout: Card
   );
 }
 
-const Owner = ({ text }: { text: TextSummary }) => <p className="-mt-1 truncate text-xs text-muted">by {text.owner.displayName}</p>;
+const Owner = ({ text }: { text: TextSummary }) => <p className="-mt-1 truncate text-xs text-muted">by <Named name={text.owner.displayName} photoUrl={text.owner.photoUrl} /></p>;
 
 /** Why a recommended card is on its shelf ("96% known words"). */
 const ReasonLine = ({ reason }: { reason?: string }) =>

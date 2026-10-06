@@ -1,5 +1,6 @@
 "use client";
 
+import { Named } from "@/components/avatar";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -50,7 +51,7 @@ export function PlaylistPane({ playlist, onClose }: { playlist: PlaylistSummary;
             </button>
           </div>
           <h2 className="font-display text-2xl leading-tight font-semibold" lang={summary.language}>{summary.title}</h2>
-          {!summary.mine && <p className="text-sm text-muted">by {summary.owner.displayName}</p>}
+          {!summary.mine && <p className="text-sm text-muted">by <Named name={summary.owner.displayName} photoUrl={summary.owner.photoUrl} /></p>}
           {summary.description && <p className="line-clamp-3 text-sm text-muted">{summary.description}</p>}
           <p className="text-sm text-muted">{itemsLabel(summary)}</p>
           <Actions detail={detail} playlistId={playlist.id} />

@@ -1,5 +1,6 @@
 "use client";
 
+import { Named } from "@/components/avatar";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -98,7 +99,7 @@ function ThreadRow({ thread, showCategory }: { thread: ThreadSummary; showCatego
           </span>
           <span className="mt-0.5 block text-xs text-muted">
             {showCategory && thread.category !== "announcements" && `${forumCategoryLabel(thread.category as ForumCategory)} · `}
-            {thread.author.name}
+            <Named name={thread.author.name} photoUrl={thread.author.photoUrl} />
           </span>
         </span>
         <span className="shrink-0 text-xs text-muted">

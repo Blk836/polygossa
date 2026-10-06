@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useRef, useState, type KeyboardEvent } from "react";
+import { Avatar } from "./avatar";
 import { useMe } from "./me-context";
 import { useDismiss } from "./use-dismiss";
 import { isUnder } from "@/lib/nav";
+import { initialOf } from "@/lib/photo";
 import type { Tier } from "@/lib/types";
 
 /** The backend's development test account (see proxy.ts). */
@@ -44,7 +46,6 @@ export function AccountMenu() {
   useDismiss(open, close, root, refocus);
 
   const here = ITEMS.some((i) => isUnder(pathname, i.href));
-  const initial = (me.displayName || me.email).trim().charAt(0).toUpperCase();
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -62,17 +63,22 @@ export function AccountMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-current={here ? "page" : undefined}
-        className={`grid size-8 place-items-center rounded-full border text-sm font-semibold transition ${
+        className={`grid size-8 place-items-center overflow-hidden rounded-full border text-sm font-semibold transition ${
           here || open ? "border-rubric bg-accent-soft" : "border-line bg-card hover:border-accent/50"
         }`}
       >
-        <span aria-hidden>{initial}</span>
+        {me.photoUrl ? <Avatar name={me.displayName || me.email} photoUrl={me.photoUrl} size="md" /> : <span aria-hidden>{initialOf(me.displayName, me.email)}</span>}
       </button>
       {open && (
         <div role="menu" aria-label="Account" onKeyDown={moveFocus} className="absolute right-0 z-40 mt-2 w-60 overflow-hidden rounded-xl border border-line bg-card py-1 shadow-lg">
           <div className="border-b border-line px-3 pt-2 pb-2.5">
-            <p className="truncate text-sm font-medium">{me.displayName}</p>
-            <p className="truncate text-xs text-muted">{me.email}</p>
+            <div className="flex items-center gap-2.5">
+              <Avatar name={me.displayName || me.email} photoUrl={me.photoUrl} size="md" />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{me.displayName}</p>
+                <p className="truncate text-xs text-muted">{me.email}</p>
+              </div>
+            </div>
             <p data-testid="account-plan" className="mt-2 inline-block rounded-full bg-accent-soft px-2 py-0.5 text-xs font-semibold">
               {PLAN_NAMES[me.plan.effectiveTier]} plan
             </p>
