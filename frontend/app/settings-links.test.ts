@@ -24,6 +24,11 @@ describe("links into Settings", () => {
   });
 
   it("send every plans link to the Subscription page", () => {
-    expect(linking(/href="\/settings\/subscription"/)).toEqual(["app/(app)/classes/page.tsx", "components/reader/popup-parts.tsx", "components/ui.tsx"]);
+    expect(linking(/href="\/settings\/subscription"/)).toEqual([
+      "app/(app)/classes/page.tsx",
+      "components/reader/popup-parts.tsx",
+      "components/ui.tsx",
+      "components/vocabulary/word-import.tsx",
+    ]);
   });
 });
