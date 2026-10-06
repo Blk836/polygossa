@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { anyActive, importButtonLabel, importHeadline, importCounts, isActive, type WordImportJob } from "./word-import";
+import { anyActive, importButtonLabel, importHeadline, importCounts, isActive, visibleImports, type WordImportJob } from "./word-import";
 
 const job = (over: Partial<WordImportJob> = {}): WordImportJob => ({
   id: 1,
@@ -91,5 +91,41 @@ describe("importButtonLabel", () => {
   it("says Starting… while the start is sent, and Importing… while one runs", () => {
     expect(importButtonLabel("lingq", "starting")).toBe("Starting…");
     expect(importButtonLabel("readlang", "busy")).toBe("Importing…");
+  });
+});
+
+describe("visibleImports", () => {
+  const french = job({ id: 1 });
+  const german = job({ id: 2, language: "de" });
+  const all = job({ id: 3, language: null });
+  const readlang = job({ id: 4, source: "readlang" });
+  const failed = job({ id: 5, state: "failed" });
+  const history = [failed, readlang, all, german, french];
+
+  it("shows the history for the form's source and language, newest first", () => {
+    expect(visibleImports(history, { open: true, source: "lingq", language: "fr" })).toEqual([failed, french]);
+    expect(visibleImports(history, { open: true, source: "lingq", language: "de" })).toEqual([german]);
+    expect(visibleImports(history, { open: true, source: "readlang", language: "fr" })).toEqual([readlang]);
+  });
+
+  it("treats no language as All languages, its own entry", () => {
+    expect(visibleImports(history, { open: true, source: "lingq", language: "" })).toEqual([all]);
+  });
+
+  it("shows nothing for a choice never imported", () => {
+    expect(visibleImports(history, { open: true, source: "lingq", language: "ja" })).toEqual([]);
+    expect(visibleImports(history, { open: true, source: "readlang", language: "" })).toEqual([]);
+  });
+
+  it.each(["queued", "running"] as const)("always shows a %s import, whatever the form says", (state) => {
+    const going = job({ id: 6, state, language: "it" });
+    expect(visibleImports([going, ...history], { open: true, source: "lingq", language: "de" })).toEqual([going, german]);
+    expect(visibleImports([going, ...history], { open: true, source: "readlang", language: "fr" })).toEqual([going, readlang]);
+  });
+
+  it("with the form closed shows only a running import", () => {
+    const going = job({ id: 6, state: "running" });
+    expect(visibleImports(history, { open: false, source: "lingq", language: "fr" })).toEqual([]);
+    expect(visibleImports([going, ...history], { open: false, source: "lingq", language: "fr" })).toEqual([going]);
   });
 });

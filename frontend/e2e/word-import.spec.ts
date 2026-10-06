@@ -107,12 +107,16 @@ test("a failed import says why, and words over the plan limit link to the plans"
     job({ id: 2, state: "failed", error: "LingQ didn't accept this API key. Copy it again from lingq.com/accounts/apikey." }),
     job({ id: 1, source: "readlang", state: "done", found: 30, added: 10, overLimit: 20 }),
   ]]);
-  await page.goto("/vocabulary");
+  // The history follows the form's source and language.
+  await openImport(page);
+  await panel(page).getByLabel("Language").selectOption("fr");
   const rows = panel(page).getByTestId("word-import");
-  await expect(rows).toHaveCount(2);
+  await expect(rows).toHaveCount(1);
   await expect(rows.nth(0)).toContainText("LingQ didn't accept this API key.");
-  await expect(rows.nth(1)).toContainText("20 over the Free plan's limit");
-  await expect(rows.nth(1).getByRole("link", { name: "See plans" })).toHaveAttribute("href", "/settings/subscription");
+  await panel(page).getByRole("button", { name: "Readlang" }).click();
+  await expect(rows).toHaveCount(1);
+  await expect(rows.nth(0)).toContainText("20 over the Free plan's limit");
+  await expect(rows.nth(0).getByRole("link", { name: "See plans" })).toHaveAttribute("href", "/settings/subscription");
 });
 
 test("while an import runs, starting another is disabled", async ({ page }) => {

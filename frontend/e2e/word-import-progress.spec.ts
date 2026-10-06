@@ -66,6 +66,8 @@ test("a running import spins on its row and the button until it is done, then th
   let stage = 0;
   await page.route("**/api/word-imports", (route) => route.fulfill({ json: stages[stage] }));
   await openImport(page);
+  // The finished row stays because the form is on its source and language.
+  await panel(page).getByLabel("Language").selectOption("fr");
   await expect(panel(page).getByRole("button", { name: "Import from LingQ" })).toBeEnabled();
   stage = 1;
   await panel(page).getByLabel("LingQ API key").fill("abc123");
@@ -94,6 +96,7 @@ test("a failed import stops spinning, says why and frees the button", async ({ p
   await page.route("**/api/word-imports", (route) =>
     route.fulfill({ json: [failed ? job({ state: "failed", error: reason }) : job({})] }));
   await openImport(page);
+  await panel(page).getByLabel("Language").selectOption("fr");
   await expect(row(page).locator(spinner)).toBeVisible();
   failed = true;
   await expect(row(page)).toContainText("LingQ · French · Failed", { timeout: 10_000 });
