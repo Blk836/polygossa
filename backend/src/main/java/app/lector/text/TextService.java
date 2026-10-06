@@ -244,7 +244,7 @@ public class TextService {
         User owner = text.getOwner();
         return new TextSummary(text.getId(), text.getTitle(), text.getLanguage(), text.getCefrLevel(),
                 text.getWordCount(), text.getUniqueWordCount(), text.isPublic(), text.getSourceUrl(),
-                text.getCreatedAt(), new OwnerDto(owner.getId(), owner.getDisplayName()),
+                text.getCreatedAt(), OwnerDto.of(owner),
                 owner.getId().equals(viewer.getId()), text.hasAudio(), likes, liked, bookmarked, stats,
                 MediaKind.of(text), VideoViews.info(text), text.getCategory(), null);
     }

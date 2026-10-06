@@ -47,6 +47,9 @@ public class User {
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
+    /** Stored name of the profile photo (see {@code StorageService}), or null for none. */
+    private String photoFile;
+
     protected User() {}
 
     public User(String email, String passwordHash, String displayName) {
@@ -117,5 +120,21 @@ public class User {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public String getPhotoFile() {
+        return photoFile;
+    }
+
+    public void setPhotoFile(String photoFile) {
+        this.photoFile = photoFile;
+    }
+
+    /**
+     * Where the profile photo is served, or null for none. The stored name changes with every upload, so it doubles
+     * as a cache-busting version and the photo can be cached for good.
+     */
+    public String photoUrl() {
+        return photoFile == null ? null : "/api/users/" + id + "/photo?v=" + photoFile;
     }
 }

@@ -2,6 +2,7 @@ package app.lector.text;
 
 import app.lector.token.Language;
 import app.lector.token.Token;
+import app.lector.user.User;
 import app.lector.vocab.WordStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
@@ -12,7 +13,11 @@ public final class TextDtos {
 
     private TextDtos() {}
 
-    public record OwnerDto(Long id, String displayName) {}
+    public record OwnerDto(Long id, String displayName, String photoUrl) {
+        public static OwnerDto of(User owner) {
+            return new OwnerDto(owner.getId(), owner.getDisplayName(), owner.photoUrl());
+        }
+    }
 
     /** How much of a text's vocabulary the viewer already knows. */
     public record KnownStats(int uniqueWords, int known, int learning, int ignored, int unseen, double knownPercent) {}

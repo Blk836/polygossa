@@ -262,7 +262,7 @@ public class PlaylistService {
         List<Cover> covers = readable.stream().limit(COVERS).map(t -> new Cover(t.getId(), t.getTitle(),
                 t.isVideo() ? VideoViews.thumbnailUrl(t.getVideoId()) : null, t.getCategory())).toList();
         return new PlaylistSummary(p.getId(), p.getTitle(), p.getDescription(), p.getLanguage(), p.isPublic(),
-                new OwnerDto(owner.getId(), owner.getDisplayName()), p.isOwnedBy(user), readable.size(),
+                OwnerDto.of(owner), p.isOwnedBy(user), readable.size(),
                 completedCount, thumbnail, covers, p.getCreatedAt(), p.getUpdatedAt(), contains, saved);
     }
 }

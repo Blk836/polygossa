@@ -10,9 +10,9 @@ public final class ForumDtos {
 
     private ForumDtos() {}
 
-    public record Author(Long id, String name) {
+    public record Author(Long id, String name, String photoUrl) {
         static Author of(User u) {
-            return new Author(u.getId(), u.getDisplayName());
+            return new Author(u.getId(), u.getDisplayName(), u.photoUrl());
         }
     }
 

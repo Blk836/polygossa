@@ -9,10 +9,11 @@ public record MeDto(
         Language targetLanguage,
         int dailyReviewGoal,
         String timezone,
-        PlanService.PlanInfo plan) {
+        PlanService.PlanInfo plan,
+        String photoUrl) {
 
     static MeDto of(User user, PlanService plans) {
         return new MeDto(user.getId(), user.getEmail(), user.getDisplayName(), user.getTargetLanguage(),
-                user.getDailyReviewGoal(), user.getTimezone(), plans.describe(user));
+                user.getDailyReviewGoal(), user.getTimezone(), plans.describe(user), user.photoUrl());
     }
 }

@@ -16,12 +16,14 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-/** Stores uploaded files (audio) on local disk under {@code app.storage.dir}. */
+/** Stores uploaded files (audio, profile photos) on local disk under {@code app.storage.dir}. */
 @Service
 public class StorageService {
 
     private static final Pattern SAFE_NAME = Pattern.compile("[a-f0-9\\-]{36}\\.[a-z0-9]{1,5}");
     private static final Pattern EXTENSION = Pattern.compile("\\.([A-Za-z0-9]{1,5})$");
+
+    static final long MAX_PHOTO_BYTES = 1024 * 1024;
 
     private final Path root;
 
@@ -50,6 +52,33 @@ public class StorageService {
         String name = UUID.randomUUID() + "." + ext;
         try (InputStream in = file.getInputStream()) {
             Files.copy(in, root.resolve(name), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to store upload", e);
+        }
+        return name;
+    }
+
+    /**
+     * Saves a profile photo and returns its stored name. The type comes from the file's first bytes, never from its
+     * name or declared type, so only real PNGs and JPEGs are stored.
+     */
+    public String savePhoto(MultipartFile file) {
+        if (file.isEmpty() || file.getSize() > MAX_PHOTO_BYTES) {
+            throw ApiException.badRequest("Please upload a JPEG or PNG image of at most 1 MB");
+        }
+        byte[] bytes;
+        try {
+            bytes = file.getBytes();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to read upload", e);
+        }
+        String ext = PhotoType.of(bytes);
+        if (ext == null) {
+            throw ApiException.badRequest("Please upload a JPEG or PNG image");
+        }
+        String name = UUID.randomUUID() + "." + ext;
+        try {
+            Files.write(root.resolve(name), bytes);
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to store upload", e);
         }

@@ -29,11 +29,11 @@ public class ClassroomService {
     public record AssignmentDto(Long id, Long textId, String textTitle, String cefrLevel, int wordCount,
                                 LocalDate dueDate, String note, Instant assignedAt, Boolean opened, Boolean completed) {}
 
-    public record StudentDto(Long id, String displayName, String email, Instant joinedAt) {}
+    public record StudentDto(Long id, String displayName, String photoUrl, String email, Instant joinedAt) {}
 
     public record ClassDetail(ClassSummary info, List<AssignmentDto> assignments, List<StudentDto> students) {}
 
-    public record StudentProgress(Long id, String displayName, long knownWords, long learningWords,
+    public record StudentProgress(Long id, String displayName, String photoUrl, long knownWords, long learningWords,
                                   long wordsAdded7d, long wordsAdded30d, long sessions, long readingSeconds,
                                   int assignmentsOpened, int assignmentsCompleted, Instant lastActive) {}
 
@@ -112,7 +112,7 @@ public class ClassroomService {
         List<StudentDto> students = teacher
                 ? members.findByClassroomId(id).stream()
                         .map(m -> new StudentDto(m.getStudent().getId(), m.getStudent().getDisplayName(),
-                                m.getStudent().getEmail(), m.getJoinedAt()))
+                                m.getStudent().photoUrl(), m.getStudent().getEmail(), m.getJoinedAt()))
                         .toList()
                 : List.of();
         return new ClassDetail(summary(c, user), dtos, students);
@@ -178,7 +178,7 @@ public class ClassroomService {
             Long sid = m.getStudent().getId();
             int opened = textIds.isEmpty() ? 0 : sessions.openedTextIds(sid, textIds).size();
             int completed = textIds.isEmpty() ? 0 : sessions.completedTextIds(sid, textIds).size();
-            rows.add(new StudentProgress(sid, m.getStudent().getDisplayName(),
+            rows.add(new StudentProgress(sid, m.getStudent().getDisplayName(), m.getStudent().photoUrl(),
                     vocabulary.countByUserIdAndLanguageAndStatus(sid, lang, WordStatus.KNOWN),
                     vocabulary.countByUserIdAndLanguageAndStatus(sid, lang, WordStatus.LEARNING),
                     vocabulary.countCreatedSince(sid, lang, now.minus(7, ChronoUnit.DAYS)),
