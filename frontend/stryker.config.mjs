@@ -40,6 +40,12 @@ const config = {
   htmlReporter: { fileName: "reports/mutation/index.html" },
   thresholds: { high: 90, low: 80, break: 80 },
   tempDirName: ".stryker-tmp",
+  // Reuse the last run's results (reports/stryker-incremental.json) for mutants whose code and tests haven't changed,
+  // so a run costs about what the change touched; the score and report still cover every module.
+  // `npm run mutate -- --force` re-runs every mutant. Without per-test coverage, a reused result can be stale after a
+  // test file broke and was fixed (its mutants stay "no coverage"), which only ever lowers the score: if a score looks
+  // too low, force a run.
+  incremental: true,
   // Per-test coverage analysis does not map mutants to tests under Vitest 5 (every mutant reported as untested),
   // so run the whole (fast) suite against each mutant instead.
   coverageAnalysis: "off",

@@ -62,12 +62,33 @@ checkstyle {
     maxWarnings = 0
 }
 
-// Mutation testing: ./gradlew :backend:pitest (report in build/reports/pitest). Limit to changed classes with
-// -Ppitest.targets=app.lector.text.*,app.lector.srs.SrsScheduler
+// Mutation testing: ./gradlew :backend:pitest (report in build/reports/pitest) mutates every main class, which takes
+// a while. To test just a change, -Ppitest.since=<commit> mutates only the main classes changed since that commit
+// (committed, uncommitted or new), e.g. the commit before a task's first one; -Ppitest.targets=app.lector.text.*
+// names classes or packages directly. PIT still runs only the tests that cover the mutated classes.
+// (PIT's incremental history moved to a paid plugin in 1.30, so a re-run can't reuse earlier results.)
+fun changedMainClasses(since: String): List<String> {
+    fun git(vararg args: String) = providers.exec { commandLine("git", *args); workingDir = projectDir }
+        .standardOutput.asText.get().lines()
+    val files = git("diff", "--name-only", since, "--", "src/main/java") +
+        git("ls-files", "--others", "--exclude-standard", "--", "src/main/java")
+    // diff names files from the repo root, ls-files from backend/; deleted files have no class left to mutate.
+    val classes = files.map { it.trim() }
+        .filter { it.endsWith(".java") && (rootProject.file(it).exists() || file(it).exists()) }
+        .map { it.substringAfter("src/main/java/").removeSuffix(".java").replace('/', '.') }
+        .distinct()
+    if (classes.isEmpty()) {
+        throw GradleException("No backend main classes changed since $since")
+    }
+    return classes.flatMap { listOf(it, "$it$*") }
+}
+
 pitest {
     pitestVersion = "1.30.0"
     junit5PluginVersion = "1.2.3"
-    targetClasses = (findProperty("pitest.targets") as String?)?.split(",") ?: listOf("app.lector.*")
+    targetClasses = (findProperty("pitest.targets") as String?)?.split(",")
+        ?: (findProperty("pitest.since") as String?)?.let { changedMainClasses(it) }
+        ?: listOf("app.lector.*")
     targetTests = listOf("app.lector.*")
     excludedClasses = listOf("app.lector.LectorApplication")
     threads = 4

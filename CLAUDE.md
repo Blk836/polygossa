@@ -42,9 +42,11 @@ so the checks must prove it is correct.
      `cd frontend && npm run e2e` (Playwright, `e2e/*.spec.ts`, real Chromium against the running app — any UI change
      needs a scenario here, since there are no component tests); `cd tokenizer && pytest` (sidecar);
      `node --test "tools/**/*.test.mjs"` (tools).
-   - mutation testing on changed files: `./gradlew :backend:pitest` (PIT; narrow with
-     `-Ppitest.targets=app.lector.text.*`), `cd frontend && npm run mutate` (Stryker; the modules it covers are listed
-     in `stryker.config.mjs`), `frontend/node_modules/.bin/stryker run tools/stryker.config.mjs` from the repo root
+   - mutation testing on changed files: `./gradlew :backend:pitest -Ppitest.since=<commit>` (PIT on just the main
+     classes changed since that commit, e.g. the one before the task's first commit; `-Ppitest.targets=app.lector.text.*`
+     names them directly, and no property mutates everything), `cd frontend && npm run mutate` (Stryker; the modules it
+     covers are listed in `stryker.config.mjs`; incremental: it reuses the last run's results for unchanged code and
+     tests and still reports the whole score; `npm run mutate -- --force` re-runs everything), `frontend/node_modules/.bin/stryker run tools/stryker.config.mjs` from the repo root
      (tools/), `cd tokenizer && mutmut run` (configured in `pyproject.toml`, **never run here** —
      Python isn't installed, and mutmut 3 needs Linux/macOS/WSL). In Git Bash, append `/c/Windows/System32` to `PATH`
      (`PATH="$PATH:/c/Windows/System32"`; prepending makes `bash` resolve to WSL) before `npm run mutate`, or Stryker crashes at exit looking for `taskkill` and leaves `.stryker-tmp` behind.
