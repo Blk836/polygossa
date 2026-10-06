@@ -49,6 +49,26 @@ Feature: A fast e2e suite (frontend/e2e, `npm run e2e`)
     Given a test marked 900 words known
     Then its clean-up deletes them in one request per 200 words, not one per word
 
+  # --- Importing the same YouTube video again ---
+
+  Scenario: YouTube's answers about a video are reused for a few minutes
+    Given a video was imported in the last 10 minutes (app.youtube.cache-ttl)
+    When the same video is imported again, by anyone
+    Then its title, length, captions list and category come from the earlier answer instead of youtube.com
+      (the watch page alone takes over 3 seconds to download)
+
+  Scenario: Failures are never reused
+    Given YouTube could not be reached, or had no player data, for a video
+    When it is imported again
+    Then YouTube is asked again
+
+  Scenario: Answers expire
+    Given an answer is older than the cache time
+    Then YouTube is asked again
+
+  Scenario: Backend tests see no cache
+    Then the backend tests run with app.youtube.cache-ttl=0, so the YouTube stub answers every request
+
   # --- Keeping the tests honest ---
 
   Scenario: Same tests, same assertions

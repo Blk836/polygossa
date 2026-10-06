@@ -12,6 +12,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
@@ -45,10 +46,21 @@ public class YouTubeClient {
     private final URI base;
     private final Duration timeout;
     private final HttpClient http;
+    /** A video's metadata and player data, reused for app.youtube.cache-ttl (failures are never kept). */
+    private final RecentAnswers<Optional<Metadata>> metadataCache;
+    private final RecentAnswers<PlayerInfo> playerCache;
+
+    /** Without a cache: every call asks YouTube. */
+    public YouTubeClient(String baseUrl, Duration timeout) {
+        this(baseUrl, timeout, Duration.ZERO, Clock.systemUTC());
+    }
 
     @Autowired
     public YouTubeClient(@Value("${app.youtube.base-url:https://www.youtube.com}") String baseUrl,
-                         @Value("${app.youtube.timeout:10s}") Duration timeout) {
+                         @Value("${app.youtube.timeout:10s}") Duration timeout,
+                         @Value("${app.youtube.cache-ttl:10m}") Duration cacheTtl, Clock clock) {
+        this.metadataCache = new RecentAnswers<>(cacheTtl, clock, Optional::isPresent);
+        this.playerCache = new RecentAnswers<>(cacheTtl, clock, p -> p.durationSeconds() != null || !p.tracks().isEmpty());
         this.base = URI.create(baseUrl.replaceAll("/+$", ""));
         this.timeout = timeout;
         this.http = HttpClient.newBuilder()
@@ -60,6 +72,10 @@ public class YouTubeClient {
 
     /** Title and thumbnail; empty when YouTube can't be reached. Throws 422 when the video isn't available. */
     public Optional<Metadata> metadata(String videoId) {
+        return metadataCache.get(videoId, this::fetchMetadata);
+    }
+
+    private Optional<Metadata> fetchMetadata(String videoId) {
         String watch = URLEncoder.encode(YouTubeUrls.watchUrl(videoId), StandardCharsets.UTF_8);
         Optional<HttpResponse<String>> response = send(get("/oembed?format=json&url=" + watch));
         if (response.isEmpty()) {
@@ -74,6 +90,10 @@ public class YouTubeClient {
 
     /** Video length, caption tracks and YouTube category; {@link CaptionParser#NONE} on any failure. */
     public PlayerInfo player(String videoId) {
+        return playerCache.get(videoId, this::fetchPlayer);
+    }
+
+    private PlayerInfo fetchPlayer(String videoId) {
         if (!YouTubeUrls.VIDEO_ID.matcher(videoId).matches()) {
             return CaptionParser.NONE;
         }
