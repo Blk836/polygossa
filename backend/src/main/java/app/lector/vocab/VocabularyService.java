@@ -145,6 +145,20 @@ public class VocabularyService {
         repo.delete(loadOwned(user, id));
     }
 
+    static final int MAX_BULK_DELETE = 1000;
+
+    /** Deletes those of {@code ids} that are this learner's entries; others' and unknown ids are ignored. */
+    @Transactional
+    public int deleteAll(User user, List<Long> ids) {
+        if (ids == null || ids.isEmpty() || ids.size() > MAX_BULK_DELETE || ids.contains(null)) {
+            throw ApiException.badRequest("ids must hold 1 to " + MAX_BULK_DELETE + " entry ids");
+        }
+        List<VocabularyEntry> mine = repo.findAllById(ids).stream()
+                .filter(e -> e.getUser().getId().equals(user.getId())).toList();
+        repo.deleteAllInBatch(mine);
+        return mine.size();
+    }
+
     @Transactional
     public void deleteByTerm(User user, Language language, String term) {
         repo.findByUserIdAndLanguageAndTerm(user.getId(), language, TokenizationService.normalize(term, language))

@@ -28,6 +28,8 @@ test("a Readlang export is imported in the background and its result shown", asy
   const terms = [`rlmaison${stamp}`, `rlchat${stamp}`];
   try {
     await openImport(page);
+    const before = (await (await page.request.get("/api/word-imports")).json()) as WordImportJob[];
+    const lastId = Math.max(0, ...before.map((j) => j.id));
     await panel(page).getByRole("button", { name: "Readlang" }).click();
     await panel(page).getByLabel("Readlang word list").setInputFiles({
       name: "words.csv", mimeType: "text/csv",
@@ -35,8 +37,13 @@ test("a Readlang export is imported in the background and its result shown", asy
     });
     await panel(page).getByLabel("Language").selectOption("fr");
     await panel(page).getByRole("button", { name: "Import from Readlang" }).click();
+    // Earlier runs left their own "Done" rows: wait for this import to finish before reading the newest row.
+    await expect.poll(async () => {
+      const [newest] = (await (await page.request.get("/api/word-imports")).json()) as WordImportJob[];
+      return newest && newest.id > lastId ? newest.state : "not started";
+    }, { timeout: 15_000 }).toBe("done");
     const latest = panel(page).getByTestId("word-import").first();
-    await expect(latest).toContainText("Readlang · French · Done", { timeout: 15_000 });
+    await expect(latest).toContainText("Readlang · French · Done");
     await expect(latest).toContainText("2 found · 2 added");
     const words = await (await page.request.get(`/api/vocabulary?language=fr&q=rlmaison${stamp}`)).json();
     expect(words.items[0].definition).toBe("house");

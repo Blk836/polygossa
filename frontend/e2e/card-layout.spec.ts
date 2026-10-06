@@ -106,7 +106,7 @@ test.describe("Library, desktop", () => {
   });
 
   test("an unknown saved value falls back to cards", async ({ page, context }) => {
-    await context.addCookies([{ name: "lector_card_layout", value: "tiles", url: "http://localhost:3000" }]);
+    await context.addCookies([{ name: "lector_card_layout", value: "tiles", url: test.info().project.use.baseURL }]);
     await page.goto("/library");
     await expect(option(page, "Cards")).toHaveAttribute("aria-checked", "true");
   });

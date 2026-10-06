@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 // Shared by the reader specs: synthetic texts (and videos, audio) created through the API and removed afterwards.
 
@@ -89,8 +89,6 @@ export async function createVideo(page: Page, words = 1000): Promise<Created> {
   return { ...base, id: (await res.json()).id };
 }
 
-const CLEANUP_BATCH = 8;
-
 /** Deletes the text and every vocabulary entry made from its words. */
 export async function cleanUp(page: Page, created: Created | null) {
   if (!created) return;
@@ -99,10 +97,9 @@ export async function cleanUp(page: Page, created: Created | null) {
     const items = (found.items ?? []) as { id: number; term: string }[];
     const mine = items.filter((e) => e.term.startsWith(created.prefix));
     if (mine.length === 0) break;
-    // A page turn can save hundreds of words: delete a few at a time, not one round trip after another.
-    for (let k = 0; k < mine.length; k += CLEANUP_BATCH) {
-      await Promise.all(mine.slice(k, k + CLEANUP_BATCH).map((e) => page.request.delete(`/api/vocabulary/${e.id}`)));
-    }
+    // A page turn can save hundreds of words: delete each page of them in one request.
+    const res = await page.request.post("/api/vocabulary/delete", { data: { ids: mine.map((e) => e.id) } });
+    expect(res.ok(), await res.text()).toBe(true);
   }
   await page.request.delete(`/api/texts/${created.id}`);
 }
@@ -116,7 +113,7 @@ export async function openReader(page: Page, path: string) {
 
 /** Sets reader settings for the next page load, as the settings menu would. */
 export async function setReaderCookie(page: Page, value: string) {
-  await page.context().addCookies([{ name: "lector_reader", value, url: "http://localhost:3000" }]);
+  await page.context().addCookies([{ name: "lector_reader", value, url: test.info().project.use.baseURL }]);
 }
 
 export const pager = (page: Page) => page.getByRole("navigation", { name: "Pages" }).first();

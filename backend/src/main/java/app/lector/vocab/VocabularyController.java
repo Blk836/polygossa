@@ -119,6 +119,16 @@ public class VocabularyController {
         service.delete(currentUser.load(principal), id);
     }
 
+    public record BulkDelete(List<Long> ids) {}
+
+    public record Deleted(int deleted) {}
+
+    /** Deletes many entries in one request (up to 1,000), e.g. when cleaning up after a test. */
+    @PostMapping("/delete")
+    public Deleted deleteAll(@AuthenticationPrincipal AuthUser principal, @RequestBody BulkDelete req) {
+        return new Deleted(service.deleteAll(currentUser.load(principal), req.ids()));
+    }
+
     /** Removes a word by its text (the reader knows terms, not entry ids). Returning it to "unseen". */
     @DeleteMapping("/by-term")
     @ResponseStatus(HttpStatus.NO_CONTENT)

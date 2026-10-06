@@ -45,7 +45,7 @@ async function markKnown(page: Page, words: number) {
 }
 
 async function newDevice(browser: Browser, viewport = TALL) {
-  return browser.newContext({ baseURL: "http://localhost:3000", viewport });
+  return browser.newContext({ baseURL: test.info().project.use.baseURL, viewport });
 }
 
 test.describe("difficulty", () => {
@@ -99,7 +99,7 @@ test.describe("progress", () => {
     created = await createText(page);
     await readPage(page, 3, 50);
     for (const layout of ["cards", "compact", "list"]) {
-      await page.context().addCookies([{ name: "lector_card_layout", value: layout === "cards" ? "" : layout, url: "http://localhost:3000" }]);
+      await page.context().addCookies([{ name: "lector_card_layout", value: layout === "cards" ? "" : layout, url: test.info().project.use.baseURL }]);
       await page.goto("/library");
       await expect(bar(page), layout).toHaveAttribute("aria-valuenow", "50");
       await expect(bar(page), layout).toHaveAttribute("aria-valuetext", "50% read");

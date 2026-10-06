@@ -17,6 +17,7 @@ export default function ThreadView() {
   const [data, setData] = useState<ThreadPage | null>(null);
   const [missing, setMissing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [moderating, setModerating] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -42,13 +43,17 @@ export default function ThreadView() {
   if (!data) return error ? <ErrorNote message={error} /> : <Spinner />;
   const { thread } = data;
 
+  /** One change at a time, so a slower reply can never undo a newer change on screen. */
   async function moderate(change: Partial<Pick<ThreadSummary, "pinned" | "locked">>) {
     setError(null);
+    setModerating(true);
     try {
       const updated = await api<ThreadSummary>(`forum/threads/${thread.id}`, { method: "PATCH", body: change });
       setData((d) => d && { ...d, thread: updated });
     } catch (e) {
       setError(errorMessage(e));
+    } finally {
+      setModerating(false);
     }
   }
 
@@ -66,8 +71,8 @@ export default function ThreadView() {
       </h1>
       {data.canModerate && (
         <div className="mt-3 flex gap-2">
-          <Button variant="secondary" onClick={() => void moderate({ pinned: !thread.pinned })}>{thread.pinned ? "Unpin" : "Pin"}</Button>
-          <Button variant="secondary" onClick={() => void moderate({ locked: !thread.locked })}>{thread.locked ? "Unlock" : "Lock"}</Button>
+          <Button variant="secondary" disabled={moderating} onClick={() => void moderate({ pinned: !thread.pinned })}>{thread.pinned ? "Unpin" : "Pin"}</Button>
+          <Button variant="secondary" disabled={moderating} onClick={() => void moderate({ locked: !thread.locked })}>{thread.locked ? "Unlock" : "Lock"}</Button>
         </div>
       )}
       <ErrorNote message={error} />
