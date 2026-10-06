@@ -116,4 +116,41 @@ class AudioAlignerCueTest {
         assertThat(nested.get(2).e()).isEqualTo(1500);
         assertThat(nested.get(3).e()).isEqualTo(1800);
     }
+
+    @Test
+    void aLongTranscriptTimesEveryWordOnceInsideItsOwnCue() {
+        // 300 three-second cues of four words: each word lands in its cue's three seconds, in transcript order.
+        Line[] lines = new Line[300];
+        for (int c = 0; c < lines.length; c++) {
+            String w = letters(c);
+            lines[c] = new Line(c * 3000L, c * 3000L + 3000, w + "a " + w + "b " + w + "c " + w + "d");
+        }
+        var timings = align(lines);
+        assertThat(timings).hasSize(1200);
+        assertThat(timings.stream().map(AudioAligner.WordTiming::i).distinct().count()).isEqualTo(1200);
+        for (int k = 0; k < timings.size(); k++) {
+            long cueStart = (k / 4) * 3000L;
+            assertThat(timings.get(k).s()).isBetween(cueStart, cueStart + 3000);
+            assertThat(timings.get(k).e()).isBetween(cueStart, cueStart + 3000);
+        }
+        assertTranscriptOrderByStart(timings);
+    }
+
+    /** A letters-only name for n (the tokenizer would split digits off a word). */
+    private static String letters(int n) {
+        return "m" + (char) ('a' + n / 26 / 26 % 26) + (char) ('a' + n / 26 % 26) + (char) ('a' + n % 26);
+    }
+
+    @Test
+    void firstAtOrAfterFindsTheLowerBound() {
+        int[] sorted = {0, 3, 3, 7, 10};
+        assertThat(AudioAligner.firstAtOrAfter(sorted, -1)).isZero();
+        assertThat(AudioAligner.firstAtOrAfter(sorted, 0)).isZero();
+        assertThat(AudioAligner.firstAtOrAfter(sorted, 1)).isEqualTo(1);
+        assertThat(AudioAligner.firstAtOrAfter(sorted, 3)).isEqualTo(1);
+        assertThat(AudioAligner.firstAtOrAfter(sorted, 4)).isEqualTo(3);
+        assertThat(AudioAligner.firstAtOrAfter(sorted, 10)).isEqualTo(4);
+        assertThat(AudioAligner.firstAtOrAfter(sorted, 11)).isEqualTo(5);
+        assertThat(AudioAligner.firstAtOrAfter(new int[0], 5)).isZero();
+    }
 }

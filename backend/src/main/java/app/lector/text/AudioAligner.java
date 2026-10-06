@@ -27,20 +27,40 @@ public final class AudioAligner {
 
     public static List<WordTiming> fromCues(List<Token> tokens, List<SubtitleParser.Cue> cues) {
         int[] offsets = charOffsets(tokens);
+        // Where each token starts, in list order: never decreasing, so each cue's words are found by binary search
+        // instead of scanning the whole transcript once per cue (a long video's reader page did that on every load).
+        int[] starts = new int[tokens.size()];
+        for (int i = 0; i < starts.length; i++) {
+            starts[i] = offsets[tokens.get(i).index()];
+        }
         long[] ends = clampedEnds(cues);
         List<WordTiming> out = new ArrayList<>();
         for (int c = 0; c < cues.size(); c++) {
             SubtitleParser.Cue cue = cues.get(c);
             List<Token> inCue = new ArrayList<>();
-            for (Token t : tokens) {
-                int start = offsets[t.index()];
-                if (t.word() && start >= cue.charStart() && start < cue.charEnd()) {
-                    inCue.add(t);
+            for (int i = firstAtOrAfter(starts, cue.charStart()); i < starts.length && starts[i] < cue.charEnd(); i++) {
+                if (tokens.get(i).word()) {
+                    inCue.add(tokens.get(i));
                 }
             }
             out.addAll(cue.words().isEmpty() ? spread(inCue, cue.startMs(), ends[c]) : byMarks(inCue, offsets, cue, ends[c]));
         }
         return out;
+    }
+
+    /** The first position whose value is at least {@code value} ({@code sorted.length} when there is none). */
+    static int firstAtOrAfter(int[] sorted, int value) {
+        int lo = 0;
+        int hi = sorted.length;
+        while (lo < hi) {
+            int mid = (lo + hi) >>> 1;
+            if (sorted[mid] < value) {
+                lo = mid + 1;
+            } else {
+                hi = mid;
+            }
+        }
+        return lo;
     }
 
     /** A stretch of a cue's text, from {@code offset}, spoken from {@code ms}. */
