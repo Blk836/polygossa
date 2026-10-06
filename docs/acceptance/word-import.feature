@@ -133,10 +133,103 @@ Feature: Import my words from LingQ and Readlang (see docs/architecture/reading.
     When an import finishes
     Then it shows "Done" with how many words were found, added, updated, unchanged, and over the plan limit
 
-  Scenario: Recent imports are listed
+  Scenario: Imports are listed with their progress
     When I open the Vocabulary page
-    Then my last 5 imports are shown, newest first, with their source, language, state and counts
+    Then my imports are shown, newest first, with their source, language, state and counts
     And while one is running the page refreshes its progress every few seconds
+
+  # --- Import history: the latest successful import per source and language ---
+
+  Scenario: A successful import replaces the previous one for that source and language
+    Given my history has a successful LingQ · French import
+    When a new LingQ · French import succeeds
+    Then the old LingQ · French row is gone and only the new one remains
+
+  Scenario: The old row stays until the new import succeeds
+    Given my history has a successful LingQ · French import
+    When I start a new LingQ · French import
+    Then while it runs, I see the old row and the new running row
+    And once it succeeds, the old row is gone
+
+  Scenario: A failed import doesn't replace the last success
+    Given my history has a successful LingQ · French import
+    When a new LingQ · French import fails (for example, LingQ rejects the key)
+    Then I see both: the failed attempt with its reason, and the earlier success
+
+  Scenario: Repeated failures don't pile up
+    Given my LingQ · French history has a success and then a failed attempt
+    When another LingQ · French import fails
+    Then I see the success and only the latest failure
+
+  Scenario: A success clears an earlier failure too
+    Given my LingQ · French history has a success and then a failed attempt
+    When a new LingQ · French import succeeds
+    Then only the new success remains
+
+  Scenario: An attempt rejected at once leaves the history alone
+    When I start a LingQ import with an invalid key and get 400
+    Then my history is unchanged (no row is ever created)
+
+  Scenario: Other languages are untouched
+    Given my history has a successful LingQ · French import
+    When a LingQ · German import succeeds
+    Then the LingQ · French row is still there
+
+  Scenario: "All languages" is its own entry
+    Given my history has a successful LingQ · French import
+    When a LingQ · All languages import succeeds
+    Then the LingQ · French row is still there, next to the All languages row
+    And a later successful All languages import replaces only the All languages row
+
+  Scenario: Sources don't replace each other
+    Given my history has a successful LingQ · French import
+    When a Readlang · French import succeeds
+    Then both rows remain
+
+  Scenario: An import cut off by a restart counts as a failure
+    Given a LingQ · French import was running when the server stopped, after an earlier success
+    When the server starts again
+    Then the interrupted import shows as failed with "Interrupted: please start it again"
+    And the earlier success is still there
+
+  Scenario: Rows from before this change
+    Given my history has three successful LingQ · French imports from before this change
+    When a new LingQ · French import succeeds
+    Then all three old rows are gone
+
+  Scenario: Only my own history changes
+    Given another learner has LingQ · French imports
+    When my LingQ · French import succeeds
+    Then their history is unchanged
+
+  # --- What the Words page shows ---
+
+  Scenario: The history follows the form's source and language
+    Given I have successful imports for LingQ · French and LingQ · German
+    When the import form is set to LingQ and French
+    Then I see only the LingQ · French row
+    And when I switch the language to German, I see only the LingQ · German row
+
+  Scenario: Nothing imported yet for that choice
+    Given I have never imported LingQ · German
+    When I set the form to LingQ and German
+    Then no history row is shown
+
+  Scenario: Switching source
+    Given I have a LingQ · French row and a Readlang · French row
+    When I switch the form from LingQ to Readlang with French picked
+    Then I see only the Readlang · French row
+
+  Scenario: A running import always shows
+    Given my LingQ · French import is running
+    When I switch the form to German, or close the form
+    Then the running import's row (with its spinner) still shows, so I can follow it
+    And with the form closed and nothing running, no history is shown
+
+  Scenario: The page updates without a reload
+    Given I am watching my LingQ · French import run below my previous LingQ · French row
+    When it succeeds
+    Then the previous row disappears and only the new "Done" row remains
 
   # --- Failures ---
 
