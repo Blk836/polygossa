@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ui";
 import { FilterBar } from "@/components/vocabulary/filters";
 import { exportParams, type Filters } from "@/components/vocabulary/search";
 import { SentenceList } from "@/components/vocabulary/sentence-list";
+import { WordImports } from "@/components/vocabulary/word-import";
 import { WordList } from "@/components/vocabulary/word-list";
 import type { PlanInfo } from "@/lib/types";
 
@@ -38,6 +39,12 @@ function VocabularyView() {
   });
   const update = useCallback((patch: Partial<Filters>) => setFilters((f) => ({ ...f, ...patch })), []);
   const exportQuery = exportParams(filters);
+  const [importOpen, setImportOpen] = useState(false);
+  const [reload, setReload] = useState(0);
+  const imported = useCallback(() => {
+    setReload((r) => r + 1);
+    void refresh();
+  }, [refresh]);
 
   return (
     <div>
@@ -46,11 +53,13 @@ function VocabularyView() {
         subtitle={usageLine(me.plan)}
         actions={
           <>
+            <button type="button" className={linkClass} aria-expanded={importOpen} onClick={() => setImportOpen((o) => !o)}>Import words</button>
             <a className={linkClass} href={`/api/vocabulary/export.csv?${exportQuery}`}>Export CSV</a>
             <a className={linkClass} href={`/api/vocabulary/export.apkg?${exportQuery}`}>Export to Anki</a>
           </>
         }
       />
+      <WordImports open={importOpen} defaultLanguage={me.targetLanguage ?? ""} onImported={imported} />
       <div className="mb-4 flex gap-1 rounded-lg border border-line bg-card p-1 text-sm sm:w-fit" role="group" aria-label="Vocabulary section">
         {(["words", "sentences"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)} className={`flex-1 whitespace-nowrap rounded-md px-4 py-1.5 capitalize ${tab === t ? "bg-accent-soft font-medium" : "text-muted"}`}>
@@ -62,7 +71,7 @@ function VocabularyView() {
       {tab === "sentences" ? (
         <SentenceList language={filters.language} />
       ) : (
-        <WordList filters={filters} onPage={(page) => update({ page })} onChanged={() => void refresh()} />
+        <WordList key={reload} filters={filters} onPage={(page) => update({ page })} onChanged={() => void refresh()} />
       )}
     </div>
   );
