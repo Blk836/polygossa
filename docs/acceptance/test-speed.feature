@@ -6,24 +6,22 @@ Feature: The test gauntlet runs faster without losing coverage
 
   # ---- 1. mutation testing only re-tests what changed ----
 
-  Scenario: A second backend mutation run reuses the results of the first
-    Given "./gradlew :backend:pitest" has run once and written its history
-    And no main or test class has changed since
-    When I run "./gradlew :backend:pitest" again
-    Then no mutant is run again
-    And the report shows the same mutation score as the first run
-    And the run takes a small fraction of the first run's time
+  # PIT 1.30 moved its incremental history into a paid plugin, so the backend narrows by git instead of reusing results.
 
-  Scenario: A backend change re-tests only the mutants it can affect
-    Given "./gradlew :backend:pitest" has run once and written its history
-    When one main class changes
-    And I run "./gradlew :backend:pitest" again
-    Then that class's mutants are run again
-    And mutants of classes the change can't affect keep their earlier results
+  Scenario: Backend mutation testing covers only the classes a change touched
+    Given one main class has changed since commit C (committed, uncommitted or newly added)
+    When I run "./gradlew :backend:pitest -Ppitest.since=C"
+    Then PIT mutates only that class (and its inner classes)
+    And it runs only the tests that cover it
 
-  Scenario: A full backend mutation run can still be forced
-    When I run "./gradlew :backend:pitest -Ppitest.fresh"
-    Then PIT ignores any earlier history and runs every mutant
+  Scenario: Nothing to mutate is a clear failure, not a silent pass
+    Given no main class has changed since commit C
+    When I run "./gradlew :backend:pitest -Ppitest.since=C"
+    Then the build fails with "No backend main classes changed since C"
+
+  Scenario: A full backend mutation run is still the default
+    When I run "./gradlew :backend:pitest" with no properties
+    Then PIT mutates every main class, as before
 
   Scenario: A second frontend mutation run reuses the results of the first
     Given "npm run mutate" has run once and written its incremental report
@@ -37,6 +35,12 @@ Feature: The test gauntlet runs faster without losing coverage
     When one covered module changes
     Then the mutants in the changed code are run again
     And the score still covers every module in stryker.config.mjs
+
+  Scenario: A changed test file re-tests the mutants it could have killed
+    Given "npm run mutate" has run once
+    When a test file changes
+    Then mutants that file's tests had killed are run again
+    And a reused result can only make the score lower than the truth, never higher
 
   Scenario: A full frontend mutation run can still be forced
     When I run "npm run mutate -- --force"
@@ -66,8 +70,12 @@ Feature: The test gauntlet runs faster without losing coverage
       alters the database schema, or talks to its own fake AI or YouTube server
     Then it still boots its own app, as before
 
+  Scenario: Tests that read every public text keep their own app
+    Given a test whose results depend on all public texts in the database (the recommendation shelves)
+    Then it keeps its own app and database, so other classes' texts can't change what it sees
+
   Scenario: Fewer apps are booted
-    When the backend suite runs
+    When the backend suite runs in a single JVM
     Then fewer separate apps are booted than before (counted from the test log)
     And the number of tests run is the same as before, all passing
 
@@ -75,7 +83,8 @@ Feature: The test gauntlet runs faster without losing coverage
 
   Scenario: Backend test classes run in several processes at once
     When I run "./gradlew :backend:test"
-    Then test classes are split across several JVMs
+    Then test classes are split across several JVMs (at most 4, for memory)
+    And each JVM uses a JIT and GC that don't compete for cores
     And the same number of tests run, all passing
     And the run is not flaky: three full runs in a row all pass
 
