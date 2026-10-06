@@ -1,6 +1,7 @@
 package app.lector;
 
 import app.lector.video.YouTubeStub;
+import app.lector.wordimport.LingqStub;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.annotation.Documented;
@@ -16,9 +17,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistrar;
 
 /**
- * Like {@link ApiTest}, but YouTube is {@link #STUB}: one fake server per test JVM that every class with this setup
- * shares, along with one app on its own database. Tests {@code reset()} the stub before adding the videos they need,
- * and must not close it.
+ * Like {@link ApiTest}, but the outside services are fakes: YouTube is {@link #STUB} and LingQ is {@link #LINGQ}, one
+ * server each per test JVM that every class with this setup shares, along with one app on its own database. Tests
+ * {@code reset()} the YouTube stub before adding the videos they need (LingQ accounts are per API key, so tests just
+ * use their own key), and must not close either.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -38,6 +40,8 @@ public @interface YouTubeApiTest {
 
     YouTubeStub STUB = Config.start();
 
+    LingqStub LINGQ = Config.startLingq();
+
     @TestConfiguration
     class Config {
         static YouTubeStub start() {
@@ -48,9 +52,20 @@ public @interface YouTubeApiTest {
             }
         }
 
+        static LingqStub startLingq() {
+            try {
+                return new LingqStub();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+
         @Bean
         DynamicPropertyRegistrar youTubeStub() {
-            return registry -> registry.add("app.youtube.base-url", STUB::baseUrl);
+            return registry -> {
+                registry.add("app.youtube.base-url", STUB::baseUrl);
+                registry.add("app.lingq.base-url", LINGQ::baseUrl);
+            };
         }
     }
 }
