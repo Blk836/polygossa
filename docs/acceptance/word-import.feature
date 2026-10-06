@@ -165,3 +165,49 @@ Feature: Import my words from LingQ and Readlang (see docs/architecture/reading.
 
   Scenario: The key never leaks
     Then the LingQ API key is never stored, logged or returned by any request
+
+  # --- Showing progress ---
+
+  Scenario: Clicking Import gives instant feedback
+    When I click "Import from LingQ"
+    Then the button at once shows a spinner and reads "Starting…", and is disabled
+    And clicking it again doesn't start a second import
+
+  Scenario: A running import shows a spinner on its row
+    Given my LingQ import has started
+    Then its row shows a spinning indicator next to "LingQ · French · Importing…"
+    And the counts below it update every couple of seconds as words arrive
+
+  Scenario: Before the first words arrive
+    Given my LingQ import has started but no words have arrived yet
+    Then the row says "Fetching your words from LingQ…" instead of "0 found · 0 added · 0 updated · 0 unchanged"
+
+  Scenario: The Import button while an import runs
+    Given an import is running
+    Then the Import button shows a spinner, reads "Importing…" and is disabled
+    And the note says I can leave the page and the import keeps going
+
+  Scenario: The spinner stops when the import finishes
+    Given my import is running
+    When it finishes
+    Then the spinner disappears, the row reads "Done" with the final counts, and the button can be used again
+    And my word list refreshes
+
+  Scenario: The spinner stops when the import fails
+    Given my import is running
+    When it fails (for example, LingQ rejects the API key)
+    Then the spinner disappears, the row reads "Failed" with the reason, and the button can be used again
+
+  Scenario: Starting fails straight away
+    When I click "Import from LingQ" and the server rejects it (for example, an invalid key)
+    Then the button's spinner disappears, the button is usable again, and I see the error
+
+  Scenario: Coming back to the page mid-import
+    Given my import is running and I left the Words page
+    When I come back to the Words page
+    Then the running import's row shows the spinner again, even with the form closed
+
+  Scenario: Screen readers and reduced motion
+    Given an import is running
+    Then a screen reader hears "Importing" once, not repeatedly on every refresh
+    And with "reduce motion" turned on in my system settings, the indicator is a still dot instead of a spinner
