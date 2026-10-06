@@ -152,6 +152,8 @@ Optional:
 - **AI features** — set `OPENAI_API_KEY` (any OpenAI-compatible endpoint via `OPENAI_BASE_URL` / `OPENAI_MODEL`,
   embeddings via `OPENAI_EMBEDDING_MODEL`). With a key, a background job tags and embeds public texts for Explore's
   recommendations (`RECOMMEND_FEATURE_JOB=false` turns it off).
+- **Forum admins** — `FORUM_ADMINS` (comma-separated emails) post announcements and moderate; in development the
+  default is `test@lector.local`, in production nobody unless set.
 - **Bulk video import** — set `CURATOR_TOKEN` to switch on the curator endpoints used by `tools/import-videos.mjs`
   (off when blank).
 - **Docker** (PostgreSQL + Redis + everything): `cp .env.example .env` (set `JWT_SECRET`), then
