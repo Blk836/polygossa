@@ -120,7 +120,8 @@ Don't kill servers you didn't start without asking: they may be the user's Intel
 **Exception: duplicates.** If you see more than one frontend (`next dev`/`next start`) or more than one backend
 (`bootRun`/the backend jar) running for this project, stop the extras: they overload the machine. Keep the one in use
 (the IntelliJ run on :3000/:8080, if there is one) and stop the others, e.g. a leftover `next start` on another port.
-The e2e suite's own server on :3210 is not a duplicate while a Playwright run is using it.
+The e2e suite's own servers (frontend on :3210, backend on :8210) are not duplicates while a Playwright run is using
+them.
 
 **Heavy runs:** the machine has 16 GB, and IntelliJ plus the dev servers take a good share. The backend suite (4 JVMs)
 and PIT (4 workers, each booting apps) each need several GB, so run them one at a time, and never while another
@@ -170,7 +171,8 @@ Optional:
 cd frontend && npm test && npx tsc --noEmit && npx eslint . && npx next build
 cd frontend && npm run e2e   # Playwright (first time: npx playwright install chromium); ~4.5 min. Runs against a production build on :3210
                              # (scripts/e2e-server.mjs: rebuilt only when sources change; a next dev on :3000 keeps running),
-                             # reuses a backend on :8080 (e.g. the IntelliJ App run) or starts one (JAVA_HOME needed).
+                             # starts its own backend on :8210 (JAVA_HOME needed) with no OpenAI key, so tests never call
+                             # OpenAI, and its own database (backend/data/e2e*); the IntelliJ run on :8080 is untouched.
                              # E2E_BASE_URL=http://localhost:3000 points it at the dev server instead, for debugging.
 cd tokenizer && pip install -r requirements-dev.txt && pytest      # Python not installed on the dev machine
 node --test "tools/**/*.test.mjs"                                  # tools/
@@ -231,8 +233,9 @@ those against a running backend.
 - Library and Explore share a card layout (cards / compact / list) from `useCardLayout()`, kept in the
   `lector_card_layout` cookie like the theme; lay item grids out with `cardGridClass(layout)` and pass `layout` to
   `TextCard` (`lib/card-layout.ts`).
-- E2E tests run as `test@lector.local` (auto-login) against the dev database: create any data a test needs through
-  `page.request` and delete it afterwards. Other data in that database shows up too (e.g. imported public playlists),
+- E2E tests run as `test@lector.local` (auto-login) against the e2e backend's own database, which starts with only the
+  seeded starter texts: create any data a test needs through `page.request` and delete it afterwards, never rely on
+  what is already there. Other tests' data in that database shows up too (they run in parallel),
   so scroll an element into view before measuring it rather than assuming where it sits. Never hard-code the port:
   use `test.info().project.use.baseURL` for cookies and extra browser contexts. The suite runs on Playwright's default
   3 workers: it is CPU-bound on the 6-core dev machine (IntelliJ alone was using about 2 cores), and 4–5 workers were no
