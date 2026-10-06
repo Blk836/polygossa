@@ -17,16 +17,11 @@ public interface ReadingSessionRepository extends JpaRepository<ReadingSession, 
         long getSeconds();
     }
 
-    interface SessionTime {
-        Instant getStartedAt();
-        long getDurationSeconds();
-    }
-
     @Query("select s.language as language, count(s) as sessions, coalesce(sum(s.durationSeconds), 0) as seconds "
             + "from ReadingSession s where s.user.id = :userId group by s.language")
     List<LanguageTotals> totalsByLanguage(@Param("userId") Long userId);
 
-    @Query("select s.startedAt as startedAt, s.durationSeconds as durationSeconds from ReadingSession s "
+    @Query("select new app.lector.session.SessionTime(s.startedAt, s.durationSeconds) from ReadingSession s "
             + "where s.user.id = :userId and s.startedAt >= :since")
     List<SessionTime> findSince(@Param("userId") Long userId, @Param("since") Instant since);
 

@@ -13,13 +13,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface VocabularyRepository extends JpaRepository<VocabularyEntry, Long> {
 
-    interface TermStatus {
-        Long getId();
-        String getTerm();
-        WordStatus getStatus();
-        EntryKind getKind();
-    }
-
     interface LanguageStatusCount {
         Language getLanguage();
         WordStatus getStatus();
@@ -30,7 +23,7 @@ public interface VocabularyRepository extends JpaRepository<VocabularyEntry, Lon
 
     List<VocabularyEntry> findByUserIdAndLanguageAndTermIn(Long userId, Language language, java.util.Collection<String> terms);
 
-    @Query("select v.id as id, v.term as term, v.status as status, v.kind as kind from VocabularyEntry v "
+    @Query("select new app.lector.vocab.TermStatus(v.id, v.term, v.status, v.kind) from VocabularyEntry v "
             + "where v.user.id = :userId and v.language = :language")
     List<TermStatus> findTermStatuses(@Param("userId") Long userId, @Param("language") Language language);
 
