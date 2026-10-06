@@ -12,6 +12,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,6 +34,8 @@ public final class LingqStub implements AutoCloseable {
         final Map<String, Integer> failures = new ConcurrentHashMap<>();
         /** Answer 429 to this many requests first. */
         volatile int rateLimited;
+        /** While set, requests wait (up to 10 s) until it is released, keeping an import running. */
+        volatile CountDownLatch hold;
         final List<String> requests = Collections.synchronizedList(new ArrayList<>());
 
         public Account card(String lang, String json) {
@@ -64,6 +68,19 @@ public final class LingqStub implements AutoCloseable {
         public Account fail(String list, int page, int status) {
             failures.put(list + ":" + page, status);
             return this;
+        }
+
+        /** Holds every request until {@link #release()}. */
+        public Account hold() {
+            hold = new CountDownLatch(1);
+            return this;
+        }
+
+        public void release() {
+            CountDownLatch gate = hold;
+            if (gate != null) {
+                gate.countDown();
+            }
         }
 
         public Account rateLimit(int times) {
@@ -130,6 +147,7 @@ public final class LingqStub implements AutoCloseable {
             send(ex, 404, "{}", null);
             return;
         }
+        awaitRelease(account);
         if (account.rateLimited > 0) {
             account.rateLimited--;
             send(ex, 429, "{}", "0");
@@ -149,6 +167,17 @@ public final class LingqStub implements AutoCloseable {
         String next = to < all.size() ? "\"https://www.lingq.com/next\"" : "null";
         send(ex, 200, "{\"count\":" + all.size() + ",\"next\":" + next + ",\"previous\":null,\"results\":["
                 + String.join(",", all.subList(from, to)) + "]}", null);
+    }
+
+    private static void awaitRelease(Account account) {
+        CountDownLatch gate = account.hold;
+        if (gate != null) {
+            try {
+                gate.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     private static Map<String, String> params(String query) {

@@ -325,12 +325,14 @@ class WordImportApiTest {
     }
 
     @Test
-    void recentImportsAreListedNewestFirstAndArePrivate() throws Exception {
-        for (int i = 0; i < 6; i++) {
-            await(me, startReadlang(me, "mot" + i + "\n", "fr", 202));
+    void importsAreListedNewestFirstAndArePrivate() throws Exception {
+        List<String> languages = List.of("fr", "de", "es", "it", "pt", "ja");
+        for (String language : languages) {
+            await(me, startReadlang(me, "mot\n", language, 202));
         }
         JsonNode list = api.get(me, "/api/word-imports", 200);
-        assertThat(list).hasSize(5);
+        assertThat(list).hasSize(6);
+        assertThat(list.get(0).get("language").asString()).isEqualTo("ja");
         assertThat(list.get(0).get("id").asLong()).isGreaterThan(list.get(1).get("id").asLong());
         long mine = list.get(0).get("id").asLong();
         String other = api.signup();
