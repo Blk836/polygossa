@@ -145,12 +145,12 @@ Tools on the dev machine (none of these are on PATH in every shell, so use the f
 - **AWS CDK** comes with `infra/` (`npx cdk diff|deploy`); deploying needs Docker running (it builds the images).
 
 When production misbehaves: the services' logs are in CloudWatch (log groups for the backend and frontend, kept a
-month), the last deploy is the latest `deploy staging` job in GitHub Actions (named before the switch), and the
+month), the last deploy is the latest `deploy production` job in GitHub Actions, and the
 stack's state is in CloudFormation. Production is deliberately small until the beta: uploads live on the container's
 disk (lost on redeploy until S3), AI is off (no OpenAI key), no Redis, a single-zone database.
 - Infrastructure is changed only through CDK (`infra/`), never by CLI or console commands. The CLI and MCP server are
   for reading, investigating and previewing (`cdk diff`).
-- Production deploys itself: CI's `deploy staging` job runs `cdk deploy PolygossaStaging` on every merge to main (the
+- Production deploys itself: CI's `deploy production` job runs `cdk deploy PolygossaStaging` on every merge to main (the
   pull request's checks are the gate; a temporary hand-started `deploy_only` run skips them),
   signed in through GitHub's OIDC as the `polygossa-github-deploy` role (its ARN is the repository variable
   `AWS_DEPLOY_ROLE_ARN`; `AWS_ACCOUNT_ID` lets CI's `cdk synth` run without AWS access). GitHub's OIDC subject names
