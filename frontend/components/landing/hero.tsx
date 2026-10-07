@@ -5,6 +5,7 @@ import { LEARNING_LANGUAGES } from "@/lib/languages";
 import { DemoReader } from "./demo-reader";
 
 const NAV = [
+  ["See it in action", "#watch"],
   ["How it works", "#how"],
   ["Features", "#features"],
   ["Pricing", "#pricing"],
