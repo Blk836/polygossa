@@ -50,6 +50,18 @@ describe("staging stack", () => {
     });
   });
 
+  // docs/acceptance/production-database.feature: staging's database stays small and cheap.
+  it("keeps its small database: one zone, the smallest instance, 1 day of backups, no growth or delete lock", () => {
+    template.hasResourceProperties("AWS::RDS::DBInstance", {
+      DBInstanceClass: "db.t4g.micro",
+      MultiAZ: false,
+      AllocatedStorage: "20",
+      BackupRetentionPeriod: 1,
+      MaxAllocatedStorage: Match.absent(),
+      DeletionProtection: Match.absent(),
+    });
+  });
+
   it("generates the database credentials and the login-token secret in Secrets Manager", () => {
     template.resourceCountIs("AWS::SecretsManager::Secret", 2);
     template.hasResourceProperties("AWS::SecretsManager::Secret", {
