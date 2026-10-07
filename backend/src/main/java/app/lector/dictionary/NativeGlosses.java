@@ -24,6 +24,7 @@ public class NativeGlosses {
     private static final int MAX_PIVOTS = 3;
     private static final int MAX_PIVOT_WORDS = 3;
     private static final Pattern PIVOT = Pattern.compile("[A-Za-z][A-Za-z' -]*");
+    private static final Pattern LEADING_LABEL = Pattern.compile("^\\s*\\([^)]*\\)\\s*");
     private static final Pattern LEADING_ARTICLE = Pattern.compile("^(?:to|a|an|the) ", Pattern.CASE_INSENSITIVE);
 
     private final DictionaryClient dictionary;
@@ -76,16 +77,19 @@ public class NativeGlosses {
     }
 
     /**
-     * Short English glosses to look up: the head of each definition ("dog (animal)" → dog, "to hunt; to chase" →
-     * hunt), at most three words, skipping "plural of …" style form-of definitions.
+     * Short English glosses to look up, from the word's main meaning only (its first definition that isn't a "plural
+     * of …" form-of line): "dog, hound" → dog and hound, "to hunt; to chase" → hunt and chase. A minor meaning's
+     * translation shown as the word's would mislead (Italian "libro" is also a cow's stomach), so later definitions
+     * aren't used: no translation beats a misleading one. Each gloss is at most three words.
      */
     static List<String> pivots(List<String> definitions) {
         Set<String> out = new LinkedHashSet<>();
-        for (String definition : definitions) {
-            String head = LEADING_ARTICLE.matcher(definition.split("[;,(:.]", 2)[0].strip()).replaceFirst("").strip();
-            boolean usable = PIVOT.matcher(head).matches() && head.split(" ").length <= MAX_PIVOT_WORDS
-                    && DictionaryClient.lemmaFrom(definition, "") == null;
-            if (usable) {
+        String main = definitions.stream().filter(d -> !d.isBlank() && DictionaryClient.lemmaFrom(d, "") == null)
+                .findFirst().orElse("");
+        String unlabelled = LEADING_LABEL.matcher(main).replaceFirst(""); // "(transitive) to eat" → "to eat"
+        for (String gloss : unlabelled.split("\\(", 2)[0].split("[;,:.]")) {
+            String head = LEADING_ARTICLE.matcher(gloss.strip()).replaceFirst("").strip();
+            if (PIVOT.matcher(head).matches() && head.split(" ").length <= MAX_PIVOT_WORDS) {
                 out.add(head.toLowerCase(Locale.ROOT));
             }
         }

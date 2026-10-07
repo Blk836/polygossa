@@ -111,7 +111,6 @@ class NativeGlossesTest {
     void theLemmaAlsoLeadsBack() {
         DictionaryResult hunde = new DictionaryResult("Hunde", "de", true, null,
                 List.of(new DictionaryResult.Sense("noun", "plural of Hund", List.of()),
-                        new DictionaryResult.Sense("noun", "dogs", List.of()),
                         new DictionaryResult.Sense("noun", "dog", List.of())), "Hund", "x", null);
         assertThat(glosses.add(hunde, Language.DE, NativeLanguage.ES).translations()).containsExactly("perro", "can");
     }
@@ -158,9 +157,22 @@ class NativeGlossesTest {
     }
 
     @Test
-    void picksShortGlossesAsPivots() {
-        assertThat(NativeGlosses.pivots(List.of("dog (animal)", "to hunt; to chase", "a cat, a feline",
-                "the act of running very fast across a long field", "plural of Hund", "dog", "")))
-                .containsExactly("dog", "hunt", "cat");
+    void glossesComeFromTheMainMeaningOnly() {
+        assertThat(NativeGlosses.pivots(List.of("dog (animal)", "a cat"))).containsExactly("dog");
+        assertThat(NativeGlosses.pivots(List.of("to hunt; to chase, to pursue; to go", "a cat")))
+                .containsExactly("hunt", "chase", "pursue");
+        assertThat(NativeGlosses.pivots(List.of("plural of Hund", "dog, hound"))).containsExactly("dog", "hound");
+        assertThat(NativeGlosses.pivots(List.of("the act of running very fast across a long field", "dog"))).isEmpty();
+        assertThat(NativeGlosses.pivots(List.of("(transitive) to eat", "a cat"))).containsExactly("eat");
+        assertThat(NativeGlosses.pivots(List.of("", "dog"))).containsExactly("dog");
+        assertThat(NativeGlosses.pivots(List.of())).isEmpty();
+    }
+
+    @Test
+    void aMinorMeaningIsNeverOfferedAsTheTranslation() {
+        // The main meaning ("a fierce person") has no table; the second ("dog") would give "perro", wrongly.
+        DictionaryResult r = glosses.add(found(Language.DE, "Hund", "a fierce person", "dog"), Language.DE,
+                NativeLanguage.ES);
+        assertThat(r.translations()).isEmpty();
     }
 }
