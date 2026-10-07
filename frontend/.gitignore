@@ -43,3 +43,7 @@ next-env.d.ts
 # mutation testing
 /reports
 /.stryker-tmp
+
+# Playwright output (CI keeps it as a run artifact)
+/test-results
+/playwright-report

@@ -36,8 +36,9 @@ const backend = {
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
-  reporter: "list",
-  use: { baseURL },
+  // On CI, failed runs keep an HTML report with a trace of each failed test (uploaded by the workflow).
+  reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
+  use: { baseURL, trace: process.env.CI ? "retain-on-failure" : "off" },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: external
     ? []
