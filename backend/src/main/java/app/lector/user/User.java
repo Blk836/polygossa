@@ -1,6 +1,7 @@
 package app.lector.user;
 
 import app.lector.token.Language;
+import app.lector.token.NativeLanguage;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -36,6 +37,10 @@ public class User {
     /** Language chosen during onboarding; the default for library, review and dashboard filters. */
     @Enumerated(EnumType.STRING)
     private Language targetLanguage;
+
+    /** The language definitions are translated into; English (the dictionaries' own language) by default. */
+    @Enumerated(EnumType.STRING)
+    private NativeLanguage nativeLanguage = NativeLanguage.EN;
 
     @Column(nullable = false)
     private int dailyReviewGoal = 20;
@@ -92,6 +97,15 @@ public class User {
 
     public void setTargetLanguage(Language targetLanguage) {
         this.targetLanguage = targetLanguage;
+    }
+
+    /** Accounts from before the setting existed read as English. */
+    public NativeLanguage getNativeLanguage() {
+        return nativeLanguage == null ? NativeLanguage.EN : nativeLanguage;
+    }
+
+    public void setNativeLanguage(NativeLanguage nativeLanguage) {
+        this.nativeLanguage = nativeLanguage;
     }
 
     public int getDailyReviewGoal() {

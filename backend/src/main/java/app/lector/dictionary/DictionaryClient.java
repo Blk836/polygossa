@@ -2,6 +2,7 @@ package app.lector.dictionary;
 
 import app.lector.config.AppProperties;
 import app.lector.token.Language;
+import java.io.Serializable;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -60,6 +61,32 @@ public class DictionaryClient {
         return fromFreeDictionary(language, term)
                 .or(() -> fromWiktionary(language, term))
                 .orElseGet(() -> DictionaryResult.notFound(term, language.code()));
+    }
+
+    /** One English word's translation tables, as lists of (language, word) per sense. Cached like lookups. */
+    public record Translation(String language, String word) implements Serializable {}
+
+    /**
+     * The translation tables of an English word's senses, in order (only senses that have one). Empty when the word
+     * has no entry or the source fails.
+     */
+    @Cacheable(cacheNames = "dictionary", key = "'en-translations:' + #word")
+    public ArrayList<ArrayList<Translation>> translationTables(String word) {
+        JsonNode body = fetch(freeDictionary, "Free Dictionary API", Language.EN, word,
+                "/entries/en/{word}?translations=true", word);
+        ArrayList<ArrayList<Translation>> tables = new ArrayList<>();
+        for (JsonNode entry : body.path("entries")) {
+            for (JsonNode sense : entry.path("senses")) {
+                ArrayList<Translation> table = new ArrayList<>();
+                for (JsonNode t : sense.path("translations")) {
+                    table.add(new Translation(t.path("language").path("code").asString(""), t.path("word").asString("")));
+                }
+                if (!table.isEmpty()) {
+                    tables.add(table);
+                }
+            }
+        }
+        return tables;
     }
 
     Optional<DictionaryResult> fromFreeDictionary(Language language, String term) {

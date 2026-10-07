@@ -20,6 +20,8 @@ export interface Me {
   email: string;
   displayName: string;
   targetLanguage: LanguageCode | null;
+  /** The language definitions are translated into ("en" by default). */
+  nativeLanguage: string;
   dailyReviewGoal: number;
   timezone: string;
   plan: PlanInfo;
@@ -124,6 +126,9 @@ export interface DictionaryResult {
   lemma?: string | null;
   source?: string | null;
   sourceUrl?: string | null;
+  /** The word in the learner's native language (empty when none was found); absent or null for English speakers. */
+  translations?: string[] | null;
+  translationLanguage?: string | null;
 }
 
 export interface VocabularyEntry {

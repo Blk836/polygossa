@@ -58,6 +58,7 @@ class NativeGlossesTest {
             REQUESTS.add(path + (query == null ? "" : "?" + query));
             String body = routes.get(path);
             byte[] bytes = (body == null ? "{}" : body).getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
             exchange.sendResponseHeaders(body == null ? 404 : 200, bytes.length);
             try (OutputStream out = exchange.getResponseBody()) {
                 out.write(bytes);

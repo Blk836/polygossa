@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { translationLine } from "@/lib/dictionary";
 import { canSpeak, speak } from "@/lib/speech";
 import type { DictionaryResult, WordStatus } from "@/lib/types";
 import { CloseIcon, PlayIcon, SpeakerIcon } from "../icons";
@@ -62,6 +63,7 @@ export function Senses({ result, error, isPro }: { result: DictionaryResult | nu
   const examples = senses.flatMap((s) => s.examples).filter(Boolean).slice(0, 2);
   return (
     <>
+      <Translations result={result} />
       <ol className="space-y-1.5">
         {visible.map((s, i) => (
           <li key={i} className="flex gap-2">
@@ -79,6 +81,19 @@ export function Senses({ result, error, isPro }: { result: DictionaryResult | nu
         <p key={i} className="border-l-2 border-line pl-2 font-reading italic">{ex}</p>
       ))}
     </>
+  );
+}
+
+/** The word in the learner's native language, above the English definitions (nothing for English speakers). */
+function Translations({ result }: { result: DictionaryResult }) {
+  const native = translationLine(result);
+  if (!native) return null;
+  if (native.missing) return <p data-testid="translations" className="text-xs text-muted">{native.text}</p>;
+  return (
+    <p data-testid="translations" className="font-medium">
+      <span className="mr-1.5 text-xs font-normal text-muted">{native.label}</span>
+      {native.text}
+    </p>
   );
 }
 

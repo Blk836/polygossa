@@ -2,6 +2,7 @@ package app.lector.user;
 
 import app.lector.common.ApiException;
 import app.lector.token.Language;
+import app.lector.token.NativeLanguage;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -26,12 +27,15 @@ public class AccountController {
     public record UpdateMeRequest(
             @Size(min = 1, max = 80) String displayName,
             Language targetLanguage,
+            NativeLanguage nativeLanguage,
             @Min(1) @Max(500) Integer dailyReviewGoal,
             String timezone) {}
 
     public record ChangePlanRequest(@NotNull Tier tier) {}
 
     public record LanguageDto(String code, String name, String speechLocale, boolean spaceDelimited) {}
+
+    public record NativeLanguageDto(String code, String name, String nativeName) {}
 
     public record PlanDto(Tier tier, String name, String price, List<String> includes) {}
 
@@ -58,6 +62,9 @@ public class AccountController {
         }
         if (req.targetLanguage() != null) {
             user.setTargetLanguage(req.targetLanguage());
+        }
+        if (req.nativeLanguage() != null) {
+            user.setNativeLanguage(req.nativeLanguage());
         }
         if (req.dailyReviewGoal() != null) {
             user.setDailyReviewGoal(req.dailyReviewGoal());
@@ -88,6 +95,14 @@ public class AccountController {
     public List<LanguageDto> languages() {
         return Arrays.stream(Language.values())
                 .map(l -> new LanguageDto(l.code(), l.displayName(), l.speechLocale(), l.spaceDelimited()))
+                .toList();
+    }
+
+    /** The languages definitions can be translated into (the native-language setting). */
+    @GetMapping("/languages/native")
+    public List<NativeLanguageDto> nativeLanguages() {
+        return Arrays.stream(NativeLanguage.values())
+                .map(l -> new NativeLanguageDto(l.code(), l.displayName(), l.nativeName()))
                 .toList();
     }
 

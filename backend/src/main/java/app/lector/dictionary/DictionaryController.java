@@ -32,14 +32,16 @@ public class DictionaryController {
     public record TranslateResponse(String translation) {}
 
     private final DictionaryClient dictionary;
+    private final NativeGlosses glosses;
     private final AiTutor ai;
     private final AiAllowance allowance;
     private final PlanService plans;
     private final CurrentUser currentUser;
 
-    public DictionaryController(DictionaryClient dictionary, AiTutor ai, AiAllowance allowance, PlanService plans,
-                                CurrentUser currentUser) {
+    public DictionaryController(DictionaryClient dictionary, NativeGlosses glosses, AiTutor ai, AiAllowance allowance,
+                                PlanService plans, CurrentUser currentUser) {
         this.dictionary = dictionary;
+        this.glosses = glosses;
         this.ai = ai;
         this.allowance = allowance;
         this.plans = plans;
@@ -48,7 +50,8 @@ public class DictionaryController {
 
     /**
      * Looks up a word or phrase. Tries the form as written, then lower-case, then capitalized (German nouns), and
-     * finally the AI dictionary for Pro users when the free sources have nothing.
+     * finally the AI dictionary for Pro users when the free sources have nothing. Free-dictionary results gain
+     * translations into the learner's native language (the AI writes in it directly).
      */
     @GetMapping
     public DictionaryResult lookup(@AuthenticationPrincipal AuthUser principal,
@@ -72,8 +75,11 @@ public class DictionaryController {
             }
         }
         User user = currentUser.load(principal);
-        if (!result.found() && ai.enabled() && plans.hasFeature(user, PlanService.Feature.AI)) {
-            result = allowance.call(user, () -> ai.define(language, surface, context));
+        if (result.found()) {
+            return glosses.add(result, language, user.getNativeLanguage());
+        }
+        if (ai.enabled() && plans.hasFeature(user, PlanService.Feature.AI)) {
+            result = allowance.call(user, () -> ai.define(language, user.getNativeLanguage(), surface, context));
         }
         return result.found() ? result : DictionaryResult.notFound(TokenizationService.normalize(surface, language),
                 language.code());
@@ -87,7 +93,7 @@ public class DictionaryController {
                                    @RequestParam(required = false) String definition) {
         User user = currentUser.load(principal);
         plans.require(user, PlanService.Feature.AI);
-        return allowance.call(user, () -> ai.example(language, term, definition));
+        return allowance.call(user, () -> ai.example(language, user.getNativeLanguage(), term, definition));
     }
 
     /** AI translation of a phrase or mined sentence (Pro). */
@@ -96,6 +102,7 @@ public class DictionaryController {
                                        @Valid @RequestBody TranslateRequest req) {
         User user = currentUser.load(principal);
         plans.require(user, PlanService.Feature.AI);
-        return new TranslateResponse(allowance.call(user, () -> ai.translate(req.language(), req.text())));
+        return new TranslateResponse(allowance.call(user,
+                () -> ai.translate(req.language(), user.getNativeLanguage(), req.text())));
     }
 }

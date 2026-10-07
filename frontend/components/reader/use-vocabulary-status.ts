@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, api, errorMessage } from "@/lib/api";
+import { savedDefinition } from "@/lib/dictionary";
 import type { DictionaryResult, LanguageCode, TextDetail, Token, WordStatus } from "@/lib/types";
 import type { PopupTarget } from "./word-popup";
 
@@ -28,7 +29,7 @@ function withStatus(map: Record<string, WordStatus>, term: string, status: WordS
 
 function definitionFields(result: DictionaryResult) {
   return {
-    definition: result.senses.slice(0, 2).map((s) => s.definition).join("; "),
+    definition: savedDefinition(result),
     partOfSpeech: result.senses[0]?.partOfSpeech || undefined,
     pronunciation: result.pronunciation ?? undefined,
   };

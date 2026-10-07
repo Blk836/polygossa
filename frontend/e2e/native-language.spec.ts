@@ -4,7 +4,7 @@ import { article, cleanUp, createTextWith, openReader, type Created } from "./re
 // docs/acceptance/native-language.feature: the setting, and translations into it in the word popup.
 
 test("Settings › Profile picks a native language, saved with the profile", async ({ page }) => {
-  await page.goto("/settings");
+  await page.goto("/library"); // signs in (a first visit lands on the library)
   const me = await (await page.request.get("/api/me")).json();
   let sent: Record<string, unknown> | null = null;
   // Answered in the browser: the shared test account's settings must not change under other specs.
@@ -13,6 +13,7 @@ test("Settings › Profile picks a native language, saved with the profile", asy
     sent = route.request().postDataJSON();
     return route.fulfill({ json: { ...me, ...sent } });
   });
+  await page.goto("/settings");
   const select = page.getByLabel("Your native language");
   await expect(select).toHaveValue("en");
   await expect(select.locator("option").first()).toHaveText("English");
@@ -50,7 +51,7 @@ test.describe("the word popup", () => {
     const line = page.getByTestId("translations");
     await expect(line).toContainText("Spanish");
     await expect(line).toContainText("perro, can");
-    await expect(page.getByText("dog", { exact: true })).toBeVisible();
+    await expect(page.getByRole("listitem").filter({ hasText: "dog" })).toBeVisible();
     await expect.poll(() => saved.some((body) => body.includes("perro, can — dog"))).toBe(true);
   });
 

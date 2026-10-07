@@ -3,6 +3,7 @@ package app.lector.user;
 import app.lector.common.ApiException;
 import app.lector.config.AppProperties;
 import app.lector.config.JwtService;
+import app.lector.token.NativeLanguage;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -27,7 +28,9 @@ public class AuthController {
     public record SignupRequest(
             @NotBlank @Email String email,
             @NotBlank @Size(min = 8, max = 200) String password,
-            @Size(max = 80) String displayName) {}
+            @Size(max = 80) String displayName,
+            /* the browser's language tag; becomes the native language when it is one we offer, else English */
+            @Size(max = 35) String nativeLanguage) {}
 
     public record LoginRequest(@NotBlank String email, @NotBlank String password) {}
 
@@ -59,7 +62,9 @@ public class AuthController {
         String name = req.displayName() == null || req.displayName().isBlank()
                 ? email.substring(0, email.indexOf('@'))
                 : req.displayName().trim();
-        User user = users.save(new User(email, passwordEncoder.encode(req.password()), name));
+        User created = new User(email, passwordEncoder.encode(req.password()), name);
+        created.setNativeLanguage(NativeLanguage.fromBrowser(req.nativeLanguage()));
+        User user = users.save(created);
         return respond(user);
     }
 

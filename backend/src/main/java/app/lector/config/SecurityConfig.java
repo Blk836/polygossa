@@ -27,7 +27,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/signup", "/api/auth/login", "/api/auth/dev-login").permitAll()
                         // Guarded by the curator token instead of a login (app.lector.curator.CuratorAccess).
                         .requestMatchers("/api/curator/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/languages", "/api/plans").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/languages", "/api/languages/native", "/api/plans").permitAll()
                         .requestMatchers("/actuator/health", "/error").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().denyAll())

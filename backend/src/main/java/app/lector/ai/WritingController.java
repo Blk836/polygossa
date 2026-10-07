@@ -67,7 +67,7 @@ public class WritingController {
                 : text.getContent().length() > EXCERPT_CHARS ? text.getContent().substring(0, EXCERPT_CHARS) + "…"
                 : text.getContent();
         AiTutor.Feedback feedback = allowance.call(user,
-                () -> tutor.writingFeedback(req.language(), excerpt, req.content().strip()));
+                () -> tutor.writingFeedback(req.language(), user.getNativeLanguage(), excerpt, req.content().strip()));
         WritingSubmission submission = new WritingSubmission(user, text, req.language(), req.content().strip());
         submission.setFeedbackJson(json.writeValueAsString(feedback));
         return toDto(repo.save(submission));

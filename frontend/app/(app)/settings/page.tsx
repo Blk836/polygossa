@@ -6,16 +6,18 @@ import { useMe } from "@/components/me-context";
 import { ProfilePhoto } from "@/components/settings/profile-photo";
 import { Button, ErrorNote, Field, inputClass, selectClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
+import { NATIVE_LANGUAGES } from "@/lib/dictionary";
 import { LANGUAGES } from "@/lib/languages";
 import { settingsHashRedirect } from "@/lib/nav";
 import type { Me } from "@/lib/types";
 
-/** Settings' Profile tab: photo, name, language, daily goal and time zone. */
+/** Settings' Profile tab: photo, name, languages, daily goal and time zone. */
 export default function ProfilePage() {
   const { me, setMe } = useMe();
   const router = useRouter();
   const [displayName, setDisplayName] = useState(me.displayName);
   const [targetLanguage, setTargetLanguage] = useState(me.targetLanguage ?? "");
+  const [nativeLanguage, setNativeLanguage] = useState(me.nativeLanguage ?? "en");
   const [goal, setGoal] = useState(me.dailyReviewGoal);
   const [timezone, setTimezone] = useState(me.timezone);
   const [saved, setSaved] = useState(false);
@@ -32,7 +34,7 @@ export default function ProfilePage() {
     setError(null);
     setSaved(false);
     try {
-      setMe(await api<Me>("me", { method: "PATCH", body: { displayName, targetLanguage: targetLanguage || undefined, dailyReviewGoal: goal, timezone } }));
+      setMe(await api<Me>("me", { method: "PATCH", body: { displayName, targetLanguage: targetLanguage || undefined, nativeLanguage, dailyReviewGoal: goal, timezone } }));
       setSaved(true);
     } catch (err) {
       setError(errorMessage(err));
@@ -50,6 +52,11 @@ export default function ProfilePage() {
             <select className={selectClass} value={targetLanguage} onChange={(e) => setTargetLanguage(e.target.value)}>
               <option value="">—</option>
               {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
+            </select>
+          </Field>
+          <Field label="Your native language" hint="Definitions are translated into it where the dictionary can">
+            <select className={selectClass} value={nativeLanguage} onChange={(e) => setNativeLanguage(e.target.value)}>
+              {NATIVE_LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.nativeName}</option>)}
             </select>
           </Field>
           <Field label="Daily review goal" hint="Cards per day that count toward your streak">
