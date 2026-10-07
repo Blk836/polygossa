@@ -23,6 +23,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -55,17 +57,20 @@ public class WordImportService {
     private final VocabularyImporter importer;
     private final LingqClient lingq;
     private final Clock clock;
+    private final TransactionTemplate tx;
     private final ExecutorService executor = Executors.newFixedThreadPool(2, r -> {
         Thread t = new Thread(r, "word-import");
         t.setDaemon(true);
         return t;
     });
 
-    public WordImportService(WordImportRepository jobs, VocabularyImporter importer, LingqClient lingq, Clock clock) {
+    public WordImportService(WordImportRepository jobs, VocabularyImporter importer, LingqClient lingq, Clock clock,
+                             PlatformTransactionManager transactions) {
         this.jobs = jobs;
         this.importer = importer;
         this.lingq = lingq;
         this.clock = clock;
+        this.tx = new TransactionTemplate(transactions);
     }
 
     public WordImportDto startLingq(User user, String apiKey, String language) {
@@ -157,12 +162,15 @@ public class WordImportService {
         });
     }
 
-    /** Finishes or fails the import, then drops the history rows it replaces. */
+    /**
+     * Finishes or fails the import and drops the history rows it replaces, in one transaction: otherwise a reader could
+     * see the import finished while the rows it replaces are still there.
+     */
     private void end(Long jobId, Consumer<WordImport> change) {
-        jobs.findById(jobId).ifPresent(job -> {
+        tx.executeWithoutResult(status -> jobs.findById(jobId).ifPresent(job -> {
             change.accept(job);
             replaceEarlier(jobs.save(job));
-        });
+        }));
     }
 
     private void replaceEarlier(WordImport ended) {
