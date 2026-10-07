@@ -250,7 +250,7 @@ cd frontend && npm run e2e   # Playwright (first time: npx playwright install ch
                              # OpenAI, and its own PostgreSQL (bootTestRun: E2eApplication, a Testcontainers container
                              # removed when it stops); the IntelliJ run on :8080 and the dev database are untouched.
                              # E2E_BASE_URL=http://localhost:3000 points it at the dev server instead, for debugging.
-                             # On CI it runs in 4 shards (--shard=N/4) on the runner's preinstalled Chrome (channel "chrome"
+                             # On CI it runs in 2 shards (--shard=N/2) on the runner's preinstalled Chrome (channel "chrome"
                              # when CI is set): installing Playwright's Chromium ran apt, whose mirror hung jobs.
 node --test "tools/**/*.test.mjs"                                  # tools/
 ```
