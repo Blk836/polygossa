@@ -76,6 +76,8 @@ checkstyle {
 // a while. To test just a change, -Ppitest.since=<commit> mutates only the main classes changed since that commit
 // (committed, uncommitted or new), e.g. the commit before a task's first one; -Ppitest.targets=app.lector.text.*
 // names classes or packages directly. PIT still runs only the tests that cover the mutated classes.
+// -Ppitest.tests=app.lector.recommend.WeightLearnerTest,… limits the tests too (PIT measures coverage with every
+// test first, which alone takes minutes), e.g. to check pure classes against their unit tests.
 // (PIT's incremental history moved to a paid plugin in 1.30, so a re-run can't reuse earlier results.)
 fun changedMainClasses(since: String): List<String> {
     fun git(vararg args: String) = providers.exec { commandLine("git", *args); workingDir = projectDir }
@@ -99,7 +101,7 @@ pitest {
     targetClasses = (findProperty("pitest.targets") as String?)?.split(",")
         ?: (findProperty("pitest.since") as String?)?.let { changedMainClasses(it) }
         ?: listOf("app.lector.*")
-    targetTests = listOf("app.lector.*")
+    targetTests = (findProperty("pitest.tests") as String?)?.split(",") ?: listOf("app.lector.*")
     excludedClasses = listOf("app.lector.LectorApplication")
     threads = 4
     outputFormats = listOf("HTML", "XML")

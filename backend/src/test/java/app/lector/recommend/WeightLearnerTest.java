@@ -70,6 +70,26 @@ class WeightLearnerTest {
         }
         Weights w = WeightLearner.learn(data, CONFIGURED).orElseThrow();
         assertThat(w.interest()).isEqualTo(CONFIGURED.interest());
+        // The others are scaled so all seven still add up to the configured total.
+        assertThat(total(w)).isCloseTo(total(CONFIGURED), org.assertj.core.data.Offset.offset(1e-9));
+        assertThat(w.comprehend()).isGreaterThan(0).isLessThan(total(CONFIGURED) - CONFIGURED.interest() + 1e-9);
+    }
+
+    @Test
+    void enoughDataIsTwoHundredExamplesWithTwentyEachWay() {
+        assertThat(WeightLearner.enough(labelled(200, 20))).isTrue();
+        assertThat(WeightLearner.enough(labelled(200, 180))).isTrue();
+        assertThat(WeightLearner.enough(labelled(199, 20))).isFalse();
+        assertThat(WeightLearner.enough(labelled(200, 19))).isFalse();
+        assertThat(WeightLearner.enough(labelled(200, 181))).isFalse();
+    }
+
+    private static List<WeightLearner.Example> labelled(int n, int opened) {
+        List<WeightLearner.Example> out = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            out.add(new WeightLearner.Example(new double[7], 0, i < opened));
+        }
+        return out;
     }
 
     @Test

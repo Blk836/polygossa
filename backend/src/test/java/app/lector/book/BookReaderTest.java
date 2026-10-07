@@ -82,8 +82,21 @@ class BookReaderTest {
     }
 
     @Test
+    void threeHundredChaptersAreAllowed() {
+        Map<String, String> chapters = new LinkedHashMap<>();
+        for (int i = 0; i < 300; i++) {
+            chapters.put("c" + i + ".xhtml", chapter("C" + i, "Texto " + i + "."));
+        }
+        assertThat(read(BookFiles.epub("Grande", chapters), "x.epub").chapters()).hasSize(300);
+    }
+
+    @Test
     void otherFilesAreRefused() {
         assertThatThrownBy(() -> read("just some text".getBytes(), "notes.txt")).isInstanceOf(ApiException.class)
+                .hasMessageContaining("Upload an EPUB or a PDF");
+        assertThatThrownBy(() -> read("P".getBytes(), "p.pdf")).isInstanceOf(ApiException.class)
+                .hasMessageContaining("Upload an EPUB or a PDF");
+        assertThatThrownBy(() -> read("PX not a zip".getBytes(), "x.epub")).isInstanceOf(ApiException.class)
                 .hasMessageContaining("Upload an EPUB or a PDF");
     }
 
@@ -100,7 +113,7 @@ class BookReaderTest {
         assertThat(book.chapters()).extracting(Book.Chapter::title).containsExactly("Capitulo 1", "Capitulo 2");
         assertThat(book.chapters().getFirst().content()).contains("Primera pagina").contains("Segunda pagina")
                 .doesNotContain("capitulo dos");
-        assertThat(book.chapters().get(1).content()).contains("El capitulo dos empieza aqui.");
+        assertThat(book.chapters().get(1).content()).isEqualTo("El capitulo dos empieza aqui.");
     }
 
     private static Map<String, Integer> outline() {
@@ -125,6 +138,9 @@ class BookReaderTest {
         assertThat(book.chapters().size()).isGreaterThan(1);
         assertThat(book.chapters().getFirst().title()).isEqualTo("Part 1");
         assertThat(book.chapters()).allSatisfy(c -> assertThat(c.content().length()).isLessThanOrEqualTo(25_000));
+        // Hard-wrapped lines are joined into paragraphs; pages end paragraphs.
+        assertThat(book.chapters().getFirst().content()).doesNotContainPattern("[^\n]\n[^\n]")
+                .contains("mas.\n\nLinea 0 de la pagina 1");
     }
 
     @Test

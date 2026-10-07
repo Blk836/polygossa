@@ -46,11 +46,13 @@ class TrainingSetTest {
     @Test
     void outcomeHalfAsksForReading() {
         List<TrainingSet.Event> events = List.of(impression(1, 10, 0, 0, 0.1), open(1, 10, 1),
-                impression(1, 20, 0, 0, 0.2), open(1, 20, 1), impression(1, 30, 0, 0, 0.3), open(1, 30, 1));
+                impression(1, 20, 0, 0, 0.2), open(1, 20, 1), impression(1, 30, 0, 0, 0.3), open(1, 30, 1),
+                impression(1, 40, 0, 0, 0.4), open(1, 40, 1));
         Map<String, TrainingSet.Reached> reached = Map.of("1:10", new TrainingSet.Reached(60, false),
-                "1:20", new TrainingSet.Reached(10, true), "1:30", new TrainingSet.Reached(49, false));
+                "1:20", new TrainingSet.Reached(10, true), "1:30", new TrainingSet.Reached(49, false),
+                "1:40", new TrainingSet.Reached(50, false));
         List<WeightLearner.Example> examples = TrainingSet.examples(events, TrainingSet.Outcome.HALF, reached);
         assertThat(examples).extracting(e -> e.parts()[0] + ":" + e.opened())
-                .containsExactlyInAnyOrder("0.1:true", "0.2:true", "0.3:false");
+                .containsExactlyInAnyOrder("0.1:true", "0.2:true", "0.3:false", "0.4:true");
     }
 }
