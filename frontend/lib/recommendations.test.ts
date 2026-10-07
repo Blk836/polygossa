@@ -90,6 +90,18 @@ describe("impressionBatches", () => {
     ]);
   });
 
+  it("sends each card's score parts when it has them (ranked shelves, not Continue reading)", () => {
+    const parts = { interest: 0.1, topic: 0.2, comprehension: 0.9, level: 0.5, popular: 0, fresh: 0.8, format: 0.4 };
+    const shelves: RecommendedShelf[] = [
+      { id: "for-you", items: [{ ...item(5), parts }] },
+      { id: "continue", items: [item(6)] },
+    ];
+    expect(impressionBatches(shelves)).toEqual([
+      { type: "impression", shelf: "for-you", items: [{ textId: 5, position: 0, parts }] },
+      { type: "impression", shelf: "continue", items: [{ textId: 6, position: 0 }] },
+    ]);
+  });
+
   it("logs nothing for no shelves", () => {
     expect(impressionBatches([])).toEqual([]);
   });
