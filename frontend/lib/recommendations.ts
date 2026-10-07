@@ -19,9 +19,22 @@ export interface Reason {
   likes?: number;
 }
 
+/** A ranked card's unweighted score parts, logged back with its impression so weights can be learned. */
+export interface ScoreParts {
+  interest: number;
+  topic: number;
+  comprehension: number;
+  level: number;
+  popular: number;
+  fresh: number;
+  format: number;
+}
+
 export interface RecommendedItem {
   text: TextSummary;
   reason: Reason;
+  /** Absent on Continue reading, which isn't ranked. */
+  parts?: ScoreParts;
 }
 
 export interface RecommendedShelf {
@@ -43,7 +56,7 @@ export interface Recommendations {
 export interface RecommendationEvent {
   type: "impression" | "open";
   shelf: ShelfId;
-  items: { textId: number; position: number }[];
+  items: { textId: number; position: number; parts?: ScoreParts }[];
 }
 
 /** Interests asked for during onboarding before they can be saved. */
@@ -99,7 +112,11 @@ export function reasonLabel(r: Reason): string {
 export function impressionBatches(shelves: RecommendedShelf[]): RecommendationEvent[] {
   return shelves
     .filter((s) => s.items.length > 0)
-    .map((s) => ({ type: "impression", shelf: s.id, items: s.items.map((it, position) => ({ textId: it.text.id, position })) }));
+    .map((s) => ({
+      type: "impression",
+      shelf: s.id,
+      items: s.items.map((it, position) => (it.parts ? { textId: it.text.id, position, parts: it.parts } : { textId: it.text.id, position })),
+    }));
 }
 
 export function openEvent(shelf: ShelfId, textId: number, position: number): RecommendationEvent {

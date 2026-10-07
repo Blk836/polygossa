@@ -22,5 +22,24 @@ public record RecommendProperties(
         @DefaultValue("true") boolean featureJob,
         @DefaultValue("60s") Duration featureJobDelay,
         /* Texts tagged and embedded per run. */
-        @DefaultValue("20") int featureBatch) {
+        @DefaultValue("20") int featureBatch,
+        @DefaultValue Learn learn) {
+
+    /**
+     * Learned weights (app.recommend.learn.*): off by default, so ranking uses the configured weights. When on, a job
+     * fits weights to the last {@code days} days of impressions (at start-up, then every {@code every}) and ranking uses
+     * them while there is enough data. {@code outcome} is "open" or "half" (opened and read at least halfway).
+     */
+    public record Learn(
+            @DefaultValue("false") boolean enabled,
+            @DefaultValue("28") int days,
+            @DefaultValue("open") String outcome,
+            /* Run the job on its schedule (tests run it by hand). */
+            @DefaultValue("true") boolean schedule) {}
+
+    /** These properties ranking with other weights (learned ones). */
+    public RecommendProperties withWeights(Weights w) {
+        return new RecommendProperties(w, halfLifeDays, exploreEvery, maxRun, forYouSize, shelfSize, minSimilarity,
+                featureJob, featureJobDelay, featureBatch, learn);
+    }
 }

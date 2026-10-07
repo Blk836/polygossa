@@ -54,10 +54,11 @@ public class RecommendationService {
     private final LibraryCards cards;
     private final Clock clock;
     private final RecommendProperties props;
+    private final ActiveWeights active;
 
     public RecommendationService(LearnerSignals signals, TextRepository texts, TextService textService,
                                  TextReactionRepository reactions, FeatureCache features, EmbeddingClient embeddings,
-                                 SkillLevelService levels, LibraryCards cards, Clock clock, RecommendProperties props) {
+                                 SkillLevelService levels, LibraryCards cards, Clock clock, ActiveWeights active) {
         this.signals = signals;
         this.texts = texts;
         this.textService = textService;
@@ -67,7 +68,8 @@ public class RecommendationService {
         this.levels = levels;
         this.cards = cards;
         this.clock = clock;
-        this.props = props;
+        this.active = active;
+        this.props = active.ranking();
     }
 
     /** What the ranking is computed from, gathered once per request. */
@@ -76,6 +78,7 @@ public class RecommendationService {
 
     @Transactional(readOnly = true)
     public Recommendations recommend(User user, Language language) {
+        RecommendProperties ranking = active.ranking(); // configured weights, or learned ones when switched on
         Instant now = clock.instant();
         Snapshot s = signals.load(user);
         List<Text> pool = texts.findPublicCandidates(language, user.getId()).stream()
@@ -90,7 +93,7 @@ public class RecommendationService {
 
         String level = language == null ? null : levels.levels(user, language).reading().level();
         Map<Language, Map<String, WordStatus>> statusCache = new HashMap<>();
-        List<Candidate> candidates = candidates(ctx, pool, level, statusCache);
+        List<Candidate> candidates = candidates(ctx, pool, level, statusCache, ranking);
 
         Map<ShelfId, Shelf> built = new LinkedHashMap<>();
         Map<Long, Text> shown = pool.stream().collect(Collectors.toMap(Text::getId, t -> t));
@@ -98,17 +101,18 @@ public class RecommendationService {
         continuing.forEach(p -> shown.put(p.getTextId(), p.getText()));
         Map<Long, TextSummary> summaries = new HashMap<>();
         Function<List<Pick>, List<Item>> items = picks -> picks.stream()
-                .map(p -> new Item(summaries.get(p.candidate().id()), p.reason())).toList();
+                .map(p -> new Item(summaries.get(p.candidate().id()), p.reason(),
+                        p.candidate().parts() == null ? null : ScoreParts.of(p.candidate().parts()))).toList();
 
         List<Pick> continuePicks = continuing.stream().map(p -> new Pick(stub(p.getTextId()),
                 Reason.progress(p.getPercent()))).toList();
-        List<Pick> forYou = ShelfBuilder.forYou(candidates, ctx.profile(), props, level != null);
+        List<Pick> forYou = ShelfBuilder.forYou(candidates, ctx.profile(), ranking, level != null);
         Anchor anchor = anchor(ctx);
         List<Pick> because = anchor == null ? List.of() : ShelfBuilder.because(anchor.id(),
-                feats.get(anchor.id()).vector(), anchor.title(), anchor.liked(), candidates, props);
-        var topic = ShelfBuilder.topic(ctx.profile(), candidates, props);
-        List<Pick> justRight = ShelfBuilder.justRight(candidates, props);
-        List<Pick> stretch = ShelfBuilder.stretch(candidates, ctx.profile(), props);
+                feats.get(anchor.id()).vector(), anchor.title(), anchor.liked(), candidates, ranking);
+        var topic = ShelfBuilder.topic(ctx.profile(), candidates, ranking);
+        List<Pick> justRight = ShelfBuilder.justRight(candidates, ranking);
+        List<Pick> stretch = ShelfBuilder.stretch(candidates, ctx.profile(), ranking);
 
         List<Text> used = new ArrayList<>();
         for (List<Pick> picks : List.of(continuePicks, forYou, because, topic.map(ShelfBuilder.TopicShelf::picks)
@@ -155,12 +159,12 @@ public class RecommendationService {
     }
 
     private List<Candidate> candidates(Context ctx, List<Text> pool, String level,
-                                       Map<Language, Map<String, WordStatus>> statusCache) {
+                                       Map<Language, Map<String, WordStatus>> statusCache, RecommendProperties ranking) {
         Map<Long, Long> likes = pool.isEmpty() ? Map.of() : reactions.likeCountsSince(
                 pool.stream().map(Text::getId).toList(), ctx.now().minus(RECENT_LIKES)).stream()
                 .collect(Collectors.toMap(TextReactionRepository.TextCount::getTextId,
                         TextReactionRepository.TextCount::getCount));
-        CandidateScorer scorer = new CandidateScorer(ctx.profile(), level, ctx.now(), props);
+        CandidateScorer scorer = new CandidateScorer(ctx.profile(), level, ctx.now(), ranking);
         return pool.stream().map(t -> scorer.score(t, textService.statsFor(ctx.user(), t, statusCache),
                 ctx.features().getOrDefault(t.getId(), Features.NONE), likes.getOrDefault(t.getId(), 0L),
                 ctx.snapshot().tallies().get(t.getId()))).toList();

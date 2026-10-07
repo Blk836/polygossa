@@ -31,10 +31,13 @@ public class RecommendationController {
     private final RecommendationService recommendations;
     private final RecommendationFeedback feedback;
     private final RecommendationMetrics metrics;
+    private final WeightLearningJob learning;
     private final CurrentUser currentUser;
 
     public RecommendationController(RecommendationService recommendations, RecommendationFeedback feedback,
-                                    RecommendationMetrics metrics, CurrentUser currentUser) {
+                                    RecommendationMetrics metrics, WeightLearningJob learning,
+                                    CurrentUser currentUser) {
+        this.learning = learning;
         this.recommendations = recommendations;
         this.feedback = feedback;
         this.metrics = metrics;
@@ -73,6 +76,13 @@ public class RecommendationController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void log(@AuthenticationPrincipal AuthUser principal, @RequestBody EventRequest req) {
         feedback.log(currentUser.load(principal), req.type(), req.shelf(), req.items());
+    }
+
+    /** The weight fit over the last {@code days} days: configured and learned weights, and which ranking uses. */
+    @GetMapping("/weights")
+    public WeightLearningJob.Fit weights(@RequestParam(defaultValue = "28") int days,
+                                         @RequestParam(defaultValue = "open") String outcome) {
+        return learning.fit(days, outcome);
     }
 
     @GetMapping("/metrics")

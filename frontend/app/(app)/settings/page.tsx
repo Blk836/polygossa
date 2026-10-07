@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { useMe } from "@/components/me-context";
 import { GoalFields, type GoalChoice } from "@/components/settings/goal-fields";
+import { InterestsSection } from "@/components/settings/interests-section";
 import { ProfilePhoto } from "@/components/settings/profile-photo";
 import { Button, ErrorNote, Field, inputClass, selectClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
@@ -72,6 +73,7 @@ export default function ProfilePage() {
           {saved && <span className="text-sm text-accent">Saved</span>}
         </div>
       </form>
+      <InterestsSection />
     </div>
   );
 }

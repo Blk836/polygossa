@@ -23,8 +23,8 @@ public class RecommendationFeedback {
 
     static final int MAX_EVENT_ITEMS = 100;
 
-    /** One shown or opened card. */
-    public record EventItem(Long textId, Integer position) {}
+    /** One shown or opened card, with the score parts that ranked it (impressions on ranked shelves only). */
+    public record EventItem(Long textId, Integer position, ScoreParts parts) {}
 
     private final TextDismissalRepository dismissals;
     private final UserInterestRepository interests;
@@ -88,19 +88,32 @@ public class RecommendationFeedback {
         } catch (IllegalArgumentException e) {
             throw ApiException.badRequest(e.getMessage());
         }
+        check(items);
+        Map<Long, Text> readable = texts.findAllById(items.stream().map(EventItem::textId).collect(Collectors.toSet()))
+                .stream().filter(t -> textService.canRead(user, t)).collect(Collectors.toMap(Text::getId, t -> t));
+        for (EventItem item : items) {
+            if (readable.containsKey(item.textId())) {
+                RecommendationEvent event = new RecommendationEvent(user.getId(), item.textId(), shelfId,
+                        item.position(), kind, clock.instant());
+                if (item.parts() != null && kind == RecommendationEvent.Type.IMPRESSION) {
+                    event.setParts(item.parts().values());
+                }
+                events.save(event);
+            }
+        }
+    }
+
+    /** The whole batch is refused (nothing stored) when any card is invalid. */
+    private static void check(List<EventItem> items) {
         if (items == null || items.isEmpty() || items.size() > MAX_EVENT_ITEMS) {
             throw ApiException.badRequest("items must hold 1 to " + MAX_EVENT_ITEMS + " cards");
         }
         if (items.stream().anyMatch(i -> i.textId() == null || i.position() == null || i.position() < 0)) {
             throw ApiException.badRequest("each item needs a textId and a position of 0 or more");
         }
-        Map<Long, Text> readable = texts.findAllById(items.stream().map(EventItem::textId).collect(Collectors.toSet()))
-                .stream().filter(t -> textService.canRead(user, t)).collect(Collectors.toMap(Text::getId, t -> t));
-        for (EventItem item : items) {
-            if (readable.containsKey(item.textId())) {
-                events.save(new RecommendationEvent(user.getId(), item.textId(), shelfId, item.position(), kind,
-                        clock.instant()));
-            }
+        if (items.stream().anyMatch(i -> i.parts() != null && !i.parts().valid())) {
+            throw ApiException.badRequest("score parts need all seven parts, each from " + ScoreParts.MIN + " to "
+                    + ScoreParts.MAX);
         }
     }
 

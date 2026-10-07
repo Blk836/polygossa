@@ -44,6 +44,15 @@ public class RecommendationEvent {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
+    /** An impression's unweighted score parts (interest … format), or null (opens, older pages, Continue reading). */
+    private Double partInterest;
+    private Double partTopic;
+    private Double partComprehension;
+    private Double partLevel;
+    private Double partPopular;
+    private Double partFresh;
+    private Double partFormat;
+
     protected RecommendationEvent() {}
 
     public RecommendationEvent(Long userId, Long textId, ShelfId shelf, int position, Type type, Instant createdAt) {
@@ -53,6 +62,27 @@ public class RecommendationEvent {
         this.position = position;
         this.type = type;
         this.createdAt = createdAt;
+    }
+
+    public Long getUserId() { return userId; }
+    public Instant getCreatedAt() { return createdAt; }
+
+    /** The seven parts in Scoring.Part order, or null when none were logged. */
+    public double[] parts() {
+        if (partInterest == null) {
+            return null;
+        }
+        return new double[] {partInterest, partTopic, partComprehension, partLevel, partPopular, partFresh, partFormat};
+    }
+
+    public void setParts(double[] p) {
+        partInterest = p[0];
+        partTopic = p[1];
+        partComprehension = p[2];
+        partLevel = p[3];
+        partPopular = p[4];
+        partFresh = p[5];
+        partFormat = p[6];
     }
 
     public Long getTextId() { return textId; }

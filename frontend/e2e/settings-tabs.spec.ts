@@ -60,7 +60,7 @@ test("saving the profile updates the account menu", async ({ page }) => {
   const name = `Tab tester ${Date.now()}`;
   try {
     await page.getByLabel("Name").fill(name);
-    await page.getByRole("button", { name: "Save" }).click();
+    await page.getByRole("button", { name: "Save", exact: true }).click();
     await expect(page.getByText("Saved", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Account" }).click();
     await expect(page.getByRole("menu", { name: "Account" })).toContainText(name);
@@ -76,7 +76,7 @@ test("a failed profile save shows the error, not Saved", async ({ page }) => {
       : route.fallback(),
   );
   await page.goto("/settings");
-  await page.getByRole("button", { name: "Save" }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByRole("main").getByRole("alert")).toHaveText("Name is not allowed.");
   await expect(page.getByText("Saved", { exact: true })).toHaveCount(0);
 });

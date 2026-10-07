@@ -17,5 +17,7 @@ public record Recommendations(Language language, List<Shelf> shelves) {
     /** The text "Because you read / liked …" refers to. */
     public record Anchor(Long id, String title, boolean liked) {}
 
-    public record Item(TextSummary text, Reason reason) {}
+    /** A card: the text, why it's here and, on ranked shelves, the parts that scored it (none on Continue reading). */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record Item(TextSummary text, Reason reason, ScoreParts parts) {}
 }

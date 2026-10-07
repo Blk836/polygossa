@@ -68,7 +68,8 @@ class ShelfBuilderTest {
     }
 
     private static RecommendProperties props(int exploreEvery) {
-        return new RecommendProperties(EQUAL, 30, exploreEvery, 2, 12, 8, 0.2, false, Duration.ofSeconds(60), 20);
+        return new RecommendProperties(EQUAL, 30, exploreEvery, 2, 12, 8, 0.2, false, Duration.ofSeconds(60), 20,
+                new RecommendProperties.Learn(false, 28, "open", false));
     }
 
     private static Candidate ranked(long id, double score, boolean outside) {

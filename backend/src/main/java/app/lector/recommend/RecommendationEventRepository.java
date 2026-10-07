@@ -34,6 +34,9 @@ public interface RecommendationEventRepository extends JpaRepository<Recommendat
         long getCount();
     }
 
+    /** Every event since a moment, oldest first (the weight fit's input). */
+    List<RecommendationEvent> findByCreatedAtGreaterThanEqualOrderByIdAsc(Instant since);
+
     @Query("select e.shelf as shelf, e.type as type, count(e) as count from RecommendationEvent e "
             + "where e.createdAt >= :since group by e.shelf, e.type")
     List<ShelfCount> countByShelf(@Param("since") Instant since);
