@@ -77,6 +77,18 @@ so the checks must prove it is correct.
    over time and bisect to the commit that broke something. Don't batch unrelated work into one commit, and list the
    commits in the final report.
 
+### One worktree per session
+Several Claude sessions often work on this repository at once, and in one shared folder they switch branches under
+each other: commits land on the wrong branch and edits vanish. So **every session that changes files starts by moving
+into its own worktree** (the `EnterWorktree` tool; it makes `.claude/worktrees/<name>` on a new branch from
+`origin/main`) and works, commits and pushes only there. Never run `git switch`/`checkout`, `reset`, `rebase` or bare
+`git stash` in the main folder: it belongs to the user and the IntelliJ dev servers. A session that only reads or
+answers questions needs no worktree. Leave the worktree (`ExitWorktree`, removing it) once its pull request is merged.
+- A new worktree has no `node_modules`: run `npm ci` in `frontend/` (and `infra/`) before using them there.
+- The dev OpenAI key file (`.idea/runConfigurations/Backend.xml`, see below) exists only in the main folder.
+- Worktrees don't share a build folder, but they share the machine: the heavy-run rule below still applies, and only
+  one session at a time can run the e2e suite (its servers use fixed ports, :3210 and :8210).
+
 If a required check has no tooling (marked above), say so in the report. Adding that tooling is a new dependency, so
 ask first.
 

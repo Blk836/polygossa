@@ -52,3 +52,6 @@ __pycache__/
 .venv/
 /frontend/test-results/
 /frontend/playwright-report/
+
+# Claude Code session worktrees (CLAUDE.md: one worktree per session)
+.claude/worktrees/
