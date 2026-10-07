@@ -56,7 +56,7 @@ so the checks must prove it is correct.
      looks too low: a reused result can go stale after a test file broke and was fixed, which only lowers the score), `frontend/node_modules/.bin/stryker run tools/stryker.config.mjs` from the repo root
      (tools/). In Git Bash, append `/c/Windows/System32` to `PATH`
      (`PATH="$PATH:/c/Windows/System32"`; prepending makes `bash` resolve to WSL) before `npm run mutate`, or Stryker crashes at exit looking for `taskkill` and leaves `.stryker-tmp` behind.
-   - lint + type check: `cd frontend && npx tsc --noEmit && npx eslint .`; for Java, `./gradlew :backend:compileJava`
+   - lint + type check + build: `cd frontend && npx tsc --noEmit && npx eslint . && npx next build`; for Java, `./gradlew :backend:compileJava`
      (javac is the type check).
    - complexity check: no function over cyclomatic complexity 10, no file over 300 lines. Enforced by
      `./gradlew :backend:checkstyleMain` (backend), ESLint `complexity`/`max-lines` (frontend; for tools/, from the repo root:
@@ -208,8 +208,8 @@ actually *spoken* in the target language with captions in it (translated subtitl
 language), write them to a list file (`<url> [language] [category]` per line), and run the tool against a backend
 started with `CURATOR_TOKEN` set. Use `--dry-run` first. Videos go into the community library: public, owned by the
 library account, one copy each, same AI review as the Library form. Re-running a list is safe; feed
-`<list>.retry.txt` back in for failures. Don't restart the user's IntelliJ backend to add the token: ask, or start a
-second one. Details: [tools/README.md](tools/README.md).
+`<list>.retry.txt` back in for failures. Don't restart the user's IntelliJ backend to add the token, and never start a second
+backend for it: ask the user to restart theirs with the token. Details: [tools/README.md](tools/README.md).
 `ENFORCE_PLAN_LIMITS=false` turns off free-tier limits; plans can also be switched in **Settings**.
 
 **Brand name:** the name people see (wordmark, page titles, starter-library owner, Anki exports, launcher windows) is
@@ -319,8 +319,9 @@ those against a running backend.
   inside the effect with `.then` and a `cancelled` flag, as in the existing pages.
 
 ## Known limitations
-- Hosting targets in the plan (Vercel, Railway/Render, Supabase) aren't configured; Dockerfiles and
-  `docker-compose.yml` are provided instead.
+- Hosting is AWS, not the plan's original targets (Vercel, Railway/Render, Supabase): staging is live (see
+  "AWS, GitHub and staging"), production is not set up yet ([production plan](docs/production.md)).
+  `docker-compose.yml` still runs everything locally.
 - Japanese, Chinese and Korean are split by simple built-in rules (Chinese per character), with no readings or
   dictionary forms: the Python tokenizer sidecar was removed unused.
 - Schema migrations rely on Hibernate `ddl-auto: update`; switch to Flyway before production data matters.
