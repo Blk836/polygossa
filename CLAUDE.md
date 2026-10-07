@@ -97,6 +97,19 @@ If it can't be reproduced, say so and ask instead of guessing. Pick the browser 
   directly (use `TextService.loadReadable`/`loadOwned`); no package depends on a controller.
 - External services (dictionary APIs, OpenAI, YouTube) only through `DictionaryClient`, `AiClient` and `YouTubeClient`.
 
+### AWS
+Setup and decisions: [production plan](docs/production.md). Claude reaches AWS through the AWS Agent Toolkit (MCP server
+`aws-mcp`, AWS skills) and the AWS CLI (`C:\Program Files\Amazon\AWSCLIV2\aws.exe`), as profile `polygossa`, the app's
+member account, default region `eu-west-1`. Sessions last 12 hours; when one expires, `aws login --profile polygossa`
+needs the user to sign in through the browser.
+- Infrastructure is changed only through CDK (`infra/`), never by CLI or console commands. The CLI and MCP server are
+  for reading, investigating and previewing (`cdk diff`).
+- Before AWS work, check for a relevant AWS skill and prefer it over general knowledge; verify AWS details (limits,
+  permissions, API parameters) against documentation instead of guessing.
+- Everything holding user data lives in `eu-west-1`. `us-east-1` is only for global services (CloudFront and its
+  certificates, WAF).
+- Never read secret values into the conversation: reference Secrets Manager entries by name.
+
 ## Running it
 
 The database is PostgreSQL in Docker everywhere, so **Docker Desktop must be running** (its CLI is in
