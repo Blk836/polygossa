@@ -4,6 +4,7 @@ import { ACTIONS, actionSummary, planCounts, usersPath } from "./admin";
 describe("usersPath", () => {
   it("searches and pages", () => {
     expect(usersPath("", 0)).toBe("admin/users?page=0");
+    expect(usersPath("   ", 1)).toBe("admin/users?page=1");
     expect(usersPath(" ana ", 2)).toBe("admin/users?page=2&q=ana");
   });
 });
@@ -20,6 +21,23 @@ describe("planCounts", () => {
 });
 
 describe("actions", () => {
+  it("each has its button, request and confirmation", () => {
+    expect(Object.entries(ACTIONS).map(([k, a]) => [k, a.label, a.method, a.path(7), a.yes, a.danger])).toEqual([
+      ["suspend", "Suspend", "POST", "admin/users/7/suspend", "Yes, suspend", true],
+      ["unsuspend", "Lift suspension", "POST", "admin/users/7/unsuspend", "Yes, lift suspension", false],
+      ["posts", "Remove all forum posts", "DELETE", "admin/users/7/posts", "Yes, remove posts", true],
+      ["playlists", "Remove all playlists", "DELETE", "admin/users/7/playlists", "Yes, remove playlists", true],
+      ["texts", "Remove all texts and videos", "DELETE", "admin/users/7/texts", "Yes, remove content", true],
+      ["unshare", "Unshare everything", "POST", "admin/users/7/unshare", "Yes, unshare", false],
+    ]);
+    expect(ACTIONS.suspend.confirm("a@b.co")).toBe("Suspend a@b.co?");
+    expect(ACTIONS.unsuspend.confirm("a@b.co")).toBe("Lift the suspension of a@b.co?");
+    expect(ACTIONS.posts.confirm("a@b.co")).toBe("Remove every forum post by a@b.co? Threads they started go with their replies.");
+    expect(ACTIONS.playlists.confirm("a@b.co")).toBe("Remove every playlist by a@b.co?");
+    expect(ACTIONS.texts.confirm("a@b.co")).toBe("Remove every text and video a@b.co imported? This can't be undone.");
+    expect(ACTIONS.unshare.confirm("a@b.co")).toBe("Make everything a@b.co shared private?");
+  });
+
   it("each asks before it runs, naming the user", () => {
     for (const a of Object.values(ACTIONS)) expect(a.confirm("ana@x.co")).toMatch(/ana@x\.co/);
   });

@@ -62,7 +62,16 @@ describe("browserNativeLanguage", () => {
   });
 });
 
-describe("NATIVE_LANGUAGES", () => {
+describe("NATIVE_LANGUAGES (kept in step with the backend's NativeLanguage)", () => {
+  it("lists every language with its English and native name", () => {
+    expect(NATIVE_LANGUAGES.map((l) => `${l.code} ${l.name} ${l.nativeName}`)).toEqual([
+      "en English English", "es Spanish Español", "fr French Français", "de German Deutsch", "it Italian Italiano",
+      "pt Portuguese Português", "nl Dutch Nederlands", "pl Polish Polski", "sv Swedish Svenska", "tr Turkish Türkçe",
+      "vi Vietnamese Tiếng Việt", "id Indonesian Bahasa Indonesia", "ru Russian Русский", "uk Ukrainian Українська",
+      "ar Arabic العربية", "hi Hindi हिन्दी", "ja Japanese 日本語", "zh Chinese 中文", "ko Korean 한국어",
+    ]);
+  });
+
   it("starts with English and includes every learnable language", () => {
     expect(NATIVE_LANGUAGES[0]).toEqual({ code: "en", name: "English", nativeName: "English" });
     for (const code of ["es", "fr", "de", "it", "pt", "ja", "zh", "ko", "ru", "ar"]) {
