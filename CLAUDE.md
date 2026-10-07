@@ -96,8 +96,11 @@ If it can't be reproduced, say so and ask instead of guessing. Pick the browser 
 
 ## Running it
 
-The backend defaults to a file-based H2 database and in-memory caching, and falls back to built-in CJK segmentation
-when the tokenizer sidecar isn't running, so no external services are needed.
+The database is PostgreSQL in Docker everywhere, so **Docker Desktop must be running** (its CLI is in
+`~/AppData/Local/Programs/DockerDesktop/resources/bin`, which a shell opened before it was installed lacks on PATH).
+`bootRun` starts the dev database from `compose.dev.yml` (container `polygossa-dev-db` on :5432, data in the
+`polygossa-dev-db` volume) and leaves it running; `docker compose -f compose.dev.yml up -d` starts it by hand.
+Caching is in-memory, and the backend falls back to built-in CJK segmentation when the tokenizer sidecar isn't running.
 
 In IntelliJ, run the shared **App** configuration (`.idea/runConfigurations/`): a compound of **Backend**
 (Gradle `:backend:bootRun`) and **Frontend** (`npm run dev` in `frontend/`), each in its own Run tab; stop them there.
@@ -148,8 +151,8 @@ second one. Details: [tools/README.md](tools/README.md).
 **Brand name:** the name people see (wordmark, page titles, starter-library owner, Anki exports, launcher windows) is
 `BRAND_NAME`, default Polygossa, read by the backend (`config/Brand`), frontend (`lib/brand.ts`, inlined at build time
 via `next.config.ts` — restart `npm run dev` after changing it) and tokenizer. Never hard-code it: `app/branding.test.ts`
-fails on any copy outside `lib/brand.ts`. Internal identifiers (package `app.lector`, `lector_*` cookies, the H2 file,
-`@lector.local` accounts, the Anki `lector` tag) are deliberately not tied to it.
+fails on any copy outside `lib/brand.ts`. Internal identifiers (package `app.lector`, `lector_*` cookies, the `lector`
+database, `@lector.local` accounts, the Anki `lector` tag) are deliberately not tied to it.
 
 Optional:
 - **Tokenizer sidecar** — `cd tokenizer && pip install -r requirements.txt && uvicorn app.main:app --port 8000`,
@@ -167,12 +170,13 @@ Optional:
 ## Tests
 
 ```bash
-./gradlew :backend:test                                           # unit + MockMvc integration tests
+./gradlew :backend:test                                           # unit + MockMvc integration tests (Docker needed)
 cd frontend && npm test && npx tsc --noEmit && npx eslint . && npx next build
 cd frontend && npm run e2e   # Playwright (first time: npx playwright install chromium); ~4.5 min. Runs against a production build on :3210
                              # (scripts/e2e-server.mjs: rebuilt only when sources change; a next dev on :3000 keeps running),
                              # starts its own backend on :8210 (JAVA_HOME needed) with no OpenAI key, so tests never call
-                             # OpenAI, and its own database (backend/data/e2e*); the IntelliJ run on :8080 is untouched.
+                             # OpenAI, and its own PostgreSQL (bootTestRun: E2eApplication, a Testcontainers container
+                             # removed when it stops); the IntelliJ run on :8080 and the dev database are untouched.
                              # E2E_BASE_URL=http://localhost:3000 points it at the dev server instead, for debugging.
 cd tokenizer && pip install -r requirements-dev.txt && pytest      # Python not installed on the dev machine
 node --test "tools/**/*.test.mjs"                                  # tools/
@@ -200,6 +204,9 @@ those against a running backend.
   beans the shared ones can't have, or when its results depend on everything in the database (the recommendation
   tests rank every public text, so other classes' texts on a shared database break them). Test classes run in
   parallel JVMs, so don't rely on run order.
+- Tests run on PostgreSQL: `TestDatabases` (test classpath, `META-INF/spring.factories`) starts one Testcontainers
+  PostgreSQL per test JVM and gives every booted app a new, empty database, overriding any configured URL. A class with
+  its own `@SpringBootTest` names its database with `test.database=<name>` (that also keeps its setup distinct).
 - AI: tests never call OpenAI; `OpenAiStub` (`writing/` test package) answers chat and `/embeddings` requests, including
   slow, failing and malformed replies. The recommendation feature job never runs on its schedule in tests
   (`src/test/resources/application.properties`); tests call `TextFeatureJob.runOnce()`. The dev OpenAI key lives only in
