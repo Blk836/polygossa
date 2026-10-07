@@ -16,10 +16,12 @@ public record MeDto(
         PlanService.PlanInfo plan,
         String photoUrl,
         /* one of the team: sees the admin panel */
-        boolean admin) {
+        boolean admin,
+        /* first-visit tours: on or off, and the ones already seen */
+        Tours tours) {
 
     static MeDto of(User user, PlanService plans, Admins admins) {
         return new MeDto(user.getId(), user.getEmail(), user.getDisplayName(), user.getTargetLanguage(),
-                user.getNativeLanguage(), user.getDailyReviewGoal(), user.getDailyGoal(), user.isStreakNeedsGoal(), user.getTimezone(), plans.describe(user), user.photoUrl(), admins.isAdmin(user));
+                user.getNativeLanguage(), user.getDailyReviewGoal(), user.getDailyGoal(), user.isStreakNeedsGoal(), user.getTimezone(), plans.describe(user), user.photoUrl(), admins.isAdmin(user), user.getTours());
     }
 }

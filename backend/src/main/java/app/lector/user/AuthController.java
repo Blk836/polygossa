@@ -67,6 +67,7 @@ public class AuthController {
                 : req.displayName().trim();
         User created = new User(email, passwordEncoder.encode(req.password()), name);
         created.setNativeLanguage(NativeLanguage.fromBrowser(req.nativeLanguage()));
+        created.setToursOn(true);
         User user = users.save(created);
         return respond(user);
     }

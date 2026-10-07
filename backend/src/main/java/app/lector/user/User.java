@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -69,6 +70,13 @@ public class User {
 
     /** Stored name of the profile photo (see {@code StorageService}), or null for none. */
     private String photoFile;
+
+    /** First-visit tours are shown. Null (accounts from before tours, and the dev account) means off. */
+    private Boolean toursOn;
+
+    /** Names of the tours already seen, comma-separated in the order seen; null for none. */
+    @Column(length = 1300)
+    private String toursSeen;
 
     protected User() {}
 
@@ -203,6 +211,32 @@ public class User {
 
     public void setPhotoFile(String photoFile) {
         this.photoFile = photoFile;
+    }
+
+    public Tours getTours() {
+        List<String> seen = toursSeen == null ? List.of() : List.of(toursSeen.split(","));
+        return new Tours(Boolean.TRUE.equals(toursOn), seen);
+    }
+
+    /** Turning tours on starts them all over again; turning them off keeps what was seen. */
+    public void setToursOn(boolean on) {
+        toursOn = on;
+        if (on) {
+            toursSeen = null;
+        }
+    }
+
+    /** Remembers a tour as seen (once); false when the list is full and the name is new. */
+    public boolean markTourSeen(String name) {
+        List<String> seen = getTours().seen();
+        if (seen.contains(name)) {
+            return true;
+        }
+        if (seen.size() >= Tours.MAX_SEEN) {
+            return false;
+        }
+        toursSeen = toursSeen == null ? name : toursSeen + "," + name;
+        return true;
     }
 
     /**
