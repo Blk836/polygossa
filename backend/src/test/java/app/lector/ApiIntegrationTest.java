@@ -46,7 +46,8 @@ class ApiIntegrationTest {
     void rejectsUnauthenticatedRequests() throws Exception {
         mvc.perform(get("/api/texts")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/texts").header("Authorization", "Bearer not-a-jwt")).andExpect(status().isUnauthorized());
-        mvc.perform(get("/api/languages")).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(8));
+        mvc.perform(get("/api/languages")).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(9))
+                .andExpect(jsonPath("$[0].code").value("en"));
     }
 
     @Test

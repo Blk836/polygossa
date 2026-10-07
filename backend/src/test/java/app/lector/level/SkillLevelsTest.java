@@ -26,6 +26,7 @@ class SkillLevelsTest {
             "8999, B2", "9000, C1", "14999, C1", "15000, C2", "100000, C2"})
     void readingFromKnownWordsInEuropeanLanguages(long known, String level) {
         assertThat(SkillLevels.reading(Language.ES, known, NONE).level()).isEqualTo(level);
+        assertThat(SkillLevels.reading(Language.EN, known, NONE).level()).isEqualTo(level);
     }
 
     @ParameterizedTest

@@ -41,6 +41,14 @@ class TokenizationTest {
     }
 
     @Test
+    void keepsEnglishContractionsAndPossessivesTogether() {
+        assertThat(words(tokenize(Language.EN, "Don't touch John's dog-friendly café, it’s closed.")))
+                .containsExactly("Don't", "touch", "John's", "dog-friendly", "café", "it’s", "closed");
+        assertThat(Language.fromCode("en").speechLocale()).isEqualTo("en-US");
+        assertThat(Language.values()[0]).isEqualTo(Language.EN);
+    }
+
+    @Test
     void splitsFrenchAndItalianElisions() {
         assertThat(words(tokenize(Language.FR, "L'homme n'aime pas l’eau.")))
                 .containsExactly("L'", "homme", "n'", "aime", "pas", "l’", "eau");

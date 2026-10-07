@@ -4,7 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 // even though auto-login is on in dev; sign-up itself can't run here (auto-login sends /signup to the library), so
 // links are checked by their href.
 const SIGNUP = /^\/signup(\?lang=(es|fr|de|it|pt|ja|zh|ko))?$/;
-const NATIVE = ["Español", "Français", "Deutsch", "Italiano", "Português", "日本語", "中文", "한국어"];
+const NATIVE = ["English", "Español", "Français", "Deutsch", "Italiano", "Português", "日本語", "中文", "한국어"];
 
 const demo = (page: Page) => page.getByTestId("demo");
 const demoWord = (page: Page, text: string) => demo(page).getByTestId("demo-text").getByRole("button", { name: text, exact: true });
@@ -22,12 +22,13 @@ test.describe("landing page", () => {
     await expect(page.getByText("no credit card").first()).toBeVisible();
   });
 
-  test("the hero's language picker starts sign-up in each of the 8 languages", async ({ page }) => {
+  test("the hero's language picker starts sign-up in each of the 9 languages", async ({ page }) => {
     await page.goto("/");
     const picker = page.getByRole("list", { name: "Languages" }).first();
     await expect(picker.getByRole("link")).toHaveText(NATIVE);
     await expect(picker.getByRole("link", { name: "Français" })).toHaveAttribute("href", "/signup?lang=fr");
     await expect(picker.getByRole("link", { name: "日本語" })).toHaveAttribute("href", "/signup?lang=ja");
+    await expect(picker.getByRole("link", { name: "English" })).toHaveAttribute("href", "/signup?lang=en");
   });
 
   test("clicking a demo word shows its meaning and makes it learning", async ({ page }) => {
