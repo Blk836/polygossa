@@ -66,8 +66,11 @@ so the checks must prove it is correct.
 7. Commit each incremental change to git as you go (e.g. scenarios, failing tests, implementation, a fix): one
    focused commit per step with a message saying what changed and why. Work on a feature branch, never on main:
    push it, open a pull request (`gh pr create`), wait for CI (`gh pr checks --watch`), and merge it yourself
-   (`gh pr merge --merge --delete-branch`, keeping the commits) only when every check is green. A merge to main
-   deploys staging. If a check fails, fix it on the branch; never merge red. Small commits make it easy to diff changes
+   (`gh pr merge --merge --delete-branch`, keeping the commits) only when every check is green. If main moved since
+   the checks ran, merge main into the branch and wait for the checks again first. A merge to main deploys staging
+   without re-running the checks (they ran on the pull request). If a check fails, fix it on the branch; never merge
+   red. (`gh pr merge` can't merge a change to a workflow file without the CLI's `workflow` scope; merge locally with
+   `git merge --no-ff` and push instead, and GitHub marks the pull request merged.) Small commits make it easy to diff changes
    over time and bisect to the commit that broke something. Don't batch unrelated work into one commit, and list the
    commits in the final report.
 

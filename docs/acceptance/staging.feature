@@ -58,16 +58,18 @@ Feature: Staging on AWS, defined in CDK and deployed from GitHub (docs/productio
 
   # --- Deploying from GitHub ---
 
-  Scenario: A green push to main deploys staging
-    Given a push to main
-    When every CI job passes
+  Scenario: Merging a green pull request deploys staging
+    Given a pull request whose checks all passed
+    When it is merged to main
     Then a deploy job signs in to AWS with short-lived credentials (GitHub's OIDC sign-in, no stored keys)
     And builds the images and runs "cdk deploy" for staging
     And checks the site answers afterwards, failing the run if it doesn't
 
-  Scenario: Nothing deploys unless CI passed on main
-    When a CI job fails, or the push is to another branch or a pull request
+  Scenario: Only main deploys
+    When CI runs for a pull request or another branch
     Then no deploy happens
+    And a pull request with a red check is never merged (a rule we follow: enforcing it needs GitHub Pro or a public
+      repository)
 
   Scenario: A deploy can skip the checks by hand, for now
     Given I start the CI workflow by hand on main with "deploy_only" ticked
