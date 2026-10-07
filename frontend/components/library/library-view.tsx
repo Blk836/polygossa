@@ -113,7 +113,7 @@ function Library({ view, language }: { view: View; language: string }) {
       <PageHeader
         title={view === "mine" ? "Library" : "Saved"}
         subtitle={subtitle(view, me.plan.usage.texts, me.plan.limits.texts, language)}
-        actions={<><CardLayoutPicker /><LinkButton href={importHref(language)}>+ Import</LinkButton></>}
+        actions={<><CardLayoutPicker /><LinkButton href={importHref(language)} data-tour="import">+ Import</LinkButton></>}
       />
       <PlaylistShelf source={view} language={language} />
       <FilterBar categories={texts ? categoriesIn(texts) : []} filters={filters} onChange={setFilters} count={shown?.length ?? 0} />

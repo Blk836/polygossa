@@ -56,7 +56,7 @@ function ForumView() {
         subtitle="Report bugs, share ideas and talk with other learners and the team"
         actions={<LinkButton href={newHref}>New thread</LinkButton>}
       />
-      <nav aria-label="Forum categories" className="mb-4 flex gap-1 overflow-x-auto rounded-lg border border-line bg-card p-1 text-sm sm:w-fit">
+      <nav aria-label="Forum categories" data-tour="forum-categories" className="mb-4 flex gap-1 overflow-x-auto rounded-lg border border-line bg-card p-1 text-sm sm:w-fit">
         <Link href={forumPageHref(null, 0)} aria-current={category === null ? "page" : undefined} className={tabClass(category === null)}>All</Link>
         {FORUM_CATEGORIES.map((c) => (
           <Link key={c.code} href={forumPageHref(c.code, 0)} aria-current={category === c.code ? "page" : undefined} className={tabClass(category === c.code)}>

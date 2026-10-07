@@ -27,7 +27,7 @@ export function FinishPanel({ visible, textId, language, isPro, unseen, learning
   if (!visible) return null;
   if (finished === null) {
     return (
-      <div data-finish="prompt" className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-line bg-card px-4 py-3">
+      <div data-finish="prompt" data-tour="reader-next" className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-line bg-card px-4 py-3">
         <div className="min-w-0 flex-1">
           <p className="font-medium">Finished reading?</p>
           <p className="text-sm text-muted">

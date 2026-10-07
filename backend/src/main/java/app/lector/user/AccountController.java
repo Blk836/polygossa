@@ -15,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +32,9 @@ public class AccountController {
             @Min(1) @Max(500) Integer dailyReviewGoal,
             DailyGoal dailyGoal,
             Boolean streakNeedsGoal,
-            String timezone) {}
+            String timezone,
+            /* true starts the first-visit tours over again; false turns them off */
+            Boolean tours) {}
 
     public record ChangePlanRequest(@NotNull Tier tier) {}
 
@@ -85,6 +88,23 @@ public class AccountController {
             } catch (Exception e) {
                 throw ApiException.badRequest("Unknown time zone: " + req.timezone());
             }
+        }
+        if (req.tours() != null) {
+            user.setToursOn(req.tours());
+        }
+        return MeDto.of(user, plans, admins);
+    }
+
+    /** A first-visit tour was finished or skipped: it isn't shown again. */
+    @PostMapping("/me/tours/{name}/seen")
+    @Transactional
+    public MeDto tourSeen(@AuthenticationPrincipal AuthUser principal, @PathVariable String name) {
+        User user = currentUser.load(principal);
+        if (!Tours.validName(name)) {
+            throw ApiException.badRequest("Tour names are lower-case letters and dashes, 30 at most");
+        }
+        if (!user.markTourSeen(name)) {
+            throw ApiException.badRequest("Too many tours");
         }
         return MeDto.of(user, plans, admins);
     }

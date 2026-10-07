@@ -54,7 +54,7 @@ function VocabularyView() {
         subtitle={usageLine(me.plan)}
         actions={
           <>
-            <button type="button" className={linkClass} aria-expanded={importOpen} onClick={() => setImportOpen((o) => !o)}>Import words</button>
+            <button type="button" className={linkClass} data-tour="words-import" aria-expanded={importOpen} onClick={() => setImportOpen((o) => !o)}>Import words</button>
             <a className={linkClass} href={`/api/vocabulary/export.csv?${exportQuery}`}>Export CSV</a>
             <a className={linkClass} href={`/api/vocabulary/export.apkg?${exportQuery}`}>Export to Anki</a>
           </>
@@ -68,7 +68,7 @@ function VocabularyView() {
           </button>
         ))}
       </div>
-      <FilterBar filters={filters} wordsTab={tab === "words"} onChange={update} />
+      <div data-tour="words-filters"><FilterBar filters={filters} wordsTab={tab === "words"} onChange={update} /></div>
       {tab === "sentences" ? (
         <SentenceList language={filters.language} />
       ) : (

@@ -12,6 +12,8 @@ export async function signUp(browser: Browser, name: string, viewport = { width:
   const email = `photo-${Date.now()}-${Math.random().toString(36).slice(2)}@test.co`;
   const res = await context.request.post("/api/auth/signup", { data: { email, password: "password123", displayName: name } });
   expect(res.ok()).toBe(true);
+  // New accounts get first-visit tours (feature-tours.spec.ts); their tip cards aren't what these tests are about.
+  expect((await context.request.patch("/api/me", { data: { tours: false } })).ok()).toBe(true);
   const page = await context.newPage();
   return { context, page, me: (await (await context.request.get("/api/me")).json()) as Me };
 }

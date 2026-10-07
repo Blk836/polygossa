@@ -6,6 +6,7 @@ import { useMe } from "@/components/me-context";
 import { GoalFields, type GoalChoice } from "@/components/settings/goal-fields";
 import { InterestsSection } from "@/components/settings/interests-section";
 import { ProfilePhoto } from "@/components/settings/profile-photo";
+import { ToursSection } from "@/components/settings/tours-section";
 import { Button, ErrorNote, Field, inputClass, selectClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import { NATIVE_LANGUAGES } from "@/lib/dictionary";
@@ -74,6 +75,7 @@ export default function ProfilePage() {
         </div>
       </form>
       <InterestsSection />
+      <ToursSection />
     </div>
   );
 }

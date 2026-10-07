@@ -178,6 +178,7 @@ export function Reader({ initial, initialSettings, playlist }: {
         <PhraseHint show={popup.phraseMode} />
         <div ref={articleRef} className="relative">
           <article
+            data-tour="reader-text"
             className={articleClass(language, settings.size, settings.quiet)}
             lang={language}
             onPointerDown={input.onPointerDown}

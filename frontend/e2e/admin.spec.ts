@@ -50,6 +50,8 @@ test("learners never see the panel", async ({ browser, playwright }) => {
   const signup = await playwright.request.newContext({ baseURL });
   const res = await signup.post("/api/auth/signup", { data: { email: `learner-e2e-${Date.now()}@test.co`, password: "password123" } });
   expect(res.ok(), await res.text()).toBe(true);
+  // New accounts get first-visit tours (feature-tours.spec.ts); their tip cards aren't what this test is about.
+  expect((await signup.patch("/api/me", { data: { tours: false } })).ok()).toBe(true);
   const context = await browser.newContext({ storageState: await signup.storageState() });
   const page = await context.newPage();
   await page.goto("/library");

@@ -65,7 +65,7 @@ function NoPlaylists({ tab, name, searched }: { tab: Tab; name: string; searched
 
 function TabSwitch({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => void }) {
   return (
-    <div className="flex gap-1 rounded-lg border border-line bg-card p-1 text-sm sm:w-fit" role="group" aria-label="Playlist section">
+    <div className="flex gap-1 rounded-lg border border-line bg-card p-1 text-sm sm:w-fit" role="group" aria-label="Playlist section" data-tour="playlist-tabs">
       {(["mine", "shared"] as const).map((t) => (
         <button key={t} onClick={() => onChange(t)} aria-pressed={tab === t}
           className={`flex-1 whitespace-nowrap rounded-md px-4 py-1.5 ${tab === t ? "bg-accent-soft font-medium" : "text-muted"}`}>
@@ -103,7 +103,7 @@ function CreateForm({ language, onCreated }: { language: string; onCreated: (p: 
   }
 
   return (
-    <form onSubmit={(e) => void submit(e)} className="mb-6 flex flex-col gap-2 rounded-xl border border-line bg-card p-3 sm:flex-row">
+    <form onSubmit={(e) => void submit(e)} data-tour="playlist-create" className="mb-6 flex flex-col gap-2 rounded-xl border border-line bg-card p-3 sm:flex-row">
       <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="New playlist name…" aria-label="Playlist name" maxLength={120} />
       {!language && (
         <select className={`${selectClass} sm:w-40`} value={lang} onChange={(e) => setLang(e.target.value as LanguageCode)} aria-label="Language">

@@ -18,7 +18,7 @@ const button = "rounded-lg border border-line bg-card px-3 py-1.5 text-sm hover:
 export function ReaderPager({ page, count, onPage, className = "", note }: Props) {
   if (count <= 1) return null;
   return (
-    <nav aria-label="Pages" className={`flex flex-wrap items-center gap-x-3 gap-y-1 ${className}`}>
+    <nav aria-label="Pages" data-tour="reader-next" className={`flex flex-wrap items-center gap-x-3 gap-y-1 ${className}`}>
       <button className={button} onClick={() => onPage(page - 1)} disabled={page <= 1} aria-label="Previous page">
         ← <span className="hidden sm:inline">Previous</span>
       </button>

@@ -50,12 +50,12 @@ export default function DashboardPage() {
       />
       {error && <div className="mb-4"><ErrorNote message={error} /></div>}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="self-start lg:col-span-2" data-tour="streak">
           <StreakCard streak={activity.streak} days={activity.days} />
         </div>
         <div className="grid gap-4">
           <GoalCard goal={data.goal} />
-          <MilestoneCard known={known} language={language} />
+          <div data-tour="known-words"><MilestoneCard known={known} language={language} /></div>
         </div>
       </div>
 
