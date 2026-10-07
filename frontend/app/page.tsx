@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { Faq, FinalCta, Pricing } from "@/components/landing/closing";
 import { Features, HowItWorks } from "@/components/landing/features";
 import { Hero, LandingHeader } from "@/components/landing/hero";
+import { Showreel } from "@/components/landing/showreel";
 import { Logo } from "@/components/ui";
 import { BRAND } from "@/lib/brand";
 import { signupHref } from "@/lib/landing";
@@ -15,6 +16,7 @@ export default async function Landing() {
       <LandingHeader signedIn={signedIn} />
       <main className="flex-1">
         <Hero />
+        <Showreel />
         <HowItWorks />
         <Features />
         <Pricing />
