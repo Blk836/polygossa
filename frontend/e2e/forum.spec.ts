@@ -36,10 +36,9 @@ test.afterEach(async ({ page }) => {
   }
 });
 
-test("the account menu opens the forum", async ({ page }) => {
+test("the Forum tab in the top bar opens the forum", async ({ page }) => {
   await page.goto("/library");
-  await page.getByRole("button", { name: "Account" }).click();
-  await page.getByRole("menu", { name: "Account" }).getByRole("menuitem", { name: "Forum" }).click();
+  await page.getByRole("banner").getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Forum" }).click();
   await page.waitForURL("**/forum");
   await expect(page.getByRole("navigation", { name: "Forum categories" }).getByRole("link"))
     .toHaveText(["All", "Announcements", "Bug reports", "Ideas", "General"]);

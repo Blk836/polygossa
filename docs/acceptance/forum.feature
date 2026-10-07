@@ -11,9 +11,9 @@ Feature: Forum (see docs/architecture/platform.md)
 
   # --- Finding it ---
 
-  Scenario: The forum is in the account menu
-    When I open the account menu
-    Then I see "Forum", which opens /forum
+  Scenario: The forum is a top-level tab (forum-tab.feature)
+    When I click "Forum" in the top bar
+    Then I am on /forum
 
   Scenario: Forum categories
     When I open /forum

@@ -2,11 +2,12 @@ import { describe, expect, it } from "vitest";
 import { activeGroup, activeSection, dueBadge, NAV_GROUPS, SETTINGS_SECTIONS, settingsHashRedirect, settingsSection, tabName } from "./nav";
 
 describe("nav groups", () => {
-  it("has three top-level tabs: Library, Practice, Progress", () => {
+  it("has four top-level tabs: Library, Practice, Progress, Forum", () => {
     expect(NAV_GROUPS.map((g) => [g.label, g.href])).toEqual([
       ["Library", "/library"],
       ["Practice", "/review"],
       ["Progress", "/dashboard"],
+      ["Forum", "/forum"],
     ]);
   });
 
@@ -24,6 +25,7 @@ describe("nav groups", () => {
         ["Write", "/writing"],
       ],
       [],
+      [],
     ]);
   });
 });
@@ -40,6 +42,9 @@ describe("activeGroup", () => {
     ["/vocabulary", "Practice"],
     ["/writing", "Practice"],
     ["/dashboard", "Progress"],
+    ["/forum", "Forum"],
+    ["/forum/12", "Forum"],
+    ["/forum/new", "Forum"],
   ])("%s belongs to %s", (path, label) => {
     expect(activeGroup(path)?.label).toBe(label);
   });
@@ -48,7 +53,7 @@ describe("activeGroup", () => {
     expect(activeGroup("/library/saved")?.label).toBe("Library");
   });
 
-  it.each(["/settings", "/classes", "/classes/3", "/onboarding", "/", "/libraryx", "/reading"])("%s belongs to no group", (path) => {
+  it.each(["/settings", "/classes", "/classes/3", "/onboarding", "/", "/libraryx", "/reading", "/forumx"])("%s belongs to no group", (path) => {
     expect(activeGroup(path)).toBeUndefined();
   });
 });
@@ -66,7 +71,7 @@ describe("activeSection", () => {
     expect(activeSection(path)?.label).toBe(label);
   });
 
-  it.each(["/read/5", "/import", "/dashboard", "/settings", "/playlistsx"])("%s shows no sub-tab strip", (path) => {
+  it.each(["/read/5", "/import", "/dashboard", "/settings", "/playlistsx", "/forum", "/forum/12"])("%s shows no sub-tab strip", (path) => {
     expect(activeSection(path)).toBeUndefined();
   });
 });

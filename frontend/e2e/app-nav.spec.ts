@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// The header: three top-level tabs (Library, Practice, Progress) with sub-tabs, the account menu (Settings, Classes,
+// The header: four top-level tabs (Library, Practice, Progress, Forum) with sub-tabs, the account menu (Settings, Classes,
 // plan, sign out) and the Practice due-cards badge. Known words and the streak flame are in app-nav-header.spec.ts.
 
 const topNav = (page: Page) => page.getByRole("banner").getByRole("navigation", { name: "Main" });
@@ -13,9 +13,9 @@ async function stubDue(page: Page, dueWords: number, dueSentences = 0) {
 }
 
 test.describe("top-level tabs", () => {
-  test("the header has just Library, Practice and Progress", async ({ page }) => {
+  test("the header has just Library, Practice, Progress and Forum", async ({ page }) => {
     await page.goto("/library");
-    await expect(topNav(page).getByRole("link")).toHaveText(["Library", /^Practice/, "Progress"]);
+    await expect(topNav(page).getByRole("link")).toHaveText(["Library", /^Practice/, "Progress", "Forum"]);
     for (const old of ["Explore", "Playlists", "Words", "Review", "Write", "Classes", "Settings"]) {
       await expect(topNav(page).getByRole("link", { name: old, exact: true })).toHaveCount(0);
     }
@@ -43,6 +43,14 @@ test.describe("top-level tabs", () => {
     await expect(topNav(page).locator("[aria-current=page]")).toHaveText("Progress");
     await expect(sections(page)).toHaveCount(0);
   });
+
+  for (const path of ["/forum", "/forum/new", "/forum/999999"]) {
+    test(`${path} marks the Forum tab and shows no sub-tabs`, async ({ page }) => {
+      await page.goto(path);
+      await expect(topNav(page).locator("[aria-current=page]")).toHaveText("Forum");
+      await expect(sections(page)).toHaveCount(0);
+    });
+  }
 
   test("importing a text keeps Library marked but shows no sub-tabs", async ({ page }) => {
     await page.goto("/import");
@@ -73,13 +81,13 @@ test.describe("account menu", () => {
   const menuButton = (page: Page) => page.getByRole("button", { name: "Account" });
   const menu = (page: Page) => page.getByRole("menu", { name: "Account" });
 
-  test("holds Settings, Classes, the Forum and the plan; the plan is no longer in the top bar", async ({ page }) => {
+  test("holds Settings, Classes and the plan; the plan and the forum are no longer in it", async ({ page }) => {
     await page.goto("/library");
     await expect(page.getByRole("banner").getByText("Classroom", { exact: true })).toHaveCount(0);
     await expect(menu(page)).toHaveCount(0);
     await menuButton(page).click();
     await expect(menuButton(page)).toHaveAttribute("aria-expanded", "true");
-    await expect(menu(page).getByRole("menuitem")).toHaveText(["Settings", "Classes", "Forum"]);
+    await expect(menu(page).getByRole("menuitem")).toHaveText(["Settings", "Classes"]);
     await expect(menu(page).getByTestId("account-plan")).toHaveText("Classroom plan");
     await expect(menu(page)).toContainText("test@lector.local");
     // The auto-login test account would just be signed straight back in.
@@ -156,10 +164,11 @@ test.describe("due-cards badge", () => {
 test.describe("phones", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test("the bottom bar has the three tabs, and sub-tabs and the account menu still work", async ({ page }) => {
+  test("the bottom bar has the four tabs, and sub-tabs and the account menu still work", async ({ page }) => {
     await page.goto("/vocabulary");
     const bottom = page.getByRole("navigation", { name: "Main" }).last();
-    await expect(bottom.getByRole("link")).toHaveText(["Library", /^Practice/, "Progress"]);
+    await expect(bottom.getByRole("link")).toHaveText(["Library", /^Practice/, "Progress", "Forum"]);
+    await expect(bottom.getByRole("link").locator("svg")).toHaveCount(4);
     await expect(bottom.locator("[aria-current=page]")).toHaveText(/^Practice/);
     await expect(sections(page).getByRole("link", { name: "Words" })).toBeVisible();
     await page.getByRole("button", { name: "Account" }).click();
