@@ -1,8 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
 // The landing page (/) for visitors with no session. Playwright starts every test without cookies, so / shows it
-// even though auto-login is on in dev; sign-up itself can't run here (auto-login sends /signup to the library), so
-// links are checked by their href.
+// even though auto-login is on in dev; links are checked by their href (the sign-up page has its own spec,
+// auth-splash.spec.ts).
 // Japanese, Chinese and Korean are paused for learning (learning-languages.feature): six languages are offered.
 const SIGNUP = /^\/signup(\?lang=(en|es|fr|de|it|pt))?$/;
 const NATIVE = ["English", "Español", "Français", "Deutsch", "Italiano", "Português"];
