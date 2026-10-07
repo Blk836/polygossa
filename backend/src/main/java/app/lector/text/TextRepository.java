@@ -21,10 +21,6 @@ public interface TextRepository extends JpaRepository<Text, Long> {
 
     List<Text> findByOwnerIdAndLanguageAndTitle(Long ownerId, Language language, String title);
 
-    /** Texts without their stored distinct words (rows from before they were kept); see TextBodyMigration. */
-    @Query("select t.id from Text t where t.wordsJson is null")
-    List<Long> findIdsWithoutWords();
-
     /** Texts with an opening square bracket of any width: the ones that may hold caption annotations. */
     @Query("select t from Text t where t.body.content like '%[%' or t.body.content like '%［%' or t.body.content like '%【%'")
     List<Text> findWithSquareBrackets();
