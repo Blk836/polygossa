@@ -18,6 +18,10 @@ describe("the scenes", () => {
     ]);
   });
 
+  it("have the ids the showreel draws them by (and e2e tests read from data-scene)", () => {
+    expect(SCENES.map((s) => s.id)).toEqual(["watch", "tap", "review", "again", "payoff"]);
+  });
+
   it("each last long enough to read, and the whole loop is their sum", () => {
     for (const s of SCENES) expect(s.ms).toBeGreaterThanOrEqual(3000);
     expect(SHOWREEL_MS).toBe(SCENES.reduce((sum, s) => sum + s.ms, 0));
