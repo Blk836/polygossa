@@ -198,7 +198,7 @@ class CategoryApiTest {
         stats.clear();
         JsonNode shelves = api.get(user, "/api/library/shelves?language=it", 200);
         assertThat(shelves).hasSize(Category.values().length);
-        // Every public row is read in full to test the filters (H2 keeps the text inline), so a query per category
+        // Every public row is read in full to test the filters (the database keeps the text inline), so a query per category
         // re-read them all: Explore's front page took seconds once there were a few long transcripts.
         assertThat(stats.getQueryExecutionCount()).isLessThan(Category.values().length);
     }

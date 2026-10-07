@@ -23,7 +23,7 @@ import tools.jackson.databind.ObjectMapper;
 
 /** Feature: a short timed writing test on a set situation, graded by AI at the end. */
 @SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:writingtest;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "test.database=writingtest",
         "app.seed-samples=false",
         "app.openai.api-key=test-key",
         "app.openai.model=test-model",

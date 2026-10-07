@@ -20,7 +20,7 @@ import tools.jackson.databind.ObjectMapper;
 
 /** Bulk-imported videos go through the same AI category and sharing check as a shared Library import. */
 @SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:curatedreview;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "test.database=curatedreview",
         "app.seed-samples=false",
         "app.curator-token=" + CuratedVideoImportApiTest.TOKEN,
         "app.openai.api-key=test-key",

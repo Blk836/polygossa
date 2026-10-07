@@ -15,7 +15,7 @@ import tools.jackson.databind.ObjectMapper;
 
 /** Characterization of POST /api/vocabulary (create-or-update) with a tiny free-tier word limit. */
 @SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:vocab;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "test.database=vocab",
         "app.seed-samples=false",
         "app.storage.dir=build/test-uploads",
         "app.billing.free-word-limit=2"

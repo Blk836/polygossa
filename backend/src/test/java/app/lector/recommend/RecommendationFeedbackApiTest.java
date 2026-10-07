@@ -18,7 +18,7 @@ import tools.jackson.databind.ObjectMapper;
  * (docs/acceptance/explore-recommendations.feature).
  */
 @org.springframework.boot.test.context.SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:recfeedback;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "test.database=recfeedback",
         "app.seed-samples=false"
 })
 @org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc

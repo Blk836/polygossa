@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Import;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:apiclock;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "test.database=apiclock",
         "app.seed-samples=false",
         "app.storage.dir=build/test-uploads"
 })

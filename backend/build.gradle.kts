@@ -36,11 +36,13 @@ dependencies {
     implementation("org.xerial:sqlite-jdbc:3.53.4.0")
 
     runtimeOnly("org.postgresql:postgresql")
-    runtimeOnly("com.h2database:h2")
+    // bootRun starts the dev database from compose.dev.yml (never packaged into the jar).
+    developmentOnly("org.springframework.boot:spring-boot-docker-compose")
 
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.springframework.boot:spring-boot-starter-security-test")
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
+    testImplementation("org.testcontainers:testcontainers-postgresql")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

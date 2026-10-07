@@ -13,7 +13,7 @@ import tools.jackson.databind.ObjectMapper;
 
 /** With no AI configured, tests still run and the writing is kept; it is graded once AI is set up. */
 @SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:writingnoai;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "test.database=writingnoai",
         "app.seed-samples=false",
         "app.openai.api-key="
 })

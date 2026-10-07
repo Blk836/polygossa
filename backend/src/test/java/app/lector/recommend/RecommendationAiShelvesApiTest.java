@@ -25,7 +25,7 @@ import tools.jackson.databind.ObjectMapper;
  * interests and the topic filter (docs/acceptance/explore-recommendations.feature).
  */
 @SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:recai;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "test.database=recai",
         "app.seed-samples=false",
         "app.openai.api-key=test-key",
         "app.openai.timeout=2s"

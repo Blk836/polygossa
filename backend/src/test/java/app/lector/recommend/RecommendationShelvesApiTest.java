@@ -26,7 +26,7 @@ import tools.jackson.databind.ObjectMapper;
 
 /** Feature: Explore recommendations, the shelves (docs/acceptance/explore-recommendations.feature). No AI here. */
 @SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:recshelves;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "test.database=recshelves",
         "app.seed-samples=false"
 })
 @AutoConfigureMockMvc

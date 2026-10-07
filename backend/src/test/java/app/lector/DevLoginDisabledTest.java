@@ -11,7 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /** With auto-login off (as in the prod profile), the credential-free endpoint must not exist. */
 @SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:devoff;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "test.database=devoff",
         "app.seed-samples=false",
         "app.dev-auto-login=false",
         "app.storage.dir=build/test-uploads"

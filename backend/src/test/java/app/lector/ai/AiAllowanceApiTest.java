@@ -25,7 +25,7 @@ import tools.jackson.databind.ObjectMapper;
 
 /** Feature: a daily allowance of AI calls per user, so one learner can't drain the AI budget. */
 @SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:aiallowance;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "test.database=aiallowance",
         "app.seed-samples=false",
         "app.openai.api-key=test-key",
         "app.openai.daily-limit=3"

@@ -1,12 +1,20 @@
-# Development defaults: file-based H2 and in-memory caching so the API runs with no external services.
-# See application-prod.yml for PostgreSQL + Redis.
+# Development defaults: PostgreSQL in Docker (compose.dev.yml, started by bootRun) and in-memory caching.
+# See application-prod.yml for production (PostgreSQL + Redis).
 spring:
   application:
     name: lector
   datasource:
-    url: ${DATABASE_URL:jdbc:h2:file:./data/lector;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH}
-    username: ${DATABASE_USER:sa}
-    password: ${DATABASE_PASSWORD:}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/lector}
+    username: ${DATABASE_USER:lector}
+    password: ${DATABASE_PASSWORD:lector}
+  # bootRun starts the dev database (spring-boot-docker-compose is a development-only dependency, so the packaged
+  # app never does) and leaves it running when the backend stops. DEV_COMPOSE=false skips it, e.g. for another
+  # DATABASE_URL.
+  docker:
+    compose:
+      enabled: ${DEV_COMPOSE:true}
+      file: ${DEV_COMPOSE_FILE:../compose.dev.yml}
+      lifecycle-management: start-only
   jpa:
     open-in-view: false
     hibernate:

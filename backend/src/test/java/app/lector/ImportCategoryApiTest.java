@@ -27,7 +27,7 @@ import tools.jackson.databind.ObjectMapper;
  * is 0 here, to show that categorising doesn't use it.
  */
 @SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:importcategory;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "test.database=importcategory",
         "app.seed-samples=false",
         "app.openai.api-key=test-key",
         "app.openai.timeout=2s",

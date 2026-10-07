@@ -17,7 +17,7 @@ import tools.jackson.databind.ObjectMapper;
 
 /** Scenario: startup imports no videos (only the starter texts), and YouTube is never contacted. */
 @SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:nostartupvideos;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "test.database=nostartupvideos",
         "app.seed-samples=true"
 })
 @AutoConfigureMockMvc

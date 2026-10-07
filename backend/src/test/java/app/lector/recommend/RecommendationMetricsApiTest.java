@@ -19,7 +19,7 @@ import tools.jackson.databind.ObjectMapper;
  * Its own database, so the global figures are exactly this test's.
  */
 @SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:recmetrics;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "test.database=recmetrics",
         "app.seed-samples=false"
 })
 @AutoConfigureMockMvc

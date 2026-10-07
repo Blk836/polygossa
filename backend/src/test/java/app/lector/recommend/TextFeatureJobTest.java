@@ -31,7 +31,7 @@ import tools.jackson.databind.ObjectMapper;
  * show that the job doesn't use anyone's.
  */
 @SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:featurejob;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "test.database=featurejob",
         "app.seed-samples=false",
         "app.openai.api-key=test-key",
         "app.openai.model=test-model",

@@ -26,7 +26,7 @@ import org.springframework.test.context.DynamicPropertyRegistrar;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:apiyoutube;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "test.database=apiyoutube",
         "app.seed-samples=false",
         "spring.jpa.properties.hibernate.generate_statistics=true",
         // Switches on the curator endpoints (bulk video import); nothing else here calls them.

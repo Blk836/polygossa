@@ -27,7 +27,7 @@ import tools.jackson.databind.ObjectMapper;
  * is 0 here, to show that the check doesn't use it.
  */
 @SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:sharemoderation;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "test.database=sharemoderation",
         "app.seed-samples=false",
         "app.openai.api-key=test-key",
         "app.openai.timeout=2s",

@@ -17,7 +17,7 @@ import tools.jackson.databind.ObjectMapper;
 
 /** Editing, deleting and searching vocabulary entries. */
 @SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:vocabcrud;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "test.database=vocabcrud",
         "app.seed-samples=false",
         "app.storage.dir=build/test-uploads",
         "app.billing.free-word-limit=1"
