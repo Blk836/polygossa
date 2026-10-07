@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { Token, WordTiming } from "@/lib/types";
 import { findActive, firstWordOfSentence, sentenceSegments, type Segment } from "./audio-sync";
 import { cueMs, loopRestart, segmentAt, sentenceStart, type MediaShortcut } from "./media-nav";
+import { ListenContext } from "./use-reading-session";
 
 /** What the shared player needs from an <audio> element or the YouTube player. */
 export interface MediaElement {
@@ -50,6 +51,12 @@ export function useMediaPlayer({ media, timings, tokens, duration, playing, onAc
   const lastActive = useRef<number | null>(null);
   const segments = useMemo(() => sentenceSegments(tokens, timings, duration), [tokens, timings, duration]);
   const firstWords = useMemo(() => firstWordOfSentence(tokens), [tokens]);
+  const listen = useContext(ListenContext);
+
+  // Playing time counts as listening (Progress, daily goals).
+  useEffect(() => {
+    listen?.set(playing, Date.now());
+  }, [listen, playing]);
 
   /** Shows `ms` as the position and points the reader at the word spoken then (turning the page to it). */
   const follow = useCallback(

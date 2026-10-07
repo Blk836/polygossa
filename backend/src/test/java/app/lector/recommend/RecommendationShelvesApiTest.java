@@ -321,7 +321,7 @@ class RecommendationShelvesApiTest {
         long learnerId = api.get(learner, "/api/me", 200).get("id").asLong();
         tx.executeWithoutResult(s -> {
             var session = new app.lector.session.ReadingSession(users.findById(learnerId).orElseThrow(),
-                    texts.findById(read).orElseThrow());
+                    texts.findById(read).orElseThrow(), java.time.Instant.now());
             session.setDurationSeconds(1200);
             sessions.save(session);
         });

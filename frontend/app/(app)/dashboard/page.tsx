@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LineChart } from "@/components/charts";
 import { useMe } from "@/components/me-context";
 import { ActivityCalendar } from "@/components/progress/activity-calendar";
+import { GoalCard } from "@/components/progress/goal-card";
 import { MilestoneCard } from "@/components/progress/milestone-card";
 import { StreakCard } from "@/components/progress/streak-card";
 import { PeriodCard } from "@/components/progress/period-card";
@@ -12,7 +13,7 @@ import { SkillLevelsCard } from "@/components/progress/skill-levels-card";
 import { useDashboard } from "@/components/progress/use-dashboard";
 import { Empty, ErrorNote, PageHeader, Spinner, formatDuration } from "@/components/ui";
 import { languageName } from "@/lib/languages";
-import { periodLabel, type StatsPeriodKey } from "@/lib/progress";
+import { listeningLabel, periodLabel, type StatsPeriodKey } from "@/lib/progress";
 import type { Dashboard, LanguageCode } from "@/lib/types";
 
 /** Known words and the growth curve for the language picked in the top bar (else the first with any progress). */
@@ -52,7 +53,10 @@ export default function DashboardPage() {
         <div className="lg:col-span-2">
           <StreakCard streak={activity.streak} days={activity.days} />
         </div>
-        <MilestoneCard known={known} language={language} />
+        <div className="grid gap-4">
+          <GoalCard goal={data.goal} />
+          <MilestoneCard known={known} language={language} />
+        </div>
       </div>
 
       {language && (
@@ -79,7 +83,8 @@ export default function DashboardPage() {
       </div>
 
       <p className="mt-6 text-center text-sm text-muted" data-testid="all-time">
-        All time: {formatDuration(data.totalReadingSeconds)} reading · {knownEverywhere.toLocaleString()} known words
+        All time: {formatDuration(data.totalReadingSeconds)} reading · {data.totalWordsRead.toLocaleString("en-US")} words read ·{" "}
+        {listeningLabel(data.totalListenedSeconds)} listening · {knownEverywhere.toLocaleString()} known words
         {data.languages.length > 1 && ` across ${data.languages.length} languages`}
       </p>
     </div>

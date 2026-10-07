@@ -62,14 +62,18 @@ test.describe("listening", () => {
   test("playing audio is reported as listening time when the reader closes", async ({ page }) => {
     created = await createText(page, 40);
     await addSyncedAudio(page, created.id);
-    const beats: { seconds?: number; listenedSeconds?: number }[] = [];
-    page.on("request", (r) => {
-      if (/\/api\/sessions\/\d+\/heartbeat/.test(r.url())) beats.push(JSON.parse(r.postData() ?? "{}"));
-    });
+    // The last heartbeat goes as a beacon when the reader closes, so the backend's total is what's checked.
+    const listened = async () => {
+      const days = (await (await page.request.get("/api/dashboard")).json()).activity.days;
+      return days[days.length - 1].listenedSeconds as number;
+    };
+    const before = await listened();
     await openReader(page, `/read/${created.id}`);
-    await player(page).getByRole("button", { name: "Play" }).click();
-    await page.waitForTimeout(2500);
+    await player(page).getByRole("button", { name: "Play", exact: true }).click();
+    await expect(player(page).getByRole("button", { name: "Pause", exact: true })).toBeVisible();
+    await page.waitForTimeout(3000);
     await page.goto("/library");
-    await expect.poll(() => beats.reduce((s, b) => s + (b.listenedSeconds ?? 0), 0)).toBeGreaterThanOrEqual(2);
+
+    await expect.poll(listened).toBeGreaterThanOrEqual(before + 2);
   });
 });

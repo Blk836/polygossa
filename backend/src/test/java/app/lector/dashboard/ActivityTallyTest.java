@@ -129,8 +129,8 @@ class ActivityTallyTest {
         t.reviews(TODAY.minusDays(8), 3);
         t.wordSaved(at(TODAY.minusDays(1)));
         Activity a = t.summarise(TODAY, 7);
-        assertThat(a.thisWeek()).isEqualTo(new ActivityTally.Period(600, 1, 2, 0, 3));
-        assertThat(a.lastWeek()).isEqualTo(new ActivityTally.Period(120, 0, 1, 3, 3));
+        assertThat(a.thisWeek()).isEqualTo(new ActivityTally.Period(600, 1, 2, 0, 0, 0, 3));
+        assertThat(a.lastWeek()).isEqualTo(new ActivityTally.Period(120, 0, 1, 3, 0, 0, 3));
     }
 
     @Test
@@ -142,8 +142,8 @@ class ActivityTallyTest {
         t.wordKnown(at(TODAY.minusDays(30))); // the month before
         t.reviews(TODAY.minusDays(59), 2);
         t.wordSaved(at(TODAY.minusDays(60))); // before both
-        assertThat(t.total(TODAY.minusDays(29), TODAY)).isEqualTo(new ActivityTally.Period(300, 0, 2, 0, 2));
-        assertThat(t.total(TODAY.minusDays(59), TODAY.minusDays(30))).isEqualTo(new ActivityTally.Period(0, 0, 1, 2, 2));
+        assertThat(t.total(TODAY.minusDays(29), TODAY)).isEqualTo(new ActivityTally.Period(300, 0, 2, 0, 0, 0, 2));
+        assertThat(t.total(TODAY.minusDays(59), TODAY.minusDays(30))).isEqualTo(new ActivityTally.Period(0, 0, 1, 2, 0, 0, 2));
     }
 
     @Test

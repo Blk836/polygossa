@@ -221,7 +221,10 @@ class ReadingListeningApiTest {
 
     @Test
     void anOptInStreakOnlyCountsDaysThatReachTheGoal() throws Exception {
-        api.post(token, "/api/vocabulary", "{\"language\":\"es\",\"term\":\"gato\"}", 201);
+        // A minute of listening is practice (saved words carry the real time, not this test's clock).
+        long s = session();
+        CLOCK.advance(Duration.ofSeconds(60));
+        beat(s, "{\"seconds\":0,\"listenedSeconds\":60}");
         assertThat(api.get(token, "/api/dashboard/header", 200).get("activeToday").asBoolean()).isTrue();
 
         setGoal("words_read", 100, 200);

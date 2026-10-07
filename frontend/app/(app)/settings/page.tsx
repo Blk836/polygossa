@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { useMe } from "@/components/me-context";
+import { GoalFields, type GoalChoice } from "@/components/settings/goal-fields";
 import { ProfilePhoto } from "@/components/settings/profile-photo";
 import { Button, ErrorNote, Field, inputClass, selectClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
@@ -18,7 +19,7 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = useState(me.displayName);
   const [targetLanguage, setTargetLanguage] = useState(me.targetLanguage ?? "");
   const [nativeLanguage, setNativeLanguage] = useState(me.nativeLanguage ?? "en");
-  const [goal, setGoal] = useState(me.dailyReviewGoal);
+  const [goal, setGoal] = useState<GoalChoice>({ ...me.dailyGoal, streakNeedsGoal: me.streakNeedsGoal });
   const [timezone, setTimezone] = useState(me.timezone);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +35,7 @@ export default function ProfilePage() {
     setError(null);
     setSaved(false);
     try {
-      setMe(await api<Me>("me", { method: "PATCH", body: { displayName, targetLanguage: targetLanguage || undefined, nativeLanguage, dailyReviewGoal: goal, timezone } }));
+      setMe(await api<Me>("me", { method: "PATCH", body: { displayName, targetLanguage: targetLanguage || undefined, nativeLanguage, dailyGoal: { kind: goal.kind, target: goal.target }, streakNeedsGoal: goal.streakNeedsGoal, timezone } }));
       setSaved(true);
     } catch (err) {
       setError(errorMessage(err));
@@ -59,9 +60,7 @@ export default function ProfilePage() {
               {NATIVE_LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.nativeName}</option>)}
             </select>
           </Field>
-          <Field label="Daily review goal" hint="Cards per day that count toward your streak">
-            <input type="number" min={1} max={500} className={inputClass} value={goal} onChange={(e) => setGoal(Number(e.target.value))} />
-          </Field>
+          <GoalFields value={goal} onChange={setGoal} />
           <Field label="Time zone" hint="Decides when your day (and streak) rolls over">
             <input className={inputClass} value={timezone} onChange={(e) => setTimezone(e.target.value)} />
           </Field>

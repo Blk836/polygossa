@@ -45,6 +45,16 @@ public class User {
     @Column(nullable = false)
     private int dailyReviewGoal = 20;
 
+    /** What the daily goal measures; null (accounts from before goals) means reviews, with dailyReviewGoal. */
+    @Enumerated(EnumType.STRING)
+    private GoalKind dailyGoalKind;
+
+    /** The target for a goal other than reviews (whose target is dailyReviewGoal). */
+    private Integer dailyGoalTarget;
+
+    /** Opt-in: only days that reach the daily goal count toward the streak. Null means off. */
+    private Boolean streakNeedsGoal;
+
     /** IANA zone used to decide what "today" means for review goals and streaks. */
     @Column(nullable = false)
     private String timezone = "UTC";
@@ -106,6 +116,32 @@ public class User {
 
     public void setNativeLanguage(NativeLanguage nativeLanguage) {
         this.nativeLanguage = nativeLanguage;
+    }
+
+    public DailyGoal getDailyGoal() {
+        if (dailyGoalKind == null || dailyGoalKind == GoalKind.REVIEWS || dailyGoalTarget == null) {
+            return new DailyGoal(GoalKind.REVIEWS, dailyReviewGoal);
+        }
+        return new DailyGoal(dailyGoalKind, dailyGoalTarget);
+    }
+
+    /** A reviews goal is the review goal Review uses; other kinds keep their own target. */
+    public void setDailyGoal(DailyGoal goal) {
+        dailyGoalKind = goal.kind();
+        if (goal.kind() == GoalKind.REVIEWS) {
+            dailyReviewGoal = goal.target();
+            dailyGoalTarget = null;
+        } else {
+            dailyGoalTarget = goal.target();
+        }
+    }
+
+    public boolean isStreakNeedsGoal() {
+        return Boolean.TRUE.equals(streakNeedsGoal);
+    }
+
+    public void setStreakNeedsGoal(boolean streakNeedsGoal) {
+        this.streakNeedsGoal = streakNeedsGoal;
     }
 
     public int getDailyReviewGoal() {

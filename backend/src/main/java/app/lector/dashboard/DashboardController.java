@@ -1,5 +1,6 @@
 package app.lector.dashboard;
 
+import app.lector.progress.WordsReadRepository;
 import app.lector.session.ReadingSessionRepository;
 import app.lector.srs.ReviewService;
 import app.lector.text.TextRepository;
@@ -31,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DashboardController {
 
     public record LanguageProgress(Language language, long known, long learning, long ignored, long sessions,
-                                   long readingSeconds) {}
+                                   long readingSeconds, long wordsRead, long listenedSeconds) {}
 
     public record DayValue(LocalDate day, long value) {}
 
@@ -41,12 +42,15 @@ public class DashboardController {
             List<LanguageProgress> languages,
             long totalSessions,
             long totalReadingSeconds,
+            long totalWordsRead,
+            long totalListenedSeconds,
             long textsImported,
             List<Growth> growth,
             List<DayValue> readingMinutesByDay,
             ReviewService.Stats review,
             ActivityTally.Activity activity,
-            ActivityService.PeriodStats period) {}
+            ActivityService.PeriodStats period,
+            ActivityService.GoalToday goal) {}
 
     private final VocabularyRepository vocabulary;
     private final ReadingSessionRepository sessions;
@@ -55,11 +59,13 @@ public class DashboardController {
     private final PlanService plans;
     private final CurrentUser currentUser;
     private final ActivityService activity;
+    private final WordsReadRepository wordsRead;
 
     public DashboardController(VocabularyRepository vocabulary, ReadingSessionRepository sessions,
                                TextRepository texts, ReviewService reviews, PlanService plans,
-                               CurrentUser currentUser, ActivityService activity) {
+                               CurrentUser currentUser, ActivityService activity, WordsReadRepository wordsRead) {
         this.activity = activity;
+        this.wordsRead = wordsRead;
         this.vocabulary = vocabulary;
         this.sessions = sessions;
         this.texts = texts;
@@ -85,16 +91,23 @@ public class DashboardController {
         return new Dashboard(languages,
                 languages.stream().mapToLong(LanguageProgress::sessions).sum(),
                 languages.stream().mapToLong(LanguageProgress::readingSeconds).sum(),
+                languages.stream().mapToLong(LanguageProgress::wordsRead).sum(),
+                languages.stream().mapToLong(LanguageProgress::listenedSeconds).sum(),
                 texts.countByOwnerId(user.getId()),
                 growth(user, languages, growthFrom, today),
                 readingMinutes(user, today.minusDays(29), today),
                 review,
                 activity.activity(user),
-                activity.period(user, period == null ? StatsPeriod.WEEK : period));
+                activity.period(user, period == null ? StatsPeriod.WEEK : period),
+                activity.goalToday(user));
     }
 
-    /** The header's numbers: the daily streak, how long is left of today, and known words (one language, or all). */
-    public record Header(int current, int best, boolean activeToday, long secondsLeftToday, long knownWords) {}
+    /**
+     * The header's numbers: the daily streak, how long is left of today, known words (one language, or all) and
+     * today's goal.
+     */
+    public record Header(int current, int best, boolean activeToday, long secondsLeftToday, long knownWords,
+                         ActivityService.GoalToday goal) {}
 
     @GetMapping("/header")
     @Transactional(readOnly = true)
@@ -104,27 +117,33 @@ public class DashboardController {
         long known = vocabulary.countByLanguageAndStatus(user.getId()).stream()
                 .filter(c -> c.getStatus() == WordStatus.KNOWN && (language == null || c.getLanguage() == language))
                 .mapToLong(c -> c.getCount()).sum();
-        return new Header(s.current(), s.best(), s.activeToday(), s.secondsLeftToday(), known);
+        return new Header(s.current(), s.best(), s.activeToday(), s.secondsLeftToday(), known,
+                activity.goalToday(user));
     }
 
     /** Word counts by status plus reading sessions and time, one row per language with any activity. */
     private List<LanguageProgress> languageProgress(User user) {
-        Map<Language, long[]> counts = new EnumMap<>(Language.class); // known, learning, ignored, sessions, seconds
+        // known, learning, ignored, sessions, seconds, words read, seconds listened
+        Map<Language, long[]> counts = new EnumMap<>(Language.class);
         for (var c : vocabulary.countByLanguageAndStatus(user.getId())) {
             int column = switch (c.getStatus()) {
                 case KNOWN -> 0;
                 case LEARNING -> 1;
                 case IGNORED -> 2;
             };
-            counts.computeIfAbsent(c.getLanguage(), l -> new long[5])[column] += c.getCount();
+            counts.computeIfAbsent(c.getLanguage(), l -> new long[7])[column] += c.getCount();
         }
         for (var t : sessions.totalsByLanguage(user.getId())) {
-            long[] row = counts.computeIfAbsent(t.getLanguage(), l -> new long[5]);
+            long[] row = counts.computeIfAbsent(t.getLanguage(), l -> new long[7]);
             row[3] = t.getSessions();
             row[4] = t.getSeconds();
+            row[6] = t.getListened();
+        }
+        for (var w : wordsRead.totalsByLanguage(user.getId())) {
+            counts.computeIfAbsent(w.getLanguage(), l -> new long[7])[5] = w.getWords();
         }
         List<LanguageProgress> languages = new ArrayList<>();
-        counts.forEach((lang, r) -> languages.add(new LanguageProgress(lang, r[0], r[1], r[2], r[3], r[4])));
+        counts.forEach((lang, r) -> languages.add(new LanguageProgress(lang, r[0], r[1], r[2], r[3], r[4], r[5], r[6])));
         return languages;
     }
 

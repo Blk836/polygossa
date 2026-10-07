@@ -1,10 +1,30 @@
 // Pure helpers for the Progress page: known-word milestones, the streak call to action, week-on-week change and the
 // activity calendar layout. The page is there to keep learners coming back, so every message is phrased forwards:
 // nothing here reports a loss as a negative number.
-import type { ActivityDay, Streak } from "./types";
+import type { ActivityDay, GoalKind, GoalToday, Streak } from "./types";
 
 const MILESTONES = [100, 250, 500, 1000, 1500, 2000, 3000, 4000, 5000, 7500, 10_000, 15_000, 20_000, 30_000, 40_000, 50_000];
 const STEP_AFTER_TABLE = 10_000;
+
+/** What each kind of daily goal counts, for "340 / 1,000 words read" and the Settings choice. */
+export const GOAL_UNITS: Record<GoalKind, string> = {
+  reviews: "reviews",
+  words_read: "words read",
+  minutes_read: "minutes read",
+  minutes_listened: "minutes listened",
+};
+
+/** Today's goal as a line of text and a bar (0–100, full once reached). */
+export function goalProgress(goal: GoalToday): { text: string; percent: number; met: boolean } {
+  const percent = Math.min(100, Math.floor((goal.done / goal.target) * 100));
+  return { text: `${goal.done.toLocaleString("en-US")} / ${goal.target.toLocaleString("en-US")} ${GOAL_UNITS[goal.kind]}`, percent, met: goal.met };
+}
+
+/** Listening time as "45 min" or "2 h 5 min". */
+export function listeningLabel(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
+}
 
 export interface Milestone {
   from: number;

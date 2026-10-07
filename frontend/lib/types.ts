@@ -1,3 +1,4 @@
+import type { GoalKind } from "./dashboard-types";
 // Shapes of the Spring Boot API's JSON responses.
 
 export type LanguageCode = "en" | "es" | "fr" | "de" | "it" | "pt" | "ja" | "zh" | "ko";
@@ -23,6 +24,10 @@ export interface Me {
   /** The language definitions are translated into ("en" by default). */
   nativeLanguage: string;
   dailyReviewGoal: number;
+  /** What the daily goal measures and its target (a reviews goal's target is dailyReviewGoal). */
+  dailyGoal: { kind: GoalKind; target: number };
+  /** Opt-in: only days that reach the goal count toward the streak. */
+  streakNeedsGoal: boolean;
   timezone: string;
   plan: PlanInfo;
   photoUrl: string | null; // the profile photo, served through the BFF; null for none
@@ -199,7 +204,7 @@ export interface ReviewStats {
   history: { day: string; count: number }[];
 }
 
-export type { Activity, ActivityDay, ActivityPeriod, Dashboard, PeriodStats, Streak } from "./dashboard-types";
+export type { Activity, ActivityDay, ActivityPeriod, Dashboard, GoalKind, GoalToday, PeriodStats, Streak } from "./dashboard-types";
 export type { LevelConfidence, Skill, SkillKey, SkillLevels } from "./level-types";
 
 export type { Assignment, ClassDetail, ClassProgress, ClassSummary, StudentProgress } from "./class-types";

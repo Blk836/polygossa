@@ -1,4 +1,4 @@
-import { periodChange, periodLabel, type WeekChange } from "@/lib/progress";
+import { listeningLabel, periodChange, periodLabel, type WeekChange } from "@/lib/progress";
 import type { PeriodStats } from "@/lib/types";
 
 const minutes = (seconds: number) => Math.round(seconds / 60);
@@ -24,7 +24,7 @@ export function PeriodCard({ stats }: { stats: PeriodStats }) {
   return (
     <section aria-label={label} className="rounded-xl border border-line bg-card p-5">
       <h2 className="font-display text-lg font-semibold">{label}</h2>
-      <div className="mt-3 grid gap-3 sm:grid-cols-3">
+      <div className="mt-3 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <Tile
           label="Words learned"
           testId="words-learned"
@@ -36,6 +36,18 @@ export function PeriodCard({ stats }: { stats: PeriodStats }) {
           testId="minutes-read"
           value={mins.toLocaleString()}
           change={periodChange(mins, previous ? minutes(previous.readingSeconds) : null, period, (n) => `${n} min`)}
+        />
+        <Tile
+          label="Words read"
+          testId="words-read"
+          value={current.wordsRead.toLocaleString("en-US")}
+          change={periodChange(current.wordsRead, previous?.wordsRead ?? null, period)}
+        />
+        <Tile
+          label="Listening"
+          testId="listening"
+          value={listeningLabel(current.listenedSeconds)}
+          change={periodChange(minutes(current.listenedSeconds), previous ? minutes(previous.listenedSeconds) : null, period, (n) => `${n} min`)}
         />
         <Tile
           label="Days practised"

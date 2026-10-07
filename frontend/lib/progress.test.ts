@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calendarWeeks, goalProgress, intensity, milestone, periodChange, periodLabel, STATS_PERIODS, streakMessage, weekChange, weekStrip } from "./progress";
+import { calendarWeeks, goalProgress, intensity, listeningLabel, milestone, periodChange, periodLabel, STATS_PERIODS, streakMessage, weekChange, weekStrip } from "./progress";
 import type { ActivityDay } from "./types";
 
 const day = (date: string, over: Partial<ActivityDay> = {}): ActivityDay => ({
@@ -154,6 +154,15 @@ describe("periodLabel", () => {
     ["all", "All time"],
   ] as const)("%s reads %s", (key, label) => {
     expect(periodLabel(key)).toBe(label);
+  });
+});
+
+describe("listeningLabel", () => {
+  it("shows minutes, then hours and minutes", () => {
+    expect(listeningLabel(0)).toBe("0 min");
+    expect(listeningLabel(59 * 60 + 59)).toBe("59 min");
+    expect(listeningLabel(3600)).toBe("1 h 0 min");
+    expect(listeningLabel(2 * 3600 + 5 * 60)).toBe("2 h 5 min");
   });
 });
 

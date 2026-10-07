@@ -47,15 +47,20 @@ public class ReadingSession {
     @Column(nullable = false)
     private long durationSeconds;
 
+    /** Time the audio or video played (null in sessions from before listening was counted). */
+    private Long listenedSeconds;
+
     /** Set when the reader reaches the end of the text ("finish lesson"). */
     private boolean completed;
 
     protected ReadingSession() {}
 
-    public ReadingSession(User user, Text text) {
+    public ReadingSession(User user, Text text, Instant now) {
         this.user = user;
         this.text = text;
         this.language = text.getLanguage();
+        this.startedAt = now;
+        this.lastActiveAt = now;
     }
 
     public Long getId() { return id; }
@@ -67,6 +72,8 @@ public class ReadingSession {
     public void setLastActiveAt(Instant lastActiveAt) { this.lastActiveAt = lastActiveAt; }
     public long getDurationSeconds() { return durationSeconds; }
     public void setDurationSeconds(long durationSeconds) { this.durationSeconds = durationSeconds; }
+    public long getListenedSeconds() { return listenedSeconds == null ? 0 : listenedSeconds; }
+    public void setListenedSeconds(long listenedSeconds) { this.listenedSeconds = listenedSeconds; }
     public boolean isCompleted() { return completed; }
     public void setCompleted(boolean completed) { this.completed = completed; }
 }

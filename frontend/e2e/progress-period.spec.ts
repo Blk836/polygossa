@@ -59,7 +59,7 @@ test("all time compares against nothing and counts days since joining", async ({
   const all = stats(page, "All time");
   const days = (await (await page.request.get("/api/dashboard?period=all")).json()).period.days;
   await expect(all.getByTestId("days-practised")).toHaveText(new RegExp(`^\\d+ of ${days.toLocaleString("en-US")}$`));
-  await expect(all.getByText("Since you joined")).toHaveCount(3);
+  await expect(all.getByText("Since you joined")).toHaveCount(5); // one per tile
   await expect(page.getByRole("heading", { name: /words — all time$/ })).toBeVisible();
 });
 

@@ -15,13 +15,16 @@ public interface ReadingSessionRepository extends JpaRepository<ReadingSession, 
         Language getLanguage();
         long getSessions();
         long getSeconds();
+        long getListened();
     }
 
-    @Query("select s.language as language, count(s) as sessions, coalesce(sum(s.durationSeconds), 0) as seconds "
+    @Query("select s.language as language, count(s) as sessions, coalesce(sum(s.durationSeconds), 0) as seconds, "
+            + "coalesce(sum(s.listenedSeconds), 0) as listened "
             + "from ReadingSession s where s.user.id = :userId group by s.language")
     List<LanguageTotals> totalsByLanguage(@Param("userId") Long userId);
 
-    @Query("select new app.lector.session.SessionTime(s.startedAt, s.durationSeconds) from ReadingSession s "
+    @Query("select new app.lector.session.SessionTime(s.startedAt, s.durationSeconds, coalesce(s.listenedSeconds, 0)) "
+            + "from ReadingSession s "
             + "where s.user.id = :userId and s.startedAt >= :since")
     List<SessionTime> findSince(@Param("userId") Long userId, @Param("since") Instant since);
 

@@ -107,7 +107,7 @@ class SkillLevelApiTest {
     }
 
     private void session(Text t, long seconds) {
-        ReadingSession s = new ReadingSession(user, t);
+        ReadingSession s = new ReadingSession(user, t, Instant.now());
         s.setDurationSeconds(seconds);
         sessions.save(s);
     }

@@ -29,6 +29,8 @@ public class AccountController {
             Language targetLanguage,
             NativeLanguage nativeLanguage,
             @Min(1) @Max(500) Integer dailyReviewGoal,
+            DailyGoal dailyGoal,
+            Boolean streakNeedsGoal,
             String timezone) {}
 
     public record ChangePlanRequest(@NotNull Tier tier) {}
@@ -68,6 +70,12 @@ public class AccountController {
         }
         if (req.dailyReviewGoal() != null) {
             user.setDailyReviewGoal(req.dailyReviewGoal());
+        }
+        if (req.dailyGoal() != null) {
+            user.setDailyGoal(req.dailyGoal());
+        }
+        if (req.streakNeedsGoal() != null) {
+            user.setStreakNeedsGoal(req.streakNeedsGoal());
         }
         if (req.timezone() != null) {
             try {

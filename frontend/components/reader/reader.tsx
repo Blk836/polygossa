@@ -26,7 +26,7 @@ import { useMediaShortcuts, useReaderInput } from "./use-reader-input";
 import { useReaderPages } from "./use-reader-pages";
 import { usePopupOpeners, usePopupState } from "./use-reader-popup";
 import { useReaderSettings } from "./use-reader-settings";
-import { useReadingSession } from "./use-reading-session";
+import { ListenContext, useReadingSession } from "./use-reading-session";
 import { useVocabularyStatus } from "./use-vocabulary-status";
 import { VideoPanel } from "./video-panel";
 
@@ -166,6 +166,7 @@ export function Reader({ initial, initialSettings, playlist }: {
   const audioButton = audioToggle(audio, isOwner, !!video, showAudio, () => setShowAudio(!showAudio));
 
   return (
+    <ListenContext.Provider value={session.listen}>
     <div className={layoutClass(!!video, media.playerBar)}>
       <div className="min-w-0 lg:col-start-1">
         <ReaderHeader text={text} playlist={playlist} stats={stats} settings={settings} onSettings={updateSettings} audio={audioButton} media={media.shortcuts} />
@@ -240,5 +241,6 @@ export function Reader({ initial, initialSettings, playlist }: {
         />
       )}
     </div>
+    </ListenContext.Provider>
   );
 }

@@ -10,15 +10,31 @@ export interface Dashboard {
     ignored: number;
     sessions: number;
     readingSeconds: number;
+    wordsRead: number;
+    listenedSeconds: number;
   }[];
   totalSessions: number;
   totalReadingSeconds: number;
+  totalWordsRead: number;
+  totalListenedSeconds: number;
   textsImported: number;
   growth: { language: LanguageCode; known: { day: string; value: number }[] }[];
   readingMinutesByDay: { day: string; value: number }[];
   review: ReviewStats | null;
   activity: Activity;
   period: PeriodStats;
+  goal: GoalToday;
+}
+
+/** What a daily goal measures. */
+export type GoalKind = "reviews" | "words_read" | "minutes_read" | "minutes_listened";
+
+/** Today's daily goal (also in GET /api/dashboard/header). */
+export interface GoalToday {
+  kind: GoalKind;
+  target: number;
+  done: number;
+  met: boolean;
 }
 
 /** Totals for the chosen window (GET /api/dashboard?period=…) and the same length of time before it (none for all time). */
@@ -37,7 +53,11 @@ export interface ActivityDay {
   wordsKnown: number;
   reviews: number;
   writingTests: number;
+  wordsRead: number;
+  listenedSeconds: number;
   active: boolean;
+  /** Whether the day reached the daily goal (as the goal is now). */
+  goalMet: boolean;
 }
 
 export interface Streak {
@@ -51,6 +71,8 @@ export interface ActivityPeriod {
   wordsSaved: number;
   wordsKnown: number;
   reviews: number;
+  wordsRead: number;
+  listenedSeconds: number;
   activeDays: number;
 }
 
