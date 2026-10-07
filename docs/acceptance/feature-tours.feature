@@ -77,6 +77,20 @@ Feature: First-visit feature tours
     Then no tour is shown
     But "Show tours again" in Settings › Profile turns them on
 
+  Scenario Outline: A locked page keeps its tour until it opens up
+    Given <situation>
+    When I open <page>
+    Then no tour is shown, only the page's own message (<message>)
+    And the tour isn't marked seen
+    When <change> and I open <page> again
+    Then its tour is shown
+
+    Examples:
+      | page              | situation                         | message                    | change                        |
+      | Practice › Review | I'm on the Free plan              | Review is part of Pro      | I switch to Pro               |
+      | Practice › Write  | I'm on the Free plan              | writing tests are Pro      | I switch to Pro               |
+      | Practice › Write  | I'm on Pro with no language yet   | choose a language first    | I pick a language             |
+
   Scenario: Pages without a tour
     When I open Onboarding, Settings, Classes, Admin or a forum thread
     Then no tour is shown

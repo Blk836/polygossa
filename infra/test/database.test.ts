@@ -1,4 +1,5 @@
-// docs/acceptance/production-database.feature: production's database settings, synthesized without AWS access.
+// docs/acceptance/production-database.feature: the safe database settings production switches to before the beta,
+// synthesized without AWS access.
 import { before, describe, it } from "node:test";
 import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
@@ -17,14 +18,14 @@ before(() => {
       { name: "data", subnetType: ec2.SubnetType.PRIVATE_ISOLATED, cidrMask: 24 },
     ],
   });
-  appDatabase(stack, vpc, "production");
+  appDatabase(stack, vpc, "safe");
   template = Template.fromStack(stack);
 });
 
 const database = (properties: Record<string, unknown>) =>
   template.hasResourceProperties("AWS::RDS::DBInstance", Match.objectLike(properties));
 
-describe("production database", () => {
+describe("safe database settings", () => {
   it("runs in two availability zones", () => {
     database({ MultiAZ: true });
   });

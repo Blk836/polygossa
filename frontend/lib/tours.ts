@@ -14,7 +14,15 @@ export interface Tour {
   key: string;
   /** The page it belongs to; a path ending in "/" covers the pages under it (the reader's /read/12). */
   path: string;
+  /** What the page needs before it can be used; until then it shows a message instead, and no tour. */
+  needs?: (keyof Access)[];
   steps: TourStep[];
+}
+
+/** What the learner has: a paid plan, and a language picked to learn. */
+export interface Access {
+  pro: boolean;
+  language: boolean;
 }
 
 /** What the account says about tours: whether they're on, and which ones were already seen. */
@@ -69,6 +77,7 @@ export const TOURS: Tour[] = [
   {
     key: "review",
     path: "/review",
+    needs: ["pro"],
     steps: [
       { title: "Review before you forget", body: "Words you save come back here when they're due. Recall the meaning, show the answer, then rate how well you knew it." },
     ],
@@ -84,6 +93,7 @@ export const TOURS: Tour[] = [
   {
     key: "writing",
     path: "/writing",
+    needs: ["pro", "language"],
     steps: [
       { title: "Test your writing", body: "Write about a short situation against the clock. AI grades it, corrects it and sets your writing level." },
     ],
@@ -111,9 +121,11 @@ export function tourFor(pathname: string): Tour | undefined {
 }
 
 /** The tour to show on this page: none when tours are off, already seen, or the page has none. */
-export function pendingTour(pathname: string, tours: Tours): Tour | null {
+export function pendingTour(pathname: string, tours: Tours, access: Access): Tour | null {
   const tour = tourFor(pathname);
-  return tours.on && tour && !tours.seen.includes(tour.key) ? tour : null;
+  if (!tours.on || !tour || tours.seen.includes(tour.key)) return null;
+  // A locked page keeps its tour (not marked seen) for the first visit after it opens up.
+  return (tour.needs ?? []).every((need) => access[need]) ? tour : null;
 }
 
 /** The account's tours with one more seen (at most once). */

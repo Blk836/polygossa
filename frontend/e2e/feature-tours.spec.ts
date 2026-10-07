@@ -16,6 +16,11 @@ async function me(page: Page): Promise<Me> {
   return (await (await page.request.get("/api/me")).json()) as Me;
 }
 
+/** New accounts are on Free; Review and Write are part of Pro. */
+async function goPro(page: Page) {
+  expect((await page.request.post("/api/me/plan", { data: { tier: "PRO" } })).ok()).toBe(true);
+}
+
 const tip = (page: Page) => page.getByTestId("tour");
 const highlight = (page: Page) => page.getByTestId("tour-highlight");
 
@@ -137,6 +142,7 @@ test.describe("feature tours", () => {
 
   test("a tip about the whole page sits at the bottom of the screen with no highlight", async ({ browser }) => {
     const { context, page } = await newcomer(browser);
+    await goPro(page); // Review is part of Pro: on Free it has no tour (see below)
     await page.goto("/review");
     await expect(page.getByRole("dialog", { name: "Review before you forget" })).toBeVisible();
     await expect(tip(page)).toContainText("1 of 1");
@@ -148,6 +154,7 @@ test.describe("feature tours", () => {
 
   test("on a phone, the tip fits the screen and stays above the tab bar", async ({ browser }) => {
     const { context, page } = await newcomer(browser, { width: 390, height: 800 });
+    await goPro(page);
     await page.goto("/review");
     await expect(page.getByRole("dialog", { name: "Review before you forget" })).toBeVisible();
     const card = (await tip(page).boundingBox())!;
@@ -155,6 +162,29 @@ test.describe("feature tours", () => {
     expect(card.x + card.width).toBeLessThanOrEqual(390);
     const tabBar = (await page.getByRole("navigation", { name: "Main" }).last().boundingBox())!;
     expect(card.y + card.height).toBeLessThanOrEqual(tabBar.y);
+    await context.close();
+  });
+
+  test("a locked page keeps its tour until it opens up: Review and Write on Free, Write without a language", async ({ browser }) => {
+    const { context, page } = await newcomer(browser);
+    await page.goto("/review");
+    await expect(page.getByText("Spaced-repetition review is part of Pro.")).toBeVisible();
+    await expect(tip(page)).toHaveCount(0);
+    await page.goto("/writing");
+    await expect(page.getByText("Timed writing tests with AI grading are part of Pro.")).toBeVisible();
+    await expect(tip(page)).toHaveCount(0);
+    expect((await me(page)).tours.seen).toEqual([]);
+
+    await goPro(page);
+    await page.goto("/writing");
+    await expect(page.getByText("Choose a language first")).toBeVisible();
+    await expect(tip(page)).toHaveCount(0);
+    await page.goto("/review");
+    await expect(page.getByRole("dialog", { name: "Review before you forget" })).toBeVisible();
+
+    expect((await page.request.patch("/api/me", { data: { targetLanguage: "es" } })).ok()).toBe(true);
+    await page.goto("/writing");
+    await expect(page.getByRole("dialog", { name: "Test your writing" })).toBeVisible();
     await context.close();
   });
 
