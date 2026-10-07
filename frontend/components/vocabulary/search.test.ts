@@ -1,15 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { PAGE_SIZE, exportParams, pageCount, searchParams } from "./search";
+import { PAGE_SIZE, exportParams, pageCount, parseTags, searchParams } from "./search";
 
-const empty = { language: "", status: "", kind: "", sort: "recent", query: "", page: 0 };
+const empty = { language: "", status: "", kind: "", sort: "recent", query: "", tag: "", page: 0 };
 
 describe("vocabulary search params", () => {
   it("always sends sort and paging, and only the filters that are set", () => {
     expect(searchParams(empty).toString()).toBe(`sort=recent&page=0&size=${PAGE_SIZE}`);
-    const all = searchParams({ language: "es", status: "known", kind: "phrase", sort: "alpha", query: "gato", page: 2 });
+    const all = searchParams({ language: "es", status: "known", kind: "phrase", sort: "alpha", query: "gato", tag: "pets", page: 2 });
     expect(Object.fromEntries(all)).toEqual({
-      sort: "alpha", page: "2", size: String(PAGE_SIZE), language: "es", status: "known", kind: "phrase", q: "gato",
+      sort: "alpha", page: "2", size: String(PAGE_SIZE), language: "es", status: "known", kind: "phrase", q: "gato", tag: "pets",
     });
+  });
+
+  it("reads tags typed with commas or spaces, lower-cased, without duplicates", () => {
+    expect(parseTags("Animals, pets  food-words,animals")).toEqual(["animals", "pets", "food-words"]);
+    expect(parseTags(" , ")).toEqual([]);
+    expect(parseTags("")).toEqual([]);
   });
 
   it("export links carry only language and status", () => {
