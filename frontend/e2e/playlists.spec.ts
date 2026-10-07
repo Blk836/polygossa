@@ -129,7 +129,7 @@ test("reads through a playlist: Start, the reader's place in it, and Next", asyn
   const b = await createText(page, "Part two");
   const playlist = await createPlaylist(page, "Course", [a, b]);
   await page.goto(`/playlists/${playlist}`);
-  await page.getByRole("link", { name: "Start" }).click();
+  await page.getByRole("link", { name: "Start", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/read/${a}\\?playlist=${playlist}`));
   const strip = page.getByTestId("reader-playlist");
   await expect(strip).toContainText(`Course ${tag}`);
