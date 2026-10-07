@@ -61,7 +61,7 @@ abstract class BrandScenarios {
         TestApi api = new TestApi(mvc, json);
         String viewer = api.signup();
         List<Long> fresh = starterIds(api, viewer);
-        assertThat(fresh).hasSize(9); // one starter per language
+        assertThat(fresh).hasSize(6); // one starter per language you can learn (learning-languages.feature)
 
         User library = users.findByEmailIgnoreCase(SampleContentSeeder.LIBRARY_EMAIL).orElseThrow();
         library.setDisplayName("Lector Library");
