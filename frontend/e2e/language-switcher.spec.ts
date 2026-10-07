@@ -67,10 +67,10 @@ test.describe("on a desktop", () => {
   test("it shows the language being learned: badge, own name and a chevron", async ({ page }) => {
     await answerSwitches(page);
     await pick(page, "日本語");
-    await expect(switcher(page)).toHaveText("JA日本語", { useInnerText: true });
+    await expect(switcher(page)).toHaveText(/^JA\s*日本語$/, { useInnerText: true });
     await expect(switcher(page).locator("svg")).toBeVisible();
     await pick(page, "Français");
-    await expect(switcher(page)).toHaveText("FRFrançais", { useInnerText: true });
+    await expect(switcher(page)).toHaveText(/^FR\s*Français$/, { useInnerText: true });
     await expect(switcher(page)).toHaveAccessibleName("Studying French. Change language");
   });
 

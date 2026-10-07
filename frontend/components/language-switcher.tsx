@@ -7,7 +7,8 @@ import type { LanguageCode, Me } from "@/lib/types";
 import { useMe } from "./me-context";
 import { useDismiss } from "./use-dismiss";
 
-/** The language being studied right now. Library, Explore, Words and Review all show this language only. */
+/** The language being studied right now. Library, Explore, Words and Review all show this language only. Plain like
+ * the counters beside it: their soft pill shows only on hover or while the menu is open. */
 export function LanguageSwitcher() {
   const { me, setMe } = useMe();
   const [open, setOpen] = useState(false);
@@ -38,12 +39,12 @@ export function LanguageSwitcher() {
         aria-expanded={open}
         aria-label={`Studying ${current?.name ?? "no language yet"}. Change language`}
         disabled={busy}
-        className="flex items-center gap-2 rounded-lg border border-line bg-card py-1 pr-2.5 pl-1 text-sm transition hover:border-accent/50 disabled:opacity-60"
+        className="flex items-center gap-1.5 rounded-lg px-1.5 py-1 text-sm transition hover:bg-card aria-expanded:bg-card disabled:opacity-60"
       >
-        <span className="grid h-6 min-w-7 place-items-center rounded-md bg-rubric px-1 text-[11px] font-bold tracking-wide text-paper uppercase">
+        <span className="grid h-5 min-w-6 place-items-center rounded-md bg-rubric px-1 text-[10px] font-bold tracking-wide text-paper uppercase">
           {current?.code ?? "?"}
         </span>
-        <span className="hidden font-medium sm:inline">{current?.native ?? "Choose language"}</span>
+        <span className="hidden font-semibold sm:inline">{current?.native ?? "Choose language"}</span>
         <svg viewBox="0 0 12 12" className="size-3 text-muted" aria-hidden><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" strokeWidth="1.5" /></svg>
       </button>
       {open && (
