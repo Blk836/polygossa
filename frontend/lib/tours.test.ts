@@ -53,15 +53,35 @@ describe("the tours themselves", () => {
 });
 
 describe("pendingTour", () => {
+  const everything = { pro: true, language: true };
+
   it("is the page's tour while tours are on and it isn't seen yet", () => {
-    expect(pendingTour("/library", { on: true, seen: [] })?.key).toBe("library");
-    expect(pendingTour("/library", { on: true, seen: ["reader"] })?.key).toBe("library");
+    expect(pendingTour("/library", { on: true, seen: [] }, everything)?.key).toBe("library");
+    expect(pendingTour("/library", { on: true, seen: ["reader"] }, everything)?.key).toBe("library");
   });
 
   it("is nothing once seen, with tours off, or on a page without one", () => {
-    expect(pendingTour("/library", { on: true, seen: ["library"] })).toBeNull();
-    expect(pendingTour("/library", { on: false, seen: [] })).toBeNull();
-    expect(pendingTour("/settings", { on: true, seen: [] })).toBeNull();
+    expect(pendingTour("/library", { on: true, seen: ["library"] }, everything)).toBeNull();
+    expect(pendingTour("/library", { on: false, seen: [] }, everything)).toBeNull();
+    expect(pendingTour("/settings", { on: true, seen: [] }, everything)).toBeNull();
+  });
+
+  it("waits while the page is locked: Review and Write need Pro, Write a language too", () => {
+    const tours = { on: true, seen: [] };
+    expect(pendingTour("/review", tours, { pro: false, language: true })).toBeNull();
+    expect(pendingTour("/review", tours, { pro: true, language: false })?.key).toBe("review");
+    expect(pendingTour("/writing", tours, { pro: false, language: true })).toBeNull();
+    expect(pendingTour("/writing", tours, { pro: true, language: false })).toBeNull();
+    expect(pendingTour("/writing", tours, everything)?.key).toBe("writing");
+  });
+
+  it("doesn't lock pages that work on every plan and without a language", () => {
+    const tours = { on: true, seen: [] };
+    const none = { pro: false, language: false };
+    for (const tour of TOURS.filter((t) => t.key !== "review" && t.key !== "writing")) {
+      const path = tour.path.endsWith("/") ? `${tour.path}1` : tour.path;
+      expect(pendingTour(path, tours, none)?.key).toBe(tour.key);
+    }
   });
 });
 

@@ -16,8 +16,8 @@ const TICK_MS = 150;
 /** The first-visit tour for this page, if the account still has one to see (lib/tours.ts). */
 export function FeatureTour() {
   const pathname = usePathname();
-  const { me } = useMe();
-  const tour = pendingTour(pathname, me.tours);
+  const { me, isPro } = useMe();
+  const tour = pendingTour(pathname, me.tours, { pro: isPro, language: me.targetLanguage !== null });
   return tour ? <TourCard key={tour.key} tour={tour} /> : null;
 }
 
