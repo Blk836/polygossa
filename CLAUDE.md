@@ -70,7 +70,10 @@ so the checks must prove it is correct.
    the checks ran, merge main into the branch and wait for the checks again first. A merge to main deploys staging
    without re-running the checks (they ran on the pull request). If a check fails, fix it on the branch; never merge
    red. (`gh pr merge` can't merge a change to a workflow file without the CLI's `workflow` scope; merge locally with
-   `git merge --no-ff` and push instead, and GitHub marks the pull request merged.) Small commits make it easy to diff changes
+   `git merge --no-ff` and push instead, and GitHub marks the pull request merged.) Run the **full** suites (step 4)
+   before opening the pull request, not just the tests you expect a change to touch: CI minutes are limited and
+   "affected tests only" has missed failures. "Green before merging" is our rule, not GitHub's: enforcing it (branch
+   protection) needs GitHub Pro or a public repository. Small commits make it easy to diff changes
    over time and bisect to the commit that broke something. Don't batch unrelated work into one commit, and list the
    commits in the final report.
 
@@ -103,17 +106,38 @@ If it can't be reproduced, say so and ask instead of guessing. Pick the browser 
   directly (use `TextService.loadReadable`/`loadOwned`); no package depends on a controller.
 - External services (dictionary APIs, OpenAI, YouTube) only through `DictionaryClient`, `AiClient` and `YouTubeClient`.
 
-### AWS
-Setup and decisions: [production plan](docs/production.md). Claude reaches AWS through the AWS Agent Toolkit (MCP server
-`aws-mcp`, AWS skills) and the AWS CLI (`C:\Program Files\Amazon\AWSCLIV2\aws.exe`), as profile `polygossa`, the app's
-member account, default region `eu-west-1`. Sessions last 12 hours; when one expires, `aws login --profile polygossa`
-needs the user to sign in through the browser.
+### AWS, GitHub and staging
+**Staging:** https://d3pd9mue4v7won.cloudfront.net (the `SiteUrl` output of the `PolygossaStaging` stack; it only
+changes if the stack is recreated). Real sign-up and login, no auto-login. Test accounts made there use
+`@example.com` addresses.
+
+Setup and decisions: [production plan](docs/production.md). AWS is our own AWS Organization: a management account
+(administration and billing, owned by the user) and a member account for the app (staging; production gets its own
+account later). Claude works only in the member account, so organization-level changes (the region policy, which allows
+`eu-west-1` plus the US regions AWS needs for global services and sign-in; new accounts; budgets) are the user's, in the
+management account. The user still has to turn on root MFA and set a budget alert.
+
+Tools on the dev machine (none of these are on PATH in every shell, so use the full paths):
+- **AWS CLI** `C:\Program Files\Amazon\AWSCLIV2\aws.exe`, profile `polygossa` (the member account, default region
+  `eu-west-1`). Sessions last 12 hours; when one expires, `aws login --profile polygossa` needs the user to sign in
+  through the browser. The **AWS Agent Toolkit** gives Claude the MCP server `aws-mcp` (started with `uvx`, from **uv**
+  in `~/.local/bin`) and AWS skills.
+- **GitHub CLI** `C:\Program Files\GitHub CLI\gh.exe`, signed in as the repository owner (`Blk836/polygossa`, private).
+  Read a failed CI run with `gh run view <id> --log-failed`; a job's log appears only once the job ends.
+- **AWS CDK** comes with `infra/` (`npx cdk diff|deploy`); deploying needs Docker running (it builds the images).
+
+When staging misbehaves: the services' logs are in CloudWatch (log groups for the backend and frontend, kept a month),
+the last deploy is the latest `deploy staging` job in GitHub Actions, and the stack's state is in CloudFormation.
+Staging is deliberately small: uploads live on the container's disk (lost on redeploy until S3), AI is off (no OpenAI
+key), no Redis.
 - Infrastructure is changed only through CDK (`infra/`), never by CLI or console commands. The CLI and MCP server are
   for reading, investigating and previewing (`cdk diff`).
 - Staging deploys itself: CI's `deploy staging` job runs `cdk deploy PolygossaStaging` on every merge to main (the
   pull request's checks are the gate; a temporary hand-started `deploy_only` run skips them),
   signed in through GitHub's OIDC as the `polygossa-github-deploy` role (its ARN is the repository variable
-  `AWS_DEPLOY_ROLE_ARN`). Deploy by hand only to bootstrap or to change the deploy role itself
+  `AWS_DEPLOY_ROLE_ARN`; `AWS_ACCOUNT_ID` lets CI's `cdk synth` run without AWS access). GitHub's OIDC subject names
+  the repository with immutable IDs (`repo:Blk836@15254657/polygossa@1405831822`, set in `infra/cdk.json`): the role
+  must trust that form, not `repo:Blk836/polygossa`. Deploy by hand only to bootstrap or to change the deploy role itself
   (`PolygossaGitHubDeploy`), and always `cdk diff` first. `infra/cdk.context.json` caches lookups so synth needs no AWS
   access: commit it.
 - Before AWS work, check for a relevant AWS skill and prefer it over general knowledge; verify AWS details (limits,
@@ -204,6 +228,8 @@ cd frontend && npm run e2e   # Playwright (first time: npx playwright install ch
                              # OpenAI, and its own PostgreSQL (bootTestRun: E2eApplication, a Testcontainers container
                              # removed when it stops); the IntelliJ run on :8080 and the dev database are untouched.
                              # E2E_BASE_URL=http://localhost:3000 points it at the dev server instead, for debugging.
+                             # On CI it runs in 4 shards (--shard=N/4) on the runner's preinstalled Chrome (channel "chrome"
+                             # when CI is set): installing Playwright's Chromium ran apt, whose mirror hung jobs.
 node --test "tools/**/*.test.mjs"                                  # tools/
 ```
 
