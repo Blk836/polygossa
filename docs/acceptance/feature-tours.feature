@@ -7,13 +7,13 @@ Feature: First-visit feature tours
   Tours and their tips (each one or two short sentences):
     | tour      | page              | tips                                                                  |
     | library   | Library › Mine    | Import button, Explore sub-tab, language switcher                     |
-    | explore   | Library › Explore | the shelves, the filters                                              |
-    | import    | Import            | the source choice (text, file, YouTube)                               |
-    | playlists | Library › Playlists | New playlist                                                        |
-    | reader    | the reader        | click a word, select a phrase, turning the page marks the rest known  |
-    | review    | Practice › Review | the review session                                                    |
+    | explore   | Library › Explore | search and filters, the Saved sub-tab                                 |
+    | import    | Import            | the source choice (text, web page, file, YouTube), the language       |
+    | playlists | Library › Playlists | the new-playlist form, the Shared tab                               |
+    | reader    | the reader        | click a word, select a phrase, turning the page (or Finish lesson) marks the rest known |
+    | review    | Practice › Review | how review works (one tip about the whole page)                       |
     | words     | Practice › Words  | search and filters, importing words                                   |
-    | writing   | Practice › Write  | starting a test                                                       |
+    | writing   | Practice › Write  | what a writing test is (one tip about the whole page)                 |
     | progress  | Progress          | streak and daily goal, known words and levels                         |
     | forum     | Forum             | the categories                                                        |
 
@@ -41,7 +41,7 @@ Feature: First-visit feature tours
 
   Scenario: Skipping one tour
     Given a tour is showing
-    When I close it (the × button or Escape)
+    When I close it (the × button, or Escape while the card has focus)
     Then it goes away and doesn't come back on that page
     But the next page I open for the first time still shows its own tour
 
