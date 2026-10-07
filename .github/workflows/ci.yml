@@ -94,15 +94,9 @@ jobs:
           path: frontend/.next/cache
           key: next-${{ hashFiles('frontend/package-lock.json') }}-${{ hashFiles('frontend/app/**', 'frontend/components/**', 'frontend/lib/**') }}
           restore-keys: next-${{ hashFiles('frontend/package-lock.json') }}-
-      # Usually ~20 s, but the download has hung for 16+ minutes: each attempt gets 2 minutes, up to 3 attempts.
-      - name: Install Chromium
-        timeout-minutes: 7
-        run: |
-          for attempt in 1 2 3; do
-            timeout 120 npx playwright install --with-deps chromium && exit 0
-            echo "Chromium install attempt $attempt failed or hung; retrying"
-          done
-          exit 1
+      # No browser install: the tests drive the runner's preinstalled Google Chrome (playwright.config.ts). Installing
+      # Playwright's Chromium ran apt, and an unresponsive Ubuntu mirror hung shards for 15+ minutes.
+      - run: google-chrome --version
       - run: npx playwright test --shard=${{ matrix.shard }}/4
       - if: failure()
         uses: actions/upload-artifact@v7

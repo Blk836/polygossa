@@ -39,7 +39,9 @@ export default defineConfig({
   // On CI, failed runs keep an HTML report with a trace of each failed test (uploaded by the workflow).
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: { baseURL, trace: process.env.CI ? "retain-on-failure" : "off" },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  // On CI, the runner's preinstalled Google Chrome: installing Playwright's Chromium needs apt, whose mirror has hung
+  // shards for 15+ minutes. Locally, Playwright's own Chromium.
+  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"], ...(process.env.CI ? { channel: "chrome" } : {}) } }],
   webServer: external
     ? []
     : [
