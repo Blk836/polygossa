@@ -4,9 +4,9 @@ import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
-import * as rds from "aws-cdk-lib/aws-rds";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import type { Construct } from "constructs";
+import { appDatabase } from "./database.ts";
 import { backendImage, frontendImage } from "./images.ts";
 import { appLogs, BACKEND_NAME, NAMESPACE } from "./services.ts";
 
@@ -35,20 +35,7 @@ export class StagingStack extends cdk.Stack {
       ],
     });
 
-    const database = new rds.DatabaseInstance(this, "Database", {
-      engine: rds.DatabaseInstanceEngine.postgres({ version: rds.PostgresEngineVersion.VER_17 }),
-      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T4G, ec2.InstanceSize.MICRO),
-      vpc,
-      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
-      publiclyAccessible: false,
-      multiAz: false,
-      allocatedStorage: 20,
-      storageEncrypted: true,
-      databaseName: "lector",
-      credentials: rds.Credentials.fromGeneratedSecret("lector"),
-      backupRetention: cdk.Duration.days(1),
-      removalPolicy: cdk.RemovalPolicy.SNAPSHOT,
-    });
+    const database = appDatabase(this, vpc, "staging");
 
     const jwtSecret = new secretsmanager.Secret(this, "LoginTokenSecret", {
       description: "Signs the app's login tokens (JWT_SECRET).",
