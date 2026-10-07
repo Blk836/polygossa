@@ -1,8 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { languageInfo, languageName, LANGUAGES } from "./languages";
+import { languageInfo, languageName, LANGUAGES, LEARNING_LANGUAGES } from "./languages";
+
+describe("LEARNING_LANGUAGES", () => {
+  it("offers six languages to learn, English first: Japanese, Chinese and Korean are paused", () => {
+    expect(LEARNING_LANGUAGES.map((l) => l.code)).toEqual(["en", "es", "fr", "de", "it", "pt"]);
+  });
+
+  it("is the same entries as LANGUAGES, so names and scripts agree", () => {
+    for (const l of LEARNING_LANGUAGES) expect(LANGUAGES).toContain(l);
+  });
+});
 
 describe("LANGUAGES", () => {
-  it("offers nine languages, English first", () => {
+  it("knows nine languages, English first (content stored in a paused one still shows its name)", () => {
     expect(LANGUAGES.map((l) => l.code)).toEqual(["en", "es", "fr", "de", "it", "pt", "ja", "zh", "ko"]);
   });
 

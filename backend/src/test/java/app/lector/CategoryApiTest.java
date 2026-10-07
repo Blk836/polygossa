@@ -181,10 +181,10 @@ class CategoryApiTest {
     @Test
     void shelvesHonourLevelAndKindFilters() throws Exception {
         String author = api.signupPro();
-        create(author, "ko", "food", true);
-        assertThat(api.get(user, "/api/library/shelves?language=ko&kind=video", 200)).isEmpty();
-        assertThat(api.get(user, "/api/library/shelves?language=ko&kind=text", 200)).hasSize(1);
-        assertThat(api.get(user, "/api/library/shelves?language=ko&level=C2", 200)).isEmpty();
+        create(author, "en", "food", true); // no other API test publishes English texts
+        assertThat(api.get(user, "/api/library/shelves?language=en&kind=video", 200)).isEmpty();
+        assertThat(api.get(user, "/api/library/shelves?language=en&kind=text", 200)).hasSize(1);
+        assertThat(api.get(user, "/api/library/shelves?language=en&level=C2", 200)).isEmpty();
         api.get(user, "/api/library/shelves?level=Z9", 400);
     }
 
@@ -206,8 +206,8 @@ class CategoryApiTest {
     @Test
     void shelvesShowViewerStatsAndReactions() throws Exception {
         String author = api.signupPro();
-        create(author, "zh", "culture", true);
-        JsonNode item = api.get(user, "/api/library/shelves?language=zh", 200).get(0).get("items").get(0);
+        create(author, "de", "culture", true);
+        JsonNode item = api.get(user, "/api/library/shelves?language=de", 200).get(0).get("items").get(0);
         assertThat(item.has("stats")).isTrue();
         assertThat(item.get("likes").asLong()).isZero();
         assertThat(item.get("bookmarked").asBoolean()).isFalse();

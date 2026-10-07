@@ -150,20 +150,19 @@ class WordImportApiTest {
     }
 
     @Test
-    void withoutALanguageEveryLanguageIsImported() throws Exception {
+    void withoutALanguageEveryOfferedLanguageIsImported() throws Exception {
         String key = newKey();
         YouTubeApiTest.LINGQ.account(key).card("es", "casa", 0, 0, null, null).knownWord("ja", "猫")
                 .card("ko", "집", 0, 0, null, null);
         JsonNode done = await(me, startLingq(me, key, null, 202));
         assertThat(done.get("state").asString()).isEqualTo("done");
         assertThat(done.get("language").isNull()).isTrue();
-        counts(done, 3, 3, 0, 0, 0);
+        // Japanese and Korean are paused for learning (learning-languages.feature): LingQ isn't asked for them.
+        counts(done, 1, 1, 0, 0, 0);
         assertThat(words(me, "es")).containsOnlyKeys("casa");
-        assertThat(words(me, "ja")).containsEntry("猫", "known");
-        assertThat(words(me, "ko")).containsOnlyKeys("집");
         List<String> asked = YouTubeApiTest.LINGQ.account(key).requests().stream().map(r -> r.substring(8, 10)).distinct()
                 .toList();
-        assertThat(asked).containsExactlyInAnyOrder("en", "es", "fr", "de", "it", "pt", "ja", "zh", "ko");
+        assertThat(asked).containsExactlyInAnyOrder("en", "es", "fr", "de", "it", "pt");
     }
 
     @Test
@@ -326,13 +325,13 @@ class WordImportApiTest {
 
     @Test
     void importsAreListedNewestFirstAndArePrivate() throws Exception {
-        List<String> languages = List.of("fr", "de", "es", "it", "pt", "ja");
+        List<String> languages = List.of("fr", "de", "es", "it", "pt", "en");
         for (String language : languages) {
             await(me, startReadlang(me, "mot\n", language, 202));
         }
         JsonNode list = api.get(me, "/api/word-imports", 200);
         assertThat(list).hasSize(6);
-        assertThat(list.get(0).get("language").asString()).isEqualTo("ja");
+        assertThat(list.get(0).get("language").asString()).isEqualTo("en");
         assertThat(list.get(0).get("id").asLong()).isGreaterThan(list.get(1).get("id").asLong());
         long mine = list.get(0).get("id").asLong();
         String other = api.signup();

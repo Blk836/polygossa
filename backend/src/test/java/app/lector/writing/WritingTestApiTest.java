@@ -117,10 +117,9 @@ class WritingTestApiTest {
     }
 
     @Test
-    void japaneseTestsCountCharacters() throws Exception {
-        JsonNode t = start(user, "ja", "A2", 201);
-        assertThat(t.get("unit").asString()).isEqualTo("characters");
-        assertThat(t.get("minWords").asInt()).isEqualTo(80);
+    void japaneseTestsAreRefused() throws Exception {
+        // Paused for learning (learning-languages.feature); character counting stays covered by WritingRulesTest.
+        assertThat(start(user, "ja", "A2", 400).get("code").asString()).isEqualTo("language_not_offered");
     }
 
     @Test

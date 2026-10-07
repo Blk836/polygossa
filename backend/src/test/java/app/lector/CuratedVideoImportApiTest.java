@@ -209,7 +209,8 @@ class CuratedVideoImportApiTest {
     void theOptionsListLanguagesAndCategories() throws Exception {
         var request = MockMvcRequestBuilders.get("/api/curator/options").header(HEADER, TOKEN);
         JsonNode options = api.send(request, null, 200);
-        assertThat(options.get("languages").valueStream().map(JsonNode::asString)).contains("fr", "es", "ja");
+        assertThat(options.get("languages").valueStream().map(JsonNode::asString))
+                .containsExactly("en", "es", "fr", "de", "it", "pt");
         assertThat(options.get("categories").valueStream().map(JsonNode::asString)).contains("daily-life", "other");
     }
 

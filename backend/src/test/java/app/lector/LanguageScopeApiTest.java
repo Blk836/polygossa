@@ -85,7 +85,7 @@ class LanguageScopeApiTest {
     @Test
     void switchingTheCurrentLanguageIsRemembered() throws Exception {
         api.send(patch("/api/me")
-                .contentType(MediaType.APPLICATION_JSON).content("{\"targetLanguage\":\"ja\"}"), user, 200);
-        assertThat(api.get(user, "/api/me", 200).get("targetLanguage").asString()).isEqualTo("ja");
+                .contentType(MediaType.APPLICATION_JSON).content("{\"targetLanguage\":\"de\"}"), user, 200);
+        assertThat(api.get(user, "/api/me", 200).get("targetLanguage").asString()).isEqualTo("de");
     }
 }

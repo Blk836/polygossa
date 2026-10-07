@@ -3,14 +3,15 @@ import {
   closeWord, demoCounts, demoSentence, initialDemoState, onboardingPath, parseLanguage, selectWord, setDemoStatus, signupHref, type DemoToken,
 } from "./landing";
 import { DEMOS } from "./landing-demos";
-import { LANGUAGES } from "./languages";
+import { LANGUAGES, LEARNING_LANGUAGES } from "./languages";
 
 describe("parseLanguage", () => {
-  it.each(LANGUAGES.map((l) => l.code))("accepts %s", (code) => {
+  it.each(LEARNING_LANGUAGES.map((l) => l.code))("accepts %s", (code) => {
     expect(parseLanguage(code)).toBe(code);
   });
 
-  it.each([null, undefined, "", "xx", "ES", " es", "english"])("rejects %j", (value) => {
+  // Japanese, Chinese and Korean are paused for learning (learning-languages.feature).
+  it.each([null, undefined, "", "xx", "ES", " es", "english", "ja", "zh", "ko"])("rejects %j", (value) => {
     expect(parseLanguage(value)).toBeNull();
   });
 });
@@ -25,6 +26,7 @@ describe("sign-up and onboarding links", () => {
     expect(signupHref()).toBe("/signup");
     expect(signupHref(null)).toBe("/signup");
     expect(signupHref("xx")).toBe("/signup");
+    expect(signupHref("ja")).toBe("/signup");
     expect(onboardingPath(undefined)).toBe("/onboarding");
     expect(onboardingPath("xx")).toBe("/onboarding");
   });

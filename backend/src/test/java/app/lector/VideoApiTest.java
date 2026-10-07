@@ -242,10 +242,13 @@ class VideoApiTest {
     }
 
     @Test
-    void japaneseVideoIsTokenizedWithoutTheSidecar() throws Exception {
+    void japaneseVideosAreRefused() throws Exception {
+        // Japanese, Chinese and Korean are paused for learning (learning-languages.feature); their segmentation
+        // stays covered by TokenizationTest.
         STUB.add(ID, YouTubeStub.Video.withCaptions("日本", 30, "ja", YouTubeStub.srv3("0|3000|今日は天気がいいです。")));
-        JsonNode s = importVideo(user, importReq(URL, "ja"), 201);
-        assertThat(s.get("wordCount").asInt()).isPositive();
+        JsonNode error = importVideo(user, importReq(URL, "ja"), 400);
+        assertThat(error.get("code").asString()).isEqualTo("language_not_offered");
+        assertThat(countMine(user)).isZero();
     }
 
     @Test
