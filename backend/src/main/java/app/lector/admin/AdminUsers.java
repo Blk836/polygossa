@@ -9,6 +9,7 @@ import app.lector.playlist.PlaylistService;
 import app.lector.text.Text;
 import app.lector.text.TextRepository;
 import app.lector.text.TextService;
+import app.lector.token.Language;
 import app.lector.user.Admins;
 import app.lector.user.LibraryAccount;
 import app.lector.user.Tier;
@@ -33,6 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminUsers {
 
     static final int PAGE_SIZE = 25;
+    /** Admin views and removals cover everything a user has, paused languages included. */
+    private static final List<Language> ALL_LANGUAGES = List.of(Language.values());
 
     public record UserRow(Long id, String email, String displayName, Tier plan, Instant createdAt,
                           LocalDate lastActive, boolean suspended, boolean admin, long texts, long playlists,
@@ -80,7 +83,7 @@ public class AdminUsers {
         List<Item> textItems = stores.texts().findByOwnerIdOrderByCreatedAtDesc(id).stream()
                 .map(t -> new Item(t.getId(), t.getTitle(), t.isPublic(), t.getVideoId() == null ? "text" : "video"))
                 .toList();
-        List<Item> playlistItems = stores.playlists().findMine(id, null).stream()
+        List<Item> playlistItems = stores.playlists().findMine(id, ALL_LANGUAGES).stream()
                 .map(p -> new Item(p.getId(), p.getTitle(), p.isPublic(), "playlist")).toList();
         return new UserDetail(row(user), user.getSuspendedReason(), textItems, playlistItems);
     }
@@ -116,7 +119,7 @@ public class AdminUsers {
     @Transactional
     public Map<String, Integer> removePlaylists(User admin, Long id) {
         User user = notLibrary(load(id));
-        List<Playlist> mine = stores.playlists().findMine(id, null);
+        List<Playlist> mine = stores.playlists().findMine(id, ALL_LANGUAGES);
         mine.forEach(p -> playlistService.delete(user, p.getId()));
         log.record(admin, "playlists", user, mine.size() + " playlists");
         return Map.of("playlists", mine.size());
@@ -136,7 +139,7 @@ public class AdminUsers {
         User user = load(id);
         List<Text> shared = stores.texts().findByOwnerIdOrderByCreatedAtDesc(id).stream().filter(Text::isPublic)
                 .toList();
-        List<Playlist> sharedLists = stores.playlists().findMine(id, null).stream().filter(Playlist::isPublic)
+        List<Playlist> sharedLists = stores.playlists().findMine(id, ALL_LANGUAGES).stream().filter(Playlist::isPublic)
                 .toList();
         shared.forEach(t -> t.setPublic(false));
         sharedLists.forEach(p -> p.setPublic(false));

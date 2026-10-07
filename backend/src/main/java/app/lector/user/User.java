@@ -106,7 +106,13 @@ public class User {
         this.tier = tier;
     }
 
+    /** The language being learned, or null when none is chosen or the stored one is paused (it stays stored). */
     public Language getTargetLanguage() {
+        return targetLanguage != null && targetLanguage.isOffered() ? targetLanguage : null;
+    }
+
+    /** The stored learning language, even a paused one. */
+    public Language storedTargetLanguage() {
         return targetLanguage;
     }
 

@@ -10,7 +10,6 @@ import jakarta.annotation.PreDestroy;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -77,7 +76,7 @@ public class WordImportService {
             throw ApiException.badRequest("That doesn't look like a LingQ API key. Copy it from lingq.com/accounts/apikey.");
         }
         Language only = language == null || language.isBlank() ? null : language(language);
-        List<Language> languages = only == null ? Arrays.asList(Language.values()) : List.of(only);
+        List<Language> languages = Language.scope(only);
         return queue(user, WordImport.Source.LINGQ, only, onBatch -> languages.forEach(lang ->
                 lingq.fetchAll(apiKey, lang, words -> onBatch.accept(lang, words))));
     }
@@ -176,7 +175,9 @@ public class WordImportService {
 
     private static Language language(String code) {
         try {
-            return Language.fromCode(code);
+            return Language.parse(code);
+        } catch (Language.NotOfferedException e) {
+            throw e;
         } catch (IllegalArgumentException e) {
             throw ApiException.badRequest(e.getMessage());
         }

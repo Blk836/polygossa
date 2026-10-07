@@ -1,6 +1,7 @@
 package app.lector.text;
 
 import app.lector.token.Language;
+import java.util.Collection;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,7 +37,7 @@ public interface TextRepository extends JpaRepository<Text, Long> {
     @Query("""
             select t from Text t
             where t.isPublic = true
-              and (:language is null or t.language = :language)
+              and t.language in :languages
               and (:level is null or t.cefrLevel = :level)
               and (:q is null or lower(t.title) like :q)
               and (:kind is null or (:kind = 'video' and t.videoId is not null)
@@ -47,7 +48,7 @@ public interface TextRepository extends JpaRepository<Text, Long> {
                    and f.topics like :topic))
             order by t.createdAt desc
             """)
-    Page<Text> searchPublicNewest(@Param("language") Language language, @Param("level") String level,
+    Page<Text> searchPublicNewest(@Param("languages") Collection<Language> languages, @Param("level") String level,
                                   @Param("q") String q, @Param("kind") String kind,
                                   @Param("category") Category category,
                                   @Param("topic") String topic,
@@ -67,25 +68,25 @@ public interface TextRepository extends JpaRepository<Text, Long> {
     @Query("""
             select t.id as id, t.category as category from Text t
             where t.isPublic = true
-              and (:language is null or t.language = :language)
+              and t.language in :languages
               and (:level is null or t.cefrLevel = :level)
               and (:kind is null or (:kind = 'video' and t.videoId is not null)
                    or (:kind = 'text' and t.videoId is null))
             order by t.createdAt desc
             """)
-    List<ShelfEntry> findPublicShelfEntries(@Param("language") Language language, @Param("level") String level,
+    List<ShelfEntry> findPublicShelfEntries(@Param("languages") Collection<Language> languages, @Param("level") String level,
                                             @Param("kind") String kind);
 
-    /** Public items in a language (every language when null) that someone else shared: what Explore can recommend. */
-    @Query("select t from Text t where t.isPublic = true and (:language is null or t.language = :language) "
+    /** Public items in these languages that someone else shared: what Explore can recommend. */
+    @Query("select t from Text t where t.isPublic = true and t.language in :languages "
             + "and t.owner.id <> :userId")
-    List<Text> findPublicCandidates(@Param("language") Language language, @Param("userId") Long userId);
+    List<Text> findPublicCandidates(@Param("languages") Collection<Language> languages, @Param("userId") Long userId);
 
     /** Public community content, most liked first. */
     @Query("""
             select t from Text t
             where t.isPublic = true
-              and (:language is null or t.language = :language)
+              and t.language in :languages
               and (:level is null or t.cefrLevel = :level)
               and (:q is null or lower(t.title) like :q)
               and (:kind is null or (:kind = 'video' and t.videoId is not null)
@@ -97,7 +98,7 @@ public interface TextRepository extends JpaRepository<Text, Long> {
             order by (select count(r) from TextReaction r where r.text = t
                       and r.type = app.lector.library.TextReaction.Type.LIKE) desc, t.createdAt desc
             """)
-    Page<Text> searchPublicPopular(@Param("language") Language language, @Param("level") String level,
+    Page<Text> searchPublicPopular(@Param("languages") Collection<Language> languages, @Param("level") String level,
                                    @Param("q") String q, @Param("kind") String kind,
                                   @Param("category") Category category,
                                    @Param("topic") String topic,

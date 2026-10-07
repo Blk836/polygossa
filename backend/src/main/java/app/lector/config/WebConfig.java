@@ -17,7 +17,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
-        registry.addConverter(String.class, Language.class, Language::fromCode);
+        registry.addConverter(String.class, Language.class, Language::parse);
         registry.addConverter(String.class, WordStatus.class, WordStatus::parse);
         registry.addConverter(String.class, EntryKind.class, s -> EntryKind.valueOf(s.trim().toUpperCase(Locale.ROOT)));
         registry.addConverter(String.class, MediaKind.class, MediaKind::parse);

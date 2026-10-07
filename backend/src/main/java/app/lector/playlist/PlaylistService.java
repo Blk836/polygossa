@@ -57,21 +57,21 @@ public class PlaylistService {
 
     @Transactional(readOnly = true)
     public List<PlaylistSummary> mine(User user, Language language, Long containing) {
-        return summaries(user, playlists.findMine(user.getId(), language), containing);
+        return summaries(user, playlists.findMine(user.getId(), Language.scope(language)), containing);
     }
 
     /** Shared playlists that have something the viewer can read. */
     @Transactional(readOnly = true)
     public List<PlaylistSummary> shared(User user, Language language, String q) {
         String pattern = q == null || q.isBlank() ? null : "%" + q.strip().toLowerCase(Locale.ROOT) + "%";
-        List<Playlist> found = playlists.findShared(language, pattern, PageRequest.of(0, SHARED_LIMIT));
+        List<Playlist> found = playlists.findShared(Language.scope(language), pattern, PageRequest.of(0, SHARED_LIMIT));
         return summaries(user, found, null).stream().filter(s -> s.itemCount() > 0).toList();
     }
 
     /** Playlists the user saved and can still see, newest save first. */
     @Transactional(readOnly = true)
     public List<PlaylistSummary> saved(User user, Language language) {
-        return summaries(user, bookmarks.findSaved(user.getId(), language), null);
+        return summaries(user, bookmarks.findSaved(user.getId(), Language.scope(language)), null);
     }
 
     @Transactional(readOnly = true)

@@ -1,5 +1,6 @@
 package app.lector.common;
 
+import app.lector.token.Language;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({HttpMessageNotReadableException.class, MissingServletRequestParameterException.class,
             MissingServletRequestPartException.class, MethodArgumentTypeMismatchException.class})
     ResponseEntity<ErrorBody> handleBadInput(Exception e) {
+        for (Throwable cause = e.getCause(); cause != null; cause = cause.getCause()) {
+            if (cause instanceof Language.NotOfferedException notOffered) {
+                return handleNotOffered(notOffered);
+            }
+        }
         log.info("Malformed request: {}", e.getMessage());
         return ResponseEntity.badRequest().body(new ErrorBody("bad_request", "Malformed request"));
     }
@@ -45,6 +51,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     ResponseEntity<ErrorBody> handleUploadSize(MaxUploadSizeExceededException e) {
         return ResponseEntity.status(HttpStatus.CONTENT_TOO_LARGE).body(new ErrorBody("too_large", "File is too large"));
+    }
+
+    /** Japanese, Chinese or Korean in a request: paused for learning (learning-languages.feature). */
+    @ExceptionHandler(Language.NotOfferedException.class)
+    ResponseEntity<ErrorBody> handleNotOffered(Language.NotOfferedException e) {
+        return ResponseEntity.badRequest().body(new ErrorBody("language_not_offered", e.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

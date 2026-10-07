@@ -81,7 +81,7 @@ public class RecommendationService {
         RecommendProperties ranking = active.ranking(); // configured weights, or learned ones when switched on
         Instant now = clock.instant();
         Snapshot s = signals.load(user);
-        List<Text> pool = texts.findPublicCandidates(language, user.getId()).stream()
+        List<Text> pool = texts.findPublicCandidates(Language.scope(language), user.getId()).stream()
                 .filter(t -> !s.progress().containsKey(t.getId()) && !s.dismissed().contains(t.getId()))
                 .sorted(Comparator.comparing(Text::getId)).toList();
         Map<Long, Text> engaged = texts.findAllById(s.activity().keySet()).stream()

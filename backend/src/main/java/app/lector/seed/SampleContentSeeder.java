@@ -99,7 +99,7 @@ public class SampleContentSeeder implements ApplicationRunner {
     /** {@code samples/<code>.txt}: the title, a {@code category: <code>} line, then the text. */
     private static List<Starter> starters() throws IOException {
         List<Starter> out = new ArrayList<>();
-        for (Language language : Language.values()) {
+        for (Language language : Language.offered()) {
             var resource = new ClassPathResource("samples/" + language.code() + ".txt");
             if (!resource.exists()) {
                 continue;

@@ -80,8 +80,8 @@ public class LibraryController {
         var pageable = PageRequest.of(Math.max(0, page), Math.min(Math.max(1, size), 50));
         String tagged = topicPattern(topic);
         Page<Text> result = "popular".equals(sort)
-                ? texts.searchPublicPopular(language, lvl, pattern, code(kind), category, tagged, pageable)
-                : texts.searchPublicNewest(language, lvl, pattern, code(kind), category, tagged, pageable);
+                ? texts.searchPublicPopular(Language.scope(language), lvl, pattern, code(kind), category, tagged, pageable)
+                : texts.searchPublicNewest(Language.scope(language), lvl, pattern, code(kind), category, tagged, pageable);
         return new LibraryPage(summaries(user, result.getContent()), result.getTotalElements(), result.getNumber(),
                 result.getSize());
     }
@@ -98,7 +98,7 @@ public class LibraryController {
         // Ids and categories of everything matching, newest first; only the texts that make a shelf are loaded.
         Map<Category, Long> totals = new EnumMap<>(Category.class);
         Map<Category, List<Long>> shelfIds = new EnumMap<>(Category.class);
-        for (TextRepository.ShelfEntry entry : texts.findPublicShelfEntries(language, lvl, code(kind))) {
+        for (TextRepository.ShelfEntry entry : texts.findPublicShelfEntries(Language.scope(language), lvl, code(kind))) {
             Category category = entry.getCategory() == null ? Category.OTHER : entry.getCategory();
             totals.merge(category, 1L, Long::sum);
             List<Long> ids = shelfIds.computeIfAbsent(category, c -> new ArrayList<>());

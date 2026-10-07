@@ -30,7 +30,7 @@ public class CuratorController {
 
     @GetMapping("/options")
     public Options options() {
-        return new Options(List.of(Language.values()), List.of(Category.values()));
+        return new Options(Language.offered(), List.of(Category.values()));
     }
 
     @PostMapping("/videos")
