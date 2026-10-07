@@ -80,7 +80,15 @@ jobs:
       - uses: actions/setup-node@v7
         with: { node-version: "24", cache: npm, cache-dependency-path: frontend/package-lock.json }
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      # Usually ~20 s, but the download has hung for 16+ minutes: each attempt gets 2 minutes, up to 3 attempts.
+      - name: Install Chromium
+        timeout-minutes: 7
+        run: |
+          for attempt in 1 2 3; do
+            timeout 120 npx playwright install --with-deps chromium && exit 0
+            echo "Chromium install attempt $attempt failed or hung; retrying"
+          done
+          exit 1
       - run: npm run e2e
       - if: failure()
         uses: actions/upload-artifact@v7
