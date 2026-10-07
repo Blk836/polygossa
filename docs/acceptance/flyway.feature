@@ -55,7 +55,7 @@ Feature: Versioned schema changes with Flyway (docs/production.md, phase 1)
     Given an enum stored as text with a check constraint listing its values (language, category, plan, …)
     When a value is added to the enum
     Then a test fails until a migration updates that column's check constraint
-    And the startup patch that rewrote these constraints (EnumCheckMigration) is gone (with the retirement below)
+    And the startup patch that rewrote these constraints (EnumCheckMigration) is gone
 
   # --- Failures and deploys ---
 
@@ -69,8 +69,8 @@ Feature: Versioned schema changes with Flyway (docs/production.md, phase 1)
     When a merge to main deploys a backend with a new migration
     Then the migration runs when the new backend starts, before it serves requests
 
-  # --- What goes away (its own pull request: it deletes the two migrations' tests, which needs the user's approval;
-  # until then both keep running and change nothing on a migrated database) ---
+  # --- What goes away (its own pull request, merged only with the user's approval: it deletes the two migrations'
+  # tests) ---
 
   Scenario: The one-off startup migrations are retired
     Then TextBodyMigration (moving text bodies out of texts) is removed: every database in use already ran it, and V1
