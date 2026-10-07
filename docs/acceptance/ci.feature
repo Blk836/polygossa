@@ -28,8 +28,12 @@ Feature: CI: every check runs on GitHub for every push (see docs/production.md, 
     Then the older run is cancelled and only the newest commit is checked
 
   Scenario: Docs-only changes don't use CI minutes
-    When a push changes only files under docs/
+    When a push changes only files under docs/ or Markdown files anywhere (CLAUDE.md, READMEs)
     Then CI does not run
+
+  Scenario: CI is where the full suites run
+    Then the full suites run only on CI, not on the developer's machine before a pull request
+    And locally only the tests being written or changed run, plus mutation testing, which CI doesn't run
 
   Scenario: It can be run by hand
     When I start the workflow from the Actions tab
