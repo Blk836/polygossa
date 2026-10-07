@@ -60,6 +60,11 @@ export function countUp(from: number, to: number, progress: number): number {
   return Math.round(from + (to - from) * eased);
 }
 
+/** The whole-number share of `total` words that are known when `fresh` of them are new; 0 for no words. */
+export function knownPercent(total: number, fresh: number): number {
+  return total ? Math.round(((total - fresh) * 100) / total) : 0;
+}
+
 /** Which of `count` subtitle words is being spoken: evenly paced, stopping on the last. */
 export function spokenIndex(progress: number, count: number): number {
   return Math.min(count - 1, Math.max(0, Math.floor(progress * count)));

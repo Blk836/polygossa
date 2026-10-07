@@ -283,3 +283,69 @@ body {
     color: var(--rubric);
   }
 }
+
+/* ---- landing page showreel (components/landing/showreel*.tsx) ---- */
+@keyframes showreel-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.showreel-in {
+  animation: showreel-in 450ms ease-out both;
+}
+@keyframes showreel-bar {
+  0%, 100% { transform: scaleY(0.45); }
+  50% { transform: scaleY(1.25); }
+}
+.showreel-bar {
+  transform-origin: bottom;
+  animation: showreel-bar 900ms ease-in-out infinite;
+}
+@keyframes showreel-bob {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-6px) rotate(3deg); }
+}
+.showreel-bob {
+  animation: showreel-bob 2.2s ease-in-out infinite;
+}
+@keyframes showreel-tap {
+  from { opacity: 0.9; transform: scale(0.4); }
+  to { opacity: 0; transform: scale(2.2); }
+}
+.showreel-tap {
+  animation: showreel-tap 700ms ease-out both;
+}
+@keyframes showreel-glow {
+  0% { box-shadow: 0 0 0 0 var(--good); }
+  100% { box-shadow: 0 0 0 10px transparent; }
+}
+.showreel-glow {
+  animation: showreel-glow 900ms ease-out 2;
+}
+.showreel-card-3d {
+  perspective: 900px;
+}
+.showreel-flip {
+  transform-style: preserve-3d;
+  transition: transform 650ms cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+.showreel-flipped {
+  transform: rotateY(180deg);
+}
+.showreel-face {
+  backface-visibility: hidden;
+}
+.showreel-back {
+  transform: rotateY(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .showreel-in,
+  .showreel-bar,
+  .showreel-bob,
+  .showreel-tap,
+  .showreel-glow {
+    animation: none;
+  }
+  .showreel-flip {
+    transition: none;
+  }
+}

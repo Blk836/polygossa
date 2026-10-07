@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SCENES, SHOWREEL_MS, advance, countUp, frameAt, phase, sceneStart, spokenIndex, type Scene } from "./showreel";
+import { SCENES, SHOWREEL_MS, advance, countUp, frameAt, knownPercent, phase, sceneStart, spokenIndex, type Scene } from "./showreel";
 
 const THREE: Scene[] = [
   { id: "a", caption: "A", ms: 1000 },
@@ -105,6 +105,16 @@ describe("countUp", () => {
       expect(Number.isInteger(v)).toBe(true);
       last = v;
     }
+  });
+});
+
+describe("knownPercent", () => {
+  it("is the rounded share of words that are not new", () => {
+    expect(knownPercent(32, 9)).toBe(72);
+    expect(knownPercent(32, 1)).toBe(97);
+    expect(knownPercent(10, 0)).toBe(100);
+    expect(knownPercent(10, 10)).toBe(0);
+    expect(knownPercent(0, 0)).toBe(0);
   });
 });
 
