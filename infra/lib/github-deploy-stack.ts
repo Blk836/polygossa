@@ -5,6 +5,11 @@ import type { Construct } from "constructs";
 export interface GitHubDeployProps extends cdk.StackProps {
   /** "owner/name" of the repository allowed to deploy. */
   readonly repository: string;
+  /**
+   * How GitHub's OIDC tokens name that repository: "repo:owner@ownerId/name@repoId", with the immutable IDs (so a
+   * renamed or re-created repository with the same name can't deploy).
+   */
+  readonly subject: string;
 }
 
 const GITHUB_TOKENS = "token.actions.githubusercontent.com";
@@ -30,7 +35,7 @@ export class GitHubDeployStack extends cdk.Stack {
       assumedBy: new iam.WebIdentityPrincipal(provider.openIdConnectProviderArn, {
         StringEquals: {
           [`${GITHUB_TOKENS}:aud`]: "sts.amazonaws.com",
-          [`${GITHUB_TOKENS}:sub`]: `repo:${props.repository}:ref:refs/heads/main`,
+          [`${GITHUB_TOKENS}:sub`]: `${props.subject}:ref:refs/heads/main`,
         },
       }),
     });

@@ -8,6 +8,7 @@ import { GitHubDeployStack } from "../lib/github-deploy-stack.ts";
 const template = Template.fromStack(new GitHubDeployStack(new cdk.App(), "Deploy", {
   env: { account: "111111111111", region: "eu-west-1" },
   repository: "Owner/repo",
+  subject: "repo:Owner@1/repo@2",
 }));
 
 const role = () => Object.values(template.findResources("AWS::IAM::Role"))
@@ -20,7 +21,8 @@ describe("GitHub deploy role", () => {
     assert.deepEqual(statement.Condition, {
       StringEquals: {
         "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-        "token.actions.githubusercontent.com:sub": "repo:Owner/repo:ref:refs/heads/main",
+        // GitHub's subject names the owner and repository with their immutable IDs (owner@id/name@id).
+        "token.actions.githubusercontent.com:sub": "repo:Owner@1/repo@2:ref:refs/heads/main",
       },
     });
   });
