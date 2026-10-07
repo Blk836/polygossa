@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { calendarWeeks, intensity, milestone, periodChange, periodLabel, STATS_PERIODS, streakMessage, weekChange, weekStrip } from "./progress";
+import { calendarWeeks, goalProgress, intensity, milestone, periodChange, periodLabel, STATS_PERIODS, streakMessage, weekChange, weekStrip } from "./progress";
 import type { ActivityDay } from "./types";
 
 const day = (date: string, over: Partial<ActivityDay> = {}): ActivityDay => ({
-  day: date, readingSeconds: 0, wordsSaved: 0, wordsKnown: 0, reviews: 0, writingTests: 0, active: false, ...over,
+  day: date, readingSeconds: 0, wordsSaved: 0, wordsKnown: 0, reviews: 0, writingTests: 0, wordsRead: 0, listenedSeconds: 0,
+  active: false, goalMet: false, ...over,
 });
 
 describe("milestone", () => {
@@ -153,5 +154,18 @@ describe("periodLabel", () => {
     ["all", "All time"],
   ] as const)("%s reads %s", (key, label) => {
     expect(periodLabel(key)).toBe(label);
+  });
+});
+
+describe("goalProgress", () => {
+  it("says how far today has got, with the unit of the goal", () => {
+    expect(goalProgress({ kind: "words_read", target: 1000, done: 340, met: false })).toEqual({ text: "340 / 1,000 words read", percent: 34, met: false });
+    expect(goalProgress({ kind: "reviews", target: 20, done: 1, met: false }).text).toBe("1 / 20 reviews");
+    expect(goalProgress({ kind: "minutes_read", target: 15, done: 15, met: true })).toEqual({ text: "15 / 15 minutes read", percent: 100, met: true });
+    expect(goalProgress({ kind: "minutes_listened", target: 30, done: 7, met: false }).text).toBe("7 / 30 minutes listened");
+  });
+
+  it("caps the bar at 100%", () => {
+    expect(goalProgress({ kind: "words_read", target: 100, done: 250, met: true }).percent).toBe(100);
   });
 });
