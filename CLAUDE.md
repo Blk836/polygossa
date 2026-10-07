@@ -7,6 +7,7 @@ Docs:
 - [Architecture](docs/architecture/README.md): **read this first in a new session.** The high-level map: what each
   product area does for learners and roughly how it is built, plus the product decisions taken.
 - [Product plan](docs/plan.md): the original vision. [Roadmap](docs/roadmap.md): designed but not built yet.
+- [Feature gaps](docs/gaps.md): what is missing (product review); ideas not yet designed.
 - [Production plan](docs/production.md): going live on AWS (EU) with Cognito login, Stripe and GDPR; not started.
 - [Acceptance scenarios](docs/acceptance/): the agreed Gherkin scenarios per feature.
 
