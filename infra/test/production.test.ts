@@ -3,13 +3,13 @@ import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
 import * as cdk from "aws-cdk-lib";
 import { Match, Template } from "aws-cdk-lib/assertions";
-import { StagingStack } from "../lib/staging-stack.ts";
+import { ProductionStack } from "../lib/production-stack.ts";
 
 let template: Template;
 
 before(() => {
   const app = new cdk.App();
-  const stack = new StagingStack(app, "Staging", {
+  const stack = new ProductionStack(app, "Production", {
     env: { account: "111111111111", region: "eu-west-1" },
     cloudFrontPrefixListId: "pl-cloudfront",
   });
@@ -36,7 +36,7 @@ function ingressInto(prefix: string) {
   return rules.filter((r) => JSON.stringify(r.Properties.GroupId).includes(prefix)).map((r) => r.Properties);
 }
 
-describe("staging stack", () => {
+describe("production stack", () => {
   it("has a PostgreSQL database that isn't publicly accessible, with encrypted storage, kept as a snapshot", () => {
     template.hasResource("AWS::RDS::DBInstance", {
       Properties: Match.objectLike({
@@ -50,7 +50,7 @@ describe("staging stack", () => {
     });
   });
 
-  // docs/acceptance/production-database.feature: staging's database stays small and cheap.
+  // docs/acceptance/production-database.feature: the database stays on the small settings until the beta.
   it("keeps its small database: one zone, the smallest instance, 1 day of backups, no growth or delete lock", () => {
     template.hasResourceProperties("AWS::RDS::DBInstance", {
       DBInstanceClass: "db.t4g.micro",
