@@ -10,20 +10,21 @@ import { appDatabase } from "./database.ts";
 import { backendImage, frontendImage } from "./images.ts";
 import { appLogs, BACKEND_NAME, NAMESPACE } from "./services.ts";
 
-export interface StagingProps extends cdk.StackProps {
+export interface ProductionProps extends cdk.StackProps {
   /** CloudFront's origin-facing prefix list; looked up in the account when absent (tests pass one). */
   readonly cloudFrontPrefixListId?: string;
 }
 
 /**
- * Staging (docs/acceptance/staging.feature): CloudFront → load balancer → frontend on Fargate → backend on Fargate
- * (private name only) → PostgreSQL on RDS in isolated subnets. Sized small: no NAT gateway (tasks get public IPs to pull
- * images and call out), one task each, a single-zone database.
+ * Production, first built as staging (docs/acceptance/staging.feature, staging-becomes-production.feature):
+ * CloudFront → load balancer → frontend on Fargate → backend on Fargate (private name only) → PostgreSQL on RDS in
+ * isolated subnets. Sized small until the beta: no NAT gateway (tasks get public IPs to pull images and call out), one
+ * task each, a single-zone database.
  */
-export class StagingStack extends cdk.Stack {
+export class ProductionStack extends cdk.Stack {
   readonly siteUrl: string;
 
-  constructor(scope: Construct, id: string, props: StagingProps = {}) {
+  constructor(scope: Construct, id: string, props: ProductionProps = {}) {
     super(scope, id, props);
 
     const vpc = new ec2.Vpc(this, "Network", {
@@ -35,7 +36,7 @@ export class StagingStack extends cdk.Stack {
       ],
     });
 
-    const database = appDatabase(this, vpc, "staging");
+    const database = appDatabase(this, vpc, "small");
 
     const jwtSecret = new secretsmanager.Secret(this, "LoginTokenSecret", {
       description: "Signs the app's login tokens (JWT_SECRET).",
@@ -57,7 +58,7 @@ export class StagingStack extends cdk.Stack {
       environment: {
         SPRING_PROFILES_ACTIVE: "prod",
         DATABASE_URL: `jdbc:postgresql://${database.dbInstanceEndpointAddress}:${database.dbInstanceEndpointPort}/lector`,
-        // Staging has no Redis: dictionary lookups are cached in memory.
+        // No Redis yet: dictionary lookups are cached in memory.
         SPRING_CACHE_TYPE: "simple",
         MANAGEMENT_HEALTH_REDIS_ENABLED: "false",
         JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75",
@@ -124,7 +125,7 @@ export class StagingStack extends cdk.Stack {
     });
 
     const distribution = new cloudfront.Distribution(this, "Site", {
-      comment: "Polygossa staging",
+      comment: "Polygossa production",
       priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
       defaultBehavior: {
         origin: new origins.LoadBalancerV2Origin(balancer, {
@@ -140,6 +141,6 @@ export class StagingStack extends cdk.Stack {
     });
 
     this.siteUrl = `https://${distribution.distributionDomainName}`;
-    new cdk.CfnOutput(this, "SiteUrl", { value: this.siteUrl, description: "The staging site" });
+    new cdk.CfnOutput(this, "SiteUrl", { value: this.siteUrl, description: "The production site" });
   }
 }

@@ -1,5 +1,5 @@
 # The gauntlet's checks (see CLAUDE.md) on every pull request, on Linux like production (docs/acceptance/ci.feature),
-# and a deploy to staging on AWS when a pull request is merged to main (docs/acceptance/staging.feature). Mutation testing stays local (too slow per push). The checks have no secrets and
+# and a deploy to production on AWS when a pull request is merged to main (docs/acceptance/staging.feature). Mutation testing stays local (too slow per push). The checks have no secrets and
 # no cloud access: tests never call OpenAI or AWS. Only the deploy job signs in to AWS, with short-lived credentials.
 name: CI
 
@@ -15,10 +15,10 @@ on:
     paths-ignore: ["docs/**", "**/*.md"]
   workflow_dispatch:
     inputs:
-      # TEMPORARY, while the deploy itself is being worked on: deploy main to staging by hand without the checks.
+      # TEMPORARY, while the deploy itself is being worked on: deploy main to production by hand without the checks.
       # Remove before production (docs/production.md, phase 8).
       deploy_only:
-        description: "Skip the checks and only deploy main to staging (temporary)"
+        description: "Skip the checks and only deploy main to production (temporary)"
         type: boolean
         default: false
 
@@ -143,10 +143,11 @@ jobs:
           frontend/node_modules/.bin/eslint --no-config-lookup
           --rule '{"complexity":["error",10],"max-lines":["error",300]}' "tools/**/*.mjs"
 
-  # Staging (docs/acceptance/staging.feature): on every merge to main. GitHub's OIDC token is exchanged for
+  # Production (docs/acceptance/staging.feature, staging-becomes-production.feature; the stack is still named
+  # PolygossaStaging): on every merge to main. GitHub's OIDC token is exchanged for
   # short-lived credentials of the deploy role (infra/lib/github-deploy-stack.ts), which only main can assume.
   deploy:
-    name: deploy staging
+    name: deploy production
     # A merge to main (its pull request's checks passed), or (temporary) a hand-started deploy_only run on main.
     if: >-
       github.ref == 'refs/heads/main'
@@ -158,7 +159,7 @@ jobs:
       id-token: write
     # One deploy at a time; a newer one waits instead of cancelling a deploy halfway.
     concurrency:
-      group: deploy-staging
+      group: deploy-production
       cancel-in-progress: false
     defaults: { run: { working-directory: infra } }
     steps:
@@ -176,5 +177,5 @@ jobs:
         run: |
           url=$(aws cloudformation describe-stacks --stack-name PolygossaStaging \
             --query "Stacks[0].Outputs[?OutputKey=='SiteUrl'].OutputValue" --output text)
-          echo "Staging: $url" >> "$GITHUB_STEP_SUMMARY"
+          echo "Production: $url" >> "$GITHUB_STEP_SUMMARY"
           curl --fail --silent --show-error --retry 20 --retry-delay 15 --retry-all-errors -o /dev/null "$url/login"

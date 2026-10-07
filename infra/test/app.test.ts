@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
 import * as cdk from "aws-cdk-lib";
-import { Match, Template } from "aws-cdk-lib/assertions";
+import { Template } from "aws-cdk-lib/assertions";
 import { defineApp } from "../lib/app.ts";
 
 let app: cdk.App;
@@ -25,16 +25,13 @@ describe("the app", () => {
     assert.match(template.toJSON().Description, /^Production/);
   });
 
+  // Stack tags aren't in the template: CloudFormation puts them on every resource of the stack at deploy.
   it("tags production's resources as production", () => {
-    for (const type of ["AWS::RDS::DBInstance", "AWS::EC2::VPC", "AWS::ECS::Cluster"]) {
-      template.hasResourceProperties(type, {
-        Tags: Match.arrayWith([
-          { Key: "environment", Value: "production" },
-          { Key: "project", Value: "polygossa" },
-        ]),
-      });
-    }
-    assert.doesNotMatch(JSON.stringify(template.toJSON()), /"Value":"staging"/);
+    assert.deepEqual(production.tags.tagValues(), { project: "polygossa", environment: "production" });
+  });
+
+  it("calls nothing in the stack staging, apart from the stack's kept name", () => {
+    assert.doesNotMatch(JSON.stringify(template.toJSON()).replaceAll("PolygossaStaging", ""), /staging/i);
   });
 
   it("still has GitHub's deploy role stack", () => {
