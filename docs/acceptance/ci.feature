@@ -9,17 +9,23 @@ Feature: CI: every check runs on GitHub for every push (see docs/production.md, 
 
   # --- When it runs ---
 
-  Scenario: Every pull request and every push to main is checked
-    When a pull request is opened or updated, or a commit lands on main
-    Then the CI workflow runs on Linux against that commit
-    And GitHub shows its result (green or red) next to the commit and on the pull request
-    And a push to a feature branch without a pull request isn't checked, so no change is checked twice
+  Scenario: Every pull request is checked, once
+    When a pull request is opened or updated
+    Then the CI workflow runs on Linux against the pull request merged with main
+    And GitHub shows its result (green or red) on the pull request
+    And merging it to main doesn't run the checks again (it deploys; see staging.feature), so the same code isn't
+      paid for twice
+    And a push to a feature branch without a pull request isn't checked
+
+  Scenario: A pull request is re-checked when main moved
+    Given main changed after a pull request's checks ran
+    When we are about to merge it
+    Then the branch is updated from main first, and merged only once the new checks are green
 
   Scenario: A newer push replaces an older run on the same branch
     Given a CI run is still going on a branch other than main
     When another commit is pushed to that branch
     Then the older run is cancelled and only the newest commit is checked
-    And on main every commit's run finishes, so each commit on main has a result
 
   Scenario: Docs-only changes don't use CI minutes
     When a push changes only files under docs/
