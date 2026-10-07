@@ -43,6 +43,9 @@ export const RowsIcon = (p: SVGProps<SVGSVGElement>) => (
 export const ChartIcon = (p: SVGProps<SVGSVGElement>) => (
   <Icon {...p}><path d="M3 3v18h18" /><path d="m7 15 4-4 3 3 5-6" /></Icon>
 );
+export const ChatIcon = (p: SVGProps<SVGSVGElement>) => (
+  <Icon {...p}><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z" /><path d="M8.5 10.5h7M8.5 14h4" /></Icon>
+);
 export const UsersIcon = (p: SVGProps<SVGSVGElement>) => (
   <Icon {...p}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6" /></Icon>
 );

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ComponentType, SVGProps } from "react";
 import { AccountMenu } from "./account-menu";
 import { HeaderStats } from "./header-stats";
-import { BookIcon, CardsIcon, ChartIcon } from "./icons";
+import { BookIcon, CardsIcon, ChartIcon, ChatIcon } from "./icons";
 import { LanguageSwitcher } from "./language-switcher";
 import { useMe } from "./me-context";
 import { useDueCount, useHeaderStats } from "./nav-data";
@@ -17,6 +17,7 @@ const ICONS: Record<NavGroup["key"], ComponentType<SVGProps<SVGSVGElement>>> = {
   library: BookIcon,
   practice: CardsIcon,
   progress: ChartIcon,
+  forum: ChatIcon,
 };
 
 /** A tab's label, plus the due-cards badge on Practice (the link's aria-label, from tabName, reads the count out). */

@@ -1,4 +1,4 @@
-// The app's top-level navigation: three tabs (read, practise, see progress), two of them with a sub-tab strip.
+// The app's top-level navigation: four tabs (read, practise, see progress, talk), two of them with a sub-tab strip.
 // Settings and Classes live in the account menu instead; Settings has its own sub-tab strip. Pure data and helpers, unit-tested.
 
 export interface NavSection {
@@ -7,7 +7,7 @@ export interface NavSection {
 }
 
 export interface NavGroup {
-  key: "library" | "practice" | "progress";
+  key: "library" | "practice" | "progress" | "forum";
   href: string;
   label: string;
   /** Sub-tabs shown under the header on these pages; empty for a single-page tab. */
@@ -40,6 +40,7 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   { key: "progress", href: "/dashboard", label: "Progress", sections: [] },
+  { key: "forum", href: "/forum", label: "Forum", sections: [] },
 ];
 
 /** True when `pathname` is `href` or a page under it (`/playlists/12` is under `/playlists`, `/playlistsx` isn't). */

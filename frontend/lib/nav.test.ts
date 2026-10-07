@@ -107,7 +107,7 @@ describe("tabName", () => {
 
 describe("group keys", () => {
   it("name each tab for its icon", () => {
-    expect(NAV_GROUPS.map((g) => g.key)).toEqual(["library", "practice", "progress"]);
+    expect(NAV_GROUPS.map((g) => g.key)).toEqual(["library", "practice", "progress", "forum"]);
   });
 });
 
