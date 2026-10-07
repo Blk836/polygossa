@@ -4,8 +4,11 @@
 # no cloud access: tests never call OpenAI or AWS. Only the deploy job signs in to AWS, with short-lived credentials.
 name: CI
 
+# Changes arrive as pull requests (CLAUDE.md): checks run on each pull request, and again on main once merged (which is
+# what deploys). Feature-branch pushes without a pull request aren't checked, so a pull request isn't checked twice.
 on:
   push:
+    branches: [main]
     paths-ignore: ["docs/**"]
   pull_request:
     paths-ignore: ["docs/**"]

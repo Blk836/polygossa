@@ -64,7 +64,10 @@ so the checks must prove it is correct.
    surviving mutants (and why they're acceptable, if any), and anything you're
    unsure about. "Should work" is not an acceptable status.
 7. Commit each incremental change to git as you go (e.g. scenarios, failing tests, implementation, a fix): one
-   focused commit per step with a message saying what changed and why. Small commits make it easy to diff changes
+   focused commit per step with a message saying what changed and why. Work on a feature branch, never on main:
+   push it, open a pull request (`gh pr create`), wait for CI (`gh pr checks --watch`), and merge it yourself
+   (`gh pr merge --merge --delete-branch`, keeping the commits) only when every check is green. A merge to main
+   deploys staging. If a check fails, fix it on the branch; never merge red. Small commits make it easy to diff changes
    over time and bisect to the commit that broke something. Don't batch unrelated work into one commit, and list the
    commits in the final report.
 

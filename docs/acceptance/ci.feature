@@ -9,10 +9,11 @@ Feature: CI: every check runs on GitHub for every push (see docs/production.md, 
 
   # --- When it runs ---
 
-  Scenario: Every push and pull request is checked
-    When a commit is pushed to any branch, or a pull request is opened or updated
+  Scenario: Every pull request and every push to main is checked
+    When a pull request is opened or updated, or a commit lands on main
     Then the CI workflow runs on Linux against that commit
     And GitHub shows its result (green or red) next to the commit and on the pull request
+    And a push to a feature branch without a pull request isn't checked, so no change is checked twice
 
   Scenario: A newer push replaces an older run on the same branch
     Given a CI run is still going on a branch other than main

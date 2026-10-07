@@ -15,7 +15,7 @@ test("the top-bar language switcher offers English first, and picking it switche
   await page.getByRole("banner").getByRole("button", { name: /Change language/ }).click();
   const options = page.getByRole("menu", { name: "Language" }).getByRole("menuitemradio");
   await expect(options.first()).toContainText("English");
-  await expect(options).toHaveCount(9);
+  await expect(options).toHaveCount(6); // Japanese, Chinese and Korean are paused (learning-languages.feature)
   await options.first().click();
   await expect(page.getByRole("banner").getByRole("button", { name: "Studying English. Change language" })).toBeVisible();
 });
