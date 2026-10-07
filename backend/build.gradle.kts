@@ -57,6 +57,12 @@ tasks.test {
     jvmArgs("-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC")
 }
 
+// The browser tests' backend (frontend/playwright.config.ts): the app on the test classpath, with a PostgreSQL
+// container of its own (see E2eApplication).
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootTestRun") {
+    mainClass = "app.lector.E2eApplication"
+}
+
 checkstyle {
     toolVersion = "14.3.0"
     configFile = rootProject.file("config/checkstyle/checkstyle.xml")
