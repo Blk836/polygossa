@@ -230,7 +230,7 @@ public class TextService {
             }
             return m;
         });
-        // A row the startup migration hasn't given its words yet falls back to the tokens (loading the body).
+        // A row without its stored words (from before they were kept) falls back to the tokens (loading the body).
         Set<String> words = text.getWordsJson() == null ? UniqueWordsCache.distinct(tokens(text))
                 : uniqueWords.words(text.getId(), text.getWordsJson(), stored -> KnownWords.readWords(stored, json));
         return KnownWords.stats(words, statuses);
