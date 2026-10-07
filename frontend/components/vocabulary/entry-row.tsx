@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ApiError, api, errorMessage } from "@/lib/api";
 import type { VocabularyEntry, WordStatus } from "@/lib/types";
 import { Button, FailureNote, chipSelectClass, inputClass } from "../ui";
+import { WordNotes } from "./word-notes";
 
 const STATUS_STYLE: Record<WordStatus, string> = {
   learning: "bg-learning",
@@ -52,20 +53,24 @@ function Context({ entry }: { entry: VocabularyEntry }) {
   );
 }
 
-/** One vocabulary entry: edit its definition or status, or delete it. */
-export function EntryRow({ entry, onChange, onDelete }: {
+/** One vocabulary entry: edit its definition, note, tags or status, or delete it. */
+export function EntryRow({ entry, onChange, onDelete, onTag }: {
   entry: VocabularyEntry;
   onChange: (e: VocabularyEntry) => void;
   onDelete: () => void;
+  onTag: (tag: string) => void;
 }) {
   const [error, setError] = useState<ApiError | string | null>(null);
 
-  async function patch(body: Record<string, unknown>) {
+  /** True when saved; on failure the error is shown and false returned. */
+  async function patch(body: Record<string, unknown>): Promise<boolean> {
     setError(null);
     try {
       onChange(await api<VocabularyEntry>(`vocabulary/${entry.id}`, { method: "PATCH", body }));
+      return true;
     } catch (e) {
       setError(e instanceof ApiError ? e : errorMessage(e));
+      return false;
     }
   }
 
@@ -75,6 +80,7 @@ export function EntryRow({ entry, onChange, onDelete }: {
         <div className="min-w-0 flex-1">
           <TermLine entry={entry} />
           <DefinitionEditor definition={entry.definition} onSave={(definition) => void patch({ definition })} />
+          <WordNotes entry={entry} onSave={patch} onTag={onTag} />
           <Context entry={entry} />
         </div>
         <div className="flex items-center gap-1">

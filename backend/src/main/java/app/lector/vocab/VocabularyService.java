@@ -29,7 +29,21 @@ public class VocabularyService {
             String partOfSpeech,
             String pronunciation,
             String example,
-            String contextSentence) {}
+            String contextSentence,
+            String note,
+            List<String> tags) {
+
+        public EntryFields(WordStatus status, String definition, String partOfSpeech, String pronunciation,
+                           String example, String contextSentence) {
+            this(status, definition, partOfSpeech, pronunciation, example, contextSentence, null, null);
+        }
+
+        /** The same fields with tags normalized (a 400 for invalid ones, before anything changes). */
+        EntryFields checked() {
+            return tags == null ? this : new EntryFields(status, definition, partOfSpeech, pronunciation, example,
+                    contextSentence, note, Tags.normalize(tags));
+        }
+    }
 
     private final VocabularyRepository repo;
     private final PlanService plans;
@@ -47,7 +61,8 @@ public class VocabularyService {
      */
     @Transactional
     public VocabularyEntry save(User user, Language language, String term, String displayTerm, EntryKind kind,
-                                EntryFields fields, Long textId) {
+                                EntryFields unchecked, Long textId) {
+        EntryFields fields = unchecked.checked();
         String key = TokenizationService.normalize(term, language);
         if (key.isEmpty() || key.length() > 500) {
             throw ApiException.badRequest("term must be 1-500 characters");
@@ -133,7 +148,8 @@ public class VocabularyService {
     }
 
     @Transactional
-    public VocabularyEntry update(User user, Long id, EntryFields fields) {
+    public VocabularyEntry update(User user, Long id, EntryFields unchecked) {
+        EntryFields fields = unchecked.checked();
         VocabularyEntry entry = loadOwned(user, id);
         changeStatus(user, entry, fields.status());
         applyDetails(entry, fields);
@@ -167,15 +183,22 @@ public class VocabularyService {
 
     @Transactional(readOnly = true)
     public Page<VocabularyDto> search(User user, Language language, WordStatus status, EntryKind kind, String q,
-                                      String sort, int page, int size) {
+                                      String tag, String sort, int page, int size) {
         String pattern = q == null || q.isBlank() ? null : "%" + q.strip().toLowerCase(Locale.ROOT) + "%";
+        String tagPattern = tag == null || tag.isBlank() ? null : "% " + tag.strip().toLowerCase(Locale.ROOT) + " %";
         Sort order = switch (sort == null ? "recent" : sort) {
             case "alpha" -> Sort.by("term").ascending();
             case "due" -> Sort.by("srs.dueAt").ascending();
             default -> Sort.by("updatedAt").descending();
         };
         var pageable = PageRequest.of(Math.max(0, page), Math.min(Math.max(1, size), 200), order);
-        return repo.search(user.getId(), language, status, kind, pattern, pageable).map(VocabularyDto::of);
+        return repo.search(user.getId(), language, status, kind, pattern, tagPattern, pageable).map(VocabularyDto::of);
+    }
+
+    /** The learner's tags in a language (all languages when null), with how many entries carry each. */
+    @Transactional(readOnly = true)
+    public List<Tags.TagCount> tags(User user, Language language) {
+        return Tags.count(repo.findTagColumns(user.getId(), language));
     }
 
     public VocabularyEntry loadOwned(User user, Long id) {
@@ -209,9 +232,20 @@ public class VocabularyService {
             entry.setContextSentence(trim(f.contextSentence(), 2000));
             changed = true;
         }
-        if (changed) {
+        if (applyPersonal(entry, f) || changed) {
             entry.touch();
         }
+    }
+
+    /** The learner's own note ("" clears it) and tags (null leaves them, [] clears them). */
+    private static boolean applyPersonal(VocabularyEntry entry, EntryFields f) {
+        if (f.note() != null) {
+            entry.setNote(f.note().isBlank() ? null : trim(f.note(), 2000));
+        }
+        if (f.tags() != null) {
+            entry.setTags(f.tags());
+        }
+        return f.note() != null || f.tags() != null;
     }
 
     private static String trim(String s, int max) {

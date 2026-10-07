@@ -46,7 +46,15 @@ public class VocabularyController {
             String pronunciation,
             String example,
             String contextSentence,
-            Long textId) {}
+            String note,
+            List<String> tags,
+            Long textId) {
+
+        VocabularyService.EntryFields fields() {
+            return new VocabularyService.EntryFields(status, definition, partOfSpeech, pronunciation, example,
+                    contextSentence, note, tags);
+        }
+    }
 
     public record UpdateRequest(
             WordStatus status,
@@ -54,7 +62,15 @@ public class VocabularyController {
             String partOfSpeech,
             String pronunciation,
             String example,
-            String contextSentence) {}
+            String contextSentence,
+            String note,
+            List<String> tags) {
+
+        VocabularyService.EntryFields fields() {
+            return new VocabularyService.EntryFields(status, definition, partOfSpeech, pronunciation, example,
+                    contextSentence, note, tags);
+        }
+    }
 
     public record PageDto<T>(List<T> items, long total, int page, int size) {
         static <T> PageDto<T> of(Page<T> p) {
@@ -81,10 +97,19 @@ public class VocabularyController {
                                          @RequestParam(required = false) WordStatus status,
                                          @RequestParam(required = false) EntryKind kind,
                                          @RequestParam(required = false) String q,
+                                         @RequestParam(required = false) String tag,
                                          @RequestParam(defaultValue = "recent") String sort,
                                          @RequestParam(defaultValue = "0") int page,
                                          @RequestParam(defaultValue = "50") int size) {
-        return PageDto.of(service.search(currentUser.load(principal), language, status, kind, q, sort, page, size));
+        return PageDto.of(service.search(currentUser.load(principal), language, status, kind, q, tag, sort, page,
+                size));
+    }
+
+    /** The learner's tags, with how many entries carry each, most used first. */
+    @GetMapping("/tags")
+    public List<Tags.TagCount> tags(@AuthenticationPrincipal AuthUser principal,
+                                    @RequestParam(required = false) Language language) {
+        return service.tags(currentUser.load(principal), language);
     }
 
     @PostMapping
@@ -92,10 +117,8 @@ public class VocabularyController {
     @Transactional
     public VocabularyDto save(@AuthenticationPrincipal AuthUser principal, @Valid @RequestBody SaveRequest req) {
         User user = currentUser.load(principal);
-        var fields = new VocabularyService.EntryFields(req.status(), req.definition(), req.partOfSpeech(),
-                req.pronunciation(), req.example(), req.contextSentence());
-        return VocabularyDto.of(service.save(user, req.language(), req.term(), req.displayTerm(), req.kind(), fields,
-                req.textId()));
+        return VocabularyDto.of(service.save(user, req.language(), req.term(), req.displayTerm(), req.kind(),
+                req.fields(), req.textId()));
     }
 
     @GetMapping("/{id}")
@@ -108,9 +131,7 @@ public class VocabularyController {
     @Transactional
     public VocabularyDto update(@AuthenticationPrincipal AuthUser principal, @PathVariable Long id,
                                 @RequestBody UpdateRequest req) {
-        var fields = new VocabularyService.EntryFields(req.status(), req.definition(), req.partOfSpeech(),
-                req.pronunciation(), req.example(), req.contextSentence());
-        return VocabularyDto.of(service.update(currentUser.load(principal), id, fields));
+        return VocabularyDto.of(service.update(currentUser.load(principal), id, req.fields()));
     }
 
     @DeleteMapping("/{id}")

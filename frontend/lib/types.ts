@@ -143,6 +143,9 @@ export interface VocabularyEntry {
   pronunciation?: string;
   example?: string;
   contextSentence?: string;
+  /** The learner's own note and tags (lower-case, one word each). */
+  note?: string;
+  tags?: string[];
   sourceText?: { id: number; title: string };
   createdAt: string;
   updatedAt: string;

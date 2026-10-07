@@ -35,6 +35,7 @@ function VocabularyView() {
     kind: "",
     sort: "recent",
     query: "",
+    tag: "",
     page: 0,
   });
   const update = useCallback((patch: Partial<Filters>) => setFilters((f) => ({ ...f, ...patch })), []);
@@ -71,7 +72,7 @@ function VocabularyView() {
       {tab === "sentences" ? (
         <SentenceList language={filters.language} />
       ) : (
-        <WordList key={reload} filters={filters} onPage={(page) => update({ page })} onChanged={() => void refresh()} />
+        <WordList key={reload} filters={filters} onPage={(page) => update({ page })} onTag={(tag) => update({ tag, page: 0 })} onChanged={() => void refresh()} />
       )}
     </div>
   );

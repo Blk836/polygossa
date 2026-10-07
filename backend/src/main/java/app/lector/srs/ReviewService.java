@@ -75,7 +75,7 @@ public class ReviewService {
         for (VocabularyEntry v : vocabulary.findDue(user.getId(), language, cutoff, page)) {
             Text t = v.getSourceText();
             cards.add(new Card("word", v.getId(), v.getLanguage(), v.getDisplayTerm(), v.getDefinition(),
-                    v.getPronunciation(), v.getPartOfSpeech(), v.getContextSentence(), v.getExample(), null, null,
+                    v.getPronunciation(), v.getPartOfSpeech(), v.getContextSentence(), v.getExample(), null, v.getNote(),
                     t == null ? null : t.getId(), t == null ? null : t.getTitle(), v.getSrs().getDueAt(),
                     v.getSrs().getRepetitions()));
         }

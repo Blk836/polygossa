@@ -19,6 +19,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
+import java.util.List;
 
 /** A word or phrase in a user's personal vocabulary list for one language. */
 @Entity
@@ -68,6 +69,14 @@ public class VocabularyEntry {
     /** The sentence the word was first encountered in. */
     @Column(columnDefinition = "text")
     private String contextSentence;
+
+    /** The learner's own note: a mnemonic, a grammar reminder. */
+    @Column(columnDefinition = "text")
+    private String note;
+
+    /** The learner's tags, space-separated and padded (" animals a1 ") so a whole tag matches with LIKE. */
+    @Column(columnDefinition = "text")
+    private String tags;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "source_text_id")
@@ -135,6 +144,11 @@ public class VocabularyEntry {
     public void setExample(String example) { this.example = example; }
     public String getContextSentence() { return contextSentence; }
     public void setContextSentence(String contextSentence) { this.contextSentence = contextSentence; }
+    public String getNote() { return note; }
+    public void setNote(String note) { this.note = note; }
+    public List<String> getTags() { return tags == null ? List.of() : List.of(tags.strip().split(" ")); }
+    /** Tags must already be normalized ({@link Tags#normalize}). */
+    public void setTags(List<String> list) { tags = list.isEmpty() ? null : " " + String.join(" ", list) + " "; }
     public Text getSourceText() { return sourceText; }
     public void setSourceText(Text sourceText) { this.sourceText = sourceText; }
     public SrsState getSrs() { return srs; }

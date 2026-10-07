@@ -8,7 +8,7 @@ import java.util.List;
 public final class CsvExporter {
 
     private static final String[] HEADER = {"term", "display", "language", "kind", "status", "definition",
-            "part_of_speech", "pronunciation", "example", "context", "source", "created_at"};
+            "part_of_speech", "pronunciation", "example", "context", "source", "created_at", "note", "tags"};
 
     private CsvExporter() {}
 
@@ -19,7 +19,7 @@ public final class CsvExporter {
             row(sb, e.getTerm(), e.getDisplayTerm(), e.getLanguage().code(), e.getKind().json(), e.getStatus().json(),
                     e.getDefinition(), e.getPartOfSpeech(), e.getPronunciation(), e.getExample(),
                     e.getContextSentence(), e.getSourceText() == null ? null : e.getSourceText().getTitle(),
-                    e.getCreatedAt().toString());
+                    e.getCreatedAt().toString(), e.getNote(), String.join(" ", e.getTags()));
         }
         return sb.toString().getBytes(StandardCharsets.UTF_8);
     }
