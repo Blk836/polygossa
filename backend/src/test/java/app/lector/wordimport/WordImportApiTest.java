@@ -163,7 +163,7 @@ class WordImportApiTest {
         assertThat(words(me, "ko")).containsOnlyKeys("집");
         List<String> asked = YouTubeApiTest.LINGQ.account(key).requests().stream().map(r -> r.substring(8, 10)).distinct()
                 .toList();
-        assertThat(asked).containsExactlyInAnyOrder("es", "fr", "de", "it", "pt", "ja", "zh", "ko");
+        assertThat(asked).containsExactlyInAnyOrder("en", "es", "fr", "de", "it", "pt", "ja", "zh", "ko");
     }
 
     @Test
