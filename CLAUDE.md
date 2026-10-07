@@ -40,15 +40,18 @@ so the checks must prove it is correct.
    For bug fixes, write a regression test that reproduces the bug first.
 3. Never delete, skip, or weaken an existing test or assertion to make
    something pass. If a test seems wrong, stop and tell me why.
-4. The full suites run on GitHub, not locally: CI runs every check below on each pull request, and its green run is
-   the proof. Locally, run only the tests you are writing or changing (TDD's red and green) and mutation testing,
-   which CI doesn't run. The checks, for reference and for running one by hand:
+4. **Never run a whole suite locally: it overloads the machine.** That means no full `./gradlew :backend:test`,
+   `npm test`, `npm run e2e`, PIT or Stryker run, and no running several test classes or specs "to be safe". Locally,
+   run only the individual tests you are writing or changing (one backend test class with `--tests`, one Vitest file,
+   one Playwright spec file), for TDD's red and green. Verification and regression checking are what CI is for: it
+   runs every check below on each pull request, and its green run is the proof. Mutation testing (PIT, Stryker) isn't
+   run locally and CI doesn't run it yet, so say so in the report. The checks, for reference:
    - tests: `./gradlew :backend:test` (backend); `cd frontend && npm test` (Vitest, pure modules only);
      `cd frontend && npm run e2e` (Playwright, `e2e/*.spec.ts`, real Chromium against a production build — any UI change
      needs a scenario here, since there are no component tests);
      `node --test "tools/**/*.test.mjs"` (tools); `cd infra && npm test && npm run typecheck` (CDK stacks, synthesized
      without AWS access).
-   - mutation testing on changed files (local only; run it before opening the pull request): `./gradlew :backend:pitest -Ppitest.since=<commit>` (PIT on just the main
+   - mutation testing on changed files (not run locally, see above; for when CI runs it or the user asks): `./gradlew :backend:pitest -Ppitest.since=<commit>` (PIT on just the main
      classes changed since that commit, e.g. the one before the task's first commit; `-Ppitest.targets=app.lector.text.*`
      names them directly, and no property mutates everything), `cd frontend && npm run mutate` (Stryker; the modules it
      covers are listed in `stryker.config.mjs`; incremental: it reuses the last run's results for unchanged code and
@@ -62,8 +65,8 @@ so the checks must prove it is correct.
      `./gradlew :backend:checkstyleMain` (backend), ESLint `complexity`/`max-lines` (frontend; for tools/, from the repo root:
      `frontend/node_modules/.bin/eslint --no-config-lookup --rule '{"complexity":["error",10],"max-lines":["error",300]}' "tools/**/*.mjs"`).
 5. Respect module boundaries (see below). Do not add new dependencies without asking.
-6. End with a short report: what changed, the CI run's result (with its link), the local checks you ran,
-   surviving mutants (and why they're acceptable, if any), and anything you're
+6. End with a short report: what changed, the CI run's result (with its link), the individual tests you ran locally,
+   and anything you're
    unsure about. "Should work" is not an acceptable status.
 7. Commit each incremental change to git as you go (e.g. scenarios, failing tests, implementation, a fix): one
    focused commit per step with a message saying what changed and why. Work on a feature branch, never on main:
@@ -86,8 +89,9 @@ into its own worktree** (the `EnterWorktree` tool; it makes `.claude/worktrees/<
 answers questions needs no worktree. Leave the worktree (`ExitWorktree`, removing it) once its pull request is merged.
 - A new worktree has no `node_modules`: run `npm ci` in `frontend/` (and `infra/`) before using them there.
 - The dev OpenAI key file (`.idea/runConfigurations/Backend.xml`, see below) exists only in the main folder.
-- Worktrees don't share a build folder, but they share the machine: the heavy-run rule below still applies, and only
-  one session at a time can run the e2e suite (its servers use fixed ports, :3210 and :8210).
+- Worktrees don't share a build folder, but they share the machine: the heavy-run rule below still applies. A single
+  e2e spec starts the e2e servers on fixed ports (:3210 and :8210); if another session's are already there, set
+  `E2E_PORT`/`E2E_BACKEND_PORT` to other ports rather than reusing servers built from someone else's code.
 
 If a required check has no tooling (marked above), say so in the report. Adding that tooling is a new dependency, so
 ask first.
@@ -190,10 +194,10 @@ Don't kill servers you didn't start without asking: they may be the user's Intel
 The e2e suite's own servers (frontend on :3210, backend on :8210) are not duplicates while a Playwright run is using
 them.
 
-**Heavy runs:** the machine has 16 GB, and IntelliJ plus the dev servers take a good share. The backend suite (4 JVMs)
-and PIT (4 workers, each booting apps) each need several GB, so run them one at a time, and never while another
-Gradle test/pitest run (another session's, say) uses this checkout: they share `backend/build/`, and result files
-vanish mid-run, failing tests that pass alone.
+**Heavy runs:** the machine has 16 GB, and IntelliJ, the dev servers and other Claude sessions take a good share.
+Whole suites (the backend suite's 4 JVMs, PIT, Stryker, the e2e suite) overloaded it and got killed, so they never run
+locally (step 4): CI runs them. Even a single backend test class shouldn't run while another Gradle test run uses this
+checkout: they share `backend/build/`, and result files vanish mid-run, failing tests that pass alone.
 
 **Login is currently bypassed.** With no session, `frontend/proxy.ts` calls `POST /api/auth/dev-login` and signs in
 as `test@lector.local` (Classroom plan, so every feature is unlocked). To restore normal sign-up/login, set
@@ -230,6 +234,10 @@ Optional:
   `docker compose up --build`. Uses the `prod` profile, so auto-login is off there.
 
 ## Tests
+
+These are the whole suites CI runs. Locally, run one test class or file at a time, never these (step 4), e.g.
+`./gradlew :backend:test --tests app.lector.ToursApiTest`, `npx vitest run lib/tours.test.ts`,
+`npx playwright test e2e/feature-tours.spec.ts`.
 
 ```bash
 ./gradlew :backend:test                                           # unit + MockMvc integration tests (Docker needed)
