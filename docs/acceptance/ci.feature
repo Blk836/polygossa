@@ -42,6 +42,8 @@ Feature: CI: every check runs on GitHub for every push (see docs/production.md, 
     Then "npm run e2e" runs the Playwright suite in Chromium against a production build, with its own backend and
       PostgreSQL, as locally
     And no OpenAI key is set, so no test calls OpenAI
+    And the suite is split across 4 runners that run at the same time, each with its own servers, so it takes a
+      few minutes rather than one runner's 7
 
   Scenario: Tools
     Then "node --test" runs the tools' tests and ESLint checks tools/ for complexity over 10 and files over 300 lines
