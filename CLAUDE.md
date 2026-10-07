@@ -40,13 +40,15 @@ so the checks must prove it is correct.
    For bug fixes, write a regression test that reproduces the bug first.
 3. Never delete, skip, or weaken an existing test or assertion to make
    something pass. If a test seems wrong, stop and tell me why.
-4. Before claiming done, run and show the actual output of:
-   - full test suite: `./gradlew :backend:test` (backend); `cd frontend && npm test` (Vitest, pure modules only);
+4. The full suites run on GitHub, not locally: CI runs every check below on each pull request, and its green run is
+   the proof. Locally, run only the tests you are writing or changing (TDD's red and green) and mutation testing,
+   which CI doesn't run. The checks, for reference and for running one by hand:
+   - tests: `./gradlew :backend:test` (backend); `cd frontend && npm test` (Vitest, pure modules only);
      `cd frontend && npm run e2e` (Playwright, `e2e/*.spec.ts`, real Chromium against a production build — any UI change
      needs a scenario here, since there are no component tests);
      `node --test "tools/**/*.test.mjs"` (tools); `cd infra && npm test && npm run typecheck` (CDK stacks, synthesized
      without AWS access).
-   - mutation testing on changed files: `./gradlew :backend:pitest -Ppitest.since=<commit>` (PIT on just the main
+   - mutation testing on changed files (local only; run it before opening the pull request): `./gradlew :backend:pitest -Ppitest.since=<commit>` (PIT on just the main
      classes changed since that commit, e.g. the one before the task's first commit; `-Ppitest.targets=app.lector.text.*`
      names them directly, and no property mutates everything), `cd frontend && npm run mutate` (Stryker; the modules it
      covers are listed in `stryker.config.mjs`; incremental: it reuses the last run's results for unchanged code and
@@ -60,7 +62,7 @@ so the checks must prove it is correct.
      `./gradlew :backend:checkstyleMain` (backend), ESLint `complexity`/`max-lines` (frontend; for tools/, from the repo root:
      `frontend/node_modules/.bin/eslint --no-config-lookup --rule '{"complexity":["error",10],"max-lines":["error",300]}' "tools/**/*.mjs"`).
 5. Respect module boundaries (see below). Do not add new dependencies without asking.
-6. End with a short report: what changed, every check you ran with its result,
+6. End with a short report: what changed, the CI run's result (with its link), the local checks you ran,
    surviving mutants (and why they're acceptable, if any), and anything you're
    unsure about. "Should work" is not an acceptable status.
 7. Commit each incremental change to git as you go (e.g. scenarios, failing tests, implementation, a fix): one
@@ -70,9 +72,7 @@ so the checks must prove it is correct.
    the checks ran, merge main into the branch and wait for the checks again first. A merge to main deploys staging
    without re-running the checks (they ran on the pull request). If a check fails, fix it on the branch; never merge
    red. (`gh pr merge` can't merge a change to a workflow file without the CLI's `workflow` scope; merge locally with
-   `git merge --no-ff` and push instead, and GitHub marks the pull request merged.) Run the **full** suites (step 4)
-   before opening the pull request, not just the tests you expect a change to touch: CI minutes are limited and
-   "affected tests only" has missed failures. "Green before merging" is our rule, not GitHub's: enforcing it (branch
+   `git merge --no-ff` and push instead, and GitHub marks the pull request merged.) "Green before merging" is our rule, not GitHub's: enforcing it (branch
    protection) needs GitHub Pro or a public repository. Small commits make it easy to diff changes
    over time and bisect to the commit that broke something. Don't batch unrelated work into one commit, and list the
    commits in the final report.
