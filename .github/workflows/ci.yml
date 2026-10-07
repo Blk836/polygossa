@@ -10,9 +10,9 @@ name: CI
 on:
   push:
     branches: [main]
-    paths-ignore: ["docs/**"]
+    paths-ignore: ["docs/**", "**/*.md"]
   pull_request:
-    paths-ignore: ["docs/**"]
+    paths-ignore: ["docs/**", "**/*.md"]
   workflow_dispatch:
     inputs:
       # TEMPORARY, while the deploy itself is being worked on: deploy main to staging by hand without the checks.
