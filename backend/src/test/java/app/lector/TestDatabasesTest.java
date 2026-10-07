@@ -67,6 +67,20 @@ class TestDatabasesTest {
     }
 
     @Test
+    void anAppCanBootOnADatabaseATestPreparedFirst() throws SQLException {
+        String prepared = TestDatabases.newDatabase("Prepared");
+        try (Connection conn = TestDatabases.connect(prepared); Statement st = conn.createStatement()) {
+            st.execute("create table kept (id int)");
+        }
+        StandardEnvironment env = boot(Map.of("test.database.existing", prepared));
+        try (Connection conn = connect(env)) {
+            assertThat(query(conn, "select current_database()")).isEqualTo(prepared).matches("prepared_\\d+");
+            assertThat(query(conn, "select count(*) from information_schema.tables where table_name = 'kept'"))
+                    .isEqualTo("1");
+        }
+    }
+
+    @Test
     void overridesAnyConfiguredDatabase() {
         StandardEnvironment env = boot(Map.of("spring.datasource.url", "jdbc:postgresql://localhost:5432/lector",
                 "spring.datasource.username", "lector"));
