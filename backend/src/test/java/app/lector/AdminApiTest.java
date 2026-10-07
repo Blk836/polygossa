@@ -29,6 +29,9 @@ class AdminApiTest {
     @Autowired
     LibraryAccount library;
 
+    @Autowired
+    app.lector.user.UserRepository users;
+
     private TestApi api;
     private String admin;
 
@@ -205,12 +208,20 @@ class AdminApiTest {
     @Test
     void adminsAndTheLibraryCantBeSuspended() throws Exception {
         long me = api.get(admin, "/api/me", 200).get("id").asLong();
-        long lib = library.getOrCreate().getId();
-        api.post(admin, "/api/admin/users/" + me + "/suspend", "{\"reason\":\"x\"}", 400);
-        api.post(admin, "/api/admin/users/" + lib + "/suspend", "{\"reason\":\"x\"}", 400);
-        api.get(admin, "/api/me", 200);
-        api.delete(admin, "/api/admin/users/" + lib + "/texts", 400);
-        api.delete(admin, "/api/admin/users/" + lib + "/playlists", 400);
+        // Other classes on this database expect no library account (seeding is off), so one made here goes again.
+        boolean existed = library.find().isPresent();
+        app.lector.user.User lib = library.getOrCreate();
+        try {
+            api.post(admin, "/api/admin/users/" + me + "/suspend", "{\"reason\":\"x\"}", 400);
+            api.post(admin, "/api/admin/users/" + lib.getId() + "/suspend", "{\"reason\":\"x\"}", 400);
+            api.get(admin, "/api/me", 200);
+            api.delete(admin, "/api/admin/users/" + lib.getId() + "/texts", 400);
+            api.delete(admin, "/api/admin/users/" + lib.getId() + "/playlists", 400);
+        } finally {
+            if (!existed) {
+                users.delete(lib);
+            }
+        }
     }
 
     @Test
