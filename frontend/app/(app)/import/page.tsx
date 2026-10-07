@@ -172,7 +172,7 @@ function ImportForm() {
 
   return (
     <form onSubmit={submit} className="max-w-2xl space-y-5">
-      <div className="grid grid-cols-2 gap-1 rounded-lg border border-line bg-card p-1 text-sm sm:grid-cols-5">
+      <div className="grid grid-cols-2 gap-1 rounded-lg border border-line bg-card p-1 text-sm sm:grid-cols-5" data-tour="import-source">
         {MODES.map((m) => (
           <button type="button" key={m.id} onClick={() => { setMode(m.id); update({ file: null }); }}
             className={`rounded-md px-3 py-1.5 ${mode === m.id ? "bg-accent-soft font-medium" : "text-muted"}`}>
@@ -188,11 +188,13 @@ function ImportForm() {
             <input className={inputClass} value={draft.title} onChange={(e) => update({ title: e.target.value })} required={mode === "paste"} maxLength={250} />
           </Field>
         )}
-        <Field label="Language">
-          <select className={selectClass} value={draft.language} onChange={(e) => update({ language: e.target.value })}>
-            {LEARNING_LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
-          </select>
-        </Field>
+        <div data-tour="import-language">
+          <Field label="Language">
+            <select className={selectClass} value={draft.language} onChange={(e) => update({ language: e.target.value })}>
+              {LEARNING_LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
+            </select>
+          </Field>
+        </div>
       </div>
       <SourceInput mode={mode} draft={draft} update={update} />
 

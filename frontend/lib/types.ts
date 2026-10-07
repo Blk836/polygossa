@@ -1,3 +1,4 @@
+import type { Tours } from "./tours";
 import type { GoalKind } from "./dashboard-types";
 // Shapes of the Spring Boot API's JSON responses.
 
@@ -33,6 +34,8 @@ export interface Me {
   photoUrl: string | null; // the profile photo, served through the BFF; null for none
   /** One of the team (FORUM_ADMINS): the account menu offers the admin panel. */
   admin: boolean;
+  /** First-visit tours: on for new accounts; the ones already seen are not shown again. */
+  tours: Tours;
 }
 
 /** Someone named in the app (an owner, author or student), with their profile photo or null. */

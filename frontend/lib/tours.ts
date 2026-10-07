@@ -63,7 +63,7 @@ export const TOURS: Tour[] = [
     steps: [
       { target: "reader-text", title: "Click any word", body: "You see its meaning, and it's saved as a word you're learning (yellow). Blue words are new to you." },
       { target: "reader-text", title: "Save a phrase", body: "Drag across a few words, or shift-click them, to save them together as a phrase." },
-      { target: "reader-pages", title: "Turn the page when you're done", body: "The blue words you didn't click count as known. That's how your known-word count grows." },
+      { target: "reader-next", title: "Turn the page when you're done", body: "Turning the page (or Finish lesson) counts the blue words you didn't click as known. That's how your known words grow." },
     ],
   },
   {
@@ -92,7 +92,7 @@ export const TOURS: Tour[] = [
     key: "progress",
     path: "/dashboard",
     steps: [
-      { target: "streak", title: "Keep your streak", body: "A little reading, listening or review counts for the day. Set a daily goal in Settings." },
+      { target: "streak", title: "Keep your streak", body: "A little reading, listening or review each day keeps it going. Change your daily goal right beside it." },
       { target: "known-words", title: "Words you know", body: "The best measure of progress. Your levels are worked out from it and from what you finish." },
     ],
   },

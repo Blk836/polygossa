@@ -45,6 +45,7 @@ function SubTabs({ label, sections, current }: { label: string; sections: NavSec
           <Link
             key={s.href}
             href={s.href}
+            data-tour={s.label.toLowerCase()}
             aria-current={here ? "page" : undefined}
             className={`relative shrink-0 px-3 py-2 text-sm transition ${
               here ? "font-medium text-ink after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-rubric" : "text-muted hover:text-ink"

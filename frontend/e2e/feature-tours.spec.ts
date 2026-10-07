@@ -129,6 +129,8 @@ test.describe("feature tours", () => {
     await tip(page).getByRole("button", { name: "Next" }).click();
     await tip(page).getByRole("button", { name: "Next" }).click();
     await expect(page.getByRole("dialog", { name: "Turn the page when you're done" })).toBeVisible();
+    // One page: the tip points at Finish lesson instead of the page buttons.
+    await expect(highlight(page)).toBeVisible();
     await page.request.delete(`/api/texts/${id}`);
     await context.close();
   });

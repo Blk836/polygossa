@@ -115,7 +115,7 @@ function Explore({ language }: { language: string }) {
 function Toolbar({ f, set }: { f: ExploreFilters; set: (patch: Partial<ExploreFilters>) => void }) {
   const [q, setQ] = useState(f.query);
   return (
-    <div className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-center">
+    <div className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-center" data-tour="explore-search">
       <form className="flex-1" onSubmit={(e) => { e.preventDefault(); set({ query: q.trim(), topic: null }); }}>
         <input className={inputClass} type="search" placeholder="Search titles…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search titles" />
       </form>
