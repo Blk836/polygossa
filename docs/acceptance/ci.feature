@@ -1,0 +1,93 @@
+Feature: CI: every check runs on GitHub for every push (see docs/production.md, phase 6)
+  Today the gauntlet's checks run only by hand on one Windows laptop, and the tokenizer's never run at all. GitHub
+  Actions runs them on Linux (like production) for every push, so a broken change shows up red on GitHub whoever
+  pushed it and whatever machine they used. CI needs no AWS and no secrets. Mutation testing stays a local check (too
+  slow per push), and deploying is a later step (phase 5).
+
+  Background:
+    Given the repository on GitHub with the CI workflow in .github/workflows/
+
+  # --- When it runs ---
+
+  Scenario: Every push and pull request is checked
+    When a commit is pushed to any branch, or a pull request is opened or updated
+    Then the CI workflow runs on Linux against that commit
+    And GitHub shows its result (green or red) next to the commit and on the pull request
+
+  Scenario: A newer push replaces an older run on the same branch
+    Given a CI run is still going on a branch other than main
+    When another commit is pushed to that branch
+    Then the older run is cancelled and only the newest commit is checked
+    And on main every commit's run finishes, so each commit on main has a result
+
+  Scenario: Docs-only changes don't use CI minutes
+    When a push changes only files under docs/
+    Then CI does not run
+
+  Scenario: It can be run by hand
+    When I start the workflow from the Actions tab
+    Then it runs against the chosen branch like a push would
+
+  # --- What it checks: the same commands as the gauntlet, so local and CI agree ---
+
+  Scenario: Backend
+    Then "./gradlew :backend:compileJava", ":backend:checkstyleMain" and ":backend:test" run on JDK 21
+    And the tests get PostgreSQL through Testcontainers on the runner's Docker, as locally
+
+  Scenario: Frontend
+    Then "npm ci", "npm test", "npx tsc --noEmit", "npx eslint ." and "npx next build" run in frontend/
+
+  Scenario: End-to-end
+    Then "npm run e2e" runs the Playwright suite in Chromium against a production build, with its own backend and
+      PostgreSQL, as locally
+    And no OpenAI key is set, so no test calls OpenAI
+
+  Scenario: Tokenizer
+    Then "pytest" and "ruff check ." run in tokenizer/ with MeCab, jieba and KoNLPy installed, so the analyzer tests
+      run instead of being skipped
+
+  Scenario: Tools
+    Then "node --test" runs the tools' tests and ESLint checks tools/ for complexity over 10 and files over 300 lines
+
+  Scenario: The checks run side by side
+    Then backend, frontend, end-to-end, tokenizer and tools are separate jobs that run at the same time
+    And each job's name says which part it checks, so a red run shows where to look
+
+  # --- Failures ---
+
+  Scenario Outline: Any failing check makes the run red
+    Given a commit with <problem>
+    When CI runs
+    Then the <job> job fails and the run is red
+
+    Examples:
+      | problem                                  | job        |
+      | a failing backend test                   | backend    |
+      | a Java method over complexity 10         | backend    |
+      | a Java compile error                     | backend    |
+      | a failing Vitest test                    | frontend   |
+      | a TypeScript type error                  | frontend   |
+      | an ESLint error (including file length)  | frontend   |
+      | a frontend that doesn't build            | frontend   |
+      | a failing Playwright test                | end-to-end |
+      | a failing pytest test or a ruff error    | tokenizer  |
+      | a failing tools test or complexity error | tools      |
+
+  Scenario: Failed runs keep what's needed to see why
+    When the backend or end-to-end job fails
+    Then the test reports (Gradle's for the backend; Playwright's, with traces, for end-to-end) are attached to the
+      run for 14 days
+
+  Scenario: CI has no secrets and no cloud access
+    Then the workflow uses no repository secrets and no AWS credentials
+    And its GitHub token can only read the repository
+
+  Scenario: The tokenizer's first real run may find real failures
+    Given the tokenizer tests have never run with the analyzers installed
+    When they fail in CI for a real reason
+    Then the cause is fixed or reported to you, never skipped or weakened to make the run green
+
+  # --- How these are verified ---
+  # A workflow is checked by running it. Before it counts as done: a run on a branch is green with every job, and a
+  # throwaway branch with a deliberate failure in each job (a failing assertion, an over-complex method) turns that
+  # job red; that branch is deleted afterwards. The run links go in the final report.
