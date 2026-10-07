@@ -32,11 +32,6 @@ Feature: Quality gates required by the gauntlet verification model
     And it reports an error for any file longer than 300 lines
     And it passes on the current code
 
-  Scenario: Tokenizer tooling is declared
-    When I read tokenizer/requirements-dev.txt and tokenizer/pyproject.toml
-    Then mutmut is configured for mutation testing
-    And ruff is configured with a max cyclomatic complexity of 10
-
   # ---- refactors keep behaviour ----
 
   Scenario: The reader's text logic is unchanged after splitting reader.tsx

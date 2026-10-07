@@ -22,7 +22,6 @@ code is the source of truth for details, so there is never a second, stale copy.
 ```
 backend/    Spring Boot 4.1 (Java 21) — REST API; Gradle module :backend, package app.lector
 frontend/   Next.js 16 + React 19 + Tailwind 4 — UI and backend-for-frontend (BFF) API routes
-tokenizer/  FastAPI sidecar — Japanese (MeCab), Chinese (jieba), Korean (KoNLPy) tokenization
 tools/      team command-line tools (plain Node, no packages): import-videos.mjs bulk-imports curated YouTube videos
 ```
 
@@ -43,7 +42,7 @@ so the checks must prove it is correct.
 4. Before claiming done, run and show the actual output of:
    - full test suite: `./gradlew :backend:test` (backend); `cd frontend && npm test` (Vitest, pure modules only);
      `cd frontend && npm run e2e` (Playwright, `e2e/*.spec.ts`, real Chromium against a production build — any UI change
-     needs a scenario here, since there are no component tests); `cd tokenizer && pytest` (sidecar);
+     needs a scenario here, since there are no component tests);
      `node --test "tools/**/*.test.mjs"` (tools).
    - mutation testing on changed files: `./gradlew :backend:pitest -Ppitest.since=<commit>` (PIT on just the main
      classes changed since that commit, e.g. the one before the task's first commit; `-Ppitest.targets=app.lector.text.*`
@@ -51,15 +50,13 @@ so the checks must prove it is correct.
      covers are listed in `stryker.config.mjs`; incremental: it reuses the last run's results for unchanged code and
      tests and still reports the whole score; `npm run mutate -- --force` re-runs everything, and resets a score that
      looks too low: a reused result can go stale after a test file broke and was fixed, which only lowers the score), `frontend/node_modules/.bin/stryker run tools/stryker.config.mjs` from the repo root
-     (tools/), `cd tokenizer && mutmut run` (configured in `pyproject.toml`, **never run here** —
-     Python isn't installed, and mutmut 3 needs Linux/macOS/WSL). In Git Bash, append `/c/Windows/System32` to `PATH`
+     (tools/). In Git Bash, append `/c/Windows/System32` to `PATH`
      (`PATH="$PATH:/c/Windows/System32"`; prepending makes `bash` resolve to WSL) before `npm run mutate`, or Stryker crashes at exit looking for `taskkill` and leaves `.stryker-tmp` behind.
    - lint + type check: `cd frontend && npx tsc --noEmit && npx eslint .`; for Java, `./gradlew :backend:compileJava`
-     (javac is the type check); `cd tokenizer && ruff check .` (never run here).
+     (javac is the type check).
    - complexity check: no function over cyclomatic complexity 10, no file over 300 lines. Enforced by
      `./gradlew :backend:checkstyleMain` (backend), ESLint `complexity`/`max-lines` (frontend; for tools/, from the repo root:
-     `frontend/node_modules/.bin/eslint --no-config-lookup --rule '{"complexity":["error",10],"max-lines":["error",300]}' "tools/**/*.mjs"`), and ruff `C90`
-     (tokenizer; ruff has no file-length rule).
+     `frontend/node_modules/.bin/eslint --no-config-lookup --rule '{"complexity":["error",10],"max-lines":["error",300]}' "tools/**/*.mjs"`).
 5. Respect module boundaries (see below). Do not add new dependencies without asking.
 6. End with a short report: what changed, every check you ran with its result,
    surviving mutants (and why they're acceptable, if any), and anything you're
@@ -92,7 +89,8 @@ If it can't be reproduced, say so and ask instead of guessing. Pick the browser 
 ### Module boundaries
 - `frontend` ↔ `backend` only over HTTP. Browser code calls the backend only through `lib/api.ts` (the BFF);
   server-only code uses `lib/server-api.ts`. Never call the backend URL from the browser or expose the JWT to it.
-- `backend` → `tokenizer` only through `TokenizationService`, and it must keep working when the sidecar is down.
+- Text is split into words only through `TokenizationService` (built-in for every language; it can call an external
+  CJK tokenizer service at `TOKENIZER_URL`, which the project no longer has, and must keep working when that is down).
 - Backend layering: controllers → services → repositories/entities. Controllers don't load texts from repositories
   directly (use `TextService.loadReadable`/`loadOwned`); no package depends on a controller.
 - External services (dictionary APIs, OpenAI, YouTube) only through `DictionaryClient`, `AiClient` and `YouTubeClient`.
@@ -116,7 +114,7 @@ The database is PostgreSQL in Docker everywhere, so **Docker Desktop must be run
 `~/AppData/Local/Programs/DockerDesktop/resources/bin`, which a shell opened before it was installed lacks on PATH).
 `bootRun` starts the dev database from `compose.dev.yml` (container `polygossa-dev-db` on :5432, data in the
 `polygossa-dev-db` volume) and leaves it running; `docker compose -f compose.dev.yml up -d` starts it by hand.
-Caching is in-memory, and the backend falls back to built-in CJK segmentation when the tokenizer sidecar isn't running.
+Caching is in-memory.
 
 In IntelliJ, run the shared **App** configuration (`.idea/runConfigurations/`): a compound of **Backend**
 (Gradle `:backend:bootRun`) and **Frontend** (`npm run dev` in `frontend/`), each in its own Run tab; stop them there.
@@ -166,13 +164,11 @@ second one. Details: [tools/README.md](tools/README.md).
 
 **Brand name:** the name people see (wordmark, page titles, starter-library owner, Anki exports, launcher windows) is
 `BRAND_NAME`, default Polygossa, read by the backend (`config/Brand`), frontend (`lib/brand.ts`, inlined at build time
-via `next.config.ts` — restart `npm run dev` after changing it) and tokenizer. Never hard-code it: `app/branding.test.ts`
+via `next.config.ts` — restart `npm run dev` after changing it). Never hard-code it: `app/branding.test.ts`
 fails on any copy outside `lib/brand.ts`. Internal identifiers (package `app.lector`, `lector_*` cookies, the `lector`
 database, `@lector.local` accounts, the Anki `lector` tag) are deliberately not tied to it.
 
 Optional:
-- **Tokenizer sidecar** — `cd tokenizer && pip install -r requirements.txt && uvicorn app.main:app --port 8000`,
-  then start the backend with `TOKENIZER_URL=http://localhost:8000`. KoNLPy needs a Java runtime.
 - **AI features** — set `OPENAI_API_KEY` (any OpenAI-compatible endpoint via `OPENAI_BASE_URL` / `OPENAI_MODEL`,
   embeddings via `OPENAI_EMBEDDING_MODEL`). With a key, a background job tags and embeds public texts for Explore's
   recommendations (`RECOMMEND_FEATURE_JOB=false` turns it off).
@@ -194,7 +190,6 @@ cd frontend && npm run e2e   # Playwright (first time: npx playwright install ch
                              # OpenAI, and its own PostgreSQL (bootTestRun: E2eApplication, a Testcontainers container
                              # removed when it stops); the IntelliJ run on :8080 and the dev database are untouched.
                              # E2E_BASE_URL=http://localhost:3000 points it at the dev server instead, for debugging.
-cd tokenizer && pip install -r requirements-dev.txt && pytest      # Python not installed on the dev machine
 node --test "tools/**/*.test.mjs"                                  # tools/
 ```
 
@@ -274,7 +269,8 @@ those against a running backend.
 ## Known limitations
 - Hosting targets in the plan (Vercel, Railway/Render, Supabase) aren't configured; Dockerfiles and
   `docker-compose.yml` are provided instead.
-- The tokenizer sidecar was written but never run here; its tests skip analyzers that aren't installed.
+- Japanese, Chinese and Korean are split by simple built-in rules (Chinese per character), with no readings or
+  dictionary forms: the Python tokenizer sidecar was removed unused.
 - Schema migrations rely on Hibernate `ddl-auto: update`; switch to Flyway before production data matters.
 - YouTube captions come from YouTube's unofficial innertube player endpoint (there is no keyless official API), so
   automatic caption import can break when YouTube changes it; imports then return 422 and ask for a subtitle file or

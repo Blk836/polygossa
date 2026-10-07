@@ -1,4 +1,4 @@
-# Full stack: PostgreSQL, Redis, the Spring Boot API, the CJK tokenizer sidecar and the Next.js frontend.
+# Full stack: PostgreSQL, Redis, the Spring Boot API and the Next.js frontend.
 #   cp .env.example .env   # set JWT_SECRET (and OPENAI_API_KEY for AI features)
 #   docker compose up --build
 # Then open http://localhost:3000
@@ -19,11 +19,6 @@ services:
   redis:
     image: redis:7-alpine
 
-  tokenizer:
-    build: ./tokenizer
-    environment:
-      BRAND_NAME: ${BRAND_NAME:-}
-
   backend:
     build:
       context: .
@@ -33,7 +28,6 @@ services:
       DATABASE_USER: lector
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-lector}
       REDIS_URL: redis://redis:6379
-      TOKENIZER_URL: http://tokenizer:8000
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env (32+ characters)}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       CORS_ORIGINS: http://localhost:3000
@@ -45,8 +39,6 @@ services:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_started
-      tokenizer:
         condition: service_started
 
   frontend:

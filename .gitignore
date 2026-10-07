@@ -47,7 +47,6 @@ bin/
 backend/data/
 backend/build/
 __pycache__/
-.pytest_cache/
 .venv/
 /frontend/test-results/
 /frontend/playwright-report/

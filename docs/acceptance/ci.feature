@@ -1,5 +1,5 @@
 Feature: CI: every check runs on GitHub for every push (see docs/production.md, phase 6)
-  Today the gauntlet's checks run only by hand on one Windows laptop, and the tokenizer's never run at all. GitHub
+  Today the gauntlet's checks run only by hand on one Windows laptop. GitHub
   Actions runs them on Linux (like production) for every push, so a broken change shows up red on GitHub whoever
   pushed it and whatever machine they used. CI needs no AWS and no secrets. Mutation testing stays a local check (too
   slow per push), and deploying is a later step (phase 5).
@@ -42,15 +42,11 @@ Feature: CI: every check runs on GitHub for every push (see docs/production.md, 
       PostgreSQL, as locally
     And no OpenAI key is set, so no test calls OpenAI
 
-  Scenario: Tokenizer
-    Then "pytest" and "ruff check ." run in tokenizer/ with MeCab, jieba and KoNLPy installed, so the analyzer tests
-      run instead of being skipped
-
   Scenario: Tools
     Then "node --test" runs the tools' tests and ESLint checks tools/ for complexity over 10 and files over 300 lines
 
   Scenario: The checks run side by side
-    Then backend, frontend, end-to-end, tokenizer and tools are separate jobs that run at the same time
+    Then backend, frontend, end-to-end and tools are separate jobs that run at the same time
     And each job's name says which part it checks, so a red run shows where to look
 
   # --- Failures ---
@@ -70,7 +66,6 @@ Feature: CI: every check runs on GitHub for every push (see docs/production.md, 
       | an ESLint error (including file length)  | frontend   |
       | a frontend that doesn't build            | frontend   |
       | a failing Playwright test                | end-to-end |
-      | a failing pytest test or a ruff error    | tokenizer  |
       | a failing tools test or complexity error | tools      |
 
   Scenario: Failed runs keep what's needed to see why
@@ -81,11 +76,6 @@ Feature: CI: every check runs on GitHub for every push (see docs/production.md, 
   Scenario: CI has no secrets and no cloud access
     Then the workflow uses no repository secrets and no AWS credentials
     And its GitHub token can only read the repository
-
-  Scenario: The tokenizer's first real run may find real failures
-    Given the tokenizer tests have never run with the analyzers installed
-    When they fail in CI for a real reason
-    Then the cause is fixed or reported to you, never skipped or weakened to make the run green
 
   # --- How these are verified ---
   # A workflow is checked by running it. Before it counts as done: a run on a branch is green with every job, and a

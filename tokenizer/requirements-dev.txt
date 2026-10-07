@@ -1,6 +1,0 @@
--r requirements.txt
-pytest>=8
-httpx>=0.27
-# Gauntlet checks (see CLAUDE.md): mutation testing and lint/complexity
-mutmut>=3.2
-ruff>=0.6
