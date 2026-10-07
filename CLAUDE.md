@@ -202,7 +202,8 @@ locally (step 4): CI runs them. Even a single backend test class shouldn't run w
 checkout: they share `backend/build/`, and result files vanish mid-run, failing tests that pass alone.
 
 **Login is currently bypassed.** With no session, `frontend/proxy.ts` calls `POST /api/auth/dev-login` and signs in
-as `test@lector.local` (Classroom plan, so every feature is unlocked). To restore normal sign-up/login, set
+as `test@lector.local` (Classroom plan, so every feature is unlocked) on every app page; `/`, `/login` and `/signup`
+still show to signed-out visitors (so e2e tests can open them). To restore normal sign-up/login, set
 `AUTO_LOGIN=false` (frontend) and `DEV_AUTO_LOGIN=false` (backend). The `prod` profile always disables the
 endpoint — keep it that way.
 
