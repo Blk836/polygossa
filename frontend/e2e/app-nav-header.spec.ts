@@ -90,11 +90,38 @@ test("saving a word lights the real flame for today", async ({ page }) => {
 
 const known = (page: Page) => page.getByRole("banner").getByTestId("known-words");
 
-test("known words show in the header, with thousands separated", async ({ page }) => {
+test("known words show in the header as \"<count> known\", with thousands separated", async ({ page }) => {
   await stubStreak(page, { current: 1, activeToday: true, secondsLeftToday: HOUR, knownWords: 1234 });
   await page.goto("/library");
-  await expect(known(page)).toHaveText("1,234");
+  await expect(known(page)).toHaveText("1,234 known");
   await expect(known(page)).toHaveAccessibleName("1,234 known words");
+  await expect(known(page)).toHaveAttribute("title", "1,234 known words");
+  await expect(known(page)).toHaveAttribute("href", "/vocabulary");
+  await expect(known(page).locator("svg")).toHaveCount(0);
+});
+
+test("the count is bold and the word \"known\" is muted", async ({ page }) => {
+  await stubStreak(page, { current: 1, activeToday: true, secondsLeftToday: HOUR, knownWords: 0 });
+  await page.goto("/library");
+  await expect(known(page)).toHaveText("0 known");
+  const look = (text: string) => known(page).getByText(text, { exact: true }).evaluate((e) => {
+    const s = getComputedStyle(e);
+    return { weight: Number(s.fontWeight), color: s.color };
+  });
+  const count = await look("0");
+  const word = await look("known");
+  expect(count.weight).toBeGreaterThanOrEqual(600);
+  expect(word.weight).toBeLessThan(600);
+  const muted = await page.evaluate(() => {
+    const probe = document.createElement("span");
+    probe.className = "text-muted";
+    document.body.append(probe);
+    const color = getComputedStyle(probe).color;
+    probe.remove();
+    return color;
+  });
+  expect(word.color).toBe(muted);
+  expect(count.color).not.toBe(muted);
 });
 
 test("known words are asked for in the language picked in the top bar", async ({ page }) => {
@@ -105,7 +132,7 @@ test("known words are asked for in the language picked in the top bar", async ({
   });
   await page.goto("/library");
   const me = await (await page.request.get("/api/me")).json();
-  await expect(known(page)).toHaveText("7");
+  await expect(known(page)).toHaveText("7 known");
   expect(asked.at(-1)).toBe(me.targetLanguage ?? "");
 });
 
@@ -113,13 +140,13 @@ test("marking a word known raises the real count after moving page", async ({ pa
   await page.goto("/library");
   const me = await (await page.request.get("/api/me")).json();
   const language = me.targetLanguage ?? "es";
-  const before = Number((await known(page).textContent())!.replace(/,/g, ""));
+  const before = Number((await known(page).textContent())!.replace(/\D/g, ""));
   const res = await page.request.post("/api/vocabulary", { data: { language, term: `sabido${Date.now()}`, status: "known" } });
   expect(res.ok(), await res.text()).toBe(true);
   const id = (await res.json()).id;
   try {
     await page.getByRole("navigation", { name: "Section" }).getByRole("link", { name: "Explore" }).click();
-    await expect(known(page)).toHaveText((before + 1).toLocaleString("en-US"));
+    await expect(known(page)).toHaveText(`${(before + 1).toLocaleString("en-US")} known`);
   } finally {
     await page.request.delete(`/api/vocabulary/${id}`);
   }
