@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.Locale;
 import java.util.UUID;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,18 +89,27 @@ public class AuthController {
      * Returns 404 unless {@code app.dev-auto-login} is enabled, which the prod profile never does.
      */
     @PostMapping("/dev-login")
-    @Transactional
     public AuthResponse devLogin() {
         if (!props.devAutoLogin()) {
             throw ApiException.notFound("Endpoint");
         }
-        User user = users.findByEmailIgnoreCase(DEV_EMAIL).orElseGet(() -> {
-            // Random password: nobody logs into this account with credentials.
-            User u = new User(DEV_EMAIL, passwordEncoder.encode(UUID.randomUUID().toString()), "Test User");
-            u.setTier(Tier.CLASSROOM);
-            return users.save(u);
-        });
+        User user = users.findByEmailIgnoreCase(DEV_EMAIL).orElseGet(this::createDevAccount);
         return respond(user);
+    }
+
+    /**
+     * Creates the test account (each save is its own transaction). Several first visits can arrive at once on a fresh
+     * database: the one that loses the race to insert it reads the winner's account instead of failing.
+     */
+    private User createDevAccount() {
+        // Random password: nobody logs into this account with credentials.
+        User u = new User(DEV_EMAIL, passwordEncoder.encode(UUID.randomUUID().toString()), "Test User");
+        u.setTier(Tier.CLASSROOM);
+        try {
+            return users.saveAndFlush(u);
+        } catch (DataIntegrityViolationException e) {
+            return users.findByEmailIgnoreCase(DEV_EMAIL).orElseThrow(() -> e);
+        }
     }
 
     private AuthResponse respond(User user) {
