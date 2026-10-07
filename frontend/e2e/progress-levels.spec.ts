@@ -32,9 +32,18 @@ const EMPTY: Fixture = {
   writing: { evidence: 0 },
 };
 
+const saved: number[] = [];
+test.afterEach(async ({ page }) => {
+  for (const id of saved.splice(0)) await page.request.delete(`/api/vocabulary/${id}`);
+});
+
 /** The language Progress shows levels for: the top-bar language, else the first with progress (as the page does). */
 async function shownLanguage(page: Page): Promise<{ me: Record<string, unknown>; language: string }> {
   await page.goto("/library"); // signs in (auto-login) for page.request
+  // Each e2e run starts on an empty database, so save a word first: then the test user has progress in some language.
+  const word = await page.request.post("/api/vocabulary", { data: { language: "es", term: `nivel${Date.now()}` } });
+  expect(word.ok(), await word.text()).toBe(true);
+  saved.push((await word.json()).id);
   const me = await (await page.request.get("/api/me")).json();
   const dashboard = await (await page.request.get("/api/dashboard")).json();
   const language = me.targetLanguage ?? dashboard.languages[0]?.language;
