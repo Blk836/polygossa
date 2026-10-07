@@ -13,7 +13,8 @@ export const PAUSE_STEPS = 2;
 /** Every learnable language, starting with the one picked (English when none or an unsupported one). */
 export function splashOrder(start?: string | null): LanguageCode[] {
   const codes = LEARNING_LANGUAGES.map((l) => l.code);
-  const first = Math.max(0, codes.indexOf(parseLanguage(start) ?? "en"));
+  const picked = parseLanguage(start);
+  const first = picked ? codes.indexOf(picked) : 0;
   return [...codes.slice(first), ...codes.slice(0, first)];
 }
 
@@ -40,7 +41,7 @@ export function splashFrame(tokens: DemoToken[], step: number): SplashFrame {
   const statuses = tokens.map((t, i): DemoStatus | null => {
     if (!t.word) return null;
     const order = fresh.indexOf(i);
-    if (order < 0 || order < current) return "known";
+    if (order < current) return "known"; // includes words known from the start (order -1)
     if (order > current) return "new";
     return step % 2 === 0 ? "new" : "learning";
   });
