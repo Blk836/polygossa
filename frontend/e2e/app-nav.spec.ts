@@ -87,7 +87,8 @@ test.describe("account menu", () => {
     await expect(menu(page)).toHaveCount(0);
     await menuButton(page).click();
     await expect(menuButton(page)).toHaveAttribute("aria-expanded", "true");
-    await expect(menu(page).getByRole("menuitem")).toHaveText(["Settings", "Classes"]);
+    // The test account is one of the team (FORUM_ADMINS), so it also has the admin panel.
+    await expect(menu(page).getByRole("menuitem")).toHaveText(["Settings", "Classes", "Admin"]);
     await expect(menu(page).getByTestId("account-plan")).toHaveText("Classroom plan");
     await expect(menu(page)).toContainText("test@lector.local");
     // The auto-login test account would just be signed straight back in.

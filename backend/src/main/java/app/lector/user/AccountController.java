@@ -43,16 +43,18 @@ public class AccountController {
 
     private final CurrentUser currentUser;
     private final PlanService plans;
+    private final Admins admins;
 
-    public AccountController(CurrentUser currentUser, PlanService plans) {
+    public AccountController(CurrentUser currentUser, PlanService plans, Admins admins) {
         this.currentUser = currentUser;
         this.plans = plans;
+        this.admins = admins;
     }
 
     @GetMapping("/me")
     @Transactional(readOnly = true)
     public MeDto me(@AuthenticationPrincipal AuthUser principal) {
-        return MeDto.of(currentUser.load(principal), plans);
+        return MeDto.of(currentUser.load(principal), plans, admins);
     }
 
     @PatchMapping("/me")
@@ -84,7 +86,7 @@ public class AccountController {
                 throw ApiException.badRequest("Unknown time zone: " + req.timezone());
             }
         }
-        return MeDto.of(user, plans);
+        return MeDto.of(user, plans, admins);
     }
 
     /**
@@ -96,7 +98,7 @@ public class AccountController {
     public MeDto changePlan(@AuthenticationPrincipal AuthUser principal, @Valid @RequestBody ChangePlanRequest req) {
         User user = currentUser.load(principal);
         user.setTier(req.tier());
-        return MeDto.of(user, plans);
+        return MeDto.of(user, plans, admins);
     }
 
     @GetMapping("/languages")

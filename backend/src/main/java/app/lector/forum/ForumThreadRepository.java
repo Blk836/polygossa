@@ -1,5 +1,6 @@
 package app.lector.forum;
 
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -8,6 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ForumThreadRepository extends JpaRepository<ForumThread, Long> {
+
+    List<ForumThread> findByAuthorId(Long authorId);
 
     /** Threads in a category (every category when null), in the page's sort order. */
     @EntityGraph(attributePaths = "author")

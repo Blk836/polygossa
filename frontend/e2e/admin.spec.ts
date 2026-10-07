@@ -45,11 +45,19 @@ test("an admin finds a learner, suspends them after confirming, and lifts it", a
   await other.dispose();
 });
 
-test("learners never see the panel", async ({ page }) => {
+test("learners never see the panel", async ({ browser, playwright }) => {
+  const baseURL = test.info().project.use.baseURL;
+  const signup = await playwright.request.newContext({ baseURL });
+  const res = await signup.post("/api/auth/signup", { data: { email: `learner-e2e-${Date.now()}@test.co`, password: "password123" } });
+  expect(res.ok(), await res.text()).toBe(true);
+  const context = await browser.newContext({ storageState: await signup.storageState() });
+  const page = await context.newPage();
   await page.goto("/library");
-  const me = await (await page.request.get("/api/me")).json();
-  await page.route("**/api/me", (route) => route.fulfill({ json: { ...me, admin: false } }));
-  await page.reload();
   await page.getByRole("button", { name: "Account" }).click();
-  await expect(page.getByRole("menu", { name: "Account" }).getByRole("menuitem", { name: "Admin" })).toHaveCount(0);
+  await expect(page.getByRole("menu", { name: "Account" }).getByRole("menuitem")).toHaveText(["Settings", "Classes", "Sign out"]);
+  expect((await signup.get("/api/admin/stats")).status()).toBe(403);
+  await page.goto("/admin");
+  await expect(page.getByText("Only the team can use the admin panel")).toBeVisible();
+  await context.close();
+  await signup.dispose();
 });

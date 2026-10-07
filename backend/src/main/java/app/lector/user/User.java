@@ -55,6 +55,11 @@ public class User {
     /** Opt-in: only days that reach the daily goal count toward the streak. Null means off. */
     private Boolean streakNeedsGoal;
 
+    /** Suspended by an admin: every request is refused until lifted. Null means not suspended. */
+    private Boolean suspended;
+
+    private String suspendedReason;
+
     /** IANA zone used to decide what "today" means for review goals and streaks. */
     @Column(nullable = false)
     private String timezone = "UTC";
@@ -134,6 +139,20 @@ public class User {
         } else {
             dailyGoalTarget = goal.target();
         }
+    }
+
+    public boolean isSuspended() {
+        return Boolean.TRUE.equals(suspended);
+    }
+
+    public String getSuspendedReason() {
+        return suspendedReason;
+    }
+
+    /** Suspends with a reason, or lifts the suspension (reason ignored). */
+    public void setSuspended(boolean suspended, String reason) {
+        this.suspended = suspended;
+        this.suspendedReason = suspended ? reason : null;
     }
 
     public boolean isStreakNeedsGoal() {

@@ -31,6 +31,8 @@ export interface Me {
   timezone: string;
   plan: PlanInfo;
   photoUrl: string | null; // the profile photo, served through the BFF; null for none
+  /** One of the team (FORUM_ADMINS): the account menu offers the admin panel. */
+  admin: boolean;
 }
 
 /** Someone named in the app (an owner, author or student), with their profile photo or null. */

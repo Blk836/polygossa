@@ -120,6 +120,31 @@ public class ForumService {
         }
     }
 
+    /** What removing someone's posts took away. */
+    public record Removed(int posts, int threads) {}
+
+    /**
+     * Removes every post by {@code author} (admin moderation): threads they started go with all their replies, as
+     * deleting a thread's first post does; their replies elsewhere go alone.
+     */
+    @Transactional
+    public Removed removeAllBy(User author) {
+        int removedPosts = 0;
+        int removedThreads = 0;
+        for (ForumThread thread : threads.findByAuthorId(author.getId())) {
+            removedPosts += (int) posts.countByThreadIdAndAuthorId(thread.getId(), author.getId());
+            posts.deleteByThreadId(thread.getId());
+            threads.delete(thread);
+            removedThreads++;
+        }
+        for (ForumPost post : posts.findByAuthorIdOrderByIdAsc(author.getId())) {
+            post.getThread().replyDeleted();
+            posts.delete(post);
+            removedPosts++;
+        }
+        return new Removed(removedPosts, removedThreads);
+    }
+
     /** Pins or locks a thread (null leaves that alone); admins only. */
     @Transactional
     public ThreadSummary moderate(User user, Long threadId, Boolean pinned, Boolean locked) {

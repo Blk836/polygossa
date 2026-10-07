@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
 
+    long countByOwnerId(Long ownerId);
+
     /** The user's playlists, in one language or (null) all, newest first. */
     @Query("""
             select p from Playlist p join fetch p.owner

@@ -1,5 +1,6 @@
 package app.lector.forum;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,12 @@ public interface ForumPostRepository extends JpaRepository<ForumPost, Long> {
 
     /** The post that opened the thread. */
     Optional<ForumPost> findFirstByThreadIdOrderByIdAsc(Long threadId);
+
+    List<ForumPost> findByAuthorIdOrderByIdAsc(Long authorId);
+
+    long countByAuthorId(Long authorId);
+
+    long countByThreadIdAndAuthorId(Long threadId, Long authorId);
 
     @Modifying
     @Query("delete from ForumPost p where p.thread.id = :threadId")

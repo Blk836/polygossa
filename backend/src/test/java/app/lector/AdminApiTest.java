@@ -116,7 +116,7 @@ class AdminApiTest {
         api.createText(l.token(), "de", "Hallo Welt.", true);
         api.createText(l.token(), "de", "Privat.", false);
         api.post(l.token(), "/api/forum/threads",
-                "{\"category\":\"general\",\"title\":\"Hi\",\"body\":\"Hello\"}", 201);
+                "{\"category\":\"general\",\"title\":\"Hello all\",\"body\":\"Hello\"}", 201);
         api.post(l.token(), "/api/vocabulary", "{\"language\":\"de\",\"term\":\"hallo\"}", 201);
         JsonNode after = stats();
         JsonNode c0 = before.get("content");

@@ -40,14 +40,16 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final PlanService plans;
+    private final Admins admins;
     private final AppProperties props;
 
     public AuthController(UserRepository users, PasswordEncoder passwordEncoder, JwtService jwtService,
-                          PlanService plans, AppProperties props) {
+                          PlanService plans, AppProperties props, Admins admins) {
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.plans = plans;
+        this.admins = admins;
         this.props = props;
     }
 
@@ -75,6 +77,9 @@ public class AuthController {
                 .filter(u -> passwordEncoder.matches(req.password(), u.getPasswordHash()))
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "invalid_credentials",
                         "Incorrect email or password"));
+        if (user.isSuspended()) {
+            throw CurrentUser.suspended();
+        }
         return respond(user);
     }
 
@@ -98,6 +103,6 @@ public class AuthController {
     }
 
     private AuthResponse respond(User user) {
-        return new AuthResponse(jwtService.issue(new AuthUser(user.getId(), user.getEmail())), MeDto.of(user, plans));
+        return new AuthResponse(jwtService.issue(new AuthUser(user.getId(), user.getEmail())), MeDto.of(user, plans, admins));
     }
 }

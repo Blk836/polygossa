@@ -25,11 +25,14 @@ public class ProfilePhotoController {
     private final CurrentUser currentUser;
     private final ProfilePhotoService photos;
     private final PlanService plans;
+    private final Admins admins;
 
-    public ProfilePhotoController(CurrentUser currentUser, ProfilePhotoService photos, PlanService plans) {
+    public ProfilePhotoController(CurrentUser currentUser, ProfilePhotoService photos, PlanService plans,
+                                  Admins admins) {
         this.currentUser = currentUser;
         this.photos = photos;
         this.plans = plans;
+        this.admins = admins;
     }
 
     @PostMapping(value = "/me/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -37,7 +40,7 @@ public class ProfilePhotoController {
     public MeDto upload(@AuthenticationPrincipal AuthUser principal, @RequestParam("file") MultipartFile file) {
         User user = currentUser.load(principal);
         photos.upload(user, file);
-        return MeDto.of(user, plans);
+        return MeDto.of(user, plans, admins);
     }
 
     @DeleteMapping("/me/photo")
@@ -45,7 +48,7 @@ public class ProfilePhotoController {
     public MeDto remove(@AuthenticationPrincipal AuthUser principal) {
         User user = currentUser.load(principal);
         photos.remove(user);
-        return MeDto.of(user, plans);
+        return MeDto.of(user, plans, admins);
     }
 
     /** Photo URLs carry the stored name as a version, so a URL's content never changes and can be cached for good. */

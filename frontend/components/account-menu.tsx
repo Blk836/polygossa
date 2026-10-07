@@ -32,7 +32,7 @@ function moveFocus(e: KeyboardEvent<HTMLDivElement>) {
   items[(at + step + items.length) % items.length]?.focus();
 }
 
-/** The avatar menu: who's signed in, their plan, Settings, Classes and signing out. */
+/** The avatar menu: who's signed in, their plan, Settings, Classes, the admin panel (for the team) and signing out. */
 export function AccountMenu() {
   const { me } = useMe();
   const pathname = usePathname();
@@ -44,7 +44,8 @@ export function AccountMenu() {
   const refocus = useCallback(() => button.current?.focus(), []);
   useDismiss(open, close, root, refocus);
 
-  const here = ITEMS.some((i) => isUnder(pathname, i.href));
+  const items = me.admin ? [...ITEMS, { href: "/admin", label: "Admin" }] : ITEMS;
+  const here = items.some((i) => isUnder(pathname, i.href));
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -82,7 +83,7 @@ export function AccountMenu() {
               {PLAN_NAMES[me.plan.effectiveTier]} plan
             </p>
           </div>
-          {ITEMS.map((item) => (
+          {items.map((item) => (
             <Link key={item.href} href={item.href} role="menuitem" onClick={close} className={itemClass}>
               {item.label}
             </Link>
