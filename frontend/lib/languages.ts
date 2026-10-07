@@ -10,6 +10,7 @@ export interface LanguageInfo {
 }
 
 export const LANGUAGES: LanguageInfo[] = [
+  { code: "en", name: "English", native: "English", speechLocale: "en-US", cjk: false },
   { code: "es", name: "Spanish", native: "Español", speechLocale: "es-ES", cjk: false },
   { code: "fr", name: "French", native: "Français", speechLocale: "fr-FR", cjk: false },
   { code: "de", name: "German", native: "Deutsch", speechLocale: "de-DE", cjk: false },

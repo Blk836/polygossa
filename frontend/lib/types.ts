@@ -1,6 +1,6 @@
 // Shapes of the Spring Boot API's JSON responses.
 
-export type LanguageCode = "es" | "fr" | "de" | "it" | "pt" | "ja" | "zh" | "ko";
+export type LanguageCode = "en" | "es" | "fr" | "de" | "it" | "pt" | "ja" | "zh" | "ko";
 export type WordStatus = "learning" | "known" | "ignored";
 export type EntryKind = "word" | "phrase";
 export type Tier = "FREE" | "PRO" | "CLASSROOM";

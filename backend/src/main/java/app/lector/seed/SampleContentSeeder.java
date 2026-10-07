@@ -62,14 +62,27 @@ public class SampleContentSeeder implements ApplicationRunner {
         if (existing.isPresent()) {
             existing.get().setDisplayName(brand.libraryName()); // follows a brand rename
             refile(existing.get());
+            addMissing(existing.get());
             return;
         }
         User library = account.getOrCreate();
         List<Starter> starters = starters();
-        for (Starter s : starters) {
-            texts.createUnchecked(library, s.title(), s.language(), s.body(), null, true, null).setCategory(s.category());
-        }
+        starters.forEach(s -> create(library, s));
         log.info("Seeded {} starter texts into the community library", starters.size());
+    }
+
+    private void create(User library, Starter s) {
+        texts.createUnchecked(library, s.title(), s.language(), s.body(), null, true, null).setCategory(s.category());
+    }
+
+    /** Libraries seeded before a language was added (English) gain its starter, once. */
+    private void addMissing(User library) throws IOException {
+        for (Starter s : starters()) {
+            if (repository.findByOwnerIdAndLanguageAndTitle(library.getId(), s.language(), s.title()).isEmpty()) {
+                create(library, s);
+                log.info("Added the {} starter text to the community library", s.language().displayName());
+            }
+        }
     }
 
     /** Databases seeded before categories existed: file the starter texts that are still uncategorised. */

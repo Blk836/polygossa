@@ -6,6 +6,12 @@ import type { LanguageCode } from "./types";
 const K = { k: true };
 
 export const DEMOS: Record<LanguageCode, DemoToken[]> = {
+  en: sentence([
+    ["Every", "each one, all", "determiner", K], ["evening", "the end of the day", "noun"], ",", ["my", "belonging to me", "possessive", K],
+    ["neighbour", "a person who lives next door", "noun"], ["walks", "goes on foot — from walk", "verb"], ["her", "belonging to her", "possessive", K],
+    ["old", "not young", "adjective", K], ["dog", "an animal kept as a pet", "noun", K], ["along", "following the length of", "preposition"],
+    ["the", "the", "article", K], ["river", "a large natural stream of water", "noun"], ".",
+  ]),
   es: sentence([
     ["Cada", "each, every", "determiner", K], ["mañana", "morning", "noun"], ",", ["Lucía", "Lucía (a name)", "name", K],
     ["camina", "walks — from caminar", "verb"], ["hasta", "as far as, until", "preposition"], ["un", "a, an", "article", K],

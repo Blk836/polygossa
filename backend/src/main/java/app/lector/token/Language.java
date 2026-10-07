@@ -3,8 +3,9 @@ package app.lector.token;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 
-/** MVP languages. Space-delimited languages are tokenized in Java; the rest go to the CJK sidecar. */
+/** The languages on offer, English first. Space-delimited languages are tokenized in Java; the rest go to the CJK sidecar. */
 public enum Language {
+    EN("en", "English", "en-US", true),
     ES("es", "Spanish", "es-ES", true),
     FR("fr", "French", "fr-FR", true),
     DE("de", "German", "de-DE", true),

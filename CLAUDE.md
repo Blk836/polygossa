@@ -137,7 +137,7 @@ as `test@lector.local` (Classroom plan, so every feature is unlocked). To restor
 `AUTO_LOGIN=false` (frontend) and `DEV_AUTO_LOGIN=false` (backend). The `prod` profile always disables the
 endpoint — keep it that way.
 
-Eight starter texts (one per language) are seeded into the community library for onboarding (`SEED_SAMPLES=false`
+Nine starter texts (one per language) are seeded into the community library for onboarding (`SEED_SAMPLES=false`
 turns that off). No videos are seeded: videos come only from what is in the database.
 
 **Filling Explore with videos (`tools/import-videos.mjs`):** when asked to find content, search YouTube for videos
