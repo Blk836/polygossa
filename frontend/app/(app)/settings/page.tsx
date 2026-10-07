@@ -9,7 +9,7 @@ import { ProfilePhoto } from "@/components/settings/profile-photo";
 import { Button, ErrorNote, Field, inputClass, selectClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import { NATIVE_LANGUAGES } from "@/lib/dictionary";
-import { LANGUAGES } from "@/lib/languages";
+import { LEARNING_LANGUAGES } from "@/lib/languages";
 import { settingsHashRedirect } from "@/lib/nav";
 import type { Me } from "@/lib/types";
 
@@ -53,7 +53,7 @@ export default function ProfilePage() {
           <Field label="Main language you're learning">
             <select className={selectClass} value={targetLanguage} onChange={(e) => setTargetLanguage(e.target.value)}>
               <option value="">—</option>
-              {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
+              {LEARNING_LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
             </select>
           </Field>
           <Field label="Your native language" hint="Definitions are translated into it where the dictionary can">

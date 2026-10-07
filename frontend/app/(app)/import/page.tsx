@@ -5,7 +5,7 @@ import { Suspense, useState, type FormEvent } from "react";
 import { useMe } from "@/components/me-context";
 import { Button, FailureNote, Field, PageHeader, inputClass, selectClass } from "@/components/ui";
 import { ApiError, api, errorMessage } from "@/lib/api";
-import { LANGUAGES } from "@/lib/languages";
+import { LEARNING_LANGUAGES } from "@/lib/languages";
 import type { TextSummary } from "@/lib/types";
 
 type Mode = "paste" | "url" | "subtitles" | "youtube" | "book";
@@ -190,7 +190,7 @@ function ImportForm() {
         )}
         <Field label="Language">
           <select className={selectClass} value={draft.language} onChange={(e) => update({ language: e.target.value })}>
-            {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
+            {LEARNING_LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
           </select>
         </Field>
       </div>

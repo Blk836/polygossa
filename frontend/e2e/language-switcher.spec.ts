@@ -66,8 +66,8 @@ test.describe("on a desktop", () => {
 
   test("it shows the language being learned: badge, own name and a chevron", async ({ page }) => {
     await answerSwitches(page);
-    await pick(page, "日本語");
-    await expect(switcher(page)).toHaveText(/^JA\s*日本語$/, { useInnerText: true });
+    await pick(page, "Deutsch");
+    await expect(switcher(page)).toHaveText(/^DE\s*Deutsch$/, { useInnerText: true });
     await expect(switcher(page).locator("svg")).toBeVisible();
     await pick(page, "Français");
     await expect(switcher(page)).toHaveText(/^FR\s*Français$/, { useInnerText: true });
@@ -86,9 +86,10 @@ test.describe("on a phone", () => {
   test("only the badge and chevron show, still without a box", async ({ page }) => {
     await page.goto("/library");
     await answerSwitches(page);
-    await pick(page, "日本語");
-    await expect(switcher(page).getByText("日本語")).toBeHidden();
-    await expect(switcher(page).getByText("JA")).toBeVisible();
+    await pick(page, "Deutsch");
+    await expect(switcher(page).getByText("Deutsch")).toBeHidden();
+    // The badge's text is lower case, shown in capitals by CSS.
+    await expect(switcher(page).getByText("de", { exact: true })).toBeVisible();
     await expect(switcher(page).locator("svg")).toBeVisible();
     await page.mouse.move(0, 700);
     expect((await style(switcher(page))).border).toBe("0px");

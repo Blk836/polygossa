@@ -1,11 +1,11 @@
 // Landing page logic: where sign-up links go (carrying the language a visitor picked through sign-up into
 // onboarding), and the try-it-now reader demo's state. The demo texts themselves are in landing-demos.ts.
-import { LANGUAGES } from "./languages";
+import { LEARNING_LANGUAGES } from "./languages";
 import type { LanguageCode } from "./types";
 
 /** A supported language code, or null for anything else (absent, blank, unknown, wrong case). */
 export function parseLanguage(value: string | null | undefined): LanguageCode | null {
-  return LANGUAGES.find((l) => l.code === value)?.code ?? null;
+  return LEARNING_LANGUAGES.find((l) => l.code === value)?.code ?? null;
 }
 
 function withLanguage(path: string, language: string | null | undefined): string {

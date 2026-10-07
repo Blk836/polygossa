@@ -8,7 +8,7 @@ import { PlaylistCard } from "@/components/playlists/playlist-card";
 import { Button, Empty, ErrorNote, PageHeader, Spinner, inputClass, selectClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import { cardGridClass } from "@/lib/card-layout";
-import { LANGUAGES, languageName } from "@/lib/languages";
+import { languageName, LEARNING_LANGUAGES } from "@/lib/languages";
 import { withLanguage } from "@/lib/media";
 import type { PlaylistSummary } from "@/lib/playlist-types";
 import type { LanguageCode } from "@/lib/types";
@@ -107,7 +107,7 @@ function CreateForm({ language, onCreated }: { language: string; onCreated: (p: 
       <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="New playlist name…" aria-label="Playlist name" maxLength={120} />
       {!language && (
         <select className={`${selectClass} sm:w-40`} value={lang} onChange={(e) => setLang(e.target.value as LanguageCode)} aria-label="Language">
-          {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
+          {LEARNING_LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
         </select>
       )}
       <Button type="submit" disabled={!title.trim()} className="shrink-0">Create playlist</Button>

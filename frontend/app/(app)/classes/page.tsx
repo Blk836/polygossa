@@ -5,7 +5,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useMe } from "@/components/me-context";
 import { Button, Empty, FailureNote, PageHeader, Spinner, inputClass, selectClass } from "@/components/ui";
 import { ApiError, api, errorMessage } from "@/lib/api";
-import { LANGUAGES, languageName } from "@/lib/languages";
+import { languageName, LEARNING_LANGUAGES } from "@/lib/languages";
 import type { ClassSummary, LanguageCode } from "@/lib/types";
 
 type Failure = ApiError | string | null;
@@ -58,7 +58,7 @@ function CreateForm({ canTeach, defaultLanguage, onCreated, onError }: {
         <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_140px_auto]">
           <input className={inputClass} placeholder="Class name" value={name} onChange={(e) => setName(e.target.value)} required maxLength={120} aria-label="Class name" />
           <select className={selectClass} value={language} onChange={(e) => setLanguage(e.target.value as LanguageCode)} aria-label="Language">
-            {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
+            {LEARNING_LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
           </select>
           <Button type="submit">Create</Button>
         </div>

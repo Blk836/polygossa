@@ -3,8 +3,9 @@ import { expect, test, type Page } from "@playwright/test";
 // The landing page (/) for visitors with no session. Playwright starts every test without cookies, so / shows it
 // even though auto-login is on in dev; sign-up itself can't run here (auto-login sends /signup to the library), so
 // links are checked by their href.
-const SIGNUP = /^\/signup(\?lang=(en|es|fr|de|it|pt|ja|zh|ko))?$/;
-const NATIVE = ["English", "Español", "Français", "Deutsch", "Italiano", "Português", "日本語", "中文", "한국어"];
+// Japanese, Chinese and Korean are paused for learning (learning-languages.feature): six languages are offered.
+const SIGNUP = /^\/signup(\?lang=(en|es|fr|de|it|pt))?$/;
+const NATIVE = ["English", "Español", "Français", "Deutsch", "Italiano", "Português"];
 
 const demo = (page: Page) => page.getByTestId("demo");
 const demoWord = (page: Page, text: string) => demo(page).getByTestId("demo-text").getByRole("button", { name: text, exact: true });
@@ -22,12 +23,11 @@ test.describe("landing page", () => {
     await expect(page.getByText("no credit card").first()).toBeVisible();
   });
 
-  test("the hero's language picker starts sign-up in each of the 9 languages", async ({ page }) => {
+  test("the hero's language picker starts sign-up in each of the 6 languages", async ({ page }) => {
     await page.goto("/");
     const picker = page.getByRole("list", { name: "Languages" }).first();
     await expect(picker.getByRole("link")).toHaveText(NATIVE);
     await expect(picker.getByRole("link", { name: "Français" })).toHaveAttribute("href", "/signup?lang=fr");
-    await expect(picker.getByRole("link", { name: "日本語" })).toHaveAttribute("href", "/signup?lang=ja");
     await expect(picker.getByRole("link", { name: "English" })).toHaveAttribute("href", "/signup?lang=en");
   });
 
@@ -63,14 +63,15 @@ test.describe("landing page", () => {
     await page.goto("/");
     await demoWord(page, "mar").click();
     await demo(page).getByTestId("demo-card").getByRole("button", { name: "Known" }).click();
-    await demo(page).getByRole("tab", { name: "日本語" }).click();
-    await expect(demo(page).getByRole("tab", { name: "日本語" })).toHaveAttribute("aria-selected", "true");
-    await expect(demo(page).getByTestId("demo-text")).toHaveText("毎朝、私は駅の近くでコーヒーを飲みます。");
+    await expect(demo(page).getByRole("tab")).toHaveText(NATIVE);
+    await demo(page).getByRole("tab", { name: "Deutsch" }).click();
+    await expect(demo(page).getByRole("tab", { name: "Deutsch" })).toHaveAttribute("aria-selected", "true");
+    await expect(demo(page).getByTestId("demo-text")).toHaveText("Am Wochenende fahren wir mit dem Zug in die Berge.");
     await expect(demo(page).getByTestId("demo-card")).toHaveCount(0);
     await expect(demo(page).getByRole("link", { name: /create a free account/ })).toHaveCount(0);
-    await demoWord(page, "毎朝").click();
-    await expect(demo(page).getByTestId("demo-card")).toContainText("every morning");
-    await expect(demo(page).getByRole("link", { name: /create a free account/ })).toHaveAttribute("href", "/signup?lang=ja");
+    await demoWord(page, "Zug").click();
+    await expect(demo(page).getByTestId("demo-card")).toContainText("train");
+    await expect(demo(page).getByRole("link", { name: /create a free account/ })).toHaveAttribute("href", "/signup?lang=de");
   });
 
   test("demo words open from the keyboard", async ({ page }) => {
@@ -109,7 +110,7 @@ test.describe("landing page", () => {
     await expect(pickers.last().getByRole("link")).toHaveText(NATIVE);
     await expect(page.getByRole("link", { name: "Start reading free" })).toHaveCount(2);
     const hrefs = await page.locator('a[href^="/signup"]').evaluateAll((as) => as.map((a) => a.getAttribute("href")!));
-    expect(hrefs.length).toBeGreaterThanOrEqual(20);
+    expect(hrefs.length).toBeGreaterThanOrEqual(2 * NATIVE.length + 2); // both pickers, plus the two CTAs
     for (const href of hrefs) expect(href).toMatch(SIGNUP);
   });
 
@@ -158,7 +159,7 @@ test.describe("onboarding with a language chosen on the landing page", () => {
   });
 
   test.describe("without a usable language", () => {
-    for (const path of ["/onboarding", "/onboarding?lang=xx"]) {
+    for (const path of ["/onboarding", "/onboarding?lang=xx", "/onboarding?lang=ja"]) {
       test(`${path} asks for one`, async ({ page }) => {
         await page.goto(path);
         await expect(page.getByRole("heading", { name: "What are you learning?" })).toBeVisible();

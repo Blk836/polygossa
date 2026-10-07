@@ -21,6 +21,13 @@ export const LANGUAGES: LanguageInfo[] = [
   { code: "ko", name: "Korean", native: "한국어", speechLocale: "ko-KR", cjk: true },
 ];
 
+/**
+ * The languages that can be learned, for every picker. Japanese, Chinese and Korean are paused until they get real word
+ * splitting (docs/acceptance/learning-languages.feature); LANGUAGES still names them for content stored in them.
+ */
+const PAUSED = new Set<LanguageCode>(["ja", "zh", "ko"]);
+export const LEARNING_LANGUAGES: LanguageInfo[] = LANGUAGES.filter((l) => !PAUSED.has(l.code));
+
 export const CEFR_LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
 
 export function languageName(code: string | null | undefined): string {

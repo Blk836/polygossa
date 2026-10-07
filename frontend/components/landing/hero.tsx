@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { LinkButton, Logo } from "@/components/ui";
 import { signupHref } from "@/lib/landing";
-import { LANGUAGES } from "@/lib/languages";
+import { LEARNING_LANGUAGES } from "@/lib/languages";
 import { DemoReader } from "./demo-reader";
 
 const NAV = [
@@ -41,7 +41,7 @@ export function LanguagePicker({ tone = "plain" }: { tone?: "plain" | "inverse" 
     : "border-line bg-card text-ink hover:border-accent hover:bg-accent-soft";
   return (
     <ul className="flex flex-wrap gap-2" aria-label="Languages">
-      {LANGUAGES.map((l) => (
+      {LEARNING_LANGUAGES.map((l) => (
         <li key={l.code}>
           <Link href={signupHref(l.code)} className={`inline-flex rounded-full border px-3.5 py-1.5 font-reading text-sm transition ${chip}`} title={`Learn ${l.name}`}>
             {l.native}

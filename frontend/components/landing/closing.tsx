@@ -1,6 +1,6 @@
 import { LinkButton } from "@/components/ui";
 import { signupHref } from "@/lib/landing";
-import { LANGUAGES } from "@/lib/languages";
+import { LEARNING_LANGUAGES } from "@/lib/languages";
 import { SectionHeading } from "./features";
 import { LanguagePicker } from "./hero";
 
@@ -62,7 +62,7 @@ export function Pricing() {
 const FAQ: [string, string][] = [
   ["Is it really free?", "Yes. The free plan has no time limit and needs no card: read the whole shared library, import 5 texts or videos of your own and keep up to 500 words in your learning list. Words you mark as known never count."],
   ["Do I need to be a beginner — or an advanced learner?", "Either works. Every text shows its estimated level and how many of its words are new to you, so beginners can start with short graded stories and advanced learners can read the news or watch YouTube."],
-  ["Which languages can I learn?", `${LANGUAGES.map((l) => l.name).join(", ").replace(/, ([^,]*)$/, " and $1")}. Definitions are in English.`],
+  ["Which languages can I learn?", `${LEARNING_LANGUAGES.map((l) => l.name).join(", ").replace(/, ([^,]*)$/, " and $1")}. Definitions are in English.`],
   ["How is this different from a lesson app?", "Instead of drills built around a fixed course, you learn from real content you chose. Vocabulary comes from what you actually read, and you see it again in context — the way you picked up your first language."],
   ["Can I use my own content?", "Yes — paste any text, import a web article by its address, add a YouTube video, or upload a subtitle file. Pro adds your own audio, synced to the text."],
   ["Can I take my vocabulary with me?", "Any time. Export your words to Anki or CSV, on every plan."],

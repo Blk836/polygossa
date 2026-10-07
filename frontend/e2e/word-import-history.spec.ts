@@ -36,8 +36,11 @@ test("the history follows the form's source and language", async ({ page }) => {
   await language.selectOption("de");
   await expect(rows(page)).toHaveCount(1);
   await expect(rows(page)).toContainText("LingQ · German · Done");
+  // Japanese, Chinese and Korean are paused for learning: not offered.
+  expect(await language.locator("option").evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value)))
+    .not.toEqual(expect.arrayContaining(["ja"]));
   // Nothing imported yet for this choice: no rows at all.
-  await language.selectOption("ja");
+  await language.selectOption("it");
   await expect(rows(page)).toHaveCount(0);
   await language.selectOption("");
   await expect(rows(page)).toHaveCount(0);

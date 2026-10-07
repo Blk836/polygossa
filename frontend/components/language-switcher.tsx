@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { api } from "@/lib/api";
-import { LANGUAGES, languageInfo } from "@/lib/languages";
+import { languageInfo, LEARNING_LANGUAGES } from "@/lib/languages";
 import type { LanguageCode, Me } from "@/lib/types";
 import { useMe } from "./me-context";
 import { useDismiss } from "./use-dismiss";
@@ -50,7 +50,7 @@ export function LanguageSwitcher() {
       {open && (
         <div role="menu" aria-label="Language" className="absolute right-0 z-40 mt-2 w-56 overflow-hidden rounded-xl border border-line bg-card py-1 shadow-lg">
           <p className="px-3 pt-2 pb-1 text-xs font-medium tracking-wide text-muted uppercase">I&apos;m learning</p>
-          {LANGUAGES.map((l) => {
+          {LEARNING_LANGUAGES.map((l) => {
             const selected = l.code === me.targetLanguage;
             return (
               <button

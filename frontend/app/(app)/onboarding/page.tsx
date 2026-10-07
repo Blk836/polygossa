@@ -8,7 +8,7 @@ import { useMe } from "@/components/me-context";
 import { Button, ErrorNote, LevelBadge, Spinner } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import { parseLanguage } from "@/lib/landing";
-import { LANGUAGES } from "@/lib/languages";
+import { LEARNING_LANGUAGES } from "@/lib/languages";
 import type { LanguageCode, Me, TextSummary } from "@/lib/types";
 
 /** Sets the target language and fetches a few starter texts in it. */
@@ -69,7 +69,7 @@ export default function OnboardingPage() {
       <p className="text-sm font-medium text-accent">Step {language ? 2 : 1} of 2</p>
       <h1 className="mt-1 text-2xl font-semibold">{language ? "Pick something to read" : "What are you learning?"}</h1>
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {LANGUAGES.map((l) => (
+        {LEARNING_LANGUAGES.map((l) => (
           <button
             key={l.code}
             onClick={() => choose(l.code)}

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { Button, ErrorNote, Field, Spinner, inputClass, selectClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
-import { LANGUAGES } from "@/lib/languages";
+import { LEARNING_LANGUAGES } from "@/lib/languages";
 import { POLL_MS, anyActive, importButtonLabel, importCounts, importHeadline, isActive, visibleImports, type WordImportJob } from "@/lib/word-import";
 
 type Source = "lingq" | "readlang";
@@ -124,7 +124,7 @@ function ImportForm({ choice, busy, onStarted }: { choice: Choice; busy: boolean
         <Field label="Language">
           <select className={selectClass} value={language} onChange={(e) => setLanguage(e.target.value)} required={source === "readlang"}>
             {source === "lingq" ? <option value="">All languages</option> : <option value="">Choose…</option>}
-            {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
+            {LEARNING_LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
           </select>
         </Field>
       </div>

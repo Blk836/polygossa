@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { closeWord, demoCounts, initialDemoState, selectWord, setDemoStatus, signupHref, type DemoStatus } from "@/lib/landing";
 import { DEMOS } from "@/lib/landing-demos";
-import { LANGUAGES } from "@/lib/languages";
+import { LANGUAGES, LEARNING_LANGUAGES } from "@/lib/languages";
 import type { LanguageCode } from "@/lib/types";
 
 const STATUS_BUTTONS: { status: DemoStatus; label: string; className: string }[] = [
@@ -29,7 +29,7 @@ export function DemoReader() {
   return (
     <div className="relative rounded-2xl border border-line bg-card shadow-[0_24px_60px_-28px_rgb(0_0_0/0.35)]" data-testid="demo">
       <div role="tablist" aria-label="Demo language" className="flex overflow-x-auto border-b border-line px-2 pt-2">
-        {LANGUAGES.map((l) => (
+        {LEARNING_LANGUAGES.map((l) => (
           <button
             key={l.code}
             role="tab"
