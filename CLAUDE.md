@@ -286,8 +286,13 @@ those against a running backend.
 - Plan gating goes through `PlanService` (`require(user, Feature)`, `checkCanImportText`, `checkCanSaveWord`).
 - Text access: load via `TextService.loadReadable` / `loadOwned`, never the repository directly from controllers
   (owner, public, or assigned-to-a-class rules).
-- Schema is Hibernate `ddl-auto: update` (no migrations yet), except `TextBodyMigration`, which moved texts' bulky
-  columns out of `texts` at startup (ddl-auto can't move data or drop columns).
+- **Every schema change is a Flyway migration**: a new `V<n>__<what it does>.sql` in
+  `backend/src/main/resources/db/migration`, applied once per database at startup. Hibernate only validates
+  (`ddl-auto: validate`), so an entity change without its migration fails startup and every backend test. Never edit
+  a migration that has run anywhere (Flyway refuses the changed checksum): fix forward with a new one. A new value in
+  an enum stored as text needs a migration updating that column's check constraint (`EnumColumnsMigratedTest`).
+  Name constraints the way PostgreSQL does (`<table>_<column>_key`/`_check`); V2 made every database agree.
+  `SchemaMigrationTest` boots the app on databases prepared in each state (`TestDatabases.newDatabase`).
 - A text's content, tokens, timings and cues live in `TextBody` (`text_bodies`), loaded lazily through `Text`'s getters;
   `open-in-view` is off, so read or change them inside a transaction. Lists of cards (Library, Explore, playlists) must
   never touch the body — card stats come from `Text.wordsJson` via `UniqueWordsCache`; `CardListsTest` enforces it.
@@ -332,7 +337,6 @@ those against a running backend.
   `docker-compose.yml` still runs everything locally.
 - Japanese, Chinese and Korean are split by simple built-in rules (Chinese per character), with no readings or
   dictionary forms: the Python tokenizer sidecar was removed unused.
-- Schema migrations rely on Hibernate `ddl-auto: update`; switch to Flyway before production data matters.
 - YouTube captions come from YouTube's unofficial innertube player endpoint (there is no keyless official API), so
   automatic caption import can break when YouTube changes it; imports then return 422 and ask for a subtitle file or
   pasted transcript. Backend tests use a local stub (`YouTubeStub`), never the real site.
