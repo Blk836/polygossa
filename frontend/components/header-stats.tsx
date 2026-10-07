@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CheckIcon, FlameIcon } from "./icons";
+import { FlameIcon } from "./icons";
 import { flame, knownWords, type HeaderStats as Stats } from "@/lib/header-stats";
 
 /** The smallest the flame shrinks to before it goes out, as a share of its full size. */
@@ -13,7 +13,7 @@ function flameClass(state: "lit" | "fading" | "out", fuel: number): string {
   return state === "fading" ? "text-rubric streak-flicker" : "text-rubric";
 }
 
-/** Known words (LingQ-style) and the streak flame, which burns down inside its own outline towards midnight while the
+/** Known words (LingQ-style, "1,234 known") and the streak flame, which burns down inside its own outline towards midnight while the
  * streak is at risk. */
 export function HeaderStats({ stats }: { stats: Stats }) {
   const f = flame(stats);
@@ -28,8 +28,8 @@ export function HeaderStats({ stats }: { stats: Stats }) {
         title={known.label}
         className="flex items-center gap-1 rounded-lg px-1.5 py-1 text-sm font-semibold tabular-nums hover:bg-card"
       >
-        <CheckIcon className="size-4 text-good" strokeWidth={2.6} />
-        {known.text}
+        <span>{known.text}</span>{" "}
+        <span className="font-normal text-muted">known</span>
       </Link>
       <Link
         href="/dashboard"
