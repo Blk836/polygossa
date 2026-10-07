@@ -1,0 +1,20 @@
+{
+  "name": "polygossa-infra",
+  "private": true,
+  "type": "module",
+  "description": "AWS infrastructure as code (CDK): the staging environment and GitHub's deploy role. See docs/production.md.",
+  "scripts": {
+    "cdk": "cdk",
+    "test": "node --test \"test/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.272.0",
+    "constructs": "^10.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.1",
+    "aws-cdk": "^2.1144.0",
+    "typescript": "^5"
+  }
+}
