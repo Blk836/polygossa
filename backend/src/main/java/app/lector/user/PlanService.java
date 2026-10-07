@@ -80,6 +80,18 @@ public class PlanService {
         }
     }
 
+    /** A book becomes several texts at once: all of them must fit the free plan's allowance. */
+    public void checkCanImportTexts(User user, int count) {
+        if (!isLimited(user)) {
+            return;
+        }
+        long left = Math.max(0, billing.freeTextLimit() - texts.countByOwnerId(user.getId()));
+        if (count > left) {
+            throw ApiException.upgradeRequired("This book needs " + count + " texts and the free plan has " + left
+                    + " left. Upgrade to Pro for unlimited imports, or delete old texts.");
+        }
+    }
+
     /** Saved words are those in "learning" status; known and ignored words are unlimited. */
     public void checkCanSaveWord(User user) {
         if (isLimited(user) && vocabulary.countByUserIdAndStatus(user.getId(), WordStatus.LEARNING) >= billing.freeWordLimit()) {

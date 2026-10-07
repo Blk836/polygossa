@@ -83,7 +83,7 @@ class BookImportApiTest {
         String token = api.signupPro();
         assertThat(upload(token, "hola".getBytes(), "notes.txt", 400).get("message").asString())
                 .contains("Upload an EPUB or a PDF");
-        assertThat(api.get(token, "/api/library", 200).get("total").asLong()).isZero();
+        assertThat(api.get(token, "/api/texts", 200)).isEmpty();
         assertThat(api.get(token, "/api/playlists", 200)).isEmpty();
     }
 
@@ -95,7 +95,7 @@ class BookImportApiTest {
         }
         JsonNode error = upload(token, book(4), "viaje.epub", 402);
         assertThat(error.get("message").asString()).contains("4 texts").contains("2 left");
-        assertThat(api.get(token, "/api/library", 200).get("total").asLong()).isEqualTo(3);
+        assertThat(api.get(token, "/api/texts", 200)).hasSize(3);
         assertThat(api.get(token, "/api/playlists", 200)).isEmpty();
         upload(token, book(2), "viaje.epub", 201);
     }

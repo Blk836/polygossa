@@ -33,6 +33,8 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
 
     implementation("org.jsoup:jsoup:1.23.2")
+    // Reading PDF imports (books); EPUB is a zip of XHTML, read with the JDK and jsoup.
+    implementation("org.apache.pdfbox:pdfbox:3.0.5")
     implementation("org.xerial:sqlite-jdbc:3.53.4.0")
 
     runtimeOnly("org.postgresql:postgresql")

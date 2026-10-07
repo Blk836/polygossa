@@ -8,7 +8,7 @@ import { ApiError, api, errorMessage } from "@/lib/api";
 import { LANGUAGES } from "@/lib/languages";
 import type { TextSummary } from "@/lib/types";
 
-type Mode = "paste" | "url" | "subtitles" | "youtube";
+type Mode = "paste" | "url" | "subtitles" | "youtube" | "book";
 
 const MODES: { id: Mode; label: string; hint: string }[] = [
   { id: "paste", label: "Paste text", hint: "Articles, book chapters, lyrics — anything you can copy." },
@@ -19,7 +19,27 @@ const MODES: { id: Mode; label: string; hint: string }[] = [
     label: "YouTube video",
     hint: "Paste a YouTube link. We use the video’s captions in the language you pick, and the transcript follows along as it plays.",
   },
+  {
+    id: "book",
+    label: "Book (EPUB, PDF)",
+    hint: "Each chapter becomes a text, gathered in a playlist named after the book. Books stay private. PDFs need a text layer (not scanned pages).",
+  },
 ];
+
+/** Where a finished import opens: a book opens its first chapter inside its playlist. */
+interface Created {
+  path: string;
+}
+
+/** A book: one private text per chapter, in a new playlist. */
+async function submitBook(d: Draft): Promise<Created> {
+  if (!d.file) throw new Error("Choose an EPUB or PDF file");
+  const form = new FormData();
+  form.append("file", d.file);
+  form.append("language", d.language);
+  const book = await api<{ playlistId: number; textIds: number[] }>("texts/import-book", { body: form });
+  return { path: `/read/${book.textIds[0]}?playlist=${book.playlistId}` };
+}
 
 interface Draft {
   title: string;
@@ -88,6 +108,14 @@ function YouTubeInput({ draft, update }: { draft: Draft; update: (patch: Partial
 
 function SourceInput({ mode, draft, update }: { mode: Mode; draft: Draft; update: (patch: Partial<Draft>) => void }) {
   if (mode === "youtube") return <YouTubeInput draft={draft} update={update} />;
+  if (mode === "book") {
+    return (
+      <Field label="Book file" hint="EPUB or PDF, up to 50 MB">
+        <input type="file" accept=".epub,.pdf,application/epub+zip,application/pdf" required
+          onChange={(e) => update({ file: e.target.files?.[0] ?? null })} className={fileInputClass} />
+      </Field>
+    );
+  }
   if (mode === "paste") {
     return (
       <Field label="Text">
@@ -133,9 +161,9 @@ function ImportForm() {
     setBusy(true);
     setError(null);
     try {
-      const created = await submitImport(mode, draft);
+      const created = mode === "book" ? await submitBook(draft) : { path: `/read/${(await submitImport(mode, draft)).id}` };
       void refresh();
-      router.push(`/read/${created.id}`);
+      router.push(created.path);
     } catch (err) {
       setError(err instanceof ApiError ? err : errorMessage(err));
       setBusy(false);
@@ -144,9 +172,9 @@ function ImportForm() {
 
   return (
     <form onSubmit={submit} className="max-w-2xl space-y-5">
-      <div className="grid grid-cols-2 gap-1 rounded-lg border border-line bg-card p-1 text-sm sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-1 rounded-lg border border-line bg-card p-1 text-sm sm:grid-cols-5">
         {MODES.map((m) => (
-          <button type="button" key={m.id} onClick={() => setMode(m.id)}
+          <button type="button" key={m.id} onClick={() => { setMode(m.id); update({ file: null }); }}
             className={`rounded-md px-3 py-1.5 ${mode === m.id ? "bg-accent-soft font-medium" : "text-muted"}`}>
             {m.label}
           </button>
@@ -155,9 +183,11 @@ function ImportForm() {
       <p className="text-sm text-muted">{MODES.find((m) => m.id === mode)?.hint}</p>
 
       <div className="grid gap-4 sm:grid-cols-[1fr_200px]">
-        <Field label={mode === "paste" ? "Title" : "Title (optional)"}>
-          <input className={inputClass} value={draft.title} onChange={(e) => update({ title: e.target.value })} required={mode === "paste"} maxLength={250} />
-        </Field>
+        {mode === "book" ? <div /> : (
+          <Field label={mode === "paste" ? "Title" : "Title (optional)"}>
+            <input className={inputClass} value={draft.title} onChange={(e) => update({ title: e.target.value })} required={mode === "paste"} maxLength={250} />
+          </Field>
+        )}
         <Field label="Language">
           <select className={selectClass} value={draft.language} onChange={(e) => update({ language: e.target.value })}>
             {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
@@ -166,10 +196,12 @@ function ImportForm() {
       </div>
       <SourceInput mode={mode} draft={draft} update={update} />
 
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={draft.isPublic} onChange={(e) => update({ isPublic: e.target.checked })} />
-        Share in the community library (only if you have the right to share it)
-      </label>
+      {mode !== "book" && (
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={draft.isPublic} onChange={(e) => update({ isPublic: e.target.checked })} />
+          Share in the community library (only if you have the right to share it)
+        </label>
+      )}
       <FailureNote error={error} />
       <Button type="submit" disabled={busy}>{busy ? "Importing…" : mode === "youtube" ? "Import and start watching" : "Import and start reading"}</Button>
     </form>
@@ -179,7 +211,7 @@ function ImportForm() {
 export default function ImportPage() {
   return (
     <div>
-      <PageHeader title="Import" subtitle="Add a text or a YouTube video to your library." />
+      <PageHeader title="Import" subtitle="Add a text, a book or a YouTube video to your library." />
       <Suspense>
         <ImportForm />
       </Suspense>
