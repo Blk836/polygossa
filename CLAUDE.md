@@ -110,7 +110,8 @@ member account, default region `eu-west-1`. Sessions last 12 hours; when one exp
 needs the user to sign in through the browser.
 - Infrastructure is changed only through CDK (`infra/`), never by CLI or console commands. The CLI and MCP server are
   for reading, investigating and previewing (`cdk diff`).
-- Staging deploys itself: CI's `deploy staging` job runs `cdk deploy PolygossaStaging` after every green push to main,
+- Staging deploys itself: CI's `deploy staging` job runs `cdk deploy PolygossaStaging` on every merge to main (the
+  pull request's checks are the gate; a temporary hand-started `deploy_only` run skips them),
   signed in through GitHub's OIDC as the `polygossa-github-deploy` role (its ARN is the repository variable
   `AWS_DEPLOY_ROLE_ARN`). Deploy by hand only to bootstrap or to change the deploy role itself
   (`PolygossaGitHubDeploy`), and always `cdk diff` first. `infra/cdk.context.json` caches lookups so synth needs no AWS
