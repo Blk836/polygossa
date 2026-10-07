@@ -105,6 +105,12 @@ jobs:
       - run: npm run typecheck
       # Synthesizes the stacks and checks their properties; no AWS access needed.
       - run: npm test
+      # The whole app, as the deploy runs it (catches a missing entry point or config); lookups come from
+      # cdk.context.json, so still no AWS access.
+      - run: npx cdk synth --quiet
+        env:
+          CDK_DEFAULT_ACCOUNT: ${{ vars.AWS_ACCOUNT_ID }}
+          CDK_DEFAULT_REGION: eu-west-1
 
   tools:
     name: tools

@@ -2,6 +2,7 @@
   "app": "node bin/app.ts",
   "watch": { "include": ["bin/**", "lib/**"] },
   "context": {
-    "github-repo": "Blk836/polygossa"
+    "github-repo": "Blk836/polygossa",
+    "github-subject": "repo:Blk836@15254657/polygossa@1405831822"
   }
 }

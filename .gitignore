@@ -26,6 +26,8 @@ out/
 .springBeans
 .sts4-cache
 bin/
+# ...but infra/bin is the CDK app's entry point, not build output.
+!infra/bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 
