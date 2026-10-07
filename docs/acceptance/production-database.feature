@@ -1,9 +1,9 @@
 Feature: Production's database (docs/production.md, phase 1)
   Production keeps paying users' data, so its database must survive a broken machine, a lost availability zone and a
-  bad change, and we must know a backup actually restores. The database is defined once in CDK for both environments;
-  staging keeps its small, cheap settings and production gets the safe ones. Production has no AWS account yet (the
-  owner creates it in the organization), so this defines and tests production's database; the production stack that
-  uses it, and the restore rehearsal, run once that account exists.
+  bad change, and we must know a backup actually restores. The database is defined once in CDK with two settings: the
+  small, cheap ones it runs on today and the safe ones. (October 2026: the stack built as staging became production,
+  in the same AWS account. It keeps the small settings while it has no users and switches to the safe ones before the
+  beta; "staging" in the scenarios below means those small settings.)
 
   # --- Production's settings (synthesized and tested without AWS access) ---
 

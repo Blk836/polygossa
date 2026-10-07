@@ -23,7 +23,7 @@ code is the source of truth for details, so there is never a second, stale copy.
 backend/    Spring Boot 4.1 (Java 21) — REST API; Gradle module :backend, package app.lector
 frontend/   Next.js 16 + React 19 + Tailwind 4 — UI and backend-for-frontend (BFF) API routes
 tools/      team command-line tools (plain Node, no packages): import-videos.mjs bulk-imports curated YouTube videos
-infra/      AWS CDK (TypeScript, run directly by Node): the staging environment and GitHub's deploy role
+infra/      AWS CDK (TypeScript, run directly by Node): production (stack PolygossaStaging) and GitHub's deploy role
 ```
 
 ## How to work here: "gauntlet" verification
@@ -72,7 +72,7 @@ so the checks must prove it is correct.
    focused commit per step with a message saying what changed and why. Work on a feature branch, never on main:
    push it, open a pull request (`gh pr create`), wait for CI (`gh pr checks --watch`), and merge it yourself
    (`gh pr merge --merge --delete-branch`, keeping the commits) only when every check is green. If main moved since
-   the checks ran, merge main into the branch and wait for the checks again first. A merge to main deploys staging
+   the checks ran, merge main into the branch and wait for the checks again first. A merge to main deploys production
    without re-running the checks (they ran on the pull request). If a check fails, fix it on the branch; never merge
    red. (`gh pr merge` can't merge a change to a workflow file without the CLI's `workflow` scope; merge locally with
    `git merge --no-ff` and push instead, and GitHub marks the pull request merged.) "Green before merging" is our rule, not GitHub's: enforcing it (branch
@@ -122,14 +122,16 @@ If it can't be reproduced, say so and ask instead of guessing. Pick the browser 
   directly (use `TextService.loadReadable`/`loadOwned`); no package depends on a controller.
 - External services (dictionary APIs, OpenAI, YouTube) only through `DictionaryClient`, `AiClient` and `YouTubeClient`.
 
-### AWS, GitHub and staging
-**Staging:** https://d3pd9mue4v7won.cloudfront.net (the `SiteUrl` output of the `PolygossaStaging` stack; it only
-changes if the stack is recreated). Real sign-up and login, no auto-login. Test accounts made there use
-`@example.com` addresses.
+### AWS, GitHub and production
+**Production:** https://d3pd9mue4v7won.cloudfront.net (the `SiteUrl` output of the `PolygossaStaging` stack: it was
+built as staging and became production in October 2026; the stack keeps its name, since renaming a CloudFormation
+stack rebuilds everything). No real users yet. Real sign-up and login, no auto-login. Test accounts made there use
+`@example.com` addresses. **QA** is the local app; from phase 3 it signs in through a QA Cognito user pool in the same
+AWS account, while its database stays in Docker. There is no cloud staging: treat every merge to main as a release.
 
 Setup and decisions: [production plan](docs/production.md). AWS is our own AWS Organization: a management account
-(administration and billing, owned by the user) and a member account for the app (staging; production gets its own
-account later). Claude works only in the member account, so organization-level changes (the region policy, which allows
+(administration and billing, owned by the user) and a member account for the app (production and the QA
+resources). Claude works only in the member account, so organization-level changes (the region policy, which allows
 `eu-west-1` plus the US regions AWS needs for global services and sign-in; new accounts; budgets) are the user's, in the
 management account. The user still has to turn on root MFA and set a budget alert.
 
@@ -142,13 +144,13 @@ Tools on the dev machine (none of these are on PATH in every shell, so use the f
   Read a failed CI run with `gh run view <id> --log-failed`; a job's log appears only once the job ends.
 - **AWS CDK** comes with `infra/` (`npx cdk diff|deploy`); deploying needs Docker running (it builds the images).
 
-When staging misbehaves: the services' logs are in CloudWatch (log groups for the backend and frontend, kept a month),
-the last deploy is the latest `deploy staging` job in GitHub Actions, and the stack's state is in CloudFormation.
-Staging is deliberately small: uploads live on the container's disk (lost on redeploy until S3), AI is off (no OpenAI
-key), no Redis.
+When production misbehaves: the services' logs are in CloudWatch (log groups for the backend and frontend, kept a
+month), the last deploy is the latest `deploy staging` job in GitHub Actions (named before the switch), and the
+stack's state is in CloudFormation. Production is deliberately small until the beta: uploads live on the container's
+disk (lost on redeploy until S3), AI is off (no OpenAI key), no Redis, a single-zone database.
 - Infrastructure is changed only through CDK (`infra/`), never by CLI or console commands. The CLI and MCP server are
   for reading, investigating and previewing (`cdk diff`).
-- Staging deploys itself: CI's `deploy staging` job runs `cdk deploy PolygossaStaging` on every merge to main (the
+- Production deploys itself: CI's `deploy staging` job runs `cdk deploy PolygossaStaging` on every merge to main (the
   pull request's checks are the gate; a temporary hand-started `deploy_only` run skips them),
   signed in through GitHub's OIDC as the `polygossa-github-deploy` role (its ARN is the repository variable
   `AWS_DEPLOY_ROLE_ARN`; `AWS_ACCOUNT_ID` lets CI's `cdk synth` run without AWS access). GitHub's OIDC subject names
@@ -332,8 +334,8 @@ those against a running backend.
   inside the effect with `.then` and a `cancelled` flag, as in the existing pages.
 
 ## Known limitations
-- Hosting is AWS, not the plan's original targets (Vercel, Railway/Render, Supabase): staging is live (see
-  "AWS, GitHub and staging"), production is not set up yet ([production plan](docs/production.md)).
+- Hosting is AWS, not the plan's original targets (Vercel, Railway/Render, Supabase): production is live,
+  sized small, with no real users yet (see "AWS, GitHub and production" and the [production plan](docs/production.md)).
   `docker-compose.yml` still runs everything locally.
 - Japanese, Chinese and Korean are split by simple built-in rules (Chinese per character), with no readings or
   dictionary forms: the Python tokenizer sidecar was removed unused.
