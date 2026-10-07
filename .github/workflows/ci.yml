@@ -1,0 +1,90 @@
+# The gauntlet's checks (see CLAUDE.md) on every push and pull request, on Linux like production. Scenarios:
+# docs/acceptance/ci.feature. Mutation testing stays local (too slow per push); deploying comes with phase 5 of
+# docs/production.md. No secrets and no cloud access: tests never call OpenAI or AWS.
+name: CI
+
+on:
+  push:
+    paths-ignore: ["docs/**"]
+  pull_request:
+    paths-ignore: ["docs/**"]
+  workflow_dispatch:
+
+# A newer push to a branch cancels its older run, except on main, where every commit keeps a result.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with: { distribution: temurin, java-version: "21" }
+      - uses: gradle/actions/setup-gradle@v6
+      - run: ./gradlew :backend:compileJava :backend:checkstyleMain :backend:test
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-test-reports
+          path: backend/build/reports/tests/test
+          retention-days: 14
+
+  frontend:
+    name: frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults: { run: { working-directory: frontend } }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with: { node-version: "24", cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - run: npm ci
+      - run: npm test
+      - run: npx tsc --noEmit
+      - run: npx eslint .
+      - run: npx next build
+
+  e2e:
+    name: end-to-end
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults: { run: { working-directory: frontend } }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with: { distribution: temurin, java-version: "21" }
+      - uses: gradle/actions/setup-gradle@v6
+      - uses: actions/setup-node@v7
+        with: { node-version: "24", cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
+          retention-days: 14
+
+  tools:
+    name: tools
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with: { node-version: "24", cache: npm, cache-dependency-path: frontend/package-lock.json }
+      # ESLint comes from the frontend's packages; tools/ has none of its own.
+      - run: npm ci
+        working-directory: frontend
+      - run: node --test "tools/**/*.test.mjs"
+      - run: >-
+          frontend/node_modules/.bin/eslint --no-config-lookup
+          --rule '{"complexity":["error",10],"max-lines":["error",300]}' "tools/**/*.mjs"
