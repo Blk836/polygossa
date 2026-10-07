@@ -8,6 +8,8 @@ Docs:
   product area does for learners and roughly how it is built, plus the product decisions taken.
 - [Product plan](docs/plan.md): the original vision. [Roadmap](docs/roadmap.md): designed but not built yet.
 - [Product gaps](docs/product-gaps.md): what is missing (product review); ideas not yet designed.
+- [Technical gaps](docs/technical-gaps.md): where development and tests differ from production, and what only works
+  with one backend server.
 - [Production plan](docs/production.md): going live on AWS (EU) with Cognito login, Stripe and GDPR; not started.
 - [Acceptance scenarios](docs/acceptance/): the agreed Gherkin scenarios per feature.
 
