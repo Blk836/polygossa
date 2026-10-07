@@ -62,6 +62,8 @@ export class ProductionStack extends cdk.Stack {
         SPRING_CACHE_TYPE: "simple",
         MANAGEMENT_HEALTH_REDIS_ENABLED: "false",
         JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75",
+        // The team (admin panel, forum moderation); the prod profile names nobody by default.
+        FORUM_ADMINS: "owner@example.com",
       },
       secrets: {
         DATABASE_USER: ecs.Secret.fromSecretsManager(database.secret!, "username"),
