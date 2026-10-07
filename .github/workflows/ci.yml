@@ -13,6 +13,13 @@ on:
   pull_request:
     paths-ignore: ["docs/**"]
   workflow_dispatch:
+    inputs:
+      # TEMPORARY, while the deploy itself is being worked on: deploy main to staging without running the checks.
+      # Remove before production (docs/production.md, phase 8): then every deploy needs every check to pass.
+      deploy_only:
+        description: "Skip the checks and only deploy main to staging (temporary)"
+        type: boolean
+        default: false
 
 # A newer push to a branch cancels its older run, except on main, where every commit keeps a result.
 concurrency:
@@ -25,6 +32,7 @@ permissions:
 jobs:
   backend:
     name: backend
+    if: ${{ !inputs.deploy_only }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -42,6 +50,7 @@ jobs:
 
   frontend:
     name: frontend
+    if: ${{ !inputs.deploy_only }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults: { run: { working-directory: frontend } }
@@ -59,6 +68,7 @@ jobs:
 
   e2e:
     name: end-to-end
+    if: ${{ !inputs.deploy_only }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     defaults: { run: { working-directory: frontend } }
@@ -81,6 +91,7 @@ jobs:
 
   infra:
     name: infra
+    if: ${{ !inputs.deploy_only }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults: { run: { working-directory: infra } }
@@ -101,6 +112,7 @@ jobs:
 
   tools:
     name: tools
+    if: ${{ !inputs.deploy_only }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -120,7 +132,13 @@ jobs:
   deploy:
     name: deploy staging
     needs: [backend, frontend, e2e, infra, tools]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # After a push to main whose checks all passed, or (temporary) when started by hand on main with deploy_only.
+    if: >-
+      always() && github.ref == 'refs/heads/main' && (
+        (github.event_name == 'push' && !contains(needs.*.result, 'failure')
+          && !contains(needs.*.result, 'cancelled') && !contains(needs.*.result, 'skipped'))
+        || (github.event_name == 'workflow_dispatch' && inputs.deploy_only)
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:

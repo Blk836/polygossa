@@ -69,6 +69,12 @@ Feature: Staging on AWS, defined in CDK and deployed from GitHub (docs/productio
     When a CI job fails, or the push is to another branch or a pull request
     Then no deploy happens
 
+  Scenario: A deploy can skip the checks by hand, for now
+    Given I start the CI workflow by hand on main with "deploy_only" ticked
+    Then no check runs and staging is deployed from main
+    And this switch is temporary, for working on the deploy itself: it is removed before production
+    And on any other branch it deploys nothing
+
   Scenario: Deploys don't overlap
     When two pushes to main pass CI close together
     Then their deploys run one after the other, never at the same time
