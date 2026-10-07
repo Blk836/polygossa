@@ -1,6 +1,7 @@
-# The gauntlet's checks (see CLAUDE.md) on every push and pull request, on Linux like production. Scenarios:
-# docs/acceptance/ci.feature. Mutation testing stays local (too slow per push); deploying comes with phase 5 of
-# docs/production.md. No secrets and no cloud access: tests never call OpenAI or AWS.
+# The gauntlet's checks (see CLAUDE.md) on every push and pull request, on Linux like production
+# (docs/acceptance/ci.feature), then, on main only and only when every check passed, a deploy to staging on AWS
+# (docs/acceptance/staging.feature). Mutation testing stays local (too slow per push). The checks have no secrets and
+# no cloud access: tests never call OpenAI or AWS. Only the deploy job signs in to AWS, with short-lived credentials.
 name: CI
 
 on:
@@ -75,6 +76,20 @@ jobs:
           path: frontend/playwright-report
           retention-days: 14
 
+  infra:
+    name: infra
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults: { run: { working-directory: infra } }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with: { node-version: "24", cache: npm, cache-dependency-path: infra/package-lock.json }
+      - run: npm ci
+      - run: npm run typecheck
+      # Synthesizes the stacks and checks their properties; no AWS access needed.
+      - run: npm test
+
   tools:
     name: tools
     runs-on: ubuntu-latest
@@ -90,3 +105,37 @@ jobs:
       - run: >-
           frontend/node_modules/.bin/eslint --no-config-lookup
           --rule '{"complexity":["error",10],"max-lines":["error",300]}' "tools/**/*.mjs"
+
+  # Staging (docs/acceptance/staging.feature): after every green push to main. GitHub's OIDC token is exchanged for
+  # short-lived credentials of the deploy role (infra/lib/github-deploy-stack.ts), which only main can assume.
+  deploy:
+    name: deploy staging
+    needs: [backend, frontend, e2e, infra, tools]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      id-token: write
+    # One deploy at a time; a newer one waits instead of cancelling a deploy halfway.
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+    defaults: { run: { working-directory: infra } }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with: { node-version: "24", cache: npm, cache-dependency-path: infra/package-lock.json }
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-1
+      - run: npm ci
+      # Builds the backend and frontend images, pushes them, and updates the stack.
+      - run: npx cdk deploy PolygossaStaging --require-approval never --progress events
+      - name: The site answers
+        run: |
+          url=$(aws cloudformation describe-stacks --stack-name PolygossaStaging \
+            --query "Stacks[0].Outputs[?OutputKey=='SiteUrl'].OutputValue" --output text)
+          echo "Staging: $url" >> "$GITHUB_STEP_SUMMARY"
+          curl --fail --silent --show-error --retry 20 --retry-delay 15 --retry-all-errors -o /dev/null "$url/login"

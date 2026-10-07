@@ -23,6 +23,7 @@ code is the source of truth for details, so there is never a second, stale copy.
 backend/    Spring Boot 4.1 (Java 21) — REST API; Gradle module :backend, package app.lector
 frontend/   Next.js 16 + React 19 + Tailwind 4 — UI and backend-for-frontend (BFF) API routes
 tools/      team command-line tools (plain Node, no packages): import-videos.mjs bulk-imports curated YouTube videos
+infra/      AWS CDK (TypeScript, run directly by Node): the staging environment and GitHub's deploy role
 ```
 
 ## How to work here: "gauntlet" verification
@@ -43,7 +44,8 @@ so the checks must prove it is correct.
    - full test suite: `./gradlew :backend:test` (backend); `cd frontend && npm test` (Vitest, pure modules only);
      `cd frontend && npm run e2e` (Playwright, `e2e/*.spec.ts`, real Chromium against a production build — any UI change
      needs a scenario here, since there are no component tests);
-     `node --test "tools/**/*.test.mjs"` (tools).
+     `node --test "tools/**/*.test.mjs"` (tools); `cd infra && npm test && npm run typecheck` (CDK stacks, synthesized
+     without AWS access).
    - mutation testing on changed files: `./gradlew :backend:pitest -Ppitest.since=<commit>` (PIT on just the main
      classes changed since that commit, e.g. the one before the task's first commit; `-Ppitest.targets=app.lector.text.*`
      names them directly, and no property mutates everything), `cd frontend && npm run mutate` (Stryker; the modules it
@@ -102,6 +104,11 @@ member account, default region `eu-west-1`. Sessions last 12 hours; when one exp
 needs the user to sign in through the browser.
 - Infrastructure is changed only through CDK (`infra/`), never by CLI or console commands. The CLI and MCP server are
   for reading, investigating and previewing (`cdk diff`).
+- Staging deploys itself: CI's `deploy staging` job runs `cdk deploy PolygossaStaging` after every green push to main,
+  signed in through GitHub's OIDC as the `polygossa-github-deploy` role (its ARN is the repository variable
+  `AWS_DEPLOY_ROLE_ARN`). Deploy by hand only to bootstrap or to change the deploy role itself
+  (`PolygossaGitHubDeploy`), and always `cdk diff` first. `infra/cdk.context.json` caches lookups so synth needs no AWS
+  access: commit it.
 - Before AWS work, check for a relevant AWS skill and prefer it over general knowledge; verify AWS details (limits,
   permissions, API parameters) against documentation instead of guessing.
 - Everything holding user data lives in `eu-west-1`. `us-east-1` is only for global services (CloudFront and its
