@@ -67,9 +67,13 @@ describe("production stack", () => {
     template.hasResourceProperties("AWS::SecretsManager::Secret", {
       GenerateSecretString: Match.objectLike({ PasswordLength: 64, ExcludePunctuation: true }),
     });
-    assert.deepEqual(secretNames(container("backend")), ["DATABASE_PASSWORD", "DATABASE_USER", "JWT_SECRET"]);
+    // The OpenAI key is a secret too, made by hand rather than generated (test/ai.test.ts).
+    assert.deepEqual(secretNames(container("backend")),
+      ["DATABASE_PASSWORD", "DATABASE_USER", "JWT_SECRET", "OPENAI_API_KEY"]);
     const env = envOf(container("backend"));
-    for (const name of ["DATABASE_PASSWORD", "JWT_SECRET"]) assert.equal(env[name], undefined, `${name} in plain env`);
+    for (const name of ["DATABASE_PASSWORD", "JWT_SECRET", "OPENAI_API_KEY"]) {
+      assert.equal(env[name], undefined, `${name} in plain env`);
+    }
   });
 
   it("runs the prod profile with auto-login off", () => {

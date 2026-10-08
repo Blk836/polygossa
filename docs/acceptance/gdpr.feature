@@ -39,7 +39,7 @@ Feature: Privacy and your data (docs/production.md, phase 4: GDPR)
   Scenario: A draft privacy policy and terms anyone can read
     When anyone opens /privacy or /terms, signed in or not (and they never sign anyone in)
     Then they read a draft privacy policy naming what we keep, why, every processor and where (AWS in Ireland,
-      Google for Google sign-in and YouTube, OpenAI in the US for AI features (off for now), the dictionaries,
+      Google for Google sign-in and YouTube, OpenAI in the US for AI features, the dictionaries,
       Stripe once paid plans launch), the cookies, how long data is kept and their rights
     And draft terms covering accounts, content, acceptable use, takedowns, plans, AI and liability
     And both say they are drafts, with what is still to fill in marked [like this]

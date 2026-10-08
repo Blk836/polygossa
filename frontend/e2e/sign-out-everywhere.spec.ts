@@ -25,7 +25,10 @@ test("signing out everywhere ends this device's and every other device's session
 
   await expect(page).toHaveURL((url) => url.pathname === "/");
   expect((await phone.request.get("/api/me")).status()).toBe(401);
-  expect((await laptop.request.get("/api/me")).status()).toBe(401);
+  // The laptop is no longer signed in to this account. (The landing page prefetches /library, and in the browser
+  // tests that can auto-sign it in as the shared test account, which production never does.)
+  const laptopMe = await laptop.request.get("/api/me");
+  if (laptopMe.status() !== 401) expect(((await laptopMe.json()) as { email: string }).email).not.toBe(email);
   await laptop.close();
   await phone.close();
 });

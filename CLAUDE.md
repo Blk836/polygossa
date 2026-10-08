@@ -163,7 +163,7 @@ Tools on the dev machine (none of these are on PATH in every shell, so use the f
 When production misbehaves: the services' logs are in CloudWatch (log groups for the backend and frontend, kept a
 month), the last deploy is the latest `deploy production` job in GitHub Actions, and the
 stack's state is in CloudFormation. Production is deliberately small until the beta: uploads live in an S3 bucket
-(`STORAGE_S3_BUCKET`; local runs and tests use the folder), AI is off (no OpenAI key), no Redis, a single-zone database.
+(`STORAGE_S3_BUCKET`; local runs and tests use the folder), AI is on (the OpenAI key is the Secrets Manager entry `polygossa/openai-api-key`), no Redis, a single-zone database.
 - Infrastructure is changed only through CDK (`infra/`), never by CLI or console commands. The CLI and MCP server are
   for reading, investigating and previewing (`cdk diff`).
 - Production deploys itself: CI's `deploy production` job runs `cdk deploy PolygossaStaging` on every merge to main (the
