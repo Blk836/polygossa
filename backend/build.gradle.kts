@@ -71,6 +71,14 @@ tasks.test {
 
 // The browser tests' backend (frontend/playwright.config.ts): the app on the test classpath, with a PostgreSQL
 // container of its own (see E2eApplication).
+// Local runs (QA) sign in through the QA user pool (stack PolygossaQa's outputs; cognito-login.feature). Only bootRun:
+// tests and the browser tests' backend (bootTestRun) keep the app's own accounts. COGNITO_ISSUER= (empty) turns it off.
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    environment("COGNITO_ISSUER", System.getenv("COGNITO_ISSUER")
+        ?: "https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_MY7u80TAo")
+    environment("COGNITO_CLIENT_ID", System.getenv("COGNITO_CLIENT_ID") ?: "5d0r0dpumsq3nihfq59piv9kd5")
+}
+
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootTestRun") {
     mainClass = "app.lector.E2eApplication"
 }

@@ -81,6 +81,13 @@ Feature: Login with Cognito (docs/production.md, phase 3)
     Then the old email-and-password sign-up and login endpoints and the test-account auto-login answer "not found"
     And the backend's own tokens are refused
 
+  Scenario: Local runs sign in through the QA pool
+    Given the developer starts the app locally (IntelliJ's App, or bootRun and npm run dev) with no Cognito settings
+    Then sign-in and sign-up go through the QA pool's hosted pages, and the test-account auto-login is off
+    And the QA pool's accounts are separate from production's
+    And setting COGNITO_ISSUER (backend) and COGNITO_DOMAIN (frontend) to empty goes back to the test account
+    And backend tests and the browser tests never use the QA pool
+
   Scenario: Without Cognito settings nothing changes
     Given no Cognito settings (backend tests, browser tests)
     Then the email-and-password forms and the test-account auto-login work as before
