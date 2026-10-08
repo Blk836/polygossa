@@ -1,5 +1,6 @@
 package app.lector.account;
 
+import app.lector.billing.BillingService;
 import app.lector.common.ApiException;
 import app.lector.storage.StorageService;
 import app.lector.text.TextService;
@@ -24,16 +25,19 @@ public class AccountDeletion {
     static final List<String> OWN_ROWS = List.of(
             "ai_usage", "playlist_bookmarks", "reading_progress", "reading_sessions", "recommendation_events",
             "review_logs", "sentence_cards", "text_dismissals", "text_reactions", "user_days", "user_interests",
-            "vocabulary_entries", "word_imports", "words_read", "writing_submissions", "writing_tests");
+            "vocabulary_entries", "word_imports", "words_read", "writing_submissions", "writing_tests",
+            "subscriptions");
 
     private final JdbcTemplate jdbc;
     private final EntityManager em;
     private final TextService texts;
     private final StorageService storage;
     private final UserRepository users;
+    private final BillingService billing;
 
     public AccountDeletion(JdbcTemplate jdbc, EntityManager em, TextService texts, StorageService storage,
-                           UserRepository users) {
+                           UserRepository users, BillingService billing) {
+        this.billing = billing;
         this.jdbc = jdbc;
         this.em = em;
         this.texts = texts;
@@ -47,6 +51,8 @@ public class AccountDeletion {
         if (confirmEmail == null || !confirmEmail.trim().equalsIgnoreCase(user.getEmail())) {
             throw ApiException.badRequest("Type your account's email to confirm");
         }
+        // First, so a deleted account is never charged again; if Stripe can't be reached, nothing is deleted.
+        billing.cancelForDeletion(user);
         long id = user.getId();
         for (Long text : jdbc.queryForList("select id from texts where owner_id = ?", Long.class, id)) {
             texts.delete(user, text);

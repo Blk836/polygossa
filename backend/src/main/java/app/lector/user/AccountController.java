@@ -1,5 +1,6 @@
 package app.lector.user;
 
+import app.lector.billing.StripeProperties;
 import app.lector.common.ApiException;
 import app.lector.token.Language;
 import app.lector.token.NativeLanguage;
@@ -51,9 +52,12 @@ public class AccountController {
     private final PlanService plans;
     private final Admins admins;
     private final Clock clock;
+    private final StripeProperties stripe;
 
-    public AccountController(CurrentUser currentUser, PlanService plans, Admins admins, Clock clock) {
+    public AccountController(CurrentUser currentUser, PlanService plans, Admins admins, Clock clock,
+                             StripeProperties stripe) {
         this.clock = clock;
+        this.stripe = stripe;
         this.currentUser = currentUser;
         this.plans = plans;
         this.admins = admins;
@@ -132,6 +136,9 @@ public class AccountController {
     @PostMapping("/me/plan")
     @Transactional
     public MeDto changePlan(@AuthenticationPrincipal AuthUser principal, @Valid @RequestBody ChangePlanRequest req) {
+        if (stripe.enabled()) {
+            throw ApiException.forbidden("Plans change through checkout in Settings › Subscription");
+        }
         User user = currentUser.load(principal);
         user.setTier(req.tier());
         return MeDto.of(user, plans, admins);
