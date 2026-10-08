@@ -17,6 +17,19 @@ export interface PlanInfo {
   usage: { texts: number; savedWords: number };
 }
 
+/** Settings › Subscription's view of Stripe billing (GET /api/billing); `enabled` false keeps the plan switch. */
+export interface Billing {
+  enabled: boolean;
+  testMode: boolean;
+  /** The price bought (pro_monthly, pro_yearly, classroom_monthly), or null without a live subscription. */
+  plan: string | null;
+  interval: "month" | "year" | null;
+  status: string | null;
+  periodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+  paymentProblem: boolean;
+}
+
 export interface Me {
   id: number;
   email: string;

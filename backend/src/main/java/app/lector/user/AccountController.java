@@ -162,11 +162,11 @@ public class AccountController {
     @GetMapping("/plans")
     public List<PlanDto> pricing() {
         return List.of(
-                new PlanDto(Tier.FREE, "Free", "$0",
+                new PlanDto(Tier.FREE, "Free", "€0",
                         List.of("5 imported texts", "500 saved words", "Basic dictionary")),
-                new PlanDto(Tier.PRO, "Pro", "$8/mo or $60/yr",
+                new PlanDto(Tier.PRO, "Pro", "€8/mo or €60/yr",
                         List.of("Unlimited texts & words", "Spaced repetition review", "Audio sync", "AI features")),
-                new PlanDto(Tier.CLASSROOM, "Classroom", "$4/student/mo",
+                new PlanDto(Tier.CLASSROOM, "Classroom", "€4/student/mo",
                         List.of("All Pro features", "Classroom management", "Pro access for your students")));
     }
 }

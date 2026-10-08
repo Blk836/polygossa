@@ -156,7 +156,8 @@ test.describe("landing page", () => {
   test("pricing shows the yearly price per month and what Pro adds", async ({ page }) => {
     await page.goto("/");
     const pricing = page.locator("#pricing");
-    await expect(pricing).toContainText("$60 a year ($5 a month)");
+    await expect(pricing).toContainText("€60 a year (€5 a month)");
+    await expect(pricing).toContainText("Prices include VAT");
     await expect(pricing.getByRole("listitem").filter({ hasText: "Everything in Free" })).toHaveCount(1);
     await expect(pricing).toContainText("LingQ or Readlang");
     await expect(pricing).toContainText("Recommendations at your level");

@@ -136,7 +136,7 @@ Feature: Landing page that turns visitors into sign-ups
     And no copy says what the visitor is "paying for" on a page that sells a free start
 
   Scenario: Pricing makes the yearly price concrete and says what Pro adds
-    Then the Pro plan shows "$8" a month and "$60 a year ($5 a month)"
+    Then the Pro plan shows "€8" a month and "€60 a year (€5 a month)", VAT included
     And Pro's list starts with "Everything in Free"
     And the Free plan lists recommendations at your level and importing words from LingQ or Readlang
     And the pricing section still has exactly three sign-up buttons

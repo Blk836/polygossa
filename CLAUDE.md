@@ -367,4 +367,4 @@ those against a running backend.
 - YouTube captions come from YouTube's unofficial innertube player endpoint (there is no keyless official API), so
   automatic caption import can break when YouTube changes it; imports then return 422 and ask for a subtitle file or
   pasted transcript. Backend tests use a local stub (`YouTubeStub`), never the real site.
-- Billing is simulated: `POST /api/me/plan` switches plans directly (where a Stripe webhook would plug in).
+- Billing: production uses Stripe (test mode until the beta; keys in Secrets Manager, prices and webhook from `tools/stripe-setup.mjs`). Local runs and tests have no Stripe keys, so `POST /api/me/plan` still switches plans directly there.

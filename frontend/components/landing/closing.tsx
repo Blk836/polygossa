@@ -7,7 +7,7 @@ import { LanguagePicker } from "./hero";
 const PLANS = [
   {
     name: "Free",
-    price: "$0",
+    price: "€0",
     note: "forever",
     cta: "Start free",
     items: [
@@ -22,9 +22,9 @@ const PLANS = [
   },
   {
     name: "Pro",
-    price: "$8",
+    price: "€8",
     note: "/month",
-    yearly: "or $60 a year ($5 a month)",
+    yearly: "or €60 a year (€5 a month)",
     cta: "Start free, upgrade any time",
     items: [
       "Everything in Free",
@@ -37,7 +37,7 @@ const PLANS = [
   },
   {
     name: "Classroom",
-    price: "$4",
+    price: "€4",
     note: "/student/month",
     cta: "Set up a class",
     items: ["Everything in Pro for every student", "Classes with join codes", "Assign texts and videos", "See each student's progress"],
@@ -50,7 +50,7 @@ export function Pricing() {
       <div className="mx-auto w-full max-w-6xl px-4 py-16 md:py-24">
         <SectionHeading eyebrow="Pricing" title="Start free. Upgrade when you're hooked.">
           The free plan isn&apos;t a trial: read the whole library for as long as you like. Go Pro when you want
-          unlimited imports and words, and reviews that make them stick.
+          unlimited imports and words, and reviews that make them stick. Prices include VAT.
         </SectionHeading>
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           {PLANS.map((p) => (
