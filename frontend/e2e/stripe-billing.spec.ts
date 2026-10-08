@@ -35,6 +35,11 @@ async function stubBilling(page: Page, state: () => Billing) {
 
 const section = (page: Page) => page.getByRole("region", { name: "Plan" });
 
+// The page keeps polling while it confirms a payment: drop stubs still in flight when a test ends.
+test.afterEach(async ({ page }) => {
+  await page.unrouteAll({ behavior: "ignoreErrors" });
+});
+
 test("choosing Pro yearly opens Stripe's checkout for that price; test mode and VAT are stated", async ({ page }) => {
   await stubBilling(page, () => off);
   const asked: unknown[] = [];
