@@ -6,6 +6,8 @@ import { clearSession, keepSessionFresh, writeSession } from "@/lib/session";
 const TOKEN_COOKIE = "lector_token";
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8080";
 const PUBLIC_PATHS = ["/", "/login", "/signup"];
+/** The legal pages: readable by everyone, signed in or not, and never replaced by an auto-login. */
+const LEGAL_PAGES = ["/privacy", "/terms"];
 const AUTH_PAGES = ["/login", "/signup"];
 /** The landing page: always shown as it is, signed in or not, so auto-login (dev) never hides it. */
 const LANDING = "/";
@@ -53,7 +55,7 @@ function signedOut(request: NextRequest): NextResponse {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  if (pathname === LANDING) return NextResponse.next();
+  if (pathname === LANDING || LEGAL_PAGES.includes(pathname)) return NextResponse.next();
   if (!request.cookies.has(TOKEN_COOKIE)) {
     // Like the landing page, the sign-in and sign-up pages stay visible with no session (auth-splash.feature).
     if (AUTH_PAGES.includes(pathname)) return NextResponse.next();

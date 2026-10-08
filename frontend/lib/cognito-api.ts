@@ -35,6 +35,11 @@ export async function globalSignOut(config: CognitoConfig, access: string): Prom
   return (await call(config, "GlobalSignOut", { AccessToken: access })) !== null;
 }
 
+/** Deletes the token's own user from the pool (deleting the account, docs/acceptance/gdpr.feature). */
+export async function deleteCognitoUser(config: CognitoConfig, access: string): Promise<boolean> {
+  return (await call(config, "DeleteUser", { AccessToken: access })) !== null;
+}
+
 export interface MfaStatus {
   on: boolean;
   /** Signs in with Google, whose own two-step verification applies instead. */

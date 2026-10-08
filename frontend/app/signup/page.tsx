@@ -25,6 +25,10 @@ export default async function SignupPage({ searchParams }: PageProps<"/signup">)
           <AuthForm mode="signup" />
         </Suspense>
       )}
+      <p className="mt-4 text-center text-xs text-muted">
+        By creating an account you agree to the <Link href="/terms" className="underline">terms</Link> and
+        the <Link href="/privacy" className="underline">privacy policy</Link>.
+      </p>
     </AuthShell>
   );
 }
