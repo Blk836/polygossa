@@ -128,6 +128,9 @@ test.describe("progress", () => {
     created = await createText(page);
     await readPage(page, 4, 75);
     await page.getByRole("button", { name: "Finish lesson" }).click();
+    // Saving 901 known words can take longer than the default 5 s while other tests load the PC: wait for the reader
+    // to say it's done, as a learner would, before checking what the backend kept.
+    await expect(page.getByText("Lesson complete")).toBeVisible({ timeout: 30_000 });
     await expect.poll(async () => (await savedProgress(page))?.completed).toBe(true);
     await page.goto("/library");
     await expect(finishedTag(page)).toBeVisible();
