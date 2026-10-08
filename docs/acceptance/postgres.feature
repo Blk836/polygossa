@@ -61,6 +61,18 @@ Feature: PostgreSQL everywhere (no more H2)
     When I run the backend tests
     Then the Spring tests fail saying Docker isn't available (they don't silently fall back to another database)
 
+  Scenario: Test JVMs starting together all find Docker on Windows
+    Given Docker Desktop is running on Windows (reached through its named pipe)
+    And another program used the pipe a moment ago (another test JVM, Testcontainers' cleanup container, the Docker CLI)
+    When a test JVM looks for Docker
+    Then it waits for the pipe to be free (a few seconds at most) instead of deciding Docker isn't there
+    And the JVM's tests run, rather than every one of them failing with "Could not find a valid Docker environment"
+
+  Scenario: Docker really isn't running on Windows
+    Given Docker Desktop is not running on Windows
+    When a test JVM looks for Docker
+    Then it still fails saying Docker isn't available, after waiting a few seconds at most
+
   Scenario: Mutation testing uses the same throwaway databases
     When I run ./gradlew :backend:pitest
     Then its test runs boot against Testcontainers PostgreSQL like ./gradlew :backend:test
