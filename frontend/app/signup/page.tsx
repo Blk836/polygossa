@@ -3,8 +3,10 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { AuthForm } from "@/components/auth-form";
 import { AuthShell } from "@/components/auth-shell";
+import { CognitoContinue } from "@/components/cognito-continue";
 import { Logo } from "@/components/ui";
 import { BRAND } from "@/lib/brand";
+import { cognitoConfig } from "@/lib/cognito";
 
 export const metadata: Metadata = { title: "Create account" };
 
@@ -16,9 +18,13 @@ export default async function SignupPage({ searchParams }: PageProps<"/signup">)
       <Link href="/" className="mb-6 block text-center lg:mb-8" aria-label={`${BRAND} home`}><Logo className="text-4xl" /></Link>
       <h1 className="mb-1 text-center font-display text-2xl font-semibold">Start reading in two minutes</h1>
       <p className="mb-6 text-center text-sm text-muted">Free forever for 5 texts and 500 saved words.</p>
-      <Suspense>
-        <AuthForm mode="signup" />
-      </Suspense>
+      {cognitoConfig() ? (
+        <CognitoContinue screen="signup" />
+      ) : (
+        <Suspense>
+          <AuthForm mode="signup" />
+        </Suspense>
+      )}
     </AuthShell>
   );
 }

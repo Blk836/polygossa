@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { cognitoConfig } from "@/lib/cognito";
+import { clearSession, keepSessionFresh, writeSession } from "@/lib/session";
 
 const TOKEN_COOKIE = "lector_token";
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8080";
@@ -13,7 +15,7 @@ const LANDING = "/";
  * landing, sign-in and sign-up pages, which stay visible). On by default; set AUTO_LOGIN=false to restore the normal login flow. The backend only honours it when app.dev-auto-login is enabled
  * (never in the prod profile), so if it's refused we fall through to the regular login page.
  */
-const AUTO_LOGIN = process.env.AUTO_LOGIN !== "false";
+const AUTO_LOGIN = process.env.AUTO_LOGIN !== "false" && !cognitoConfig();
 
 async function devLogin(): Promise<string | null> {
   try {
@@ -57,7 +59,26 @@ export async function proxy(request: NextRequest) {
     if (AUTH_PAGES.includes(pathname)) return NextResponse.next();
     return (AUTO_LOGIN && (await autoLogin(request))) || signedOut(request);
   }
-  return AUTH_PAGES.includes(pathname) ? NextResponse.redirect(new URL("/library", request.url)) : NextResponse.next();
+  if (AUTH_PAGES.includes(pathname)) return NextResponse.redirect(new URL("/library", request.url));
+  return renewed(request);
+}
+
+/**
+ * A Cognito session whose access token is about to expire is renewed here, so the page's server components see the
+ * new token (it replaces the old one in the request) and the browser keeps it. If it can't be renewed, sign in again.
+ */
+async function renewed(request: NextRequest): Promise<NextResponse> {
+  const session = await keepSessionFresh(cognitoConfig(), request.cookies);
+  if (session === "fresh") return NextResponse.next();
+  if (session === "ended") {
+    const response = signedOut(request);
+    clearSession(response.cookies);
+    return response;
+  }
+  request.cookies.set(TOKEN_COOKIE, session.access);
+  const response = NextResponse.next({ request: { headers: request.headers } });
+  writeSession(response.cookies, session);
+  return response;
 }
 
 export const config = {
