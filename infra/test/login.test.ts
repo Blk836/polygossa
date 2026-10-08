@@ -76,6 +76,25 @@ for (const [label, template, home] of [
       });
     });
 
+    it("styles the hosted pages like the app: our colours in light and dark mode, and our wordmark", () => {
+      const style = Object.values(template().findResources("AWS::Cognito::ManagedLoginBranding"))[0].Properties;
+      assert.equal(style.UseCognitoProvidedValues, false);
+      const s = style.Settings;
+      assert.equal(s.categories.global.colorSchemeMode, "DYNAMIC");
+      assert.equal(s.components.primaryButton.lightMode.defaults.backgroundColor, "26336bff"); // --accent
+      assert.equal(s.components.primaryButton.darkMode.defaults.backgroundColor, "aab6f2ff");
+      assert.equal(s.components.pageBackground.lightMode.color, "f6f1e7ff"); // --paper
+      assert.equal(s.components.form.lightMode.backgroundColor, "fffcf6ff"); // --card
+      assert.equal(s.components.form.logo.enabled, true);
+      const logos = (style.Assets as { Category: string; ColorMode: string; Extension: string; Bytes: string }[])
+        .filter((a) => a.Category === "FORM_LOGO");
+      assert.deepEqual(logos.map((a) => a.ColorMode).sort(), ["DARK", "LIGHT"]);
+      for (const logo of logos) {
+        assert.equal(logo.Extension, "SVG");
+        assert.match(Buffer.from(logo.Bytes, "base64").toString("utf8"), /<svg[^>]*>.*Polygossa.*<\/svg>/s);
+      }
+    });
+
     it("offers Sign in with Google, its secret read from Secrets Manager at deploy and never in the template", () => {
       template().hasResourceProperties("AWS::Cognito::UserPoolIdentityProvider", {
         ProviderName: "Google",
