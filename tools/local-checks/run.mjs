@@ -15,7 +15,7 @@ async function runOne(args, deps) {
     deps.log(`${USAGE}\n  (--run -- <command> runs one heavy command in its turn)`);
     return 2;
   }
-  return inTurn(deps, () => deps.exec({ command, cwd: "." }));
+  return inTurn(deps, () => deps.exec({ command, cwd: deps.here ?? "." }));
 }
 
 async function runSuites(args, deps) {

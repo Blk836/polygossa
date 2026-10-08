@@ -6,7 +6,7 @@
 //   node tools/local-checks.mjs --run -- <command>   one heavy command, in its turn
 import { execFileSync, spawn } from "node:child_process";
 import { existsSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { acquire } from "./local-checks/lock.mjs";
 import { runChecks } from "./local-checks/run.mjs";
 import { suitesFor } from "./local-checks/suites.mjs";
@@ -110,6 +110,7 @@ process.exitCode = await runChecks(process.argv.slice(2), {
   postStatus,
   log: (line) => console.log(line),
   now: () => Date.now(),
+  here: relative(root, process.cwd()) || ".",
   pid: process.pid,
   started: new Date().toISOString(),
 });
