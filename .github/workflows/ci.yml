@@ -31,9 +31,39 @@ permissions:
   contents: read
 
 jobs:
+  # Only the checks a change can affect run (docs/acceptance/ci.feature). Which ones is decided from the pull request's
+  # own changes (its merge commit against main) by tools/ci-checks.mjs; when unsure (CI itself changed, a file outside
+  # the known parts, a hand-started run, files that can't be listed) every check runs. Skipped jobs cost no minutes.
+  changes:
+    name: pick checks
+    if: github.event_name != 'push' && !inputs.deploy_only
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      backend: ${{ steps.pick.outputs.backend }}
+      e2e: ${{ steps.pick.outputs.e2e }}
+      frontend: ${{ steps.pick.outputs.frontend }}
+      infra: ${{ steps.pick.outputs.infra }}
+      tools: ${{ steps.pick.outputs.tools }}
+    steps:
+      - uses: actions/checkout@v7
+        with: { fetch-depth: 2 }
+      - name: Pick the checks this change needs
+        id: pick
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT" = pull_request ] && files=$(git diff --name-only HEAD^1 HEAD); then
+            printf 'Changed files:\n%s\n\n' "$files"
+            printf '%s\n' "$files" | node tools/ci-checks.mjs | tee -a "$GITHUB_OUTPUT"
+          else
+            node tools/ci-checks.mjs --all | tee -a "$GITHUB_OUTPUT"
+          fi
+
   backend:
     name: backend
-    if: github.event_name != 'push' && !inputs.deploy_only
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -49,36 +79,98 @@ jobs:
           path: backend/build/reports/tests/test
           retention-days: 14
 
-  frontend:
-    name: frontend
-    if: github.event_name != 'push' && !inputs.deploy_only
+  # The frontend, infra and tools checks each take well under a minute, and GitHub bills every job as at least a whole
+  # minute, so they share one job. Each part's steps run even when another part's failed (!cancelled()), and every
+  # step's name starts with its part, so a red run still shows where to look.
+  quick:
+    name: quick checks (frontend, infra, tools)
+    needs: changes
+    if: >-
+      needs.changes.outputs.frontend == 'true' || needs.changes.outputs.infra == 'true'
+      || needs.changes.outputs.tools == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    defaults: { run: { working-directory: frontend } }
+    env:
+      FRONTEND: ${{ needs.changes.outputs.frontend }}
+      INFRA: ${{ needs.changes.outputs.infra }}
+      TOOLS: ${{ needs.changes.outputs.tools }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
-        with: { node-version: "24", cache: npm, cache-dependency-path: frontend/package-lock.json }
-      - run: npm ci
-      - run: npm test
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            infra/package-lock.json
+      # The tools checks use ESLint from the frontend's packages; tools/ has none of its own.
+      - name: "frontend: install"
+        id: frontend-install
+        if: env.FRONTEND == 'true' || env.TOOLS == 'true'
+        run: npm ci
+        working-directory: frontend
+      - name: "frontend: unit tests"
+        if: ${{ !cancelled() && env.FRONTEND == 'true' && steps.frontend-install.outcome == 'success' }}
+        run: npm test
+        working-directory: frontend
       # The global route types (PageProps, LayoutProps, RouteContext) that a fresh checkout lacks; next dev makes them locally.
-      - run: npx next typegen
-      - run: npx tsc --noEmit
-      - run: npx eslint .
-      - run: npx next build
+      - name: "frontend: type check"
+        if: ${{ !cancelled() && env.FRONTEND == 'true' && steps.frontend-install.outcome == 'success' }}
+        run: npx next typegen && npx tsc --noEmit
+        working-directory: frontend
+      - name: "frontend: lint"
+        if: ${{ !cancelled() && env.FRONTEND == 'true' && steps.frontend-install.outcome == 'success' }}
+        run: npx eslint .
+        working-directory: frontend
+      - name: "frontend: build"
+        if: ${{ !cancelled() && env.FRONTEND == 'true' && steps.frontend-install.outcome == 'success' }}
+        run: npx next build
+        working-directory: frontend
+      - name: "infra: install"
+        id: infra-install
+        if: ${{ !cancelled() && env.INFRA == 'true' }}
+        run: npm ci
+        working-directory: infra
+      - name: "infra: type check"
+        if: ${{ !cancelled() && env.INFRA == 'true' && steps.infra-install.outcome == 'success' }}
+        run: npm run typecheck
+        working-directory: infra
+      # Synthesizes the stacks and checks their properties; no AWS access needed.
+      - name: "infra: tests"
+        if: ${{ !cancelled() && env.INFRA == 'true' && steps.infra-install.outcome == 'success' }}
+        run: npm test
+        working-directory: infra
+      # The whole app, as the deploy runs it (catches a missing entry point or config); lookups come from
+      # cdk.context.json, so still no AWS access.
+      - name: "infra: synth"
+        if: ${{ !cancelled() && env.INFRA == 'true' && steps.infra-install.outcome == 'success' }}
+        run: npx cdk synth --quiet
+        working-directory: infra
+        env:
+          CDK_DEFAULT_ACCOUNT: ${{ vars.AWS_ACCOUNT_ID }}
+          CDK_DEFAULT_REGION: eu-west-1
+      - name: "tools: tests"
+        if: ${{ !cancelled() && env.TOOLS == 'true' }}
+        run: node --test "tools/**/*.test.mjs"
+      - name: "tools: lint"
+        if: ${{ !cancelled() && env.TOOLS == 'true' && steps.frontend-install.outcome == 'success' }}
+        run: >-
+          frontend/node_modules/.bin/eslint --no-config-lookup
+          --rule '{"complexity":["error",10],"max-lines":["error",300]}' "tools/**/*.mjs"
 
   # The browser suite is CPU-bound and a private repository's runner has 2 cores (Playwright runs 1 worker there), so it
-  # is split across 4 runners that each run a quarter of the tests: about 3-4 minutes instead of 7, for roughly twice
-  # the CI minutes (each runner builds the backend and frontend itself).
+  # is split across 2 runners that each run half the tests: about 6-7 minutes instead of 10. Not more: each runner
+  # builds the backend and frontend itself, so 4 runners cost about 20 billed minutes for what 2 check in about 13.
   e2e:
-    name: end-to-end (${{ matrix.shard }}/4)
-    if: github.event_name != 'push' && !inputs.deploy_only
+    name: end-to-end (${{ matrix.shard }}/2)
+    needs: changes
+    if: needs.changes.outputs.e2e == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2]
     defaults: { run: { working-directory: frontend } }
     steps:
       - uses: actions/checkout@v7
@@ -97,51 +189,13 @@ jobs:
       # No browser install: the tests drive the runner's preinstalled Google Chrome (playwright.config.ts). Installing
       # Playwright's Chromium ran apt, and an unresponsive Ubuntu mirror hung shards for 15+ minutes.
       - run: google-chrome --version
-      - run: npx playwright test --shard=${{ matrix.shard }}/4
+      - run: npx playwright test --shard=${{ matrix.shard }}/2
       - if: failure()
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report-${{ matrix.shard }}
           path: frontend/playwright-report
           retention-days: 14
-
-  infra:
-    name: infra
-    if: github.event_name != 'push' && !inputs.deploy_only
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    defaults: { run: { working-directory: infra } }
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with: { node-version: "24", cache: npm, cache-dependency-path: infra/package-lock.json }
-      - run: npm ci
-      - run: npm run typecheck
-      # Synthesizes the stacks and checks their properties; no AWS access needed.
-      - run: npm test
-      # The whole app, as the deploy runs it (catches a missing entry point or config); lookups come from
-      # cdk.context.json, so still no AWS access.
-      - run: npx cdk synth --quiet
-        env:
-          CDK_DEFAULT_ACCOUNT: ${{ vars.AWS_ACCOUNT_ID }}
-          CDK_DEFAULT_REGION: eu-west-1
-
-  tools:
-    name: tools
-    if: github.event_name != 'push' && !inputs.deploy_only
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with: { node-version: "24", cache: npm, cache-dependency-path: frontend/package-lock.json }
-      # ESLint comes from the frontend's packages; tools/ has none of its own.
-      - run: npm ci
-        working-directory: frontend
-      - run: node --test "tools/**/*.test.mjs"
-      - run: >-
-          frontend/node_modules/.bin/eslint --no-config-lookup
-          --rule '{"complexity":["error",10],"max-lines":["error",300]}' "tools/**/*.mjs"
 
   # Production (docs/acceptance/staging.feature, staging-becomes-production.feature; the stack is still named
   # PolygossaStaging): on every merge to main. GitHub's OIDC token is exchanged for

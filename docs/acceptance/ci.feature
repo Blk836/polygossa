@@ -52,15 +52,65 @@ Feature: CI: every check runs on GitHub for every push (see docs/production.md, 
     Then "npm run e2e" runs the Playwright suite in Chromium against a production build, with its own backend and
       PostgreSQL, as locally
     And no OpenAI key is set, so no test calls OpenAI
-    And the suite is split across 4 runners that run at the same time, each with its own servers, so it takes a
-      few minutes rather than one runner's 7
+    And the suite is split across 2 runners that run at the same time, each with its own servers, so it takes
+      about 6-7 minutes rather than one runner's 10
+    And it is not split further: each runner builds the backend and frontend itself, so 4 runners cost about 20
+      billed minutes for the tests that 2 runners check for about 13
 
   Scenario: Tools
     Then "node --test" runs the tools' tests and ESLint checks tools/ for complexity over 10 and files over 300 lines
 
   Scenario: The checks run side by side
-    Then backend, frontend, end-to-end and tools are separate jobs that run at the same time
-    And each job's name says which part it checks, so a red run shows where to look
+    Then backend, end-to-end, and one "quick checks" job (frontend, infra and tools) run at the same time
+    And the quick checks share one job because GitHub bills every job as at least a whole minute, and each of them
+      takes well under one
+    And each job's name, and each step's name inside the quick-checks job, says which part it checks, so a red run
+      shows where to look
+
+  # --- Only the checks a change can affect (saves CI minutes) ---
+
+  Scenario Outline: A pull request runs only the checks for the parts it changed
+    Given a pull request that changes only <files>
+    When CI runs
+    Then <checks> run
+    And every other check is skipped (shown as skipped, not red) and costs no minutes
+
+    Examples:
+      | files                                               | checks                                        |
+      | backend/ or the Gradle build (build files, gradle/) | backend and end-to-end                        |
+      | frontend/                                           | frontend, tools and end-to-end                |
+      | infra/                                              | infra                                         |
+      | tools/                                              | tools                                         |
+      | backend/ and infra/                                 | backend, end-to-end and infra                 |
+
+  Scenario: The tools checks follow the frontend's packages
+    Given the tools checks use ESLint from frontend/'s packages
+    When a pull request changes only files under frontend/
+    Then the tools checks run too
+
+  Scenario: Changing CI itself runs everything
+    When a pull request changes the CI workflow (.github/) or the script that decides which checks run
+    Then every check runs, so a broken workflow can't skip the checks that would show it
+
+  Scenario: A change outside the known parts runs everything
+    When a pull request changes a file outside backend/, frontend/, infra/, tools/ and the Gradle build
+      (for example the compose files, scripts/ or .env.example)
+    Then every check runs: when unsure, check rather than skip
+
+  Scenario: The choice depends on the pull request's own changes
+    Given main has moved since the branch was made
+    When the pull request's checks run
+    Then which checks run depends only on what the pull request changes compared with main, not on what else
+      landed on main (those changes were checked on their own pull requests)
+
+  Scenario: Started by hand, everything runs
+    When I start the workflow from the Actions tab (not deploy-only)
+    Then every check runs
+
+  Scenario: If the changed files can't be read, everything runs
+    Given the list of the pull request's changed files can't be worked out
+    When CI runs
+    Then every check runs, rather than none
 
   # --- Failures ---
 
@@ -74,12 +124,13 @@ Feature: CI: every check runs on GitHub for every push (see docs/production.md, 
       | a failing backend test                   | backend    |
       | a Java method over complexity 10         | backend    |
       | a Java compile error                     | backend    |
-      | a failing Vitest test                    | frontend   |
-      | a TypeScript type error                  | frontend   |
-      | an ESLint error (including file length)  | frontend   |
-      | a frontend that doesn't build            | frontend   |
+      | a failing Vitest test                    | quick checks (frontend step) |
+      | a TypeScript type error                  | quick checks (frontend step) |
+      | an ESLint error (including file length)  | quick checks (frontend step) |
+      | a frontend that doesn't build            | quick checks (frontend step) |
       | a failing Playwright test                | end-to-end |
-      | a failing tools test or complexity error | tools      |
+      | a failing infra test or synth error      | quick checks (infra step) |
+      | a failing tools test or complexity error | quick checks (tools step) |
 
   Scenario: Failed runs keep what's needed to see why
     When the backend or end-to-end job fails
