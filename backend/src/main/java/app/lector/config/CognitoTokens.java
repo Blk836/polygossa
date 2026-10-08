@@ -1,5 +1,6 @@
 package app.lector.config;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
@@ -22,7 +23,7 @@ import org.springframework.stereotype.Component;
 public class CognitoTokens {
 
     /** A checked Cognito identity: its stable id ("sub") and, from an ID token, its email. */
-    public record Identity(String sub, String email, boolean emailVerified) {}
+    public record Identity(String sub, String email, boolean emailVerified, Instant issuedAt) {}
 
     private final NimbusJwtDecoder access;
     private final NimbusJwtDecoder id;
@@ -47,13 +48,13 @@ public class CognitoTokens {
 
     /** The identity an access token speaks for, or empty when it isn't a valid one of ours. */
     public Optional<Identity> access(String token) {
-        return decode(access, token).map(jwt -> new Identity(jwt.getSubject(), null, false));
+        return decode(access, token).map(jwt -> new Identity(jwt.getSubject(), null, false, jwt.getIssuedAt()));
     }
 
     /** The identity and email in an ID token, or empty when it isn't a valid one of ours. */
     public Optional<Identity> id(String token) {
         return decode(id, token).map(jwt -> new Identity(jwt.getSubject(), jwt.getClaimAsString("email"),
-                Boolean.TRUE.equals(jwt.getClaimAsBoolean("email_verified"))));
+                Boolean.TRUE.equals(jwt.getClaimAsBoolean("email_verified")), jwt.getIssuedAt()));
     }
 
     private static Optional<Jwt> decode(NimbusJwtDecoder decoder, String token) {

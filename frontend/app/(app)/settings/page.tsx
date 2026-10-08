@@ -3,8 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { useMe } from "@/components/me-context";
+import { DevicesSection } from "@/components/settings/devices-section";
 import { GoalFields, type GoalChoice } from "@/components/settings/goal-fields";
 import { InterestsSection } from "@/components/settings/interests-section";
+import { MfaSection } from "@/components/settings/mfa-section";
 import { ProfilePhoto } from "@/components/settings/profile-photo";
 import { ToursSection } from "@/components/settings/tours-section";
 import { Button, ErrorNote, Field, inputClass, selectClass } from "@/components/ui";
@@ -76,6 +78,8 @@ export default function ProfilePage() {
       </form>
       <InterestsSection />
       <ToursSection />
+      <MfaSection />
+      <DevicesSection />
     </div>
   );
 }

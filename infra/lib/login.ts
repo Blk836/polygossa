@@ -66,7 +66,8 @@ export function userPool(
     authFlows: { userSrp: true },
     oAuth: {
       flows: { authorizationCodeGrant: true },
-      scopes: [cognito.OAuthScope.OPENID, cognito.OAuthScope.EMAIL],
+      // COGNITO_ADMIN lets a session call Cognito's API for its own user: signing out everywhere.
+      scopes: [cognito.OAuthScope.OPENID, cognito.OAuthScope.EMAIL, cognito.OAuthScope.COGNITO_ADMIN],
       callbackUrls: [`${opts.siteUrl}/api/auth/callback`],
       logoutUrls: [`${opts.siteUrl}/`],
     },

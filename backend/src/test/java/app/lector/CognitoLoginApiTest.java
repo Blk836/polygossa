@@ -178,6 +178,24 @@ class CognitoLoginApiTest {
     }
 
     @Test
+    void signingOutEverywhereRefusesEveryTokenIssuedBeforeButNotLaterSignIns() throws Exception {
+        String sub = CognitoStub.newSub();
+        Instant earlier = Instant.now().minusSeconds(10);
+        String otherDevice = POOL.access(sub, c -> c.issueTime(Date.from(earlier)));
+        String thisDevice = POOL.access(sub, c -> c.issueTime(Date.from(earlier.plusSeconds(1))));
+        startSession(thisDevice, POOL.id(sub, unique("everywhere")), "en", 200);
+
+        int status = mvc.perform(post("/api/me/sign-out-everywhere").header("Authorization", "Bearer " + thisDevice))
+                .andReturn().getResponse().getStatus();
+
+        assertThat(status).isEqualTo(204);
+        assertThat(meStatus(otherDevice)).isEqualTo(401);
+        assertThat(meStatus(thisDevice)).isEqualTo(401);
+        String later = POOL.access(sub, c -> c.issueTime(Date.from(Instant.now().plusSeconds(2))));
+        assertThat(meStatus(later)).isEqualTo(200);
+    }
+
+    @Test
     void theOldPasswordEndpointsAndAutoLoginAreGoneAndOwnTokensAreRefused() throws Exception {
         String signup = "{\"email\":\"" + unique("pw") + "\",\"password\":\"password123\"}";
         assertThat(mvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON).content(signup))

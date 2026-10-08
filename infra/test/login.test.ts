@@ -67,7 +67,7 @@ for (const [label, template, home] of [
         GenerateSecret: false,
         AllowedOAuthFlows: ["code"],
         AllowedOAuthFlowsUserPoolClient: true,
-        AllowedOAuthScopes: Match.arrayEquals(["openid", "email"]),
+        AllowedOAuthScopes: Match.arrayEquals(["openid", "email", "aws.cognito.signin.user.admin"]),
         CallbackURLs: [`${home}/api/auth/callback`],
         LogoutURLs: [`${home}/`],
         SupportedIdentityProviders: Match.arrayEquals(["COGNITO", "Google"]),
