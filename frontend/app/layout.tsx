@@ -5,6 +5,7 @@ import { CardLayoutProvider } from "@/components/card-layout-context";
 import { ThemeProvider } from "@/components/theme-context";
 import { BRAND } from "@/lib/brand";
 import { CARD_LAYOUT_COOKIE, parseCardLayout } from "@/lib/card-layout";
+import { appUrl } from "@/lib/site";
 import { THEME_COOKIE, parseTheme, themeAttribute } from "@/lib/theme";
 import "./globals.css";
 
@@ -12,14 +13,24 @@ const instrumentSans = Instrument_Sans({ variable: "--font-instrument-sans", sub
 const fraunces = Fraunces({ variable: "--font-fraunces", subsets: ["latin", "latin-ext"], axes: ["SOFT", "opsz"] });
 const literata = Literata({ variable: "--font-literata", subsets: ["latin", "latin-ext"] });
 
-export const metadata: Metadata = {
-  title: { default: `${BRAND} — learn languages by reading`, template: `%s · ${BRAND}` },
-  description:
-    "Read authentic content in the language you're learning. Click any word for a definition, save it, and watch your vocabulary grow.",
-  // With translate="no" below: browser translation rewrites text React rendered and crashes the page (and translating
-  // a lesson defeats the point). Chrome otherwise offers it whenever a lesson makes the page read as another language.
-  other: { google: "notranslate" },
-};
+const SHARE_TITLE = `${BRAND}: learn a language from things you actually want to read`;
+const DESCRIPTION =
+  "Read stories, articles and YouTube videos in the language you're learning. Tap any word for its meaning, keep it, and watch the words you know add up. Free to start.";
+
+// A function, not a constant, so the share-preview links (og:image) use the live site's address from APP_URL at
+// request time rather than whatever the build machine had.
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    metadataBase: new URL(appUrl(process.env)),
+    title: { default: `${BRAND} — learn languages by reading`, template: `%s · ${BRAND}` },
+    description: DESCRIPTION,
+    openGraph: { type: "website", siteName: BRAND, title: SHARE_TITLE, description: DESCRIPTION },
+    twitter: { card: "summary_large_image", title: SHARE_TITLE, description: DESCRIPTION },
+    // With translate="no" below: browser translation rewrites text React rendered and crashes the page (and translating
+    // a lesson defeats the point). Chrome otherwise offers it whenever a lesson makes the page read as another language.
+    other: { google: "notranslate" },
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
