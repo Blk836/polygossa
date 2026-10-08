@@ -109,11 +109,15 @@ test("a save the server rejects goes back to Save", async ({ page }) => {
 test("hovering a playlist card shows the pointer, like a text card", async ({ page }) => {
   await sharedPlaylist(page);
   await page.goto("/community");
-  // Other playlists in the dev database can push the card below the fold, where elementFromPoint finds nothing.
-  await card(page).scrollIntoViewIfNeeded();
-  const box = (await card(page).boundingBox())!;
-  for (const y of [0.3, 0.6]) {
-    const cursor = await page.evaluate(([x, y]) => getComputedStyle(document.elementFromPoint(x, y)!).cursor, [box.x + box.width / 2, box.y + box.height * y]);
-    expect(cursor).toBe("pointer");
-  }
+  // Other playlists in the dev database can push the card below the fold, where elementFromPoint finds nothing, and
+  // cards still loading above it can move it after it was measured: measure again until both points show the pointer.
+  await expect.poll(async () => {
+    await card(page).scrollIntoViewIfNeeded();
+    const box = (await card(page).boundingBox())!;
+    const points = [0.3, 0.6].map((y) => [box.x + box.width / 2, box.y + box.height * y]);
+    return page.evaluate((points) => points.map(([x, y]) => {
+      const element = document.elementFromPoint(x, y);
+      return element ? getComputedStyle(element).cursor : "nothing there";
+    }), points);
+  }).toEqual(["pointer", "pointer"]);
 });
