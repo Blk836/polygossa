@@ -73,7 +73,7 @@ export function Reader({ initial, initialSettings, playlist }: {
     onNotice: popup.setNotice,
     onError: setError,
   });
-  const { autoSave, recordDefinition, setStatus: setVocabStatus, markRemainingKnown } = vocab;
+  const { autoSave, recordDefinition, pickMeaning, setStatus: setVocabStatus, markRemainingKnown } = vocab;
 
   const sentences = useMemo(() => sentenceTexts(tokens), [tokens]);
   // Captions put a few words on each line; transcripts flow them into paragraphs instead.
@@ -120,6 +120,12 @@ export function Reader({ initial, initialSettings, playlist }: {
       if (target) recordDefinition(target, result);
     },
     [target, recordDefinition],
+  );
+  const onPickMeaning = useCallback(
+    (meaning: string) => {
+      if (target) void pickMeaning(target, meaning);
+    },
+    [target, pickMeaning],
   );
   const saveSentence = useCallback(
     async (translation?: string) => {
@@ -211,6 +217,7 @@ export function Reader({ initial, initialSettings, playlist }: {
               hasAudio={media.synced}
               onStatus={setStatus}
               onDefinition={onDefinition}
+              onPickMeaning={onPickMeaning}
               onSaveSentence={saveSentence}
               onPlayFromHere={playFromHere}
               onLookupLemma={popup.lookupLemma}

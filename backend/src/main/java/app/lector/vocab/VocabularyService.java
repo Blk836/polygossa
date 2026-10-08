@@ -31,17 +31,19 @@ public class VocabularyService {
             String example,
             String contextSentence,
             String note,
-            List<String> tags) {
+            List<String> tags,
+            /* the word in the learner's own language; "" clears it */
+            String meaning) {
 
         public EntryFields(WordStatus status, String definition, String partOfSpeech, String pronunciation,
                            String example, String contextSentence) {
-            this(status, definition, partOfSpeech, pronunciation, example, contextSentence, null, null);
+            this(status, definition, partOfSpeech, pronunciation, example, contextSentence, null, null, null);
         }
 
         /** The same fields with tags normalized (a 400 for invalid ones, before anything changes). */
         EntryFields checked() {
             return tags == null ? this : new EntryFields(status, definition, partOfSpeech, pronunciation, example,
-                    contextSentence, note, Tags.normalize(tags));
+                    contextSentence, note, Tags.normalize(tags), meaning);
         }
     }
 
@@ -70,7 +72,7 @@ public class VocabularyService {
         VocabularyEntry entry = repo.findByUserIdAndLanguageAndTerm(user.getId(), language, key)
                 .orElseGet(() -> create(user, language, key, displayOrTerm(displayTerm, term), kind, fields.status(), textId));
         changeStatus(user, entry, fields.status());
-        applyDetails(entry, fields);
+        applyDetails(entry, fields, user);
         return entry;
     }
 
@@ -152,7 +154,7 @@ public class VocabularyService {
         EntryFields fields = unchecked.checked();
         VocabularyEntry entry = loadOwned(user, id);
         changeStatus(user, entry, fields.status());
-        applyDetails(entry, fields);
+        applyDetails(entry, fields, user);
         return entry;
     }
 
@@ -209,7 +211,7 @@ public class VocabularyService {
         return entry;
     }
 
-    private static void applyDetails(VocabularyEntry entry, EntryFields f) {
+    private static void applyDetails(VocabularyEntry entry, EntryFields f, User user) {
         boolean changed = false;
         if (f.definition() != null) {
             entry.setDefinition(trim(f.definition(), 4000));
@@ -232,20 +234,26 @@ public class VocabularyService {
             entry.setContextSentence(trim(f.contextSentence(), 2000));
             changed = true;
         }
-        if (applyPersonal(entry, f) || changed) {
+        if (applyPersonal(entry, f, user) || changed) {
             entry.touch();
         }
     }
 
-    /** The learner's own note ("" clears it) and tags (null leaves them, [] clears them). */
-    private static boolean applyPersonal(VocabularyEntry entry, EntryFields f) {
+    /**
+     * The learner's own note ("" clears it), tags (null leaves them, [] clears them) and meaning ("" clears it; a new
+     * one is in the learner's native language as it is now).
+     */
+    private static boolean applyPersonal(VocabularyEntry entry, EntryFields f, User user) {
         if (f.note() != null) {
             entry.setNote(f.note().isBlank() ? null : trim(f.note(), 2000));
         }
         if (f.tags() != null) {
             entry.setTags(f.tags());
         }
-        return f.note() != null || f.tags() != null;
+        if (f.meaning() != null) {
+            entry.setMeaning(f.meaning().isBlank() ? null : trim(f.meaning(), 200), user.getNativeLanguage());
+        }
+        return f.note() != null || f.tags() != null || f.meaning() != null;
     }
 
     private static String trim(String s, int max) {

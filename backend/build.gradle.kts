@@ -37,6 +37,10 @@ dependencies {
     implementation("software.amazon.awssdk:s3") {
         exclude(group = "software.amazon.awssdk", module = "netty-nio-client")
     }
+    // Machine translation of single words (word-translations.feature), approved October 2026.
+    implementation("software.amazon.awssdk:translate") {
+        exclude(group = "software.amazon.awssdk", module = "netty-nio-client")
+    }
 
     // Payments and subscriptions (stripe-billing.feature), approved October 2026.
     implementation("com.stripe:stripe-java:34.0.0")

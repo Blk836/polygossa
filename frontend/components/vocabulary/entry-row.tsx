@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ApiError, api, errorMessage } from "@/lib/api";
+import { NATIVE_LANGUAGES } from "@/lib/dictionary";
+import { useMe } from "../me-context";
 import type { VocabularyEntry, WordStatus } from "@/lib/types";
 import { Button, FailureNote, chipSelectClass, inputClass } from "../ui";
 import { WordNotes } from "./word-notes";
@@ -38,6 +40,35 @@ function DefinitionEditor({ definition, onSave }: { definition: string | undefin
     <div className="mt-2 flex gap-2">
       <input className={inputClass} value={value} onChange={(e) => setValue(e.target.value)} autoFocus />
       <Button onClick={() => { onSave(value); setEditing(false); }}>Save</Button>
+    </div>
+  );
+}
+
+/**
+ * The word in the learner's own language, which other learners' popups count once two of them agree. Shown when the
+ * word has one, or when the learner's native language isn't English (English speakers have the definitions).
+ */
+function MeaningEditor({ entry, onSave }: { entry: VocabularyEntry; onSave: (value: string) => Promise<boolean> }) {
+  const { me } = useMe();
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(entry.meaning ?? "");
+  const code = entry.meaningLanguage ?? me.nativeLanguage;
+  if (!entry.meaning && me.nativeLanguage === "en") return null;
+  const label = `${NATIVE_LANGUAGES.find((l) => l.code === code)?.name ?? code} meaning`;
+  if (!editing) {
+    return (
+      <p data-testid="word-meaning" className="mt-1 text-sm">
+        <span className="mr-1.5 text-xs text-muted">{label}</span>
+        <button className="text-left font-medium hover:underline" onClick={() => setEditing(true)} title={`Edit ${label.toLowerCase()}`}>
+          {entry.meaning || <span className="font-normal text-muted">Add one…</span>}
+        </button>
+      </p>
+    );
+  }
+  return (
+    <div className="mt-2 flex gap-2">
+      <input className={inputClass} value={value} onChange={(e) => setValue(e.target.value)} aria-label={label} maxLength={200} autoFocus />
+      <Button onClick={async () => { if (await onSave(value)) setEditing(false); }}>Save meaning</Button>
     </div>
   );
 }
@@ -79,6 +110,7 @@ export function EntryRow({ entry, onChange, onDelete, onTag }: {
       <div className="flex flex-wrap items-start gap-3">
         <div className="min-w-0 flex-1">
           <TermLine entry={entry} />
+          <MeaningEditor entry={entry} onSave={(meaning) => patch({ meaning })} />
           <DefinitionEditor definition={entry.definition} onSave={(definition) => void patch({ definition })} />
           <WordNotes entry={entry} onSave={patch} onTag={onTag} />
           <Context entry={entry} />

@@ -142,7 +142,8 @@ If it can't be reproduced, say so and ask instead of guessing. Pick the browser 
   CJK tokenizer service at `TOKENIZER_URL`, which the project no longer has, and must keep working when that is down).
 - Backend layering: controllers → services → repositories/entities. Controllers don't load texts from repositories
   directly (use `TextService.loadReadable`/`loadOwned`); no package depends on a controller.
-- External services (dictionary APIs, OpenAI, YouTube) only through `DictionaryClient`, `AiClient` and `YouTubeClient`.
+- External services (dictionary APIs, OpenAI, YouTube, Amazon Translate) only through `DictionaryClient`, `AiClient`,
+  `YouTubeClient` and `TranslationClient`.
 
 ### AWS, GitHub and production
 **Production:** https://d3pd9mue4v7won.cloudfront.net (the `SiteUrl` output of the `PolygossaStaging` stack: it was

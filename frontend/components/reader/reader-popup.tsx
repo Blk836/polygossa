@@ -17,6 +17,7 @@ interface Props {
   hasAudio: boolean;
   onStatus: (status: WordStatus | null) => void;
   onDefinition: (result: DictionaryResult) => void;
+  onPickMeaning: (meaning: string) => void;
   onSaveSentence: (translation?: string) => Promise<void>;
   onPlayFromHere: () => void;
   onLookupLemma: (lemma: string) => void;

@@ -72,6 +72,12 @@ app:
     model: ${OPENAI_MODEL:gpt-4o-mini}
     daily-limit: ${AI_DAILY_LIMIT:30}
     embedding-model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+  # Machine translation of single words (word-translations.feature): Amazon Translate when enabled (production);
+  # the cap is characters a month ($15 a million, so 1333333 is $20).
+  translation:
+    enabled: ${TRANSLATION_ENABLED:false}
+    region: ${TRANSLATION_REGION:eu-west-1}
+    monthly-character-cap: ${TRANSLATION_MONTHLY_CHARACTER_CAP:1333333}
   # Explore recommendations: score weights and the background job that tags and embeds public texts.
   recommend:
     feature-job: ${RECOMMEND_FEATURE_JOB:true}

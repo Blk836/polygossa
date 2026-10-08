@@ -32,16 +32,16 @@ public class DictionaryController {
     public record TranslateResponse(String translation) {}
 
     private final DictionaryClient dictionary;
-    private final NativeGlosses glosses;
+    private final OwnLanguageMeanings meanings;
     private final AiTutor ai;
     private final AiAllowance allowance;
     private final PlanService plans;
     private final CurrentUser currentUser;
 
-    public DictionaryController(DictionaryClient dictionary, NativeGlosses glosses, AiTutor ai, AiAllowance allowance,
-                                PlanService plans, CurrentUser currentUser) {
+    public DictionaryController(DictionaryClient dictionary, OwnLanguageMeanings meanings, AiTutor ai,
+                                AiAllowance allowance, PlanService plans, CurrentUser currentUser) {
         this.dictionary = dictionary;
-        this.glosses = glosses;
+        this.meanings = meanings;
         this.ai = ai;
         this.allowance = allowance;
         this.plans = plans;
@@ -75,14 +75,16 @@ public class DictionaryController {
             }
         }
         User user = currentUser.load(principal);
+        String key = TokenizationService.normalize(surface, language);
         if (result.found()) {
-            return glosses.add(result, language, user.getNativeLanguage());
+            return meanings.add(result, language, user.getNativeLanguage(), key, surface);
         }
         if (ai.enabled() && plans.hasFeature(user, PlanService.Feature.AI)) {
             result = allowance.call(user, () -> ai.define(language, user.getNativeLanguage(), surface, context));
         }
-        return result.found() ? result : DictionaryResult.notFound(TokenizationService.normalize(surface, language),
-                language.code());
+        // The AI writes in the learner's language already; otherwise others' meanings or a machine translation help.
+        return result.found() ? result : meanings.add(DictionaryResult.notFound(key, language.code()), language,
+                user.getNativeLanguage(), key, surface);
     }
 
     /** AI-generated example sentence (Pro). */
