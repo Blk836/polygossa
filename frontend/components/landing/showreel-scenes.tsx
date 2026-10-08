@@ -144,7 +144,7 @@ export function AgainScene({ p }: { p: number }) {
           <span data-testid="showreel-target" className={`w ${known ? "w-known showreel-glow" : "w-learning"}`}>mariscos</span>{" "}
           <span className="w w-known">y</span> <span className="w w-new">pescado</span>.
         </p>
-        <p className={`${FADE} ${shown(known)} mt-2 text-sm text-good`}>✓ You know “mariscos” now — no lookup needed.</p>
+        <p className={`${FADE} ${shown(known)} mt-2 text-sm text-good`}>✓ You know “mariscos” now. No lookup needed.</p>
       </div>
       <div className="flex items-end justify-between gap-4">
         <p>

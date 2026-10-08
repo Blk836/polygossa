@@ -4,6 +4,8 @@
  * them. Configured by COGNITO_DOMAIN (the pool's hosted-pages address), COGNITO_CLIENT_ID and APP_URL (this site).
  */
 
+import { appUrl } from "./site";
+
 export interface CognitoConfig {
   domain: string;
   clientId: string;
@@ -33,7 +35,7 @@ export function cognitoConfig(env: Record<string, string | undefined> = process.
   const domain = env.COGNITO_DOMAIN?.trim().replace(/\/+$/, "");
   const clientId = env.COGNITO_CLIENT_ID?.trim();
   if (!domain || !clientId) return null;
-  return { domain, clientId, appUrl: (env.APP_URL?.trim() || "http://localhost:3000").replace(/\/+$/, "") };
+  return { domain, clientId, appUrl: appUrl(env) };
 }
 
 export function redirectUri(config: CognitoConfig): string {
