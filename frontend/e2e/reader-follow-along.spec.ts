@@ -220,8 +220,8 @@ test.describe("choosing what to show", () => {
     const follow = page.getByRole("dialog", { name: "Reader settings" }).getByLabel("Follow along");
     await expect(follow).toHaveValue("word");
     await follow.selectOption({ label: "Sentence" });
-    await follow.blur(); // playback shortcuts don't reach a focused dropdown
     await page.keyboard.press("Escape");
+    await page.getByRole("button", { name: "Reader settings" }).blur(); // Space on a focused button presses it, not pause
     await playThenPause(page);
     await expect(article(page).locator(".s-spoken").first()).toBeVisible();
     await expect(marker(page)).toHaveCount(0);
