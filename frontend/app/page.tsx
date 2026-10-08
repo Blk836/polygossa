@@ -31,6 +31,8 @@ export default async function Landing() {
             <a href="#pricing" className="hover:text-ink">Pricing</a>
             <a href="#faq" className="hover:text-ink">FAQ</a>
             <Link href="/login" className="hover:text-ink">Sign in</Link>
+            <Link href="/privacy" className="hover:text-ink">Privacy</Link>
+            <Link href="/terms" className="hover:text-ink">Terms</Link>
           </nav>
           <p>{BRAND} · <Link href={signupHref()} className="underline">Create an account</Link></p>
         </div>

@@ -13,7 +13,7 @@ import {
   safeNext,
   startLogin,
 } from "./cognito";
-import { confirmTotp, globalSignOut, mfaStatus, startTotp, turnOffTotp } from "./cognito-api";
+import { confirmTotp, deleteCognitoUser, globalSignOut, mfaStatus, startTotp, turnOffTotp } from "./cognito-api";
 
 const config = { domain: "https://polygossa.auth.eu-west-1.amazoncognito.com", clientId: "abc", appUrl: "https://site" };
 
@@ -215,6 +215,22 @@ describe("authenticator-app MFA", () => {
     expect(calls(fetchMock)).toEqual([
       { target: "SetUserMFAPreference", body: { AccessToken: "a", SoftwareTokenMfaSettings: { Enabled: false, PreferredMfa: false } } },
     ]);
+  });
+});
+
+describe("deleteCognitoUser", () => {
+  it("deletes the token's own user from the pool", async () => {
+    const fetchMock = vi.fn(async () => Response.json({}));
+    vi.stubGlobal("fetch", fetchMock);
+    expect(await deleteCognitoUser(config, "access-1")).toBe(true);
+    const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(new Headers(init.headers).get("x-amz-target")).toBe("AWSCognitoIdentityProviderService.DeleteUser");
+    expect(JSON.parse(init.body as string)).toEqual({ AccessToken: "access-1" });
+  });
+
+  it("reports a refusal", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({}, { status: 400 })));
+    expect(await deleteCognitoUser(config, "a")).toBe(false);
   });
 });
 
