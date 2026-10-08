@@ -12,6 +12,7 @@ Docs:
   with one backend server.
 - [Production plan](docs/production.md): going live on AWS (EU): S3, Cognito login, monitoring and GDPR are built;
   Stripe is next.
+- [Marketing plan](docs/marketing.md): finding the first learners on about $100 a month; the founding-100 offer.
 - [Acceptance scenarios](docs/acceptance/): the agreed Gherkin scenarios per feature.
 
 **Keeping the docs true is part of every change.** `docs/architecture/` must always describe the product as it is:
