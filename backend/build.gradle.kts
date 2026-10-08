@@ -38,6 +38,9 @@ dependencies {
         exclude(group = "software.amazon.awssdk", module = "netty-nio-client")
     }
 
+    // Payments and subscriptions (stripe-billing.feature), approved October 2026.
+    implementation("com.stripe:stripe-java:34.0.0")
+
     implementation("io.jsonwebtoken:jjwt-api:0.13.0")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")

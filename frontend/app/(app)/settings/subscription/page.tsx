@@ -1,18 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMe } from "@/components/me-context";
+import { StripePlans } from "@/components/settings/stripe-plans";
 import { Button, ErrorNote } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
-import type { Me, Tier } from "@/lib/types";
+import type { Billing, Me, Tier } from "@/lib/types";
 
 const PLANS: { tier: Tier; name: string; price: string; items: string[] }[] = [
-  { tier: "FREE", name: "Free", price: "$0", items: ["5 imported texts", "500 saved words", "Basic dictionary"] },
-  { tier: "PRO", name: "Pro", price: "$8/mo or $60/yr", items: ["Unlimited texts & words", "Spaced repetition review", "Audio sync", "AI definitions, examples & writing tutor"] },
-  { tier: "CLASSROOM", name: "Classroom", price: "$4/student/mo", items: ["All Pro features", "Create classes & assign texts", "Student progress", "Pro access for your students"] },
+  { tier: "FREE", name: "Free", price: "€0", items: ["5 imported texts", "500 saved words", "Basic dictionary"] },
+  { tier: "PRO", name: "Pro", price: "€8/mo or €60/yr", items: ["Unlimited texts & words", "Spaced repetition review", "Audio sync", "AI definitions, examples & writing tutor"] },
+  { tier: "CLASSROOM", name: "Classroom", price: "€4/student/mo", items: ["All Pro features", "Create classes & assign texts", "Student progress", "Pro access for your students"] },
 ];
 
-export default function SubscriptionPage() {
+/** How often, and for how long, the page checks whether Stripe's webhook has confirmed a payment. */
+const CONFIRM_EVERY_MS = 2000;
+const CONFIRM_FOR_MS = 30000;
+
+/** Without Stripe (local runs, tests): plans switch at once, as a demo. */
+function DemoPlans() {
   const { me, setMe } = useMe();
   const [error, setError] = useState<string | null>(null);
   const [planBusy, setPlanBusy] = useState(false);
@@ -30,11 +36,7 @@ export default function SubscriptionPage() {
   }
 
   return (
-    <section>
-      <h2 className="font-display text-lg font-semibold">Plan</h2>
-      {me.plan.sponsoredByClassroom && (
-        <p className="mt-1 text-sm text-muted">You have Pro features through your teacher&apos;s Classroom plan.</p>
-      )}
+    <>
       <div className="mt-3 grid gap-3 md:grid-cols-3">
         {PLANS.map((p) => {
           const current = me.plan.tier === p.tier;
@@ -56,6 +58,60 @@ export default function SubscriptionPage() {
       <p className="mt-2 text-xs text-muted">
         Demo billing: plan changes apply immediately. In production this button would open the payment provider&apos;s checkout.
       </p>
+    </>
+  );
+}
+
+export default function SubscriptionPage() {
+  const { me, setMe } = useMe();
+  const [billing, setBilling] = useState<Billing | null>(null);
+  const [confirming, setConfirming] = useState<"waiting" | "slow" | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const back = new URLSearchParams(window.location.search).get("checkout") === "success";
+    const started = Date.now();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    // After paying, Stripe's webhook sets the plan within moments: check until it has, then show the new plan.
+    const check = () => {
+      api<Billing>("billing").then((b) => {
+        if (cancelled) return;
+        setBilling(b);
+        const done = !back || !b.enabled || b.plan !== null;
+        if (done) {
+          setConfirming(null);
+          if (back) void api<Me>("me").then((m) => { if (!cancelled) setMe(m); });
+          return;
+        }
+        setConfirming(Date.now() - started > CONFIRM_FOR_MS ? "slow" : "waiting");
+        timer = setTimeout(check, CONFIRM_EVERY_MS);
+      }).catch(() => {
+        // Without an answer, show the plans as they are; choosing one then says what went wrong.
+        if (!cancelled) setBilling({ enabled: false, testMode: false, plan: null, interval: null, status: null,
+          periodEnd: null, cancelAtPeriodEnd: false, paymentProblem: false });
+      });
+    };
+    check();
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [setMe]);
+
+  return (
+    <section aria-labelledby="plan-heading">
+      <h2 id="plan-heading" className="font-display text-lg font-semibold">Plan</h2>
+      {me.plan.sponsoredByClassroom && (
+        <p className="mt-1 text-sm text-muted">You have Pro features through your teacher&apos;s Classroom plan.</p>
+      )}
+      {confirming && (
+        <p className="mt-2 rounded-lg border border-line bg-card px-3 py-2 text-sm">
+          {confirming === "waiting"
+            ? "Confirming your payment with Stripe…"
+            : "Confirming your payment is taking longer than usual. Refresh this page in a minute."}
+        </p>
+      )}
+      {billing?.enabled ? <StripePlans billing={billing} me={me} /> : billing && <DemoPlans />}
       {me.plan.limits.texts !== null && (
         <p className="mt-2 text-sm text-muted">
           Usage: {me.plan.usage.texts}/{me.plan.limits.texts} texts · {me.plan.usage.savedWords}/{me.plan.limits.savedWords} saved words

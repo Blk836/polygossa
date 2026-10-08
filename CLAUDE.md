@@ -10,8 +10,8 @@ Docs:
 - [Product gaps](docs/product-gaps.md): what is missing (product review); ideas not yet designed.
 - [Technical gaps](docs/technical-gaps.md): where development and tests differ from production, and what only works
   with one backend server.
-- [Production plan](docs/production.md): going live on AWS (EU): S3, Cognito login, monitoring and GDPR are built;
-  Stripe is next.
+- [Production plan](docs/production.md): going live on AWS (EU): S3, Cognito login, monitoring, GDPR and Stripe
+  (test mode) are built; hardening and launch are next.
 - [Marketing plan](docs/marketing.md): finding the first learners on about $100 a month; the founding-100 offer.
 - [Acceptance scenarios](docs/acceptance/): the agreed Gherkin scenarios per feature.
 
@@ -378,4 +378,4 @@ those against a running backend.
 - YouTube captions come from YouTube's unofficial innertube player endpoint (there is no keyless official API), so
   automatic caption import can break when YouTube changes it; imports then return 422 and ask for a subtitle file or
   pasted transcript. Backend tests use a local stub (`YouTubeStub`), never the real site.
-- Billing is simulated: `POST /api/me/plan` switches plans directly (where a Stripe webhook would plug in).
+- Billing: production uses Stripe (test mode until the beta; keys in Secrets Manager, prices and webhook from `tools/stripe-setup.mjs`). Local runs and tests have no Stripe keys, so `POST /api/me/plan` still switches plans directly there.

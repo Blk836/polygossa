@@ -23,6 +23,21 @@ taken over. Backend and end-to-end runs need `JAVA_HOME`; missing or outdated `n
 `npm ci` first; infra's synth gets the AWS account from the `AWS_ACCOUNT_ID` repository variable (or
 `CDK_DEFAULT_ACCOUNT`). `GH` overrides where the GitHub CLI is.
 
+## stripe-setup.mjs: the prices and the webhook in Stripe
+
+Sets up a Stripe account for the app (`docs/acceptance/stripe-billing.feature`): the three prices (€8 a month and €60
+a year for Pro, €4 per student a month for Classroom, VAT included), found by their lookup keys, and the webhook for
+subscription events at production's address. It reads the secret key from Secrets Manager
+(`polygossa/stripe-secret-key`) and saves the webhook's signing secret there (`polygossa/stripe-webhook-secret`);
+neither is printed. Safe to run again: prices already there are kept, and the webhook is replaced (Stripe shows a
+signing secret only once). Needs the AWS CLI signed in to the app's account.
+
+```bash
+node tools/stripe-setup.mjs                      # test mode, production's address
+node tools/stripe-setup.mjs --site https://…     # another address
+node tools/stripe-setup.mjs --live               # only with a live key, on purpose
+```
+
 ## local-deploy.mjs: deploy main to production from this PC
 
 Run it right after merging a pull request (`docs/acceptance/local-deploy.feature`); GitHub no longer deploys on merge.

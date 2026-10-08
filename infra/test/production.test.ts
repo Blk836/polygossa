@@ -67,11 +67,11 @@ describe("production stack", () => {
     template.hasResourceProperties("AWS::SecretsManager::Secret", {
       GenerateSecretString: Match.objectLike({ PasswordLength: 64, ExcludePunctuation: true }),
     });
-    // The OpenAI key is a secret too, made by hand rather than generated (test/ai.test.ts).
+    // The OpenAI and Stripe keys are secrets too, made by hand rather than generated (ai.test.ts, stripe.test.ts).
     assert.deepEqual(secretNames(container("backend")),
-      ["DATABASE_PASSWORD", "DATABASE_USER", "JWT_SECRET", "OPENAI_API_KEY"]);
+      ["DATABASE_PASSWORD", "DATABASE_USER", "JWT_SECRET", "OPENAI_API_KEY", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"]);
     const env = envOf(container("backend"));
-    for (const name of ["DATABASE_PASSWORD", "JWT_SECRET", "OPENAI_API_KEY"]) {
+    for (const name of ["DATABASE_PASSWORD", "JWT_SECRET", "OPENAI_API_KEY", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"]) {
       assert.equal(env[name], undefined, `${name} in plain env`);
     }
   });

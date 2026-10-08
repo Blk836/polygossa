@@ -28,6 +28,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/auth/signup", "/api/auth/login", "/api/auth/dev-login",
                                 "/api/auth/cognito").permitAll()
+                        // Stripe's webhook: checked by Stripe's signature instead of a login (BillingController).
+                        .requestMatchers(HttpMethod.POST, "/api/billing/webhook").permitAll()
                         // Guarded by the curator token instead of a login (app.lector.curator.CuratorAccess).
                         .requestMatchers("/api/curator/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/languages", "/api/languages/native", "/api/plans").permitAll()

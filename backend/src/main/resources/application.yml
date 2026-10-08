@@ -77,6 +77,11 @@ app:
     feature-job: ${RECOMMEND_FEATURE_JOB:true}
   billing:
     enforce-limits: ${ENFORCE_PLAN_LIMITS:true}
+  # Real billing (stripe-billing.feature): a secret key turns it on; blank keeps the plan switch (local runs, tests).
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+    site-url: ${APP_URL:http://localhost:3000}
   cors-origins: ${CORS_ORIGINS:http://localhost:3000}
   seed-samples: ${SEED_SAMPLES:true}
   # Sign-in (cognito-login.feature): Cognito when its user pool (issuer) and app client are set; the app's own

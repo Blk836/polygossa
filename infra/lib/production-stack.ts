@@ -19,6 +19,13 @@ import { uploadsBucket } from "./uploads.ts";
  */
 export const OPENAI_SECRET = "polygossa/openai-api-key";
 
+/**
+ * Stripe (docs/acceptance/stripe-billing.feature): the secret key (test mode until the beta), made by hand, and the
+ * webhook's signing secret, saved by tools/stripe-setup.mjs when it registers the webhook. Read by ECS by name.
+ */
+export const STRIPE_SECRET = "polygossa/stripe-secret-key";
+export const STRIPE_WEBHOOK_SECRET = "polygossa/stripe-webhook-secret";
+
 export interface ProductionProps extends cdk.StackProps {
   /** CloudFront's origin-facing prefix list; looked up in the account when absent (tests pass one). */
   readonly cloudFrontPrefixListId?: string;
@@ -98,6 +105,8 @@ export class ProductionStack extends cdk.Stack {
         COGNITO_CLIENT_ID: login.clientId,
         // The team (admin panel, forum moderation); the prod profile names nobody by default.
         FORUM_ADMINS: "owner@example.com",
+        // Where Stripe Checkout and the portal return.
+        APP_URL: siteUrl,
       },
       secrets: {
         DATABASE_USER: ecs.Secret.fromSecretsManager(database.secret!, "username"),
@@ -105,6 +114,10 @@ export class ProductionStack extends cdk.Stack {
         JWT_SECRET: ecs.Secret.fromSecretsManager(jwtSecret),
         OPENAI_API_KEY: ecs.Secret.fromSecretsManager(
           secretsmanager.Secret.fromSecretNameV2(this, "OpenAiKey", OPENAI_SECRET)),
+        STRIPE_SECRET_KEY: ecs.Secret.fromSecretsManager(
+          secretsmanager.Secret.fromSecretNameV2(this, "StripeKey", STRIPE_SECRET)),
+        STRIPE_WEBHOOK_SECRET: ecs.Secret.fromSecretsManager(
+          secretsmanager.Secret.fromSecretNameV2(this, "StripeWebhookSecret", STRIPE_WEBHOOK_SECRET)),
       },
     });
     const backend = new ecs.FargateService(this, "Backend", {
