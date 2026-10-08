@@ -1,6 +1,7 @@
 import * as cdk from "aws-cdk-lib";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import type { Construct } from "constructs";
+import { styleAssets, styleSettings } from "./hosted-pages-style.ts";
 
 export interface Login {
   /** The issuer the backend checks tokens against (https://cognito-idp.<region>.amazonaws.com/<pool id>). */
@@ -22,6 +23,9 @@ export interface Login {
  * never appears in the code or the template.
  */
 export const GOOGLE_SECRET = "polygossa/google-oauth";
+
+/** The name on the hosted pages' wordmark: BRAND_NAME, as the backend and frontend read it, or the default. */
+const BRAND = process.env.BRAND_NAME?.trim() || "Polygossa";
 
 export function userPool(
   scope: Construct,
@@ -82,11 +86,13 @@ export function userPool(
     refreshTokenValidity: cdk.Duration.days(30),
   });
   client.node.addDependency(google);
-  // The newer hosted pages need a style; Cognito's own look until ours is designed.
+  // The hosted pages in the app's colours and wordmark (hosted-pages-style.ts).
   new cognito.CfnManagedLoginBranding(scope, "HostedPagesStyle", {
     userPoolId: pool.userPoolId,
     clientId: client.userPoolClientId,
-    useCognitoProvidedValues: true,
+    useCognitoProvidedValues: false,
+    settings: styleSettings(),
+    assets: styleAssets(BRAND),
   });
   return {
     issuer: pool.userPoolProviderUrl,
