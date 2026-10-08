@@ -10,7 +10,8 @@ Docs:
 - [Product gaps](docs/product-gaps.md): what is missing (product review); ideas not yet designed.
 - [Technical gaps](docs/technical-gaps.md): where development and tests differ from production, and what only works
   with one backend server.
-- [Production plan](docs/production.md): going live on AWS (EU) with Cognito login, Stripe and GDPR; not started.
+- [Production plan](docs/production.md): going live on AWS (EU): S3, Cognito login, monitoring and GDPR are built;
+  Stripe is next.
 - [Acceptance scenarios](docs/acceptance/): the agreed Gherkin scenarios per feature.
 
 **Keeping the docs true is part of every change.** `docs/architecture/` must always describe the product as it is:
@@ -137,15 +138,15 @@ If it can't be reproduced, say so and ask instead of guessing. Pick the browser 
 ### AWS, GitHub and production
 **Production:** https://d3pd9mue4v7won.cloudfront.net (the `SiteUrl` output of the `PolygossaStaging` stack: it was
 built as staging and became production in October 2026; the stack keeps its name, since renaming a CloudFormation
-stack rebuilds everything). No real users yet. Real sign-up and login, no auto-login. Test accounts made there use
-`@example.com` addresses. **QA** is the local app; from phase 3 it signs in through a QA Cognito user pool in the same
+stack rebuilds everything). No real users yet. Sign-in through its Cognito user pool, no auto-login. Test accounts made there use
+`@example.com` addresses. **QA** is the local app; it signs in through a QA Cognito user pool (stack `PolygossaQa`) in the same
 AWS account, while its database stays in Docker. There is no cloud staging: treat every merge to main as a release.
 
 Setup and decisions: [production plan](docs/production.md). AWS is our own AWS Organization: a management account
 (administration and billing, owned by the user) and a member account for the app (production and the QA
 resources). Claude works only in the member account, so organization-level changes (the region policy, which allows
 `eu-west-1` plus the US regions AWS needs for global services and sign-in; new accounts; budgets) are the user's, in the
-management account. The user still has to turn on root MFA and set a budget alert.
+management account (the app account's own monthly budget is in CDK). The user still has to turn on root MFA.
 
 Tools on the dev machine (none of these are on PATH in every shell, so use the full paths):
 - **AWS CLI** `C:\Program Files\Amazon\AWSCLIV2\aws.exe`, profile `polygossa` (the member account, default region
