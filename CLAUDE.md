@@ -131,15 +131,18 @@ stack rebuilds everything). No real users yet. Sign-in through its Cognito user 
 AWS account, while its database stays in Docker. There is no cloud staging: treat every merge to main as a release.
 
 Setup and decisions: [production plan](docs/production.md). AWS is our own AWS Organization: a management account
-(administration and billing, owned by the user) and a member account for the app (production and the QA
-resources). Claude works only in the member account, so organization-level changes (the region policy, which allows
+(`322126339607`; administration and billing, owned by the user) and a member account for the app, named
+**"dream it ship it"** (`788826923437`; production and the QA resources). Claude works only in the app account, so organization-level changes (the region policy, which allows
 `eu-west-1` plus the US regions AWS needs for global services and sign-in; new accounts; budgets) are the user's, in the
 management account (the app account's own monthly budget is in CDK). The user still has to turn on root MFA.
 
 Tools on the dev machine (none of these are on PATH in every shell, so use the full paths):
-- **AWS CLI** `C:\Program Files\Amazon\AWSCLIV2\aws.exe`, profile `polygossa` (the member account, default region
-  `eu-west-1`). Sessions last 12 hours; when one expires, `aws login --profile polygossa` needs the user to sign in
-  through the browser. The **AWS Agent Toolkit** gives Claude the MCP server `aws-mcp` (started with `uvx`, from **uv**
+- **AWS CLI** `C:\Program Files\Amazon\AWSCLIV2\aws.exe`, profile `polygossa` (the app account "dream it ship it",
+  `788826923437`, default region `eu-west-1`). Sessions last 12 hours; when one expires, the user runs
+  `& "C:\Program Files\Amazon\AWSCLIV2\aws.exe" login --profile polygossa` in PowerShell (the `&` is needed) and signs
+  in through the browser, which uses whichever account the browser is in: pick **"dream it ship it"** there. If the CLI
+  asks to overwrite the profile with any other account ID (e.g. the management account `322126339607`), the answer
+  is **n**. Check with `aws sts get-caller-identity --profile polygossa` (should print `788826923437`). The **AWS Agent Toolkit** gives Claude the MCP server `aws-mcp` (started with `uvx`, from **uv**
   in `~/.local/bin`) and AWS skills.
 - **GitHub CLI** `C:\Program Files\GitHub CLI\gh.exe`, signed in as the repository owner (`Blk836/polygossa`, private).
   Read a failed CI run with `gh run view <id> --log-failed`; a job's log appears only once the job ends.
