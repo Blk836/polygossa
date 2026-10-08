@@ -10,8 +10,8 @@ Docs:
 - [Product gaps](docs/product-gaps.md): what is missing (product review); ideas not yet designed.
 - [Technical gaps](docs/technical-gaps.md): where development and tests differ from production, and what only works
   with one backend server.
-- [Production plan](docs/production.md): going live on AWS (EU): S3, Cognito login, monitoring and GDPR are built;
-  Stripe is next.
+- [Production plan](docs/production.md): going live on AWS (EU): S3, Cognito login, monitoring, GDPR and Stripe
+  (test mode) are built; hardening and launch are next.
 - [Marketing plan](docs/marketing.md): finding the first learners on about $100 a month; the founding-100 offer.
 - [Acceptance scenarios](docs/acceptance/): the agreed Gherkin scenarios per feature.
 
