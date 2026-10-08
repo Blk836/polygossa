@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# The QA user pool's settings for next dev (no secrets: the app client has none).
+!.env.development
 
 # vercel
 .vercel
