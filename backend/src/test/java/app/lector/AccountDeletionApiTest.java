@@ -97,7 +97,7 @@ class AccountDeletionApiTest {
         Path photoFile = Path.of("build/test-uploads").resolve(photo.substring(photo.indexOf("?v=") + 3)); // app.storage.dir
         JsonNode cls = api.post(ana, "/api/classes", "{\"name\":\"Clase\",\"language\":\"es\"}", 201);
         long thread = api.post(ana, "/api/forum/threads",
-                "{\"category\":null,\"title\":\"Ana's question\",\"body\":\"Hello\"}", 201).get("id").asLong();
+                "{\"category\":\"general\",\"title\":\"Ana's question\",\"body\":\"Hello\"}", 201).get("id").asLong();
 
         // Ben's own things, some pointing at Ana's.
         api.post(ben, "/api/vocabulary", "{\"language\":\"es\",\"term\":\"amigo\",\"textId\":" + shared + "}", 201);
@@ -106,7 +106,7 @@ class AccountDeletionApiTest {
         api.post(ben, "/api/classes/join", "{\"code\":\"" + cls.get("joinCode").asString() + "\"}", 200);
         api.post(ben, "/api/forum/threads/" + thread + "/posts", "{\"body\":\"An answer\"}", 201);
         long benThread = api.post(ben, "/api/forum/threads",
-                "{\"category\":null,\"title\":\"Ben's question\",\"body\":\"Hi\"}", 201).get("id").asLong();
+                "{\"category\":\"general\",\"title\":\"Ben's question\",\"body\":\"Hi\"}", 201).get("id").asLong();
         api.post(ana, "/api/forum/threads/" + benThread + "/posts", "{\"body\":\"Ana's reply\"}", 201);
         assertThat(Files.exists(photoFile)).isTrue();
         assertThat(leftovers(anaId)).isNotEmpty();
@@ -128,13 +128,13 @@ class AccountDeletionApiTest {
 
     @Test
     void itMustBeConfirmedWithTheAccountsEmail() throws Exception {
-        api.createText(ana, "es", "Hola.", false);
+        long text = api.createText(ana, "es", "Hola.", false);
 
         assertThat(deleteAccount(ana, "someone-else@example.com")).isEqualTo(400);
         assertThat(deleteAccount(ana, "")).isEqualTo(400);
 
         api.get(ana, "/api/me", 200);
-        assertThat(api.get(ana, "/api/texts", 200).toString()).contains("Hola");
+        api.get(ana, "/api/texts/" + text, 200);
     }
 
     @Test
