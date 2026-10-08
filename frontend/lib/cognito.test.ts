@@ -7,13 +7,13 @@ import {
   encodePending,
   exchangeCode,
   expiresAt,
-  globalSignOut,
   logoutUrl,
   needsRenewal,
   renew,
   safeNext,
   startLogin,
 } from "./cognito";
+import { confirmTotp, globalSignOut, mfaStatus, startTotp, turnOffTotp } from "./cognito-api";
 
 const config = { domain: "https://polygossa.auth.eu-west-1.amazoncognito.com", clientId: "abc", appUrl: "https://site" };
 
@@ -163,6 +163,58 @@ describe("globalSignOut", () => {
     expect(await globalSignOut(config, "a")).toBe(false);
     vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("down"); }));
     expect(await globalSignOut(config, "a")).toBe(false);
+  });
+});
+
+describe("authenticator-app MFA", () => {
+  const calls = (mock: ReturnType<typeof vi.fn>) =>
+    (mock.mock.calls as unknown as [string, RequestInit][]).map(([, init]) => ({
+      target: new Headers(init.headers).get("x-amz-target")?.replace("AWSCognitoIdentityProviderService.", ""),
+      body: JSON.parse(init.body as string) as Record<string, unknown>,
+    }));
+
+  it("reads whether it is on, and whether the account signs in with Google instead", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ Username: "abc", UserMFASettingList: ["SOFTWARE_TOKEN_MFA"] })));
+    expect(await mfaStatus(config, "a")).toEqual({ on: true, federated: false });
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ Username: "google_123" })));
+    expect(await mfaStatus(config, "a")).toEqual({ on: false, federated: true });
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({}, { status: 400 })));
+    expect(await mfaStatus(config, "a")).toBeNull();
+  });
+
+  it("starts with a secret for the authenticator app and a link that opens it", async () => {
+    const fetchMock = vi.fn(async () => Response.json({ SecretCode: "ABCDEF234567" }));
+    vi.stubGlobal("fetch", fetchMock);
+    const setup = await startTotp(config, "a", "ana@example.com", "Polygossa");
+    expect(setup).toEqual({
+      secret: "ABCDEF234567",
+      uri: "otpauth://totp/Polygossa:ana%40example.com?secret=ABCDEF234567&issuer=Polygossa",
+    });
+    expect(calls(fetchMock)).toEqual([{ target: "AssociateSoftwareToken", body: { AccessToken: "a" } }]);
+  });
+
+  it("turns on only after a correct code from the app, and makes it the preferred second step", async () => {
+    const fetchMock = vi.fn(async () => Response.json({ Status: "SUCCESS" }));
+    vi.stubGlobal("fetch", fetchMock);
+    expect(await confirmTotp(config, "a", "123456")).toBe(true);
+    expect(calls(fetchMock)).toEqual([
+      { target: "VerifySoftwareToken", body: { AccessToken: "a", UserCode: "123456", FriendlyDeviceName: "Authenticator app" } },
+      { target: "SetUserMFAPreference", body: { AccessToken: "a", SoftwareTokenMfaSettings: { Enabled: true, PreferredMfa: true } } },
+    ]);
+
+    const wrong = vi.fn(async () => Response.json({ __type: "EnableSoftwareTokenMFAException" }, { status: 400 }));
+    vi.stubGlobal("fetch", wrong);
+    expect(await confirmTotp(config, "a", "000000")).toBe(false);
+    expect(calls(wrong)).toHaveLength(1);
+  });
+
+  it("turns off", async () => {
+    const fetchMock = vi.fn(async () => Response.json({}));
+    vi.stubGlobal("fetch", fetchMock);
+    expect(await turnOffTotp(config, "a")).toBe(true);
+    expect(calls(fetchMock)).toEqual([
+      { target: "SetUserMFAPreference", body: { AccessToken: "a", SoftwareTokenMfaSettings: { Enabled: false, PreferredMfa: false } } },
+    ]);
   });
 });
 

@@ -141,32 +141,6 @@ export async function revoke(config: CognitoConfig, refresh: string): Promise<vo
   }
 }
 
-/** The pool's region, from its hosted pages' address (<prefix>.auth.<region>.amazoncognito.com). */
-function regionOf(config: CognitoConfig): string {
-  return /\.auth\.([a-z0-9-]+)\.amazoncognito\.com/.exec(config.domain)?.[1] ?? "eu-west-1";
-}
-
-/**
- * Ends every Cognito session of the access token's user (all their refresh tokens stop working), through Cognito's
- * own API, which the token authorizes. False when Cognito refuses or can't be reached.
- */
-export async function globalSignOut(config: CognitoConfig, access: string): Promise<boolean> {
-  try {
-    const res = await fetch(`https://cognito-idp.${regionOf(config)}.amazonaws.com/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-amz-json-1.1",
-        "X-Amz-Target": "AWSCognitoIdentityProviderService.GlobalSignOut",
-      },
-      body: JSON.stringify({ AccessToken: access }),
-      cache: "no-store",
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
-
 /** Cognito's sign-out page, which ends its own session and comes back to the landing page. */
 export function logoutUrl(config: CognitoConfig): string {
   const params = new URLSearchParams({ client_id: config.clientId, logout_uri: `${config.appUrl}/` });

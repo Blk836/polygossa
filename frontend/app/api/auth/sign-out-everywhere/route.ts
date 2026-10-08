@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
-import { ACCESS_COOKIE, REFRESH_COOKIE, cognitoConfig, globalSignOut, logoutUrl } from "@/lib/cognito";
+import { ACCESS_COOKIE, REFRESH_COOKIE, cognitoConfig, logoutUrl } from "@/lib/cognito";
+import { globalSignOut } from "@/lib/cognito-api";
 import { BACKEND_URL } from "@/lib/server-api";
 import { clearSession, keepSessionFresh } from "@/lib/session";
 
