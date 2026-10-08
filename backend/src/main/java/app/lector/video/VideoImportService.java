@@ -36,6 +36,13 @@ public class VideoImportService {
     public record VideoImport(String url, Language language, String title, boolean isPublic, MultipartFile file,
                               String transcript, Category category) {}
 
+    /**
+     * A video imported on another backend and copied here: its finished transcript and captions, so YouTube isn't
+     * asked. With no {@code category}, AI picks one, else {@link Category#OTHER}.
+     */
+    public record VideoCopy(String videoId, Language language, String title, Category category,
+                            Integer durationSeconds, String content, List<Cue> cues) {}
+
     private record Transcript(String content, List<Cue> cues) {}
 
     /** {@link TextService#create} or {@link TextService#createUnchecked}. */
@@ -81,11 +88,35 @@ public class VideoImportService {
         Text text = creator.create(owner, title, req.language(), transcript.content(), url, req.isPublic(),
                 transcript.cues());
         Integer duration = player.durationSeconds() != null ? player.durationSeconds() : lastCueEnd(transcript.cues());
-        text.setVideo(videoId, duration);
         Category fromYouTube = Category.fromYouTube(player.youtubeCategory());
-        text.setCategory(review.reviewImport(req.category(), text, fromYouTube));
-        text.setTimingsJson(json.writeValueAsString(timings(texts.tokens(text), transcript.cues(), duration)));
+        return finish(text, videoId, duration, transcript.cues(), req.category(), fromYouTube);
+    }
+
+    /** For the community library account: saves a copy publicly, without plan limits and without asking YouTube. */
+    public Text copyForLibrary(User library, VideoCopy copy) {
+        String videoId = YouTubeUrls.videoId("https://youtu.be/" + copy.videoId());
+        String content = copy.content() == null ? "" : copy.content().strip();
+        List<Cue> cues = copy.cues() == null ? List.of() : copy.cues();
+        if (cues.stream().anyMatch(cue -> !fits(cue, content))) {
+            throw ApiException.badRequest("A caption doesn't fit the transcript");
+        }
+        Text text = texts.createUnchecked(library, copy.title(), copy.language(), content,
+                YouTubeUrls.watchUrl(videoId), true, cues);
+        Integer duration = copy.durationSeconds() != null ? copy.durationSeconds() : lastCueEnd(cues);
+        return finish(text, videoId, duration, cues, copy.category(), Category.OTHER);
+    }
+
+    private Text finish(Text text, String videoId, Integer duration, List<Cue> cues, Category chosen,
+                        Category fallback) {
+        text.setVideo(videoId, duration);
+        text.setCategory(review.reviewImport(chosen, text, fallback));
+        text.setTimingsJson(json.writeValueAsString(timings(texts.tokens(text), cues, duration)));
         return text;
+    }
+
+    private static boolean fits(Cue cue, String content) {
+        return cue.charStart() >= 0 && cue.charStart() <= cue.charEnd() && cue.charEnd() <= content.length()
+                && cue.startMs() >= 0 && cue.startMs() <= cue.endMs();
     }
 
     private Transcript transcript(VideoImport req, PlayerInfo player) {

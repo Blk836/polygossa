@@ -116,7 +116,7 @@ class CuratedVideoCopyApiTest {
         assertThat(exported.get("title").asString()).isEqualTo("Le marché");
         assertThat(exported.get("category").asString()).isEqualTo("learners");
         assertThat(exported.get("durationSeconds").asInt()).isEqualTo(60);
-        assertThat(exported.get("content").asString()).isEqualTo("Bonjour à tous. On va au marché.");
+        assertThat(exported.get("content").asString()).isEqualTo("Bonjour à tous.\nOn va au marché.");
         assertThat(exported.get("cues")).hasSize(2);
         assertThat(exported.get("cues").get(1).get("startMs").asLong()).isEqualTo(2000);
     }

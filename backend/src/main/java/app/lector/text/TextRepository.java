@@ -19,6 +19,11 @@ public interface TextRepository extends JpaRepository<Text, Long> {
 
     List<Text> findByOwnerIdAndVideoId(Long ownerId, String videoId);
 
+    /** Every owner's copies of a video in one language: public ones first, then the newest. */
+    @Query("select t from Text t where t.videoId = :videoId and t.language = :language "
+            + "order by t.isPublic desc, t.createdAt desc, t.id desc")
+    List<Text> findCopiesOfVideo(@Param("videoId") String videoId, @Param("language") Language language);
+
     List<Text> findByOwnerIdAndLanguageAndTitle(Long ownerId, Language language, String title);
 
     /** Texts with an opening square bracket of any width: the ones that may hold caption annotations. */
