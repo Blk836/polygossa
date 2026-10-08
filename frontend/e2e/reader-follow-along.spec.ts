@@ -174,6 +174,8 @@ test.describe("the word marker", () => {
     await last.click();
     await page.getByRole("button", { name: "Play from here" }).click();
     await expect(article(page).locator(`[data-i="${lastIndex}"]`)).toHaveCount(0, { timeout: 5000 }); // page turned
+    await page.keyboard.press(" "); // measured paused: while playing, the marker spends half of each word sliding
+    await expect(player(page).getByRole("button", { name: "Play", exact: true })).toBeVisible();
     await expect(speaking(page)).toHaveCount(1);
     await expectMarkerUnder(page, speaking(page));
     const afterTurn = (await moves(page)).map((m) => m.kind);
@@ -218,6 +220,7 @@ test.describe("choosing what to show", () => {
     const follow = page.getByRole("dialog", { name: "Reader settings" }).getByLabel("Follow along");
     await expect(follow).toHaveValue("word");
     await follow.selectOption({ label: "Sentence" });
+    await follow.blur(); // playback shortcuts don't reach a focused dropdown
     await page.keyboard.press("Escape");
     await playThenPause(page);
     await expect(article(page).locator(".s-spoken").first()).toBeVisible();
@@ -243,7 +246,8 @@ test.describe("with looking things up", () => {
     const word = speaking(page);
     await word.click();
     await expect(word).toHaveClass(/w-selected/);
-    expect(await background(word)).toBe(await tokenColour(page, "--w-active"));
+    const selected = await tokenColour(page, "--w-active");
+    await expect.poll(() => background(word)).toBe(selected); // the colour change is animated
     await expectMarkerUnder(page, word);
   });
 });
