@@ -4,6 +4,7 @@ import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import type { Construct } from "constructs";
 import { appDatabase } from "./database.ts";
@@ -107,6 +108,10 @@ export class ProductionStack extends cdk.Stack {
         FORUM_ADMINS: "owner@example.com",
         // Where Stripe Checkout and the portal return.
         APP_URL: siteUrl,
+        // Machine translation of single words (word-translations.feature), capped at $20 a month ($15 a million).
+        TRANSLATION_ENABLED: "true",
+        TRANSLATION_REGION: this.region,
+        TRANSLATION_MONTHLY_CHARACTER_CAP: "1333333",
       },
       secrets: {
         DATABASE_USER: ecs.Secret.fromSecretsManager(database.secret!, "username"),
@@ -120,6 +125,12 @@ export class ProductionStack extends cdk.Stack {
           secretsmanager.Secret.fromSecretNameV2(this, "StripeWebhookSecret", STRIPE_WEBHOOK_SECRET)),
       },
     });
+    // TranslateText names no resource unless custom terminology is used, so "*", kept to this one action and region.
+    backendTask.addToTaskRolePolicy(new iam.PolicyStatement({
+      actions: ["translate:TranslateText"],
+      resources: ["*"],
+      conditions: { StringEquals: { "aws:RequestedRegion": this.region } },
+    }));
     const backend = new ecs.FargateService(this, "Backend", {
       cluster,
       taskDefinition: backendTask,
