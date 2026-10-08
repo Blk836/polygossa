@@ -24,9 +24,9 @@ Feature: Staging becomes production (decided October 2026, docs/production.md "D
     So that AWS's cost reports show production's spending under that name
 
   Scenario: The deploy job is called what it does
-    When a pull request is merged to main
-    Then the CI job that deploys is named "deploy production", and it still deploys only after every check passed
-    And the temporary hand-started deploy without checks (`deploy_only`) still works until phase 8 removes it
+    When GitHub deploys production (when asked, local-deploy.feature)
+    Then the CI job that deploys is named "deploy production"
+    And the hand-started deploy without checks (`deploy_only`) still works, as the fallback for the PC's deploy
 
   Scenario: The code names production
     Then the stack's code is the production stack, and the two database settings are named "small" (today's) and

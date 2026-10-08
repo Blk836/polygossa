@@ -58,8 +58,12 @@ Feature: Staging on AWS, defined in CDK and deployed from GitHub (docs/productio
 
   # --- Deploying from GitHub ---
 
-  Scenario: Merging a green pull request deploys staging
+  # Since October 2026 a merge is deployed from the developer's PC instead (local-deploy.feature, same steps and site
+  # checks); GitHub's deploy below runs only when asked: a hand-started deploy_only run, or DEPLOY_ON_GITHUB=true.
+
+  Scenario: Merging a green pull request deploys staging (when GitHub deploys)
     Given a pull request whose checks all passed
+    And the repository variable DEPLOY_ON_GITHUB is "true"
     When it is merged to main
     Then a deploy job signs in to AWS with short-lived credentials (GitHub's OIDC sign-in, no stored keys)
     And builds the images and runs "cdk deploy" for staging
@@ -73,10 +77,10 @@ Feature: Staging on AWS, defined in CDK and deployed from GitHub (docs/productio
     And a pull request with a red check is never merged (a rule we follow: enforcing it needs GitHub Pro or a public
       repository)
 
-  Scenario: A deploy can skip the checks by hand, for now
+  Scenario: GitHub can deploy by hand, without the checks
     Given I start the CI workflow by hand on main with "deploy_only" ticked
     Then no check runs and staging is deployed from main
-    And this switch is temporary, for working on the deploy itself: it is removed before production
+    And this is the fallback when the PC can't deploy (local-deploy.feature)
     And on any other branch it deploys nothing
 
   Scenario: Deploys don't overlap
