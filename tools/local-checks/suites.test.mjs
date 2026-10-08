@@ -24,7 +24,9 @@ test("the backend runs the gauntlet's Gradle tasks, through the wrapper for the 
   const [linux] = suitesFor({ ...none, backend: true }, installed);
   assert.deepEqual(commands(linux), ["./gradlew :backend:compileJava :backend:checkstyleMain :backend:test"]);
   const [windows] = suitesFor({ ...none, backend: true }, { ...installed, win: true });
-  assert.deepEqual(commands(windows), ["gradlew.bat :backend:compileJava :backend:checkstyleMain :backend:test"]);
+  // A path, not a bare name: cmd.exe may be told not to look in the current folder
+  // (NoDefaultCurrentDirectoryInExePath, which Claude Code sets).
+  assert.deepEqual(commands(windows), [".\\gradlew.bat :backend:compileJava :backend:checkstyleMain :backend:test"]);
   assert.equal(linux.steps[0].cwd, ".");
 });
 
@@ -55,6 +57,11 @@ test("tools run their tests and the complexity lint with the frontend's ESLint",
       + '\\"max-lines\\":[\\"error\\",300]}" "tools/**/*.mjs"',
   ]);
   assert.equal(tools.steps[0].cwd, ".");
+});
+
+test("on Windows the tools lint names ESLint with backslashes, which cmd.exe needs", () => {
+  const [tools] = suitesFor({ ...none, tools: true }, { ...installed, win: true });
+  assert.match(tools.steps[1].command, /^frontend\\node_modules\\\.bin\\eslint --no-config-lookup /);
 });
 
 test("packages are installed first where missing or out of date, once per folder, and nothing runs without them", () => {
