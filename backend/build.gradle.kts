@@ -21,6 +21,8 @@ tasks.withType<JavaCompile> {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-security")
+    // Checks Cognito's login tokens against the user pool's published keys (app.login.cognito-issuer).
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-cache")
@@ -30,6 +32,11 @@ dependencies {
     // Versioned schema changes (src/main/resources/db/migration); Hibernate only validates the schema.
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     runtimeOnly("org.flywaydb:flyway-database-postgresql")
+    // Uploads in S3 in production (app.storage.s3-bucket); only the synchronous client, so Netty is left out.
+    implementation(platform("software.amazon.awssdk:bom:2.55.12"))
+    implementation("software.amazon.awssdk:s3") {
+        exclude(group = "software.amazon.awssdk", module = "netty-nio-client")
+    }
 
     implementation("io.jsonwebtoken:jjwt-api:0.13.0")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")

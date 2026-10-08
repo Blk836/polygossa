@@ -9,10 +9,20 @@ import type { Construct } from "constructs";
 import { appDatabase } from "./database.ts";
 import { backendImage, frontendImage } from "./images.ts";
 import { appLogs, BACKEND_NAME, NAMESPACE } from "./services.ts";
+import { userPool } from "./login.ts";
+import { uploadsBucket } from "./uploads.ts";
 
 export interface ProductionProps extends cdk.StackProps {
   /** CloudFront's origin-facing prefix list; looked up in the account when absent (tests pass one). */
   readonly cloudFrontPrefixListId?: string;
+  /**
+   * The site's public address (cdk.json's `site-url`: CloudFront's, until there is a domain). Sign-in returns there.
+   * It can't be read from the distribution itself: the frontend's settings would then depend on the distribution,
+   * which depends on the frontend.
+   */
+  readonly siteUrl?: string;
+  /** The owner's Google OAuth client (cdk.json's `google-client-id`), for Sign in with Google. */
+  readonly googleClientId?: string;
 }
 
 /**
@@ -50,7 +60,16 @@ export class ProductionStack extends cdk.Stack {
     const publicTasks = { assignPublicIp: true, vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC } };
 
     // Backend: no load balancer and no public route in; the frontend calls it at backend.<namespace>:8080.
+    const siteUrl = props.siteUrl ?? "https://site.invalid";
+    const login = userPool(this, {
+      domainPrefix: "polygossa",
+      siteUrl,
+      keep: true,
+      googleClientId: props.googleClientId ?? "unset.apps.googleusercontent.com",
+    });
+
     const backendTask = new ecs.FargateTaskDefinition(this, "BackendTask", { cpu: 512, memoryLimitMiB: 1024 });
+    const uploads = uploadsBucket(this, vpc, backendTask.taskRole);
     backendTask.addContainer("backend", {
       image: backendImage(),
       portMappings: [{ containerPort: 8080 }],
@@ -62,6 +81,14 @@ export class ProductionStack extends cdk.Stack {
         SPRING_CACHE_TYPE: "simple",
         MANAGEMENT_HEALTH_REDIS_ENABLED: "false",
         JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75",
+        // Uploads (audio, profile photos) live in S3, so they survive redeploys.
+        STORAGE_S3_BUCKET: uploads.bucketName,
+        STORAGE_S3_REGION: this.region,
+        // Everyone signs in through the user pool (the prod profile turns the app's own accounts off).
+        COGNITO_ISSUER: login.issuer,
+        COGNITO_CLIENT_ID: login.clientId,
+        // The team (admin panel, forum moderation); the prod profile names nobody by default.
+        FORUM_ADMINS: "owner@example.com",
       },
       secrets: {
         DATABASE_USER: ecs.Secret.fromSecretsManager(database.secret!, "username"),
@@ -89,6 +116,10 @@ export class ProductionStack extends cdk.Stack {
         BACKEND_URL: `http://${BACKEND_NAME}.${NAMESPACE}:8080`,
         // Real sign-up and login: the test-account auto-login is off (the backend's prod profile refuses it too).
         AUTO_LOGIN: "false",
+        // Sign-in through Cognito's hosted pages, which return to this site.
+        COGNITO_DOMAIN: login.domain,
+        COGNITO_CLIENT_ID: login.clientId,
+        APP_URL: siteUrl,
       },
     });
     const frontend = new ecs.FargateService(this, "Frontend", {

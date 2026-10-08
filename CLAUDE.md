@@ -146,8 +146,8 @@ Tools on the dev machine (none of these are on PATH in every shell, so use the f
 
 When production misbehaves: the services' logs are in CloudWatch (log groups for the backend and frontend, kept a
 month), the last deploy is the latest `deploy production` job in GitHub Actions, and the
-stack's state is in CloudFormation. Production is deliberately small until the beta: uploads live on the container's
-disk (lost on redeploy until S3), AI is off (no OpenAI key), no Redis, a single-zone database.
+stack's state is in CloudFormation. Production is deliberately small until the beta: uploads live in an S3 bucket
+(`STORAGE_S3_BUCKET`; local runs and tests use the folder), AI is off (no OpenAI key), no Redis, a single-zone database.
 - Infrastructure is changed only through CDK (`infra/`), never by CLI or console commands. The CLI and MCP server are
   for reading, investigating and previewing (`cdk diff`).
 - Production deploys itself: CI's `deploy production` job runs `cdk deploy PolygossaStaging` on every merge to main (the
@@ -202,9 +202,13 @@ locally (step 4): CI runs them. Even a single backend test class shouldn't run w
 checkout: they share `backend/build/`, and result files vanish mid-run, failing tests that pass alone.
 
 **Login is currently bypassed.** With no session, `frontend/proxy.ts` calls `POST /api/auth/dev-login` and signs in
-as `test@lector.local` (Classroom plan, so every feature is unlocked). To restore normal sign-up/login, set
+as `test@lector.local` (Classroom plan, so every feature is unlocked) on every app page; `/`, `/login` and `/signup`
+still show to signed-out visitors (so e2e tests can open them). To restore normal sign-up/login, set
 `AUTO_LOGIN=false` (frontend) and `DEV_AUTO_LOGIN=false` (backend). The `prod` profile always disables the
-endpoint — keep it that way.
+endpoint — keep it that way. Production signs in only through Cognito (`COGNITO_*` settings; the prod profile turns
+the app's own accounts off with `app.login.local-accounts`); setting `COGNITO_DOMAIN`/`COGNITO_CLIENT_ID` (frontend)
+and `COGNITO_ISSUER`/`COGNITO_CLIENT_ID` (backend) to the QA pool (stack `PolygossaQa`'s outputs) signs a local run
+in through Cognito too, and switches the auto-login off.
 
 Six starter texts (one per language you can learn; Japanese, Chinese and Korean are paused) are seeded into the community library for onboarding (`SEED_SAMPLES=false`
 turns that off). No videos are seeded: videos come only from what is in the database.

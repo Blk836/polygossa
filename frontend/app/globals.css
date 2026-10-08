@@ -349,3 +349,45 @@ body {
     transition: none;
   }
 }
+
+/* ---- sign-in/sign-up splash: "a page that learns" (components/auth-splash.tsx) ---- */
+.splash-greeting {
+  opacity: 0.13;
+  white-space: nowrap;
+  animation: splash-drift 18s ease-in-out infinite alternate;
+}
+@keyframes splash-drift {
+  from { transform: translate(0, 0) rotate(-4deg); }
+  to { transform: translate(1.5rem, -2.5rem) rotate(3deg); }
+}
+.splash-word {
+  border-radius: 0.25rem;
+  padding: 0 0.08em;
+  margin: 0 -0.04em;
+  transition: background-color 400ms, box-shadow 200ms;
+}
+.splash-tapped {
+  box-shadow: 0 0 0 2px var(--rubric);
+}
+.splash-page {
+  transform-origin: left center;
+  animation: splash-turn 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@keyframes splash-turn {
+  from { transform: perspective(900px) rotateY(-75deg); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.splash-gloss {
+  animation: splash-pop 260ms ease-out;
+}
+@keyframes splash-pop {
+  from { transform: translateY(4px) scale(0.96); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .splash-greeting,
+  .splash-page,
+  .splash-gloss {
+    animation: none;
+  }
+}
