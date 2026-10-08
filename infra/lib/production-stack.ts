@@ -9,6 +9,7 @@ import type { Construct } from "constructs";
 import { appDatabase } from "./database.ts";
 import { backendImage, frontendImage } from "./images.ts";
 import { appLogs, BACKEND_NAME, NAMESPACE } from "./services.ts";
+import { uploadsBucket } from "./uploads.ts";
 
 export interface ProductionProps extends cdk.StackProps {
   /** CloudFront's origin-facing prefix list; looked up in the account when absent (tests pass one). */
@@ -51,6 +52,7 @@ export class ProductionStack extends cdk.Stack {
 
     // Backend: no load balancer and no public route in; the frontend calls it at backend.<namespace>:8080.
     const backendTask = new ecs.FargateTaskDefinition(this, "BackendTask", { cpu: 512, memoryLimitMiB: 1024 });
+    const uploads = uploadsBucket(this, vpc, backendTask.taskRole);
     backendTask.addContainer("backend", {
       image: backendImage(),
       portMappings: [{ containerPort: 8080 }],
@@ -62,6 +64,9 @@ export class ProductionStack extends cdk.Stack {
         SPRING_CACHE_TYPE: "simple",
         MANAGEMENT_HEALTH_REDIS_ENABLED: "false",
         JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75",
+        // Uploads (audio, profile photos) live in S3, so they survive redeploys.
+        STORAGE_S3_BUCKET: uploads.bucketName,
+        STORAGE_S3_REGION: this.region,
       },
       secrets: {
         DATABASE_USER: ecs.Secret.fromSecretsManager(database.secret!, "username"),
