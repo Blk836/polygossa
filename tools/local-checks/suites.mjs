@@ -7,13 +7,18 @@ const ORDER = ["tools", "infra", "frontend", "backend", "e2e"];
 /** The folder each suite's packages live in (tools lint with the frontend's ESLint), or none. */
 const PACKAGES = { tools: "frontend", infra: "infra", frontend: "frontend", e2e: "frontend" };
 
-const TOOLS_LINT = 'frontend/node_modules/.bin/eslint --no-config-lookup --rule '
+const TOOLS_LINT = ' --no-config-lookup --rule '
   + '"{\\"complexity\\":[\\"error\\",10],\\"max-lines\\":[\\"error\\",300]}" "tools/**/*.mjs"';
+
+// Programs in the repository are named by path, with backslashes on Windows: cmd.exe may be told not to look in the
+// current folder (NoDefaultCurrentDirectoryInExePath, which Claude Code sets) and doesn't take forward slashes.
+const program = (path, win) => (win ? path.replaceAll("/", "\\") : path);
 
 function stepsOf(name, { win, cdkAccount }) {
   switch (name) {
     case "tools":
-      return [{ command: 'node --test "tools/**/*.test.mjs"', cwd: "." }, { command: TOOLS_LINT, cwd: "." }];
+      return [{ command: 'node --test "tools/**/*.test.mjs"', cwd: "." },
+        { command: program("frontend/node_modules/.bin/eslint", win) + TOOLS_LINT, cwd: "." }];
     case "infra":
       return [
         { command: "npm run typecheck", cwd: "infra" },
@@ -25,8 +30,8 @@ function stepsOf(name, { win, cdkAccount }) {
       return ["npm test", "npx next typegen && npx tsc --noEmit", "npx eslint .", "npx next build"]
         .map((command) => ({ command, cwd: "frontend" }));
     case "backend":
-      return [{ command: `${win ? "gradlew.bat" : "./gradlew"} :backend:compileJava :backend:checkstyleMain :backend:test`,
-        cwd: "." }];
+      return [{ cwd: ".", command: `${program(win ? "./gradlew.bat" : "./gradlew", win)}`
+        + " :backend:compileJava :backend:checkstyleMain :backend:test" }];
     default:
       return [{ command: "npm run e2e", cwd: "frontend" }];
   }
