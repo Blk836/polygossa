@@ -52,11 +52,16 @@ export function styleSettings() {
   };
 }
 
-/** The wordmark (the brand and a dot, like the app's Logo) as an SVG, for one mode. */
+/**
+ * The wordmark (the brand and a dot, like the app's Logo) as an SVG, for one mode. Cognito accepts logos from 1:1 to
+ * 4:1 (width:height), so a long name gets a taller canvas, with the text centred in it.
+ */
 function wordmark(brand: string, ink: string, rubric: string): string {
   const width = 24 + brand.length * 20;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="48" viewBox="0 0 ${width} 48">`
-    + `<text x="${width / 2}" y="35" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif"`
+  const height = Math.max(48, Math.ceil(width / 3.5));
+  const baseline = Math.round(height / 2 + 12);
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`
+    + `<text x="${width / 2}" y="${baseline}" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif"`
     + ` font-size="34" font-weight="600" fill="#${ink}">${brand}<tspan fill="#${rubric}">.</tspan></text></svg>`;
 }
 
