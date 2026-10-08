@@ -91,7 +91,11 @@ for (const [label, template, home] of [
       assert.deepEqual(logos.map((a) => a.ColorMode).sort(), ["DARK", "LIGHT"]);
       for (const logo of logos) {
         assert.equal(logo.Extension, "SVG");
-        assert.match(Buffer.from(logo.Bytes, "base64").toString("utf8"), /<svg[^>]*>.*Polygossa.*<\/svg>/s);
+        const svg = Buffer.from(logo.Bytes, "base64").toString("utf8");
+        assert.match(svg, /<svg[^>]*>.*Polygossa.*<\/svg>/s);
+        // Cognito refuses logos outside 1:1 to 4:1 (width:height), as the first deploy found.
+        const [, width, height] = /width="([\d.]+)" height="([\d.]+)"/.exec(svg)!.map(Number);
+        assert.ok(width / height >= 1 && width / height <= 4, `logo ratio ${width}:${height}`);
       }
     });
 
