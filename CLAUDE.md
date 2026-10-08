@@ -201,14 +201,17 @@ Whole suites (the backend suite's 4 JVMs, PIT, Stryker, the e2e suite) overloade
 locally (step 4): CI runs them. Even a single backend test class shouldn't run while another Gradle test run uses this
 checkout: they share `backend/build/`, and result files vanish mid-run, failing tests that pass alone.
 
-**Login is currently bypassed.** With no session, `frontend/proxy.ts` calls `POST /api/auth/dev-login` and signs in
-as `test@lector.local` (Classroom plan, so every feature is unlocked) on every app page; `/`, `/login` and `/signup`
-still show to signed-out visitors (so e2e tests can open them). To restore normal sign-up/login, set
-`AUTO_LOGIN=false` (frontend) and `DEV_AUTO_LOGIN=false` (backend). The `prod` profile always disables the
-endpoint — keep it that way. Production signs in only through Cognito (`COGNITO_*` settings; the prod profile turns
-the app's own accounts off with `app.login.local-accounts`); setting `COGNITO_DOMAIN`/`COGNITO_CLIENT_ID` (frontend)
-and `COGNITO_ISSUER`/`COGNITO_CLIENT_ID` (backend) to the QA pool (stack `PolygossaQa`'s outputs) signs a local run
-in through Cognito too, and switches the auto-login off.
+**Login.** Local runs sign in through the **QA user pool** (stack `PolygossaQa`, separate from production's): its
+settings are the defaults of `next dev` (`frontend/.env.development`) and Gradle's `bootRun` (`backend/build.gradle.kts`),
+so the developer signs up there once with a real email. Setting `COGNITO_DOMAIN=` (frontend) and `COGNITO_ISSUER=`
+(backend) to empty goes back to the old **test-account auto-login**: with no session, `frontend/proxy.ts` calls
+`POST /api/auth/dev-login` and signs in as `test@lector.local` (Classroom plan, every feature unlocked) on every app
+page; `/`, `/login` and `/signup` still show to signed-out visitors. Backend tests and the browser tests never use a
+pool: they keep the app's own accounts and the auto-login (`AUTO_LOGIN=false`/`DEV_AUTO_LOGIN=false` turn it off).
+Production signs in only through Cognito (its own pool; the `prod` profile turns the app's own accounts and the
+auto-login endpoint off with `app.login.local-accounts` and `app.dev-auto-login` — keep it that way). Test accounts
+for checking production or QA by hand can be made with Cognito's admin API (`@example.com`, email marked verified,
+deleted afterwards).
 
 Six starter texts (one per language you can learn; Japanese, Chinese and Korean are paused) are seeded into the community library for onboarding (`SEED_SAMPLES=false`
 turns that off). No videos are seeded: videos come only from what is in the database.
