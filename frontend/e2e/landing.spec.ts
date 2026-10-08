@@ -128,6 +128,75 @@ test.describe("landing page", () => {
     await expect(page).toHaveURL(/\/library$/);
   });
 
+  test("the hero badge counts the learnable languages and the demo hint reads as a sentence", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByText(`${NATIVE.length} languages · free to start`)).toBeVisible();
+    await expect(demo(page).getByTestId("demo-hint")).toHaveText("Tap a blue word to see what it means.");
+    // The words must be visibly apart, not just apart in the DOM (a flex container once swallowed the spaces).
+    const gap = await demo(page).getByTestId("demo-hint").evaluate((p) => {
+      const blue = p.querySelector(".w")!.getBoundingClientRect();
+      const before = p.firstChild!; // "Tap a ": measure to the end of the "a", not of the space after it
+      const range = document.createRange();
+      range.setStart(before, 0);
+      range.setEnd(before, before.textContent!.trimEnd().length);
+      return blue.left - range.getBoundingClientRect().right;
+    });
+    expect(gap).toBeGreaterThan(1); // a space less the highlight's small negative margin is ~2px; the bug gave < 0
+  });
+
+  test("Pro-only features are labelled and the free path doesn't promise review", async ({ page }) => {
+    await page.goto("/");
+    const step3 = page.locator("#how li").nth(2);
+    await expect(step3).toContainText("as you read");
+    await expect(step3).toContainText("Pro");
+    await expect(page.locator("#features").getByRole("heading", { name: /Reviews/ })).toContainText("Pro");
+    await expect(page.locator("body")).not.toContainText("paying for");
+  });
+
+  test("pricing shows the yearly price per month and what Pro adds", async ({ page }) => {
+    await page.goto("/");
+    const pricing = page.locator("#pricing");
+    await expect(pricing).toContainText("$60 a year ($5 a month)");
+    await expect(pricing.getByRole("listitem").filter({ hasText: "Everything in Free" })).toHaveCount(1);
+    await expect(pricing).toContainText("LingQ or Readlang");
+    await expect(pricing).toContainText("Recommendations at your level");
+  });
+
+  test("the FAQ answers switchers, book readers and phone users", async ({ page }) => {
+    await page.goto("/");
+    const faq = page.locator("#faq");
+    for (const [question, answer] of [
+      ["Can I bring my words?", "Words page"],
+      ["Can I read books?", "EPUB"],
+      ["Is there an app?", "browser"],
+      ["Which languages can I learn?", "your own language"],
+    ]) {
+      await faq.getByText(question).click();
+      await expect(faq.locator("details[open]").filter({ hasText: question })).toContainText(answer);
+    }
+  });
+
+  test("a shared link gets a preview with an absolute image on this site", async ({ page, request }) => {
+    await page.goto("/");
+    const meta = (key: string) => page.locator(`meta[property="${key}"], meta[name="${key}"]`).first();
+    await expect(meta("og:title")).toHaveAttribute("content", /\S/);
+    await expect(meta("og:description")).toHaveAttribute("content", /\S/);
+    await expect(meta("twitter:card")).toHaveAttribute("content", "summary_large_image");
+    const image = await meta("og:image").getAttribute("content");
+    expect(image).toMatch(/^https?:\/\/[^/]+\/opengraph-image/);
+    // As a crawler: no session and no following redirects (signed out, an app page would redirect to sign-in).
+    const res = await request.get(new URL(image!).pathname + new URL(image!).search, { maxRedirects: 0 });
+    expect(res.status()).toBe(200);
+    expect(res.headers()["content-type"]).toContain("image/png");
+  });
+
+  test("on a phone the demo's language tabs all fit", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    const tabs = demo(page).getByRole("tablist");
+    expect(await tabs.evaluate((t) => t.scrollWidth - t.clientWidth)).toBeLessThanOrEqual(0);
+  });
+
   test("on a phone nothing overflows and the primary CTA is above the fold", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");

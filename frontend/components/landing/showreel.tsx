@@ -21,9 +21,9 @@ const DRAW: Record<string, ComponentType<{ p: number }>> = {
 const NARRATION: Record<string, string> = {
   watch: "Import a YouTube video, a story or an article. Its subtitles become text you can read and click.",
   tap: "Tap any word you don't know: the meaning appears on the spot, and the word is saved with its sentence.",
-  review: "A two-minute review brings each word back just before you'd forget it.",
+  review: "With Pro, a two-minute review brings each word back just before you'd forget it.",
   again: "Next time you meet the word in a video or article, you simply know it. Your known-word count climbs.",
-  payoff: "Every page adds words you know, so every text gets easier. That's what you're paying for: real reading.",
+  payoff: "Every page adds words you know, so every text gets easier. A few weeks in, you're reading, not decoding.",
 };
 
 function subscribeMedia(onChange: () => void) {

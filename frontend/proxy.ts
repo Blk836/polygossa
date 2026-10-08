@@ -83,6 +83,7 @@ async function renewed(request: NextRequest): Promise<NextResponse> {
   return response;
 }
 
+// opengraph-image is the share preview: chat apps and social sites fetch it with no session.
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|ico|webmanifest)$).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|opengraph-image|.*\\.(?:svg|png|jpg|ico|webmanifest)$).*)"],
 };

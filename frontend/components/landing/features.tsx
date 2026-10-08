@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 
 const STEPS = [
-  ["Pick something you'd read anyway", "Start with a graded story from the library, paste an article, import a web page or drop in a YouTube link."],
+  ["Pick something you'd read anyway", "Start with a story from the library, paste an article, import a web page or a book, or drop in a YouTube link."],
   ["Tap the words you don't know", "A definition, pronunciation and example appear on the spot. Every word you look up is saved with its sentence."],
-  ["Watch them turn into known words", "Short reviews bring words back just before you'd forget them, and your known-word count climbs with every page."],
+  ["Watch them turn into known words", "Turn the page and the words you didn't need count as known, so your total climbs as you read. Pro adds short reviews that bring saved words back just before you'd forget them."],
 ] as const;
 
 export function HowItWorks() {
@@ -35,11 +35,24 @@ export function SectionHeading({ eyebrow, title, children }: { eyebrow: string; 
   );
 }
 
-function Feature({ title, body, points, visual, flip }: { title: string; body: string; points: string[]; visual: ReactNode; flip?: boolean }) {
+interface FeatureProps {
+  title: string;
+  body: string;
+  points: string[];
+  visual: ReactNode;
+  flip?: boolean;
+  /** Only on the Pro plan: says so beside the title. */
+  pro?: boolean;
+}
+
+function Feature({ title, body, points, visual, flip, pro }: FeatureProps) {
   return (
     <div className="grid items-center gap-8 md:grid-cols-2 md:gap-14">
       <div className={flip ? "md:order-2" : ""}>
-        <h3 className="font-display text-2xl font-semibold tracking-tight md:text-3xl">{title}</h3>
+        <h3 className="font-display text-2xl font-semibold tracking-tight md:text-3xl">
+          {title}
+          {pro && <span className="ml-3 inline-block translate-y-[-0.2em] rounded-full bg-accent-soft px-2.5 py-0.5 align-middle font-sans text-sm font-semibold tracking-normal text-accent">Pro</span>}
+        </h3>
         <p className="mt-3 text-lg text-muted">{body}</p>
         <ul className="mt-5 space-y-2">
           {points.map((p) => (
@@ -122,9 +135,14 @@ export function Features() {
     <section id="features" className="scroll-mt-20 mx-auto w-full max-w-6xl space-y-20 px-4 py-16 md:space-y-28 md:py-24">
       <SectionHeading eyebrow="Features" title="Everything between “I can't read this” and “I just did.”" />
       <Feature
-        title="A library at your level — or bring your own"
+        title="A library at your level, or bring your own"
         body="Every text shows how many of its words are new to you, so you can pick something that stretches you without drowning you."
-        points={["Graded starter stories and a shared community library", "Paste text or import any web article", "CEFR level estimate on every text"]}
+        points={[
+          "A starter story in every language, and a shared library of texts and videos",
+          "“Just right for you” suggestions: things where you already know 90–98% of the words",
+          "Paste text, import a web article, or a whole EPUB or PDF book",
+          "CEFR level estimate on every text",
+        ]}
         visual={LibraryVisual}
       />
       <Feature
@@ -135,9 +153,10 @@ export function Features() {
         visual={VideoVisual}
       />
       <Feature
+        pro
         title="Reviews that fit in a coffee break"
         body="Spaced repetition brings each word back right before you'd forget it, with the sentence you first met it in."
-        points={["Easy / Hard / Forgot — the schedule adapts (Pro)", "Save whole sentences to review, too", "Export to Anki or CSV any time (every plan)"]}
+        points={["Easy, Hard or Forgot: the schedule adapts to you", "Save whole sentences to review, too", "Export to Anki or CSV any time, on every plan"]}
         visual={ReviewVisual}
       />
       <Feature
