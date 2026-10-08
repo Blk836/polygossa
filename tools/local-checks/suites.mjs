@@ -29,9 +29,11 @@ function stepsOf(name, { win, cdkAccount }) {
     case "frontend":
       return ["npm test", "npx next typegen && npx tsc --noEmit", "npx eslint .", "npx next build"]
         .map((command) => ({ command, cwd: "frontend" }));
+    // 2 test JVMs instead of CI's 4: on the PC they share memory with IntelliJ, the dev servers and other sessions,
+    // and 4 ran it out.
     case "backend":
       return [{ cwd: ".", command: `${program(win ? "./gradlew.bat" : "./gradlew", win)}`
-        + " :backend:compileJava :backend:checkstyleMain :backend:test" }];
+        + " :backend:compileJava :backend:checkstyleMain :backend:test -Ptest.forks=2" }];
     default:
       return [{ command: "npm run e2e", cwd: "frontend" }];
   }
