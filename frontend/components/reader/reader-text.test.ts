@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Token } from "@/lib/types";
-import { normalizePhrase, overlapping, phraseMarks, phraseRange, readerStats, sentenceTexts, toParagraphs } from "./reader-text";
+import { normalizePhrase, overlapping, sentenceHere, phraseMarks, phraseRange, readerStats, sentenceTexts, toParagraphs } from "./reader-text";
 
 /** Builds tokens like the backend: words and separators, with sentence numbers. */
 function tokens(...parts: (string | [string, number])[]): Token[] {
@@ -146,6 +146,23 @@ describe("overlapping", () => {
 
   it("handles an empty paragraph", () => {
     expect(overlapping([], { start: 0, end: 1 }, 0)).toEqual({ sel: null, active: null });
+  });
+});
+
+describe("sentenceHere", () => {
+  // Sentences 3 and 4 in this paragraph.
+  const p = tokens(["a", 3], [" ", 3], ["b", 4]);
+
+  it("passes the spoken sentence through only when the paragraph has some of it", () => {
+    expect(sentenceHere(p, 3)).toBe(3);
+    expect(sentenceHere(p, 4)).toBe(4);
+    expect(sentenceHere(p, 2)).toBeNull();
+    expect(sentenceHere(p, 5)).toBeNull();
+    expect(sentenceHere(p, null)).toBeNull();
+  });
+
+  it("handles an empty paragraph", () => {
+    expect(sentenceHere([], 0)).toBeNull();
   });
 });
 

@@ -2,7 +2,7 @@
 import type { Token, WordTiming } from "@/lib/types";
 
 /** How long a word stays highlighted after its timing ends (covers gaps between words). */
-const LINGER_MS = 400;
+export const LINGER_MS = 400;
 
 /** The word being spoken at time t, given timings sorted by start. */
 export function findActive(timings: WordTiming[], t: number): WordTiming | null {

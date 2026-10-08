@@ -12,6 +12,7 @@ Docs:
   with one backend server.
 - [Production plan](docs/production.md): going live on AWS (EU): S3, Cognito login, monitoring and GDPR are built;
   Stripe is next.
+- [Marketing plan](docs/marketing.md): finding the first learners on about $100 a month; the founding-100 offer.
 - [Acceptance scenarios](docs/acceptance/): the agreed Gherkin scenarios per feature.
 
 **Keeping the docs true is part of every change.** `docs/architecture/` must always describe the product as it is:
@@ -104,8 +105,10 @@ Several Claude sessions often work on this repository at once, and in one shared
 each other: commits land on the wrong branch and edits vanish. So **every session that changes files starts by moving
 into its own worktree** (the `EnterWorktree` tool; it makes `.claude/worktrees/<name>` on a new branch from
 `origin/main`) and works, commits and pushes only there. Never run `git switch`/`checkout`, `reset`, `rebase` or bare
-`git stash` in the main folder: it belongs to the user and the IntelliJ dev servers. A session that only reads or
-answers questions needs no worktree. Leave the worktree (`ExitWorktree`, removing it) once its pull request is merged.
+`git stash` in the main folder: it belongs to the user and the IntelliJ dev servers. **Always work from the latest
+main, including when only answering questions.** The main folder is often on an old branch, and its CLAUDE.md can be
+stale too. So a session's first step is a worktree, which starts from `origin/main`. Without one, run `git fetch` and
+read `origin/main` (`git show origin/main:<path>`, `git grep … origin/main`). Leave the worktree (`ExitWorktree`, removing it) once its pull request is merged.
 - A new worktree has no `node_modules`: run `npm ci` in `frontend/` (and `infra/`) before using them there.
 - The dev OpenAI key file (`.idea/runConfigurations/Backend.xml`, see below) exists only in the main folder.
 - Worktrees don't share a build folder, but they share the machine: the heavy-run rule below still applies. A single

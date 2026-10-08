@@ -9,6 +9,7 @@ const marks = (over: Partial<WordMarks> = {}): WordMarks => ({
   statuses: {},
   sel: null,
   active: null,
+  sentence: null,
   phrases: new Map<number, WordStatus>(),
   ...over,
 });
@@ -39,6 +40,15 @@ describe("wordClass", () => {
     expect(wordClass(token(8), marks({ active: 7 }))).toBe("w w-new");
   });
 
+  it("tints every word of the sentence being spoken, and no other", () => {
+    const inSentence = { ...token(3), sentence: 2 };
+    const outside = { ...token(4), sentence: 3 };
+    expect(wordClass(inSentence, marks({ sentence: 2 }))).toBe("w w-new s-spoken");
+    expect(wordClass(outside, marks({ sentence: 2 }))).toBe("w w-new");
+    expect(wordClass({ ...token(5), sentence: 0 }, marks({ sentence: null }))).toBe("w w-new");
+    expect(wordClass({ ...token(6), sentence: 0 }, marks({ sentence: 0 }))).toBe("w w-new s-spoken");
+  });
+
   it("underlines only phrases being learned", () => {
     const phrases = new Map<number, WordStatus>([[1, "learning"], [2, "known"], [3, "ignored"]]);
     expect(wordClass(token(1), marks({ phrases }))).toBe("w w-new p-learning");
@@ -55,5 +65,10 @@ describe("wordClass", () => {
       phrases: new Map<number, WordStatus>([[1, "learning"]]),
     });
     expect(wordClass(token(1), m)).toBe("w w-learning w-selected w-speaking p-learning");
+  });
+
+  it("places the sentence tint after speaking and before the phrase underline", () => {
+    const m = marks({ active: 1, sentence: 0, phrases: new Map<number, WordStatus>([[1, "learning"]]) });
+    expect(wordClass(token(1), m)).toBe("w w-new w-speaking s-spoken p-learning");
   });
 });

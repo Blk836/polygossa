@@ -8,17 +8,20 @@ import { useMe } from "../me-context";
 import { ErrorNote } from "../ui";
 import { AudioPanel } from "./audio-panel";
 import { FinishPanel } from "./finish-panel";
+import { FollowMarker } from "./follow-along";
+import { slideBudgets } from "./follow-marker";
+import type { Spoken } from "./media-nav";
 import { Paragraph } from "./paragraph";
 import { ReaderHeader } from "./reader-header";
 import { pageRange, unseenOnPage } from "./reader-pages";
 import { ReaderPager } from "./reader-pager";
-import { articleClass, audioToggle, layoutClass, mediaState, onPage, pageNote, PhraseHint } from "./reader-parts";
+import { articleClass, audioToggle, layoutClass, mediaState, onPage, pageNote, PhraseHint, showsMarker } from "./reader-parts";
 import { ReaderPopup } from "./reader-popup";
 import type { ReaderSettings } from "./reader-settings";
-import { overlapping, phraseMarks, readerStats, sentenceTexts, toParagraphs } from "./reader-text";
+import { nextWord, overlapping, phraseMarks, readerStats, sentenceHere, sentenceTexts, toParagraphs } from "./reader-text";
 import { transcriptParagraphs } from "./reader-transcript";
 import { TextMeasure } from "./text-measure";
-import type { MediaHandle } from "./use-media-player";
+import { NOTHING_SPOKEN, type MediaHandle } from "./use-media-player";
 import { usePageKnown } from "./use-page-known";
 import { useFitPages, useMeasuring } from "./use-fit-pages";
 import { usePageTurns } from "./use-page-turns";
@@ -47,7 +50,8 @@ export function Reader({ initial, initialSettings, playlist }: {
   const [error, setError] = useState<string | null>(null);
   const [audio, setAudio] = useState(initial.audio);
   const [showAudio, setShowAudio] = useState(!!initial.audio);
-  const [active, setActive] = useState<number | null>(null);
+  const [spoken, setSpoken] = useState<Spoken>(NOTHING_SPOKEN);
+  const active = spoken.token;
   const [finished, setFinished] = useState<number | null>(null);
   const [finishing, setFinishing] = useState(false);
   const { settings, update: updateSettings } = useReaderSettings(initialSettings);
@@ -78,6 +82,8 @@ export function Reader({ initial, initialSettings, playlist }: {
   const fitted = useFitPages(paragraphs, measureRef, articleRef, measuring);
   const paging = useReaderPages(text.id, tokens, paragraphs, fitted, text.progress?.position ?? null);
   const { page, pages, goTo, goToToken } = paging;
+  const budgets = useMemo(() => slideBudgets(audio?.timings ?? video?.timings ?? []), [audio, video]);
+  const nextOf = useCallback((i: number) => nextWord(tokens, i, 1), [tokens]);
   const marks = useMemo(() => phraseMarks(tokens, vocab.phrases), [tokens, vocab.phrases]);
   const stats = useMemo(() => readerStats(tokens, vocab.statuses), [tokens, vocab.statuses]);
   const unseenHere = useMemo(() => unseenOnPage(paging.paragraphs, vocab.statuses), [paging.paragraphs, vocab.statuses]);
@@ -134,10 +140,10 @@ export function Reader({ initial, initialSettings, playlist }: {
 
   const jumpToToken = useCallback(
     (i: number) => {
-      setActive(i);
+      setSpoken({ token: i, sentence: tokens[i]?.sentence ?? null });
       reveal(i, "center", false, "replace");
     },
-    [reveal],
+    [reveal, tokens],
   );
 
   async function finish() {
@@ -171,7 +177,7 @@ export function Reader({ initial, initialSettings, playlist }: {
       <div className="min-w-0 lg:col-start-1">
         <ReaderHeader text={text} playlist={playlist} stats={stats} settings={settings} onSettings={updateSettings} audio={audioButton} media={media.shortcuts} />
       </div>
-      <VideoPanel ref={mediaRef} video={video} tokens={tokens} onActiveToken={setActive} onJumpToToken={jumpToToken} cueToken={cueToken} />
+      <VideoPanel ref={mediaRef} video={video} tokens={tokens} onSpoken={setSpoken} onJumpToToken={jumpToToken} cueToken={cueToken} />
 
       <div className="min-w-0 lg:col-start-1">
         <ErrorNote message={error} />
@@ -186,9 +192,10 @@ export function Reader({ initial, initialSettings, playlist }: {
             onClick={input.onClick}
           >
             {paging.paragraphs.map((p, k) => (
-              <Paragraph key={k} tokens={p} statuses={vocab.statuses} phrases={marks} {...overlapping(p, sel, active)} />
+              <Paragraph key={k} tokens={p} statuses={vocab.statuses} phrases={marks} sentence={sentenceHere(p, spoken.sentence)} {...overlapping(p, sel, active)} />
             ))}
           </article>
+          <FollowMarker enabled={showsMarker(settings.followWord, media.playerBar)} containerRef={articleRef} active={active} nextOf={nextOf} budgets={budgets} page={page} />
 
           {measuring && <TextMeasure ref={measureRef} paragraphs={paragraphs} className={articleClass(language, settings.size, false)} />}
 
@@ -231,13 +238,13 @@ export function Reader({ initial, initialSettings, playlist }: {
           tokens={tokens}
           isOwner={isOwner}
           isPro={isPro}
-          onActiveToken={setActive}
+          onSpoken={setSpoken}
           onJumpToToken={jumpToToken}
           onAudioChanged={setAudio}
           cueToken={cueToken}
           onClose={() => {
             setShowAudio(false);
-            setActive(null);
+            setSpoken(NOTHING_SPOKEN);
           }}
         />
       )}
