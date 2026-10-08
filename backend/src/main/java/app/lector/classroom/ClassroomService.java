@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,10 +51,13 @@ public class ClassroomService {
     private final VocabularyRepository vocabulary;
     private final ReadingSessionRepository sessions;
     private final PlanService plans;
+    private final ApplicationEventPublisher events;
 
     public ClassroomService(ClassroomRepository classrooms, ClassroomMemberRepository members,
                             AssignmentRepository assignments, TextService texts,
-                            VocabularyRepository vocabulary, ReadingSessionRepository sessions, PlanService plans) {
+                            VocabularyRepository vocabulary, ReadingSessionRepository sessions, PlanService plans,
+                            ApplicationEventPublisher events) {
+        this.events = events;
         this.classrooms = classrooms;
         this.members = members;
         this.assignments = assignments;
@@ -91,6 +95,7 @@ public class ClassroomService {
         }
         if (!members.existsByClassroomIdAndStudentId(c.getId(), student.getId())) {
             members.save(new ClassroomMember(c, student));
+            events.publishEvent(new ClassMembersChanged(c.getTeacher().getId()));
         }
         return summary(c, student);
     }
@@ -147,7 +152,10 @@ public class ClassroomService {
         if (!isTeacher(user, c) && !user.getId().equals(studentId)) {
             throw ApiException.forbidden("Only the teacher can remove students");
         }
-        members.findByClassroomIdAndStudentId(classId, studentId).ifPresent(members::delete);
+        members.findByClassroomIdAndStudentId(classId, studentId).ifPresent(m -> {
+            members.delete(m);
+            events.publishEvent(new ClassMembersChanged(c.getTeacher().getId()));
+        });
     }
 
     @Transactional
@@ -163,6 +171,7 @@ public class ClassroomService {
         assignments.deleteByClassroomId(classId);
         members.deleteByClassroomId(classId);
         classrooms.delete(c);
+        events.publishEvent(new ClassMembersChanged(teacher.getId()));
     }
 
     /** Aggregate reading progress and vocabulary growth per student, in the class's language. */

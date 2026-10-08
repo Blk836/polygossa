@@ -7,7 +7,8 @@ import { clearSession, keepSessionFresh, writeSession } from "@/lib/session";
 // Backend-for-frontend proxy: forwards /api/* to the Spring Boot API with the JWT from the httpOnly cookie, so the
 // token is never exposed to browser JavaScript.
 
-const FORWARD_REQUEST_HEADERS = ["content-type", "range", "accept"];
+// stripe-signature: Stripe's webhook (/api/billing/webhook) is checked against it, over the body as sent.
+const FORWARD_REQUEST_HEADERS = ["content-type", "range", "accept", "stripe-signature"];
 const FORWARD_RESPONSE_HEADERS = [
   "content-type",
   "content-length",
