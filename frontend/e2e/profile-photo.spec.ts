@@ -120,6 +120,8 @@ for (const how of ["Cancel", "Escape"]) {
     const { page } = ana;
     const file = await stripes(page, 300, 300);
     await pick(page, file, "me.png");
+    // The dialog opens once the image has loaded; Escape pressed before that reaches nothing.
+    await expect(cropDialog(page)).toBeVisible();
     if (how === "Escape") await page.keyboard.press("Escape");
     else await cropDialog(page).getByRole("button", { name: "Cancel" }).click();
     await expect(cropDialog(page)).toBeHidden();

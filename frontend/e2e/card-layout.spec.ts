@@ -100,7 +100,8 @@ test.describe("Library, desktop", () => {
     await expect(option(page, "List")).toHaveAttribute("aria-checked", "true");
 
     await option(page, "Cards").click();
-    expect((await context.cookies()).find((c) => c.name === "lector_card_layout")).toBeUndefined();
+    // The page clears the cookie after the click is handled, so wait for it rather than reading it at once.
+    await expect.poll(async () => (await context.cookies()).find((c) => c.name === "lector_card_layout")).toBeUndefined();
     await page.reload();
     await expect(option(page, "Cards")).toHaveAttribute("aria-checked", "true");
   });
