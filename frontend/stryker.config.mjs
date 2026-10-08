@@ -43,6 +43,7 @@ const config = {
     "components/reader/media-clock.ts",
     "components/reader/youtube-playback.ts",
     "components/reader/word-class.ts",
+    "components/reader/follow-marker.ts",
     "components/vocabulary/search.ts",
     "components/review/review-query.ts",
   ],

@@ -5,6 +5,7 @@ import { estimateTimings, youtubeWatchUrl } from "@/lib/media";
 import type { TextDetail, Token } from "@/lib/types";
 import { createMediaClock, type MediaClock } from "./media-clock";
 import { PlayerBar } from "./player-bar";
+import type { Spoken } from "./media-nav";
 import { useMediaPlayer, type MediaElement, type MediaHandle } from "./use-media-player";
 import { loadYouTubeApi, type YTPlayer } from "./youtube-api";
 import { playbackOf, YT_STATE } from "./youtube-playback";
@@ -12,7 +13,7 @@ import { playbackOf, YT_STATE } from "./youtube-playback";
 interface Props {
   video: NonNullable<TextDetail["video"]>;
   tokens: Token[];
-  onActiveToken: (tokenIndex: number | null) => void;
+  onSpoken: (spoken: Spoken) => void;
   onJumpToToken: (tokenIndex: number) => void;
   /** Where to cue the paused video: see `useMediaPlayer`. */
   cueToken: number | null;
@@ -98,7 +99,7 @@ function startCued(yt: YTPlayer, cue: Cue) {
  * A video lesson's player: the YouTube player (sticky above the text on narrow screens, beside it on wide ones) and the same
  * bottom player bar as audio texts, which highlights the word being spoken and follows clicks on the transcript.
  */
-const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video, tokens, onActiveToken, onJumpToToken, cueToken }, ref) {
+const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video, tokens, onSpoken, onJumpToToken, cueToken }, ref) {
   const host = useRef<HTMLDivElement>(null);
   const yt = useRef<YTPlayer | null>(null);
   // YouTube reports its time only a few times a second; the clock fills in between so the highlight keeps pace.
@@ -140,7 +141,7 @@ const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video,
     const given = [...video.timings].sort((a, b) => a.s - b.s);
     return given.length ? given : estimateTimings(tokens, duration);
   }, [video.timings, tokens, duration]);
-  const player = useMediaPlayer({ media, timings, tokens, duration, playing, onActiveToken, onJumpToToken, cueToken });
+  const player = useMediaPlayer({ media, timings, tokens, duration, playing, onSpoken, onJumpToToken, cueToken });
 
   useImperativeHandle(ref, () => ({
     playFromToken: player.playFromToken,

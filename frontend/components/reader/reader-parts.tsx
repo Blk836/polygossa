@@ -59,3 +59,8 @@ export function pageNote(pageKnown: boolean, page: number, count: number, unseen
   if (!pageKnown || page >= count || unseen === 0) return null;
   return `Turning the page marks the ${unseen} new ${unseen === 1 ? "word" : "words"} on this page as known.`;
 }
+
+/** The follow-along word marker shows while a player is open, unless Follow along is set to the sentence only. */
+export function showsMarker(followWord: boolean, playerBar: boolean): boolean {
+  return followWord && playerBar;
+}

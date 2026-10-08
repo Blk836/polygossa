@@ -48,14 +48,15 @@ async function expectBackground(page: Page, word: Locator, token: string | null)
 }
 
 /**
- * Waits for the word being spoken to show the audio colour. Read in one go on whichever word is speaking: playback
- * runs on (about half a second a word), so by a second look the highlight may have moved to the next word.
+ * Waits for playback to show where it is: the follow-along marker, and the spoken sentence's tint (read on a gap
+ * between its words, which has no word colour of its own to cover the tint).
  */
-async function expectSpeakingBackground(page: Page) {
-  const want = await tokenColour(page, "--w-audio");
+async function expectSpeakingShown(page: Page) {
+  await expect(page.getByTestId("follow-marker")).toBeVisible();
+  const want = await tokenColour(page, "--w-sentence");
   await expect.poll(() => page.evaluate(() => {
-    const word = document.querySelector("article .w-speaking");
-    return word ? getComputedStyle(word).backgroundColor : "no word speaking";
+    const gap = document.querySelector("article span.s-spoken:not(.w)");
+    return gap ? getComputedStyle(gap).backgroundColor : "no sentence spoken";
   })).toBe(want);
 }
 
@@ -190,7 +191,7 @@ test.describe("quiet colours", () => {
       await openReader(page, `/read/${created.id}`);
       await page.keyboard.press("]");
       await expect(wordAt(page, PER_SENTENCE)).toHaveClass(/w-speaking/);
-      await expectSpeakingBackground(page);
+      await expectSpeakingShown(page);
     }
   });
 });

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { countUp, knownPercent, phase, spokenIndex } from "@/lib/showreel";
+import { FollowLine } from "./follow-line";
 
 // The showreel's five scenes (showreel.tsx plays them). Each draws itself from `p`, its progress from 0 to 1, so the
 // same frame always looks the same: pausing, jumping and reduced motion (drawn at p = 1) need nothing extra.
@@ -15,23 +16,30 @@ const TARGET = 6;
 const shown = (visible: boolean) => (visible ? "opacity-100 translate-y-0 scale-100" : "pointer-events-none opacity-0 translate-y-2 scale-95");
 const FADE = "transition duration-500 ease-out";
 
-/** One subtitle line; `status` picks each word's colour, `speaking` the word being said, `pointer` sits on the target. */
+/**
+ * One subtitle line; `status` picks each word's colour, `speaking` the word being said (the line is then tinted and the
+ * word marked, as in the reader), `pointer` sits on the target.
+ */
 function Subtitle({ status, speaking, pointer }: { status: (i: number) => string; speaking?: number; pointer?: ReactNode }) {
+  const tint = speaking !== undefined ? "s-spoken" : "";
   return (
-    <p lang="es" className="reading text-xl md:text-2xl">
-      {SUBTITLE.map(([text], i) => (
-        <span key={i}>
-          <span
-            data-testid={i === TARGET ? "showreel-target" : undefined}
-            className={`w relative w-${status(i)} ${speaking === i ? "w-speaking" : ""}`}
-          >
-            {text}
-            {i === TARGET && pointer}
+    <FollowLine active={speaking} count={SUBTITLE.length}>
+      <p lang="es" className="reading text-xl md:text-2xl">
+        {SUBTITLE.map(([text], i) => (
+          <span key={i}>
+            <span
+              data-i={i}
+              data-testid={i === TARGET ? "showreel-target" : undefined}
+              className={`w relative w-${status(i)} ${speaking === i ? "w-speaking" : ""} ${tint}`}
+            >
+              {text}
+              {i === TARGET && pointer}
+            </span>
+            <span className={tint}>{i < SUBTITLE.length - 1 ? " " : "."}</span>
           </span>
-          {i < SUBTITLE.length - 1 ? " " : "."}
-        </span>
-      ))}
-    </p>
+        ))}
+      </p>
+    </FollowLine>
   );
 }
 

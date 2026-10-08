@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { FollowLine } from "./follow-line";
 
 const STEPS = [
   ["Pick something you'd read anyway", "Start with a story from the library, paste an article, import a web page or a book, or drop in a YouTube link."],
@@ -93,11 +94,18 @@ const VideoVisual = (
       <span className="grid size-14 place-items-center rounded-full bg-card pl-1 text-2xl text-rubric shadow-md">▶</span>
       <div className="absolute inset-x-3 bottom-3 h-1 rounded-full bg-card/70"><div className="h-full w-2/5 rounded-full bg-rubric" /></div>
     </div>
-    <p className="reading mt-4 text-lg">
-      <span className="w w-known">Hoy</span> <span className="w w-known">vamos</span> <span className="w w-known">a</span>{" "}
-      <span className="w w-speaking w-new">cocinar</span> <span className="w w-learning">paella</span>{" "}
-      <span className="w w-known">con</span> <span className="w w-new">mariscos</span>.
-    </p>
+    <FollowLine active={3} count={7}>
+      <p className="reading mt-4 text-lg">
+        {[["Hoy", "known"], ["vamos", "known"], ["a", "known"], ["cocinar", "new"], ["paella", "learning"], ["con", "known"], ["mariscos", "new"]].map(
+          ([word, status], i) => (
+            <span key={i}>
+              <span data-i={i} className={`w w-${status} s-spoken ${i === 3 ? "w-speaking" : ""}`}>{word}</span>
+              <span className="s-spoken">{i < 6 ? " " : "."}</span>
+            </span>
+          ),
+        )}
+      </p>
+    </FollowLine>
   </div>
 );
 

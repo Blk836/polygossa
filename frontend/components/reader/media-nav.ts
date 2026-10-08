@@ -1,6 +1,6 @@
 // Pure playback navigation shared by the audio and video players: sentence steps, sentence loop, shortcuts and cueing.
 import type { WordTiming } from "@/lib/types";
-import type { Segment } from "./audio-sync";
+import { findActive, LINGER_MS, type Segment } from "./audio-sync";
 
 /** Playback speeds offered for audio and video. */
 export const SPEEDS = [0.5, 0.75, 0.9, 1, 1.25, 1.5] as const;
@@ -45,4 +45,18 @@ const SHORTCUTS: Record<string, MediaShortcut> = { " ": "toggle", r: "replay", "
 /** Space plays/pauses, R replays the sentence, [ and ] step between sentences. */
 export function mediaShortcut(key: string): MediaShortcut | null {
   return SHORTCUTS[key.toLowerCase()] ?? null;
+}
+
+/** What is being spoken at `ms`: the word (null in a pause between words) and its sentence (null before speech starts or once it has ended). */
+export interface Spoken {
+  token: number | null;
+  sentence: number | null;
+}
+
+export function spokenAt(timings: WordTiming[], segments: Segment[], ms: number): Spoken {
+  const token = findActive(timings, ms)?.i ?? null;
+  const end = timings.reduce((latest, t) => Math.max(latest, t.e), -Infinity) + LINGER_MS;
+  const k = segmentAt(segments, ms);
+  const speaking = k >= 0 && ms >= segments[0].start && ms <= end;
+  return { token, sentence: speaking ? segments[k].sentence : null };
 }

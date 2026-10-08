@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cueMs, loopRestart, mediaShortcut, segmentAt, sentenceStart, SPEEDS } from "./media-nav";
+import { cueMs, loopRestart, mediaShortcut, segmentAt, sentenceStart, spokenAt, SPEEDS } from "./media-nav";
 import type { Segment } from "./audio-sync";
 
 // Three sentences: 1–4 s, 4–9 s, 9–12 s (the first starts after a second of silence).
@@ -126,5 +126,35 @@ describe("cueMs", () => {
   it("is 0:00 when no word from there on is timed", () => {
     expect(cueMs(timings, 9)).toBe(0);
     expect(cueMs([], 4)).toBe(0);
+  });
+});
+
+describe("spokenAt", () => {
+  // One timed word per sentence above; speech ends at 11 s.
+  const words = [
+    { i: 0, s: 1000, e: 3500 },
+    { i: 2, s: 4000, e: 8500 },
+    { i: 4, s: 9000, e: 11000 },
+  ];
+
+  it("gives the word and the sentence being spoken", () => {
+    expect(spokenAt(words, segments, 1000)).toEqual({ token: 0, sentence: 0 });
+    expect(spokenAt(words, segments, 4200)).toEqual({ token: 2, sentence: 1 });
+    expect(spokenAt(words, segments, 9000)).toEqual({ token: 4, sentence: 2 });
+  });
+
+  it("keeps the sentence through a pause between its words, while the word marker lets go", () => {
+    expect(spokenAt(words, segments, 3950)).toEqual({ token: null, sentence: 0 });
+    expect(spokenAt(words, segments, 8950)).toEqual({ token: null, sentence: 1 });
+  });
+
+  it("has no sentence before speech starts or once it has ended", () => {
+    expect(spokenAt(words, segments, 999)).toEqual({ token: null, sentence: null });
+    expect(spokenAt(words, segments, 11400)).toEqual({ token: 4, sentence: 2 });
+    expect(spokenAt(words, segments, 11401)).toEqual({ token: null, sentence: null });
+  });
+
+  it("has nothing without timings", () => {
+    expect(spokenAt([], [], 1000)).toEqual({ token: null, sentence: null });
   });
 });
