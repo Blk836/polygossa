@@ -47,13 +47,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
+    /** The account the token signs in, unless the account signed out everywhere after the token was issued. */
     private Optional<AuthUser> authenticate(String token) {
-        Optional<AuthUser> fromCognito = cognito.access(token)
-                .flatMap(identity -> users.findByCognitoSub(identity.sub()))
-                .map(user -> new AuthUser(user.getId(), user.getEmail()));
+        Optional<AuthUser> fromCognito = cognito.access(token).flatMap(identity -> users.findByCognitoSub(identity.sub())
+                .filter(user -> user.acceptsTokenIssuedAt(identity.issuedAt()))
+                .map(user -> new AuthUser(user.getId(), user.getEmail())));
         if (fromCognito.isPresent() || !localAccounts) {
             return fromCognito;
         }
-        return ownTokens.verify(token);
+        return ownTokens.verifySession(token).filter(session -> users.findById(session.user().id())
+                .map(user -> user.acceptsTokenIssuedAt(session.issuedAt())).orElse(true)).map(JwtService.Verified::user);
     }
 }

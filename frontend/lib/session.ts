@@ -43,3 +43,15 @@ export async function keepSessionFresh(
   if (!needsRenewal(jar.get(ACCESS_COOKIE)?.value, Math.floor(Date.now() / 1000))) return "fresh";
   return (await renew(config, refresh)) ?? "ended";
 }
+
+/**
+ * This session's access token, renewed first (and the new tokens kept in `jar`) if it is about to expire; undefined
+ * when the session has ended. For route handlers, whose cookie store can be written.
+ */
+export async function currentAccess(config: CognitoConfig | null, jar: CookieJar): Promise<string | undefined> {
+  const session = await keepSessionFresh(config, jar);
+  if (session === "ended") return undefined;
+  if (session === "fresh") return jar.get(ACCESS_COOKIE)?.value;
+  writeSession(jar, session);
+  return session.access;
+}

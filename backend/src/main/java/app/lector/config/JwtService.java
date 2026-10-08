@@ -37,10 +37,18 @@ public class JwtService {
                 .compact();
     }
 
+    /** A valid token's account and when the token was issued. */
+    public record Verified(AuthUser user, Instant issuedAt) {}
+
     public Optional<AuthUser> verify(String token) {
+        return verifySession(token).map(Verified::user);
+    }
+
+    public Optional<Verified> verifySession(String token) {
         try {
             var claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
-            return Optional.of(new AuthUser(Long.valueOf(claims.getSubject()), claims.get("email", String.class)));
+            AuthUser user = new AuthUser(Long.valueOf(claims.getSubject()), claims.get("email", String.class));
+            return Optional.of(new Verified(user, claims.getIssuedAt() == null ? null : claims.getIssuedAt().toInstant()));
         } catch (JwtException | IllegalArgumentException e) {
             return Optional.empty();
         }
