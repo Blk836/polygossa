@@ -3,6 +3,7 @@ package app.lector.vocab;
 import app.lector.srs.SrsState;
 import app.lector.text.Text;
 import app.lector.token.Language;
+import app.lector.token.NativeLanguage;
 import app.lector.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -58,6 +59,17 @@ public class VocabularyEntry {
 
     @Column(columnDefinition = "text")
     private String definition;
+
+    /**
+     * The word in the learner's own language ("perro"), apart from the definition, so learners' meanings can add up to
+     * community meanings. Null for words saved before meanings were kept, and when the learner cleared it.
+     */
+    @Column(length = 200)
+    private String meaning;
+
+    /** The native language {@link #meaning} is in: the learner's when it was saved. */
+    @Enumerated(EnumType.STRING)
+    private NativeLanguage meaningLanguage;
 
     private String partOfSpeech;
 
@@ -136,6 +148,13 @@ public class VocabularyEntry {
     public WordStatus getStatus() { return status; }
     public String getDefinition() { return definition; }
     public void setDefinition(String definition) { this.definition = definition; }
+    public String getMeaning() { return meaning; }
+    public NativeLanguage getMeaningLanguage() { return meaningLanguage; }
+    /** Sets the meaning in {@code language}; a null meaning clears both. */
+    public void setMeaning(String meaning, NativeLanguage language) {
+        this.meaning = meaning;
+        this.meaningLanguage = meaning == null ? null : language;
+    }
     public String getPartOfSpeech() { return partOfSpeech; }
     public void setPartOfSpeech(String partOfSpeech) { this.partOfSpeech = partOfSpeech; }
     public String getPronunciation() { return pronunciation; }

@@ -251,9 +251,10 @@ class WordTranslationsApiTest {
         String word = fresh();
         DICTIONARY.define("de", word, "dog");
         JsonNode english = lookup(learner("en"), word);
-        assertThat(english.has("translations")).isFalse();
+        assertThat(english.get("translations").isNull()).isTrue();
+        assertThat(english.get("translationLanguage").isNull()).isTrue();
         JsonNode german = lookup(learner("de"), word);
-        assertThat(german.has("translations")).isFalse();
+        assertThat(german.get("translations").isNull()).isTrue();
         assertThat(TRANSLATE.requests()).isEmpty();
     }
 

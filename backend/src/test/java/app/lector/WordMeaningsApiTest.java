@@ -142,8 +142,8 @@ class WordMeaningsApiTest {
     void otherNativeLanguagesAndLearningLanguagesDontMixIn() throws Exception {
         save(learner("fr"), "de", word, "chien");
         save(learner("fr"), "de", word, "chien");
-        save(learner("es"), "nl", word, "perro");
-        save(learner("es"), "nl", word, "perro");
+        save(learner("es"), "fr", word, "perro");
+        save(learner("es"), "fr", word, "perro");
         assertThat(community.top(Language.DE, word, NativeLanguage.ES)).isEmpty();
         assertThat(community.top(Language.DE, word, NativeLanguage.FR)).containsExactly("chien");
     }

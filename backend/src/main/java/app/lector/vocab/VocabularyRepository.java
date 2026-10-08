@@ -91,6 +91,22 @@ public interface VocabularyRepository extends JpaRepository<VocabularyEntry, Lon
 
     long countByUserIdAndLanguageAndStatus(Long userId, Language language, WordStatus status);
 
+    /**
+     * The meanings learners saved for a word in one native language that at least {@code minLearners} of them share
+     * (case aside), most shared first, ties alphabetically. One entry per learner and term, so entries count learners.
+     */
+    @Query("""
+            select min(v.meaning) from VocabularyEntry v
+            where v.language = :language and v.term = :term and v.meaningLanguage = :meaningLanguage
+              and v.meaning is not null
+            group by lower(v.meaning)
+            having count(v) >= :minLearners
+            order by count(v) desc, lower(v.meaning) asc
+            """)
+    List<String> findCommunityMeanings(@Param("language") Language language, @Param("term") String term,
+                                       @Param("meaningLanguage") app.lector.token.NativeLanguage meaningLanguage,
+                                       @Param("minLearners") long minLearners, Pageable pageable);
+
     @Modifying
     @Query("update VocabularyEntry v set v.sourceText = null where v.sourceText.id = :textId")
     void detachText(@Param("textId") Long textId);

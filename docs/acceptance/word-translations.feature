@@ -31,8 +31,8 @@ Feature: Word meanings in my own language: community meanings and machine transl
     Then "chien" is not shown
 
   Scenario: Meanings saved for another learning language don't mix in
-    Given 2 Spanish-speaking learners learning Dutch saved "hond" as "perro"
-    When I look up the German word "hond"
+    Given 2 Spanish-speaking learners learning French saved a word spelled like a German one as "perro"
+    When I look up the German word
     Then "perro" is not shown
 
   Scenario: At most three community meanings
