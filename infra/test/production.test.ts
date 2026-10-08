@@ -77,6 +77,11 @@ describe("production stack", () => {
     assert.equal(envOf(container("frontend")).AUTO_LOGIN, "false");
   });
 
+  // docs/acceptance/admin-panel.feature, "The site's admins are set in the infrastructure".
+  it("names the site's admins", () => {
+    assert.equal(envOf(container("backend")).FORUM_ADMINS, "owner@example.com");
+  });
+
   it("lets only the frontend reach the backend, and only the backend reach the database", () => {
     const intoBackend = ingressInto("BackendSecurityGroup");
     assert.equal(intoBackend.length, 1);

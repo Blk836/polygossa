@@ -67,6 +67,8 @@ export class ProductionStack extends cdk.Stack {
         // Uploads (audio, profile photos) live in S3, so they survive redeploys.
         STORAGE_S3_BUCKET: uploads.bucketName,
         STORAGE_S3_REGION: this.region,
+        // The team (admin panel, forum moderation); the prod profile names nobody by default.
+        FORUM_ADMINS: "owner@example.com",
       },
       secrets: {
         DATABASE_USER: ecs.Secret.fromSecretsManager(database.secret!, "username"),
