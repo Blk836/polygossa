@@ -59,14 +59,14 @@ export function Hero() {
       <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-4 [&>*]:min-w-0 pb-16 pt-10 md:pt-16 lg:grid-cols-[1.05fr_1fr] lg:gap-14 lg:pb-24">
         <div>
           <p className="inline-flex items-center gap-2 rounded-full border border-line bg-card px-3 py-1 text-xs font-medium text-muted">
-            <span className="size-1.5 rounded-full bg-rubric" /> 8 languages · free to start
+            <span className="size-1.5 rounded-full bg-rubric" /> {LEARNING_LANGUAGES.length} languages · free to start
           </p>
           <h1 className="mt-5 font-display text-[2.6rem] leading-[1.05] font-semibold tracking-tight md:text-6xl">
             Learn a language from things you actually <em className="text-rubric">want</em> to read.
           </h1>
           <p className="mt-5 max-w-xl text-lg text-muted">
-            Stories, articles and YouTube videos in the language you&apos;re learning. Tap any word for its meaning —
-            it&apos;s saved for you, and you&apos;ll keep meeting it in context until it sticks.
+            Stories, articles and YouTube videos in the language you&apos;re learning. Tap any word to see what it
+            means. It&apos;s saved with the sentence you found it in, and every page you read makes the next one easier.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <LinkButton href={signupHref()} className="px-6 py-3 text-base">Start reading free</LinkButton>
@@ -80,7 +80,7 @@ export function Hero() {
         </div>
         <div>
           <p className="mb-3 text-center text-sm text-muted lg:text-left">
-            <span className="font-medium text-rubric">Try it now</span> — no account needed
+            <span className="font-medium text-rubric">Try it now.</span> No account needed.
           </p>
           <DemoReader />
         </div>

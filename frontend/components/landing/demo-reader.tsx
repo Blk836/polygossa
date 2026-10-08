@@ -35,7 +35,7 @@ export function DemoReader() {
             role="tab"
             aria-selected={l.code === language}
             onClick={() => switchTo(l.code)}
-            className={`shrink-0 grow border-b-2 px-1.5 pb-2 pt-1.5 text-sm transition ${
+            className={`shrink-0 grow border-b-2 px-1 pb-2 pt-1.5 text-xs transition sm:px-1.5 sm:text-sm ${
               l.code === language ? "border-rubric font-semibold text-ink" : "border-transparent text-muted hover:text-ink"
             }`}
           >
@@ -96,8 +96,9 @@ export function DemoReader() {
               </div>
             </div>
           ) : (
-            <p className="flex h-full items-center rounded-xl border border-dashed border-line px-4 py-6 text-sm text-muted">
-              Tap a <span className="w w-new mx-1 px-1">blue</span> word to see what it means.
+            // Plain text flow, not flex: a flex container makes each text run its own item and drops the spaces.
+            <p className="rounded-xl border border-dashed border-line px-4 py-6 text-sm text-muted" data-testid="demo-hint">
+              Tap a <span className="w w-new px-1">blue</span> word to see what it means.
             </p>
           )}
         </div>
@@ -113,7 +114,7 @@ export function DemoReader() {
           </div>
           {state.lookups > 0 && (
             <Link href={signupHref(language)} className="text-sm font-medium text-accent underline underline-offset-4">
-              Save these words — create a free account →
+              Save these words: create a free account →
             </Link>
           )}
         </div>
