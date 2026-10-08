@@ -1,17 +1,8 @@
 import { cookies } from "next/headers";
-import { ACCESS_COOKIE, REFRESH_COOKIE, cognitoConfig, logoutUrl } from "@/lib/cognito";
+import { REFRESH_COOKIE, cognitoConfig, logoutUrl } from "@/lib/cognito";
 import { globalSignOut } from "@/lib/cognito-api";
 import { BACKEND_URL } from "@/lib/server-api";
-import { clearSession, keepSessionFresh } from "@/lib/session";
-
-type Jar = Awaited<ReturnType<typeof cookies>>;
-
-/** This session's access token, renewed first if it is about to expire; undefined when the session has ended. */
-async function currentAccess(jar: Jar): Promise<string | undefined> {
-  const session = await keepSessionFresh(cognitoConfig(), jar);
-  if (session === "ended") return undefined;
-  return session === "fresh" ? jar.get(ACCESS_COOKIE)?.value : session.access;
-}
+import { clearSession, currentAccess } from "@/lib/session";
 
 /**
  * Signs the account out on every device: the backend refuses every login token issued until now and, for a Cognito
@@ -19,7 +10,7 @@ async function currentAccess(jar: Jar): Promise<string | undefined> {
  */
 export async function POST() {
   const jar = await cookies();
-  const access = await currentAccess(jar);
+  const access = await currentAccess(cognitoConfig(), jar);
   if (!access) return Response.json({ code: "unauthorized", message: "Not signed in" }, { status: 401 });
   let res: Response;
   try {

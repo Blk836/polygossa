@@ -82,6 +82,15 @@ Feature: Login with Cognito (docs/production.md, phase 3)
     And with Cognito, no device can renew its session (Cognito ends all of them)
     And signing in again afterwards works
 
+  Scenario: Turning on two-step sign-in
+    Given a learner who signs in through Cognito with a password
+    When they choose "Set up an authenticator app" in Settings › Profile
+    Then they see a key to add to their app (and a link that opens the app on a phone)
+    And it turns on only once they enter a correct 6-digit code from the app; a wrong code says so
+    And from then on Cognito asks for a code at sign-in; they can turn it off again
+    And accounts that sign in with Google are pointed to Google's own two-step verification
+    And accounts not signed in through Cognito (local runs without a pool) don't see the section
+
   # --- Environments ---
 
   Scenario: Production signs in only through Cognito
