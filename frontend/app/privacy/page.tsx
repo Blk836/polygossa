@@ -45,9 +45,9 @@ export default function PrivacyPolicyPage() {
           plays the videos you watch. YouTube&apos;s player is loaded from YouTube and may set its own cookies and see
           your IP address when a video plays.</li>
         <li><strong>OpenAI (United States):</strong> the AI features (writing feedback, explanations, recommendations)
-          send the text involved to OpenAI. They are switched off at present; this policy will say when they are on,
-          and the transfer is covered by [the EU Standard Contractual Clauses / OpenAI&apos;s data processing
-          addendum].</li>
+          send the text involved to OpenAI: your writing, the word or sentence being explained, and texts being
+          imported or shared. Your vocabulary is never sent. The transfer is covered by [the EU Standard Contractual
+          Clauses / OpenAI&apos;s data processing addendum].</li>
         <li><strong>Dictionaries (Free Dictionary API, Wiktionary):</strong> our server sends only the word you look
           up, never anything about you.</li>
         <li><strong>Stripe:</strong> payments, once paid plans launch.</li>
