@@ -106,6 +106,12 @@ export function overlapping(p: Token[], sel: Range | null, active: number | null
   return { sel: selHere ? sel : null, active: activeHere ? active : null };
 }
 
+/** The spoken sentence, only when this paragraph has some of it (keeps memoization effective). */
+export function sentenceHere(p: Token[], sentence: number | null): number | null {
+  if (sentence === null || !p.length) return null;
+  return sentence >= p[0].sentence && sentence <= p[p.length - 1].sentence ? sentence : null;
+}
+
 /** Next word token from `from` in direction `dir`, or null. */
 export function nextWord(tokens: Token[], from: number, dir: 1 | -1): number | null {
   for (let i = from + dir; i >= 0 && i < tokens.length; i += dir) if (tokens[i].word) return i;

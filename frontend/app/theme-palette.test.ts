@@ -35,16 +35,19 @@ const TEXT_ON: [fg: string, bg: string][] = [
   ["accent", "paper"], ["accent", "card"], ["accent-ink", "accent"], ["ink", "accent-soft"],
   ["rubric", "paper"], ["rubric", "card"], ["danger", "paper"], ["danger", "card"],
   ["good", "card"], ["good", "good-soft"], ["warn", "card"], ["warn", "warn-soft"], ["bad", "card"], ["bad", "bad-soft"],
-  ["ink", "w-new"], ["ink", "w-learning"], ["ink", "w-known"], ["ink", "w-ignored"], ["ink", "w-active"], ["ink", "w-audio"],
+  ["ink", "w-new"], ["ink", "w-learning"], ["ink", "w-known"], ["ink", "w-ignored"], ["ink", "w-active"], ["ink", "w-sentence"],
   ...["learners", "daily-life", "stories", "news", "culture", "travel", "food", "science", "history", "entertainment", "other"]
     .flatMap((c): [string, string][] => [["ink", `cover-${c}`], ["muted", `cover-${c}`]]),
 ];
+
+/** Marks that are not text (the follow-along marker) need 3:1 against what is around them (WCAG 1.4.11). */
+const MARK_ON: [mark: string, bg: string][] = [["w-marker", "paper"], ["w-marker", "w-sentence"]];
 
 describe("theme tokens", () => {
   const t = tokens();
 
   it("define a light and a dark value for every colour the pairs use", () => {
-    const needed = new Set(TEXT_ON.flat());
+    const needed = new Set([...TEXT_ON.flat(), ...MARK_ON.flat()]);
     expect([...needed].filter((n) => !t.has(n))).toEqual([]);
   });
 
@@ -53,6 +56,20 @@ describe("theme tokens", () => {
     const [bl, bd] = t.get(bg)!;
     expect(contrast(fl, bl), "light").toBeGreaterThanOrEqual(4.5);
     expect(contrast(fd, bd), "dark").toBeGreaterThanOrEqual(4.5);
+  });
+
+  it.each(MARK_ON)("%s on %s meets the 3:1 non-text contrast in light and dark", (mark, bg) => {
+    const [ml, md] = t.get(mark)!;
+    const [bl, bd] = t.get(bg)!;
+    expect(contrast(ml, bl), "light").toBeGreaterThanOrEqual(3);
+    expect(contrast(md, bd), "dark").toBeGreaterThanOrEqual(3);
+  });
+
+  it.each(["w-new", "w-learning"])("keeps the spoken-sentence tint fainter than %s, so word colours read on top", (status) => {
+    for (const mode of [0, 1]) {
+      const paper = t.get("paper")![mode];
+      expect(contrast(t.get("w-sentence")![mode], paper)).toBeLessThan(contrast(t.get(status)![mode], paper));
+    }
   });
 
   it("lets an explicit choice override the OS setting", () => {

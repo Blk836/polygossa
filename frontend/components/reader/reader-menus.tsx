@@ -79,6 +79,20 @@ export function SettingsMenu({ settings, onChange }: { settings: ReaderSettings;
         checked={settings.pageKnown}
         onChange={(pageKnown) => onChange({ pageKnown })}
       />
+      <label className="flex items-start justify-between gap-3 py-1.5">
+        <span>
+          <span className="block">Follow along</span>
+          <span className="block text-xs text-muted">What playback marks as it goes.</span>
+        </span>
+        <select
+          className="rounded border border-line bg-card px-1.5 py-0.5"
+          value={settings.followWord ? "word" : "sentence"}
+          onChange={(e) => onChange({ followWord: e.target.value === "word" })}
+        >
+          <option value="word">Sentence and word</option>
+          <option value="sentence">Sentence</option>
+        </select>
+      </label>
     </Menu>
   );
 }

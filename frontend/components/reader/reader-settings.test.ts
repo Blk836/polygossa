@@ -8,7 +8,7 @@ import {
   type ReaderSettings,
 } from "./reader-settings";
 
-const custom: ReaderSettings = { size: 3, quiet: true, pauseOnLookup: false, pageKnown: false };
+const custom: ReaderSettings = { size: 3, quiet: true, pauseOnLookup: false, pageKnown: false, followWord: false };
 
 /** The cookie value a `document.cookie` assignment would store. */
 const valueOf = (assignment: string) => assignment.slice(READER_SETTINGS_COOKIE.length + 1, assignment.indexOf(";"));
@@ -20,8 +20,8 @@ describe("parseReaderSettings", () => {
     expect(parseReaderSettings("")).toEqual(DEFAULT_READER_SETTINGS);
   });
 
-  it("has sensible defaults: medium text, colours on, pause on lookup, page turns mark known", () => {
-    expect(DEFAULT_READER_SETTINGS).toEqual({ size: 1, quiet: false, pauseOnLookup: true, pageKnown: true });
+  it("has sensible defaults: medium text, colours on, pause on lookup, page turns mark known, follow sentence and word", () => {
+    expect(DEFAULT_READER_SETTINGS).toEqual({ size: 1, quiet: false, pauseOnLookup: true, pageKnown: true, followWord: true });
   });
 
   it("round-trips through the cookie", () => {
@@ -35,11 +35,12 @@ describe("parseReaderSettings", () => {
     expect(parseReaderSettings("quiet%3D1")).toEqual({ ...DEFAULT_READER_SETTINGS, quiet: true });
     expect(parseReaderSettings("pause%3D0")).toEqual({ ...DEFAULT_READER_SETTINGS, pauseOnLookup: false });
     expect(parseReaderSettings("known%3D0")).toEqual({ ...DEFAULT_READER_SETTINGS, pageKnown: false });
+    expect(parseReaderSettings("word%3D0")).toEqual({ ...DEFAULT_READER_SETTINGS, followWord: false });
   });
 
   it("accepts every text size and ignores out-of-range or junk values", () => {
     for (let size = 0; size < TEXT_SIZES; size++) expect(parseReaderSettings(`size%3D${size}`).size).toBe(size);
-    for (const bad of ["size%3D4", "size%3D-1", "size%3Dbig", "size%3D1.5", "quiet%3Dyes", "pause%3D2", "%%%", "a=b"]) {
+    for (const bad of ["size%3D4", "size%3D-1", "size%3Dbig", "size%3D1.5", "quiet%3Dyes", "pause%3D2", "word%3Dno", "%%%", "a=b"]) {
       expect(parseReaderSettings(bad), bad).toEqual(DEFAULT_READER_SETTINGS);
     }
   });
@@ -63,7 +64,7 @@ describe("readerSettingsCookie", () => {
 
   it("only stores what differs from the default", () => {
     expect(decodeURIComponent(valueOf(readerSettingsCookie({ ...DEFAULT_READER_SETTINGS, size: 2 })))).toBe("size=2");
-    expect(decodeURIComponent(valueOf(readerSettingsCookie(custom)))).toBe("size=3&quiet=1&pause=0&known=0");
+    expect(decodeURIComponent(valueOf(readerSettingsCookie(custom)))).toBe("size=3&quiet=1&pause=0&known=0&word=0");
   });
 
   it("produces a value that is safe in a cookie", () => {

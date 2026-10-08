@@ -5,7 +5,8 @@ import type { TextDetail, Token } from "@/lib/types";
 import { CloseIcon } from "../icons";
 import { AudioSyncTools, type PlayerControls } from "./audio-sync-tools";
 import { PlayerBar } from "./player-bar";
-import { useMediaPlayer, type MediaElement, type MediaHandle } from "./use-media-player";
+import type { Spoken } from "./media-nav";
+import { NOTHING_SPOKEN, useMediaPlayer, type MediaElement, type MediaHandle } from "./use-media-player";
 
 interface Props {
   textId: number;
@@ -13,7 +14,7 @@ interface Props {
   tokens: Token[];
   isOwner: boolean;
   isPro: boolean;
-  onActiveToken: (tokenIndex: number | null) => void;
+  onSpoken: (spoken: Spoken) => void;
   onJumpToToken: (tokenIndex: number) => void;
   onAudioChanged: (audio: TextDetail["audio"]) => void;
   /** Where to cue the paused audio: see `useMediaPlayer`. */
@@ -38,7 +39,7 @@ function AddAudio({ children, onClose }: { children: React.ReactNode; onClose: (
 
 /** A text's audio: the shared player bar plus, for the owner, tools to attach and sync audio. */
 export const AudioPanel = forwardRef<MediaHandle, Props>(function AudioPanel(props, ref) {
-  const { audio, tokens, onActiveToken, onJumpToToken, cueToken } = props;
+  const { audio, tokens, onSpoken, onJumpToToken, cueToken } = props;
   const el = useRef<HTMLAudioElement>(null);
   const media = useMemo<MediaElement>(
     () => ({
@@ -58,7 +59,7 @@ export const AudioPanel = forwardRef<MediaHandle, Props>(function AudioPanel(pro
   const [duration, setDuration] = useState(0);
   const [showTools, setShowTools] = useState(!audio);
   const timings = useMemo(() => [...(audio?.timings ?? [])].sort((a, b) => a.s - b.s), [audio]);
-  const player = useMediaPlayer({ media, timings, tokens, duration, playing, onActiveToken, onJumpToToken, cueToken });
+  const player = useMediaPlayer({ media, timings, tokens, duration, playing, onSpoken, onJumpToToken, cueToken });
 
   // The server-rendered <audio> may load its metadata before hydration attaches onLoadedMetadata.
   useEffect(() => {
@@ -122,7 +123,7 @@ export const AudioPanel = forwardRef<MediaHandle, Props>(function AudioPanel(pro
         }}
         onEnded={() => {
           setPlaying(false);
-          onActiveToken(null);
+          onSpoken(NOTHING_SPOKEN);
         }}
         onLoadedMetadata={(e) => setDuration(e.currentTarget.duration * 1000)}
         onTimeUpdate={() => !playing && player.tick()}
