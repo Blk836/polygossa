@@ -152,6 +152,8 @@ export interface DictionaryResult {
   /** The word in the learner's native language (empty when none was found); absent or null for English speakers. */
   translations?: string[] | null;
   translationLanguage?: string | null;
+  /** Where the translations came from: other learners' saved meanings, the dictionary, or machine translation. */
+  translationSource?: "community" | "dictionary" | "machine" | null;
 }
 
 export interface VocabularyEntry {
@@ -162,6 +164,9 @@ export interface VocabularyEntry {
   kind: EntryKind;
   status: WordStatus;
   definition?: string;
+  /** The word in the learner's own language, and that language's code. */
+  meaning?: string;
+  meaningLanguage?: string;
   partOfSpeech?: string;
   pronunciation?: string;
   example?: string;

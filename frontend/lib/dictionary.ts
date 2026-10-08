@@ -37,12 +37,34 @@ export function browserNativeLanguage(tag: string | undefined): string {
   return NATIVE_LANGUAGES.some((l) => l.code === base) ? base : "en";
 }
 
-/** The popup's translation line, or null when there is none to show (English speakers, words not found). */
+/**
+ * The popup's translation line, or null when there is none to show (English speakers; words nothing was found for).
+ * A word no dictionary has can still have one: other learners' meanings or a machine translation.
+ */
 export function translationLine(result: DictionaryResult): { label: string; text: string; missing: boolean } | null {
-  if (!result.found || !result.translations || !result.translationLanguage) return null;
+  if (!result.translations || !result.translationLanguage) return null;
+  if (!result.found && result.translations.length === 0) return null;
   const label = NATIVE_LANGUAGES.find((l) => l.code === result.translationLanguage)?.name ?? result.translationLanguage;
   if (result.translations.length === 0) return { label, text: `No ${label} translation found`, missing: true };
   return { label, text: result.translations.join(", "), missing: false };
+}
+
+/** Where the translations came from, when that is worth saying: other learners, or a machine. */
+export function translationNote(result: DictionaryResult): string | null {
+  if (!result.translations?.length) return null;
+  if (result.translationSource === "community") return "saved by other learners";
+  if (result.translationSource === "machine") return "machine translation";
+  return null;
+}
+
+/** The own-language meaning a saved word keeps: the first one shown. */
+export function savedMeaning(result: DictionaryResult): string | undefined {
+  return result.translations?.[0];
+}
+
+/** Whether a lookup gave anything worth saving with the word: a dictionary entry or a translation. */
+export function hasDetails(result: DictionaryResult | null): boolean {
+  return !!result && (result.found || !!result.translations?.length);
 }
 
 /** The definition a saved word keeps: its translations first, then the first two English senses. */

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { browserNativeLanguage, NATIVE_LANGUAGES, savedDefinition, translationLine } from "./dictionary";
+import { browserNativeLanguage, hasDetails, NATIVE_LANGUAGES, savedDefinition, savedMeaning, translationLine, translationNote } from "./dictionary";
 import type { DictionaryResult } from "./types";
 
 const base: DictionaryResult = {
@@ -46,6 +46,50 @@ describe("translationLine", () => {
 
   it("falls back to the code for a language it doesn't know", () => {
     expect(translationLine({ ...base, translations: ["x"], translationLanguage: "zz" })?.label).toBe("zz");
+  });
+
+  it("shows translations of a word no dictionary has (others' meanings, machine translation)", () => {
+    const notFound = { ...base, found: false, senses: [] };
+    expect(translationLine({ ...notFound, translations: ["nevera"], translationLanguage: "es" })).toEqual({ label: "Spanish", text: "nevera", missing: false });
+    expect(translationLine({ ...notFound, translations: ["nevera"], translationLanguage: null })).toBeNull();
+  });
+});
+
+describe("translationNote", () => {
+  it("says where the meanings came from", () => {
+    expect(translationNote({ ...base, translations: ["perro"], translationSource: "community" })).toBe("saved by other learners");
+    expect(translationNote({ ...base, translations: ["perro"], translationSource: "machine" })).toBe("machine translation");
+  });
+
+  it("is nothing for the dictionary's own translations or none at all", () => {
+    expect(translationNote({ ...base, translations: ["perro"], translationSource: "dictionary" })).toBeNull();
+    expect(translationNote({ ...base, translations: [], translationSource: null })).toBeNull();
+    expect(translationNote(base)).toBeNull();
+  });
+});
+
+describe("savedMeaning", () => {
+  it("is the first meaning shown", () => {
+    expect(savedMeaning({ ...base, translations: ["perro", "can"], translationLanguage: "es" })).toBe("perro");
+  });
+
+  it("is nothing when none was shown", () => {
+    expect(savedMeaning(base)).toBeUndefined();
+    expect(savedMeaning({ ...base, translations: [], translationLanguage: "es" })).toBeUndefined();
+    expect(savedMeaning({ ...base, translations: null })).toBeUndefined();
+  });
+});
+
+describe("hasDetails", () => {
+  it("is true for a dictionary entry or a word with translations", () => {
+    expect(hasDetails(base)).toBe(true);
+    expect(hasDetails({ ...base, found: false, senses: [], translations: ["nevera"], translationLanguage: "es" })).toBe(true);
+  });
+
+  it("is false for a word nothing was found for", () => {
+    expect(hasDetails({ ...base, found: false, senses: [] })).toBe(false);
+    expect(hasDetails({ ...base, found: false, senses: [], translations: [], translationLanguage: "es" })).toBe(false);
+    expect(hasDetails(null)).toBe(false);
   });
 });
 
