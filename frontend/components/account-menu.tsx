@@ -48,7 +48,13 @@ export function AccountMenu() {
   const here = items.some((i) => isUnder(pathname, i.href));
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    const res = await fetch("/api/auth/logout", { method: "POST" });
+    // A Cognito session also signs out at Cognito, whose page comes back to the landing page.
+    const cognito = res.status === 200 ? ((await res.json()) as { redirect?: string }).redirect : undefined;
+    if (cognito) {
+      window.location.assign(cognito);
+      return;
+    }
     router.push("/");
     router.refresh();
   }

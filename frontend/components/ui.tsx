@@ -17,6 +17,11 @@ const BASE =
   "inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition " +
   "disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
+/** A button's look, for a plain link that must leave the app (e.g. to a route that redirects to another site). */
+export function buttonClass(variant: Variant = "primary"): string {
+  return `${BASE} ${VARIANTS[variant]}`;
+}
+
 export function Button({ variant = "primary", className = "", ...props }: ComponentProps<"button"> & { variant?: Variant }) {
   return <button className={`${BASE} ${VARIANTS[variant]} ${className}`} {...props} />;
 }

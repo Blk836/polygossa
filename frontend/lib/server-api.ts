@@ -8,7 +8,7 @@ export const TOKEN_COOKIE = "lector_token";
 export async function backendFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const token = (await cookies()).get(TOKEN_COOKIE)?.value;
   const headers = new Headers(init.headers);
-  if (token) headers.set("Authorization", `Bearer ${token}`);
+  if (token && !headers.has("Authorization")) headers.set("Authorization", `Bearer ${token}`);
   return fetch(`${BACKEND_URL}${path}`, { ...init, headers, cache: "no-store" });
 }
 

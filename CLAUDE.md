@@ -205,7 +205,10 @@ checkout: they share `backend/build/`, and result files vanish mid-run, failing 
 as `test@lector.local` (Classroom plan, so every feature is unlocked) on every app page; `/`, `/login` and `/signup`
 still show to signed-out visitors (so e2e tests can open them). To restore normal sign-up/login, set
 `AUTO_LOGIN=false` (frontend) and `DEV_AUTO_LOGIN=false` (backend). The `prod` profile always disables the
-endpoint — keep it that way.
+endpoint — keep it that way. Production signs in only through Cognito (`COGNITO_*` settings; the prod profile turns
+the app's own accounts off with `app.login.local-accounts`); setting `COGNITO_DOMAIN`/`COGNITO_CLIENT_ID` (frontend)
+and `COGNITO_ISSUER`/`COGNITO_CLIENT_ID` (backend) to the QA pool (stack `PolygossaQa`'s outputs) signs a local run
+in through Cognito too, and switches the auto-login off.
 
 Six starter texts (one per language you can learn; Japanese, Chinese and Korean are paused) are seeded into the community library for onboarding (`SEED_SAMPLES=false`
 turns that off). No videos are seeded: videos come only from what is in the database.

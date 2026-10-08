@@ -25,8 +25,15 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    /** Our own password's hash; null for accounts made through Cognito. */
     private String passwordHash;
+
+    /**
+     * The linked Cognito identity (its tokens' "sub"), or null before the first sign-in through Cognito. Unique
+     * (users_cognito_sub_key, migration V4).
+     */
+    @Column(length = 64)
+    private String cognitoSub;
 
     @Column(nullable = false)
     private String displayName;
@@ -96,6 +103,18 @@ public class User {
 
     public String getPasswordHash() {
         return passwordHash;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getCognitoSub() {
+        return cognitoSub;
+    }
+
+    public void setCognitoSub(String cognitoSub) {
+        this.cognitoSub = cognitoSub;
     }
 
     public String getDisplayName() {

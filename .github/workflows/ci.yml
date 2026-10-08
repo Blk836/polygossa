@@ -171,8 +171,9 @@ jobs:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: eu-west-1
       - run: npm ci
-      # Builds the backend and frontend images, pushes them, and updates the stack.
-      - run: npx cdk deploy PolygossaStaging --require-approval never --progress events
+      # Builds the backend and frontend images, pushes them, and updates production's stack and the QA resources
+      # (the user pool local runs sign in through).
+      - run: npx cdk deploy PolygossaStaging PolygossaQa --require-approval never --progress events
       - name: The site answers
         run: |
           url=$(aws cloudformation describe-stacks --stack-name PolygossaStaging \

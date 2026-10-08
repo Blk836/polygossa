@@ -1,14 +1,24 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { TOKEN_COOKIE } from "@/lib/server-api";
+import { REFRESH_COOKIE, cognitoConfig, logoutUrl, revoke } from "@/lib/cognito";
+import { clearSession } from "@/lib/session";
 
+/**
+ * Signs out: clears the session here and, for a Cognito session, revokes its refresh token and answers with
+ * Cognito's sign-out page for the browser to pass through (so the next sign-in asks for the password again).
+ */
 export async function POST() {
-  (await cookies()).delete(TOKEN_COOKIE);
-  return new Response(null, { status: 204 });
+  const jar = await cookies();
+  const refresh = jar.get(REFRESH_COOKIE)?.value;
+  clearSession(jar);
+  const config = cognitoConfig();
+  if (!config || !refresh) return new Response(null, { status: 204 });
+  await revoke(config, refresh);
+  return Response.json({ redirect: logoutUrl(config) });
 }
 
 /** Used by server components when the stored session is no longer valid. */
 export async function GET() {
-  (await cookies()).delete(TOKEN_COOKIE);
+  clearSession(await cookies());
   redirect("/login");
 }

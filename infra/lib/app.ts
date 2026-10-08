@@ -1,6 +1,7 @@
 import type * as cdk from "aws-cdk-lib";
 import { GitHubDeployStack } from "./github-deploy-stack.ts";
 import { ProductionStack } from "./production-stack.ts";
+import { QaStack } from "./qa-stack.ts";
 
 /**
  * The app's stacks. Production is the stack first built as staging (docs/acceptance/staging-becomes-production.feature):
@@ -9,11 +10,20 @@ import { ProductionStack } from "./production-stack.ts";
  */
 export function defineApp(app: cdk.App, env: cdk.Environment, cloudFrontPrefixListId?: string) {
   const tags = { project: "polygossa" };
+  const googleClientId = app.node.tryGetContext("google-client-id") as string | undefined;
   const production = new ProductionStack(app, "PolygossaStaging", {
     env,
     description: "Production: Polygossa's site",
     tags: { ...tags, environment: "production" },
     cloudFrontPrefixListId,
+    siteUrl: app.node.tryGetContext("site-url") as string,
+    googleClientId,
+  });
+  const qa = new QaStack(app, "PolygossaQa", {
+    env,
+    googleClientId,
+    description: "QA: the user pool local runs sign in through",
+    tags: { ...tags, environment: "qa" },
   });
   const deploy = new GitHubDeployStack(app, "PolygossaGitHubDeploy", {
     env,
@@ -21,5 +31,5 @@ export function defineApp(app: cdk.App, env: cdk.Environment, cloudFrontPrefixLi
     repository: app.node.tryGetContext("github-repo") as string,
     subject: app.node.tryGetContext("github-subject") as string,
   });
-  return { production, deploy };
+  return { production, qa, deploy };
 }
