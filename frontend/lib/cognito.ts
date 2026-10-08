@@ -68,7 +68,8 @@ export async function startLogin(config: CognitoConfig, screen: "login" | "signu
     response_type: "code",
     client_id: config.clientId,
     redirect_uri: redirectUri(config),
-    scope: "openid email",
+    // The last scope lets the session sign itself out everywhere (globalSignOut).
+    scope: "openid email aws.cognito.signin.user.admin",
     state: pending.state,
     code_challenge: await challengeFor(pending.verifier),
     code_challenge_method: "S256",
