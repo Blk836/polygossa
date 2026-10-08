@@ -13,6 +13,12 @@ import { userPool } from "./login.ts";
 import { monitoring } from "./monitoring.ts";
 import { uploadsBucket } from "./uploads.ts";
 
+/**
+ * The OpenAI API key for the AI features (docs/acceptance/production-ai.feature): a Secrets Manager entry made by
+ * hand (its value can't be in code), read by ECS when the backend starts, so it never appears in the template.
+ */
+export const OPENAI_SECRET = "polygossa/openai-api-key";
+
 export interface ProductionProps extends cdk.StackProps {
   /** CloudFront's origin-facing prefix list; looked up in the account when absent (tests pass one). */
   readonly cloudFrontPrefixListId?: string;
@@ -97,6 +103,8 @@ export class ProductionStack extends cdk.Stack {
         DATABASE_USER: ecs.Secret.fromSecretsManager(database.secret!, "username"),
         DATABASE_PASSWORD: ecs.Secret.fromSecretsManager(database.secret!, "password"),
         JWT_SECRET: ecs.Secret.fromSecretsManager(jwtSecret),
+        OPENAI_API_KEY: ecs.Secret.fromSecretsManager(
+          secretsmanager.Secret.fromSecretNameV2(this, "OpenAiKey", OPENAI_SECRET)),
       },
     });
     const backend = new ecs.FargateService(this, "Backend", {
