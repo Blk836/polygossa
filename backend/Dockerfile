@@ -3,6 +3,8 @@ WORKDIR /src
 COPY gradlew settings.gradle.kts build.gradle.kts ./
 COPY gradle ./gradle
 COPY backend/build.gradle.kts ./backend/
+# A Windows checkout made before .gitattributes may still have CRLF endings, which Linux can't run.
+RUN sed -i 's/\r$//' gradlew
 RUN ./gradlew --no-daemon :backend:dependencies > /dev/null
 COPY backend/src ./backend/src
 RUN ./gradlew --no-daemon :backend:bootJar
