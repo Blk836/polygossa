@@ -2,6 +2,9 @@
 
 Command-line tools for the team, not part of the app. Plain Node (no packages of their own).
 
+`ci-checks.mjs` is CI's, not the team's: it decides which checks a pull request needs from the files it changes
+(`.github/workflows/ci.yml`, `docs/acceptance/ci.feature`).
+
 ## import-videos.mjs: bulk-import curated YouTube videos
 
 Fills Explore (and so the recommendations) with videos found across YouTube. Each video is imported into the
