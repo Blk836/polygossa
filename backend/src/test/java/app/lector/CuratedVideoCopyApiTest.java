@@ -93,7 +93,7 @@ class CuratedVideoCopyApiTest {
     }
 
     private JsonNode copy(JsonNode exported, boolean dryRun, int status) throws Exception {
-        ObjectNode body = exported.deepCopy();
+        ObjectNode body = (ObjectNode) exported.deepCopy();
         body.put("dryRun", dryRun);
         return copy(TOKEN, json.writeValueAsString(body), status);
     }
