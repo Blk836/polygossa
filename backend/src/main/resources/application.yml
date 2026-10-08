@@ -63,6 +63,9 @@ app:
     url: ${TOKENIZER_URL:}
   storage:
     dir: ${STORAGE_DIR:./data/uploads}
+    # Production keeps uploads in this S3 bucket instead of the folder; blank (local runs, tests) uses the folder.
+    s3-bucket: ${STORAGE_S3_BUCKET:}
+    s3-region: ${STORAGE_S3_REGION:eu-west-1}
   openai:
     api-key: ${OPENAI_API_KEY:}
     base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}

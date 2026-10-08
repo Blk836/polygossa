@@ -30,6 +30,11 @@ dependencies {
     // Versioned schema changes (src/main/resources/db/migration); Hibernate only validates the schema.
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     runtimeOnly("org.flywaydb:flyway-database-postgresql")
+    // Uploads in S3 in production (app.storage.s3-bucket); only the synchronous client, so Netty is left out.
+    implementation(platform("software.amazon.awssdk:bom:2.55.12"))
+    implementation("software.amazon.awssdk:s3") {
+        exclude(group = "software.amazon.awssdk", module = "netty-nio-client")
+    }
 
     implementation("io.jsonwebtoken:jjwt-api:0.13.0")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
