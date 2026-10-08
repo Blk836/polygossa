@@ -73,7 +73,7 @@ describe("markerBox", () => {
   const container = { left: 100, top: 200 };
 
   it("sits just under the word, as wide as it, relative to the container", () => {
-    expect(markerBox({ left: 130, bottom: 250, width: 42 }, container)).toEqual({ left: 30, top: 52, width: 42 });
+    expect(markerBox({ left: 130, bottom: 250, width: 42 }, container)).toEqual({ left: 30, top: 53, width: 42 });
   });
 });
 

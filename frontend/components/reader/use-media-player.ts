@@ -2,8 +2,8 @@
 
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { Token, WordTiming } from "@/lib/types";
-import { findActive, firstWordOfSentence, sentenceSegments, type Segment } from "./audio-sync";
-import { cueMs, loopRestart, segmentAt, sentenceStart, type MediaShortcut } from "./media-nav";
+import { firstWordOfSentence, sentenceSegments, type Segment } from "./audio-sync";
+import { cueMs, loopRestart, segmentAt, sentenceStart, spokenAt, type MediaShortcut, type Spoken } from "./media-nav";
 import { ListenContext } from "./use-reading-session";
 
 /** What the shared player needs from an <audio> element or the YouTube player. */
@@ -31,7 +31,8 @@ interface Options {
   /** 0 until the media reports its length. */
   duration: number;
   playing: boolean;
-  onActiveToken: (tokenIndex: number | null) => void;
+  /** The word and sentence being spoken, whenever either changes. */
+  onSpoken: (spoken: Spoken) => void;
   onJumpToToken: (tokenIndex: number) => void;
   /** First token of the page shown (null on page 1): paused media is cued there until the listener plays or seeks. */
   cueToken: number | null;
@@ -42,13 +43,15 @@ interface Options {
  * cues the start of the page shown until first played or seeked. The audio and video panels own their element and
  * report `playing` and `duration`.
  */
-export function useMediaPlayer({ media, timings, tokens, duration, playing, onActiveToken, onJumpToToken, cueToken }: Options) {
+export const NOTHING_SPOKEN: Spoken = { token: null, sentence: null };
+
+export function useMediaPlayer({ media, timings, tokens, duration, playing, onSpoken, onJumpToToken, cueToken }: Options) {
   const [time, setTime] = useState(0);
   const [touched, setTouched] = useState(false);
   const cue = useMemo(() => cueMs(timings, cueToken), [timings, cueToken]);
   const [rate, setRateState] = useState(1);
   const [looped, setLooped] = useState<Segment | null>(null);
-  const lastActive = useRef<number | null>(null);
+  const lastSpoken = useRef<Spoken>(NOTHING_SPOKEN);
   const segments = useMemo(() => sentenceSegments(tokens, timings, duration), [tokens, timings, duration]);
   const firstWords = useMemo(() => firstWordOfSentence(tokens), [tokens]);
   const listen = useContext(ListenContext);
@@ -58,17 +61,18 @@ export function useMediaPlayer({ media, timings, tokens, duration, playing, onAc
     listen?.set(playing, Date.now());
   }, [listen, playing]);
 
-  /** Shows `ms` as the position and points the reader at the word spoken then (turning the page to it). */
+  /** Shows `ms` as the position and points the reader at the word and sentence spoken then (turning the page to it). */
   const follow = useCallback(
     (ms: number) => {
       setTime(ms);
-      const current = findActive(timings, ms)?.i ?? null;
-      if (current !== lastActive.current) {
-        lastActive.current = current;
-        onActiveToken(current);
+      const current = spokenAt(timings, segments, ms);
+      const last = lastSpoken.current;
+      if (current.token !== last.token || current.sentence !== last.sentence) {
+        lastSpoken.current = current;
+        onSpoken(current);
       }
     },
-    [timings, onActiveToken],
+    [timings, segments, onSpoken],
   );
 
   const tick = useCallback(() => {
