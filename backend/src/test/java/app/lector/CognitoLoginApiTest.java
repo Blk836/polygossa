@@ -96,7 +96,7 @@ class CognitoLoginApiTest {
         assertThat(me.get("displayName").asString()).isEqualTo(email.substring(0, email.indexOf('@')).toLowerCase());
         assertThat(me.get("nativeLanguage").asString()).isEqualTo("es");
         assertThat(me.get("tours").get("on").asBoolean()).isTrue();
-        assertThat(me.get("plan").get("tier").asString()).isEqualTo("free");
+        assertThat(me.get("plan").get("tier").asString()).isEqualTo("FREE");
         assertThat(users.findByCognitoSub(sub)).isPresent();
 
         JsonNode again = json.readTree(mvc.perform(get("/api/me").header("Authorization", "Bearer " + POOL.access(sub)))

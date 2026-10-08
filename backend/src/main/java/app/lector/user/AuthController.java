@@ -3,6 +3,7 @@ package app.lector.user;
 import app.lector.common.ApiException;
 import app.lector.config.AppProperties;
 import app.lector.config.JwtService;
+import app.lector.config.LoginProperties;
 import app.lector.token.NativeLanguage;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -11,11 +12,13 @@ import jakarta.validation.constraints.Size;
 import java.util.Locale;
 import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,15 +40,23 @@ public class AuthController {
 
     public record AuthResponse(String token, MeDto user) {}
 
+    /** The ID token from the same sign-in, and the browser's language tag (the native language of a new account). */
+    public record CognitoSessionRequest(@NotBlank String idToken, @Size(max = 35) String nativeLanguage) {}
+
     private final UserRepository users;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final PlanService plans;
     private final Admins admins;
     private final AppProperties props;
+    private final LoginProperties login;
+    private final CognitoSessions cognitoSessions;
 
     public AuthController(UserRepository users, PasswordEncoder passwordEncoder, JwtService jwtService,
-                          PlanService plans, AppProperties props, Admins admins) {
+                          PlanService plans, AppProperties props, Admins admins, LoginProperties login,
+                          CognitoSessions cognitoSessions) {
+        this.login = login;
+        this.cognitoSessions = cognitoSessions;
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
@@ -54,10 +65,20 @@ public class AuthController {
         this.props = props;
     }
 
+    /** After a sign-in through Cognito: the account for its tokens (the access token signs the request). */
+    @PostMapping("/cognito")
+    @Transactional
+    public MeDto cognito(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization,
+                         @Valid @RequestBody CognitoSessionRequest req) {
+        String access = authorization != null && authorization.startsWith("Bearer ") ? authorization.substring(7) : null;
+        return MeDto.of(cognitoSessions.start(access, req.idToken(), req.nativeLanguage()), plans, admins);
+    }
+
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
     @Transactional
     public AuthResponse signup(@Valid @RequestBody SignupRequest req) {
+        requireLocalAccounts();
         String email = req.email().trim().toLowerCase(Locale.ROOT);
         if (users.existsByEmailIgnoreCase(email)) {
             throw ApiException.conflict("An account with that email already exists");
@@ -75,6 +96,7 @@ public class AuthController {
     @PostMapping("/login")
     @Transactional(readOnly = true)
     public AuthResponse login(@Valid @RequestBody LoginRequest req) {
+        requireLocalAccounts();
         User user = users.findByEmailIgnoreCase(req.email().trim())
                 .filter(u -> passwordEncoder.matches(req.password(), u.getPasswordHash()))
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "invalid_credentials",
@@ -94,6 +116,7 @@ public class AuthController {
         if (!props.devAutoLogin()) {
             throw ApiException.notFound("Endpoint");
         }
+        requireLocalAccounts();
         User user = users.findByEmailIgnoreCase(DEV_EMAIL).orElseGet(this::createDevAccount);
         return respond(user);
     }
@@ -110,6 +133,13 @@ public class AuthController {
             return users.saveAndFlush(u);
         } catch (DataIntegrityViolationException e) {
             return users.findByEmailIgnoreCase(DEV_EMAIL).orElseThrow(() -> e);
+        }
+    }
+
+    /** The app's own accounts are off in production, where everyone signs in through Cognito. */
+    private void requireLocalAccounts() {
+        if (!login.localAccounts()) {
+            throw ApiException.notFound("Endpoint");
         }
     }
 

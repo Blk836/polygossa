@@ -25,3 +25,6 @@ app:
     admins: ${FORUM_ADMINS:}
   # Never allow credential-free login in production.
   dev-auto-login: false
+  # Everyone signs in through Cognito: the app's own accounts and tokens are off.
+  login:
+    local-accounts: false
