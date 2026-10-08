@@ -10,6 +10,7 @@ import { appDatabase } from "./database.ts";
 import { backendImage, frontendImage } from "./images.ts";
 import { appLogs, BACKEND_NAME, NAMESPACE } from "./services.ts";
 import { userPool } from "./login.ts";
+import { monitoring } from "./monitoring.ts";
 import { uploadsBucket } from "./uploads.ts";
 
 export interface ProductionProps extends cdk.StackProps {
@@ -23,6 +24,8 @@ export interface ProductionProps extends cdk.StackProps {
   readonly siteUrl?: string;
   /** The owner's Google OAuth client (cdk.json's `google-client-id`), for Sign in with Google. */
   readonly googleClientId?: string;
+  /** Where production's alarms and budget warnings are emailed (cdk.json's `alert-email`); none without it. */
+  readonly alertEmail?: string;
 }
 
 /**
@@ -146,7 +149,7 @@ export class ProductionStack extends cdk.Stack {
       internetFacing: true,
       securityGroup: balancerGroup,
     });
-    balancer.addListener("Http", { port: 80, open: false }).addTargets("Frontend", {
+    const frontendTargets = balancer.addListener("Http", { port: 80, open: false }).addTargets("Frontend", {
       port: 3000,
       protocol: elbv2.ApplicationProtocol.HTTP,
       targets: [frontend],
@@ -170,6 +173,8 @@ export class ProductionStack extends cdk.Stack {
         originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
       },
     });
+
+    if (props.alertEmail) monitoring(this, { email: props.alertEmail, frontendTargets, backend, database });
 
     this.siteUrl = `https://${distribution.distributionDomainName}`;
     new cdk.CfnOutput(this, "SiteUrl", { value: this.siteUrl, description: "The production site" });
