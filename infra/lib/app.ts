@@ -18,6 +18,7 @@ export function defineApp(app: cdk.App, env: cdk.Environment, cloudFrontPrefixLi
     cloudFrontPrefixListId,
     siteUrl: app.node.tryGetContext("site-url") as string,
     googleClientId,
+    alertEmail: app.node.tryGetContext("alert-email") as string | undefined,
   });
   const qa = new QaStack(app, "PolygossaQa", {
     env,
