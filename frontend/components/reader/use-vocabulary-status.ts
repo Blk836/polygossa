@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, api, errorMessage } from "@/lib/api";
-import { savedDefinition } from "@/lib/dictionary";
+import { hasDetails, savedDefinition, savedMeaning } from "@/lib/dictionary";
 import type { DictionaryResult, LanguageCode, TextDetail, Token, WordStatus } from "@/lib/types";
 import type { PopupTarget } from "./word-popup";
 
@@ -30,6 +30,7 @@ function withStatus(map: Record<string, WordStatus>, term: string, status: WordS
 function definitionFields(result: DictionaryResult) {
   return {
     definition: savedDefinition(result),
+    meaning: savedMeaning(result),
     partOfSpeech: result.senses[0]?.partOfSpeech || undefined,
     pronunciation: result.pronunciation ?? undefined,
   };
@@ -137,10 +138,27 @@ export function useVocabularyStatus(opts: Options) {
         kind: target.kind,
         status,
         contextSentence: target.sentence,
-        ...(isNew && r?.found ? definitionFields(r) : {}),
+        ...(isNew && r && hasDetails(r) ? definitionFields(r) : {}),
       });
     },
     [language, save],
+  );
+
+  /** Keeps another own-language meaning with the word in the popup, saving the word (as learning) if it isn't yet. */
+  const pickMeaning = useCallback(
+    async (target: PopupTarget, meaning: string) => {
+      onNotice(null);
+      const before = statusOf(target) ?? null;
+      if (before === null) apply(target, "learning");
+      try {
+        await save(target.term, { displayTerm: target.display, kind: target.kind, contextSentence: target.sentence, meaning });
+        onSaved();
+      } catch (e) {
+        if (before === null) apply(target, null);
+        reportFailure(e);
+      }
+    },
+    [onNotice, statusOf, apply, save, onSaved, reportFailure],
   );
 
   /** Sets (or with null, removes) the status of the word or phrase in the popup. */
@@ -169,5 +187,5 @@ export function useVocabularyStatus(opts: Options) {
     });
   }, []);
 
-  return { statuses, phrases, statusOf, autoSave, recordDefinition, setStatus, markRemainingKnown };
+  return { statuses, phrases, statusOf, autoSave, recordDefinition, pickMeaning, setStatus, markRemainingKnown };
 }

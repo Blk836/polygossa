@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api, errorMessage } from "@/lib/api";
+import { hasDetails } from "@/lib/dictionary";
 import type { DictionaryResult, LanguageCode, WordStatus } from "@/lib/types";
 import { UpgradeNote } from "../ui";
 import { ExtraActions, PopupHeader, Senses, Source, StatusButtons, type SentenceState } from "./popup-parts";
@@ -40,6 +41,8 @@ interface Props {
   hasAudio: boolean;
   onStatus: (status: WordStatus | null) => void;
   onDefinition: (result: DictionaryResult) => void;
+  /** The learner picked another own-language meaning for the word. */
+  onPickMeaning: (meaning: string) => void;
   onSaveSentence: (translation?: string) => Promise<void>;
   onPlayFromHere: () => void;
   onLookupLemma: (lemma: string) => void;
@@ -80,7 +83,7 @@ export function WordPopup(props: Props) {
       .then((r) => {
         if (cancelled) return;
         setResult(r);
-        if (r.found) onDefinition(r);
+        if (hasDetails(r)) onDefinition(r);
       })
       .catch((e) => !cancelled && setError(errorMessage(e)));
     return () => {
@@ -116,7 +119,7 @@ export function WordPopup(props: Props) {
     <div className="flex max-h-[70vh] flex-col overflow-hidden rounded-t-2xl border border-line bg-card shadow-xl sm:max-h-[28rem] sm:rounded-2xl">
       <PopupHeader target={target} result={result} speechLocale={props.speechLocale} onLookupLemma={props.onLookupLemma} onClose={props.onClose} />
       <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
-        <Senses result={result} error={error} isPro={props.isPro} />
+        <Senses result={result} error={error} isPro={props.isPro} onPickMeaning={props.onPickMeaning} />
         {aiExample && (
           <div className="border-l-2 border-accent pl-2">
             <p className="font-reading italic">{aiExample.sentence}</p>

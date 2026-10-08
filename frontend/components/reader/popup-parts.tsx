@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { translationLine } from "@/lib/dictionary";
+import { savedMeaning, translationLine, translationNote } from "@/lib/dictionary";
 import { canSpeak, speak } from "@/lib/speech";
 import type { DictionaryResult, WordStatus } from "@/lib/types";
 import { CloseIcon, PlayIcon, SpeakerIcon } from "../icons";
@@ -51,19 +51,29 @@ export function PopupHeader({ target, result, speechLocale, onLookupLemma, onClo
 }
 
 /** Definitions (first three, expandable) and up to two dictionary examples. */
-export function Senses({ result, error, isPro }: { result: DictionaryResult | null; error: string | null; isPro: boolean }) {
+export function Senses({ result, error, isPro, onPickMeaning }: {
+  result: DictionaryResult | null;
+  error: string | null;
+  isPro: boolean;
+  onPickMeaning: (meaning: string) => void;
+}) {
   const [showAll, setShowAll] = useState(false);
   if (error) return <p className="text-danger">{error}</p>;
   if (!result) return <Spinner className="text-muted" />;
   if (!result.found) {
-    return <p className="text-muted">No dictionary entry found. {!isPro && "Pro adds AI definitions for words the free dictionaries miss."}</p>;
+    return (
+      <>
+        <Translations result={result} onPick={onPickMeaning} />
+        <p className="text-muted">No dictionary entry found. {!isPro && "Pro adds AI definitions for words the free dictionaries miss."}</p>
+      </>
+    );
   }
   const senses = result.senses;
   const visible = showAll ? senses : senses.slice(0, 3);
   const examples = senses.flatMap((s) => s.examples).filter(Boolean).slice(0, 2);
   return (
     <>
-      <Translations result={result} />
+      <Translations result={result} onPick={onPickMeaning} />
       <ol className="space-y-1.5">
         {visible.map((s, i) => (
           <li key={i} className="flex gap-2">
@@ -84,15 +94,37 @@ export function Senses({ result, error, isPro }: { result: DictionaryResult | nu
   );
 }
 
-/** The word in the learner's native language, above the English definitions (nothing for English speakers). */
-function Translations({ result }: { result: DictionaryResult }) {
+/**
+ * The word in the learner's native language, above the English definitions (nothing for English speakers). The
+ * saved word keeps the first meaning; clicking another keeps that one instead.
+ */
+function Translations({ result, onPick }: { result: DictionaryResult; onPick: (meaning: string) => void }) {
+  const [chosen, setChosen] = useState(savedMeaning(result));
   const native = translationLine(result);
   if (!native) return null;
   if (native.missing) return <p data-testid="translations" className="text-xs text-muted">{native.text}</p>;
+  const note = translationNote(result);
   return (
     <p data-testid="translations" className="font-medium">
       <span className="mr-1.5 text-xs font-normal text-muted">{native.label}</span>
-      {native.text}
+      {(result.translations ?? []).map((meaning, i) => (
+        <span key={meaning}>
+          {i > 0 && ", "}
+          <button
+            type="button"
+            aria-pressed={meaning === chosen}
+            title="Keep this meaning with the word"
+            onClick={() => {
+              setChosen(meaning);
+              onPick(meaning);
+            }}
+            className={`rounded px-0.5 ${meaning === chosen ? "bg-accent-soft text-ink" : "hover:bg-paper"}`}
+          >
+            {meaning}
+          </button>
+        </span>
+      ))}
+      {note && <span className="ml-1.5 text-xs font-normal text-muted">· {note}</span>}
     </p>
   );
 }
