@@ -5,7 +5,8 @@
 const config = {
   testRunner: "command",
   commandRunner: { command: 'node --test "tools/**/*.test.mjs"' },
-  mutate: ["tools/import-videos/*.mjs", "!tools/import-videos/*.test.mjs", "tools/ci-checks/*.mjs", "!tools/ci-checks/*.test.mjs"],
+  mutate: ["tools/import-videos/*.mjs", "!tools/import-videos/*.test.mjs", "tools/ci-checks/*.mjs", "!tools/ci-checks/*.test.mjs",
+    "tools/local-checks/*.mjs", "!tools/local-checks/*.test.mjs"],
   // Copy only tools/ into the sandbox, not the whole repo.
   ignorePatterns: ["/*", "!/tools"],
   reporters: ["clear-text", "progress"],

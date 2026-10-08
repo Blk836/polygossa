@@ -3,7 +3,25 @@
 Command-line tools for the team, not part of the app. Plain Node (no packages of their own).
 
 `ci-checks.mjs` is CI's, not the team's: it decides which checks a pull request needs from the files it changes
-(`.github/workflows/ci.yml`, `docs/acceptance/ci.feature`).
+(`.github/workflows/ci.yml`, `docs/acceptance/ci.feature`). `local-checks.mjs` uses the same rules.
+
+## local-checks.mjs: the suites on this PC, one run at a time
+
+Runs the checks a branch needs on the developer's PC instead of GitHub (`docs/acceptance/local-checks.feature`) and
+marks the commit on GitHub with a green or red "local checks" status. Run it from a worktree with everything
+committed and pushed:
+
+```bash
+node tools/local-checks.mjs                  # the suites this branch's changes need, compared with origin/main
+node tools/local-checks.mjs --all            # every suite
+node tools/local-checks.mjs --run -- <cmd>   # one heavy command (a test class, a spec, mutation testing) in its turn
+```
+
+Only one run holds the PC at a time, across every worktree: the lock file is `polygossa-checks.lock` in the main
+checkout's `.git` folder and names its holder, so a waiting run says whom it waits for. A lock whose process has died is
+taken over. Backend and end-to-end runs need `JAVA_HOME`; missing or outdated `node_modules` are installed with
+`npm ci` first; infra's synth gets the AWS account from the `AWS_ACCOUNT_ID` repository variable (or
+`CDK_DEFAULT_ACCOUNT`). `GH` overrides where the GitHub CLI is.
 
 ## import-videos.mjs: bulk-import curated YouTube videos
 
