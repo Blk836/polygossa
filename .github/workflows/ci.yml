@@ -234,3 +234,10 @@ jobs:
             --query "Stacks[0].Outputs[?OutputKey=='SiteUrl'].OutputValue" --output text)
           echo "Production: $url" >> "$GITHUB_STEP_SUMMARY"
           curl --fail --silent --show-error --retry 20 --retry-delay 15 --retry-all-errors -o /dev/null "$url/login"
+      # Through CloudFront, the frontend and on to the backend and its database: the languages list is public.
+      - name: The backend answers through the site
+        run: |
+          url=$(aws cloudformation describe-stacks --stack-name PolygossaStaging \
+            --query "Stacks[0].Outputs[?OutputKey=='SiteUrl'].OutputValue" --output text)
+          curl --fail --silent --show-error --retry 20 --retry-delay 15 --retry-all-errors "$url/api/languages" \
+            | grep -q '"code"'

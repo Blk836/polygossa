@@ -64,6 +64,8 @@ Feature: Staging on AWS, defined in CDK and deployed from GitHub (docs/productio
     Then a deploy job signs in to AWS with short-lived credentials (GitHub's OIDC sign-in, no stored keys)
     And builds the images and runs "cdk deploy" for staging
     And checks the site answers afterwards, failing the run if it doesn't
+    And checks the backend answers through the site (the public languages list, through CloudFront, the frontend,
+      the backend and its database), failing the run if it doesn't
 
   Scenario: Only main deploys
     When CI runs for a pull request or another branch
