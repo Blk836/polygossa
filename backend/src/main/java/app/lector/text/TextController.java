@@ -2,6 +2,7 @@ package app.lector.text;
 
 import app.lector.common.ApiException;
 import app.lector.progress.ProgressService;
+import app.lector.storage.FileStore;
 import app.lector.storage.StorageService;
 import app.lector.text.TextDtos.TextDetail;
 import app.lector.text.TextDtos.TextSummary;
@@ -18,6 +19,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 import java.util.List;
 import java.util.Map;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
@@ -31,6 +33,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -193,19 +196,23 @@ public class TextController {
         audio.remove(currentUser.load(principal), id);
     }
 
-    /** Streams uploaded audio; Spring answers HTTP Range requests for Resource bodies, so seeking works. */
+    /**
+     * Streams uploaded audio. HTTP Range requests (seeking) are answered by S3 for files kept there, and by Spring for
+     * local files.
+     */
     @GetMapping("/{id}/audio")
     @Transactional(readOnly = true)
-    public ResponseEntity<Resource> audio(@AuthenticationPrincipal AuthUser principal, @PathVariable Long id) {
+    public ResponseEntity<Resource> audio(@AuthenticationPrincipal AuthUser principal, @PathVariable Long id,
+                                          @RequestHeader(value = HttpHeaders.RANGE, required = false) String range) {
         Text text = service.loadReadable(currentUser.load(principal), id);
         if (text.getAudioFile() == null) {
             throw ApiException.notFound("Audio");
         }
-        Resource resource = storage.load(text.getAudioFile());
+        FileStore.Opened file = storage.open(text.getAudioFile(), range, "Audio");
         MediaType type = text.getAudioContentType() != null
                 ? MediaType.parseMediaType(text.getAudioContentType())
-                : MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM);
-        return ResponseEntity.ok().contentType(type).body(resource);
+                : MediaTypeFactory.getMediaType(text.getAudioFile()).orElse(MediaType.APPLICATION_OCTET_STREAM);
+        return file.response().contentType(type).body(file.body());
     }
 
     @PostMapping("/{id}/timings/auto")

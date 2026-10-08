@@ -35,7 +35,7 @@ public class LocalFileStore implements FileStore {
     @Override
     public Opened open(String name, String range) {
         Path file = root.resolve(name);
-        return Files.isRegularFile(file) ? new Opened(HttpStatus.OK, new FileSystemResource(file), -1, null) : null;
+        return Files.isRegularFile(file) ? new Opened(HttpStatus.OK, new FileSystemResource(file), null) : null;
     }
 
     @Override

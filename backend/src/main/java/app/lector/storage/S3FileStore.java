@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.exception.SdkException;
@@ -57,12 +56,12 @@ public class S3FileStore implements FileStore {
             ResponseInputStream<GetObjectResponse> object = s3.getObject(request.build());
             GetObjectResponse meta = object.response();
             HttpStatus status = meta.contentRange() == null ? HttpStatus.OK : HttpStatus.PARTIAL_CONTENT;
-            return new Opened(status, new InputStreamResource(object), meta.contentLength(), meta.contentRange());
+            return new Opened(status, new StreamedFile(object, meta.contentLength(), name), meta.contentRange());
         } catch (NoSuchKeyException e) {
             return null;
         } catch (S3Exception e) {
             if (e.statusCode() == RANGE_NOT_SATISFIABLE) {
-                return new Opened(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE, null, 0, null);
+                return new Opened(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE, null, null);
             }
             log.warn("Could not read {} from S3: {}", name, e.getMessage());
             throw unavailable();

@@ -40,6 +40,6 @@ public class ProfilePhotoService {
     public Photo load(Long userId) {
         String name = users.findById(userId).map(User::getPhotoFile)
                 .orElseThrow(() -> ApiException.notFound("Photo"));
-        return new Photo(name, storage.load(name));
+        return new Photo(name, storage.open(name, null, "Photo").body());
     }
 }

@@ -79,7 +79,7 @@ class S3UploadsApiTest {
     }
 
     private MockHttpServletResponse fetch(String token, String path, String range) throws Exception {
-        var request = get(path).header("Authorization", "Bearer " + token);
+        var request = get(path).header("Authorization", token);
         if (range != null) {
             request.header("Range", range);
         }
@@ -170,8 +170,9 @@ class S3UploadsApiTest {
 
         assertThat(error.get("message").asString()).isEqualTo("Couldn't save the file. Please try again.");
         S3.fail(false);
-        assertThat(api.get(pro, "/api/texts/" + id, 200).get("audio").isNull()).isTrue();
-        assertThat(api.get(pro, "/api/texts/" + id, 200).get("title").asString()).isNotEmpty();
+        JsonNode text = api.get(pro, "/api/texts/" + id, 200);
+        assertThat(text.get("audio").isNull()).isTrue();
+        assertThat(text.get("text").get("title").asString()).isNotEmpty();
     }
 
     @Test
