@@ -24,7 +24,13 @@ public record AppProperties(
     /** Base URL of the Python CJK tokenization sidecar; blank disables it (falls back to character segmentation). */
     public record Tokenizer(@DefaultValue("") String url, @DefaultValue("5s") Duration timeout) {}
 
-    public record Storage(@DefaultValue("./data/uploads") String dir, @DefaultValue("50MB") String maxAudioSize) {}
+    /**
+     * Where uploads are kept: the local folder {@code dir}, or the S3 bucket {@code s3Bucket} when one is set
+     * (production). {@code s3Endpoint} points the client elsewhere (tests' fake S3); blank means AWS itself.
+     */
+    public record Storage(@DefaultValue("./data/uploads") String dir, @DefaultValue("50MB") String maxAudioSize,
+                          @DefaultValue("") String s3Bucket, @DefaultValue("eu-west-1") String s3Region,
+                          @DefaultValue("") String s3Endpoint) {}
 
     public record Dictionary(
             @DefaultValue("https://freedictionaryapi.com/api/v1") String freeDictionaryBaseUrl,

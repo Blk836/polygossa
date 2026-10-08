@@ -1,22 +1,16 @@
 package app.lector.storage;
 
 import app.lector.common.ApiException;
-import app.lector.config.AppProperties;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.regex.Pattern;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-/** Stores uploaded files (audio, profile photos) on local disk under {@code app.storage.dir}. */
+/** Checks and names uploaded files (audio, profile photos) and keeps them in the {@link FileStore}. */
 @Service
 public class StorageService {
 
@@ -25,15 +19,10 @@ public class StorageService {
 
     static final long MAX_PHOTO_BYTES = 1024 * 1024;
 
-    private final Path root;
+    private final FileStore store;
 
-    public StorageService(AppProperties props) {
-        this.root = Path.of(props.storage().dir()).toAbsolutePath().normalize();
-        try {
-            Files.createDirectories(root);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Cannot create storage directory " + root, e);
-        }
+    public StorageService(FileStore store) {
+        this.store = store;
     }
 
     /** Saves an audio upload and returns its stored name. */
@@ -50,10 +39,10 @@ public class StorageService {
         var m = EXTENSION.matcher(original);
         String ext = m.find() ? m.group(1).toLowerCase(Locale.ROOT) : "bin";
         String name = UUID.randomUUID() + "." + ext;
-        try (InputStream in = file.getInputStream()) {
-            Files.copy(in, root.resolve(name), StandardCopyOption.REPLACE_EXISTING);
+        try {
+            store.save(name, file.getInputStream(), file.getSize(), contentType);
         } catch (IOException e) {
-            throw new UncheckedIOException("Failed to store upload", e);
+            throw new UncheckedIOException("Failed to read upload", e);
         }
         return name;
     }
@@ -77,33 +66,25 @@ public class StorageService {
             throw ApiException.badRequest("Please upload a JPEG or PNG image");
         }
         String name = UUID.randomUUID() + "." + ext;
-        try {
-            Files.write(root.resolve(name), bytes);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to store upload", e);
-        }
+        store.save(name, new ByteArrayInputStream(bytes), bytes.length, PhotoType.mediaType(name));
         return name;
     }
 
-    public Resource load(String name) {
-        return new FileSystemResource(resolve(name));
+    /**
+     * The stored file, or the part an HTTP Range header asks for ({@code range} may be null); "{what} not found"
+     * when it no longer exists.
+     */
+    public FileStore.Opened open(String name, String range, String what) {
+        FileStore.Opened opened = SAFE_NAME.matcher(name).matches() ? store.open(name, range) : null;
+        if (opened == null) {
+            throw ApiException.notFound(what);
+        }
+        return opened;
     }
 
     public void delete(String name) {
-        if (name == null) {
-            return;
+        if (name != null && SAFE_NAME.matcher(name).matches()) {
+            store.delete(name);
         }
-        try {
-            Files.deleteIfExists(resolve(name));
-        } catch (IOException ignored) {
-            // Orphaned files are harmless; nothing else to do.
-        }
-    }
-
-    private Path resolve(String name) {
-        if (!SAFE_NAME.matcher(name).matches()) {
-            throw ApiException.notFound("File");
-        }
-        return root.resolve(name);
     }
 }
