@@ -1,17 +1,22 @@
-# The gauntlet's checks (see CLAUDE.md) on every pull request, on Linux like production (docs/acceptance/ci.feature),
-# and a deploy to production on AWS when a pull request is merged to main (docs/acceptance/staging.feature). Mutation testing stays local (too slow per push). The checks have no secrets and
-# no cloud access: tests never call OpenAI or AWS. Only the deploy job signs in to AWS, with short-lived credentials.
+# A deploy to production on AWS when a pull request is merged to main (docs/acceptance/staging.feature). The gauntlet's
+# checks (see CLAUDE.md) normally run on the developer's PC instead (tools/local-checks.mjs,
+# docs/acceptance/local-checks.feature), since GitHub's minutes cost too much. They run here, on Linux like production
+# (docs/acceptance/ci.feature), only when asked: a pull request labelled "ci", a hand-started run, or every pull request
+# while the repository variable CHECKS_ON_GITHUB is "true". Mutation testing stays local (too slow per push). The
+# checks have no secrets and no cloud access: tests never call OpenAI or AWS. Only the deploy job signs in to AWS, with
+# short-lived credentials.
 name: CI
 
-# Changes arrive as pull requests (CLAUDE.md). The checks run on the pull request, against its merge with main; merging
-# to main deploys without running them again, which would double the CI minutes for the same code. (A branch is updated
-# from main and re-checked before merging if main has moved since.) Feature-branch pushes without a pull request aren't
-# checked.
+# Changes arrive as pull requests (CLAUDE.md). When the checks run here, they run on the pull request, against its merge
+# with main; merging to main deploys without running them again. A pull request run that wasn't asked for skips every
+# check job, and skipped jobs cost no minutes.
 on:
   push:
     branches: [main]
     paths-ignore: ["docs/**", "**/*.md"]
   pull_request:
+    # labeled: adding the "ci" label starts the checks without a new push.
+    types: [opened, synchronize, reopened, labeled]
     paths-ignore: ["docs/**", "**/*.md"]
   workflow_dispatch:
     inputs:
@@ -22,9 +27,12 @@ on:
         type: boolean
         default: false
 
-# A newer push to a branch cancels its older run, except on main, where every commit keeps a result.
+# A newer push to a branch cancels its older run, except on main, where every commit keeps a result. Adding some other
+# label gets a group of its own, so it can't cancel a check run that is going.
 concurrency:
-  group: ci-${{ github.ref }}
+  group: >-
+    ci-${{ github.ref }}${{ github.event.action == 'labeled' && github.event.label.name != 'ci'
+    && format('-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
@@ -36,7 +44,13 @@ jobs:
   # the known parts, a hand-started run, files that can't be listed) every check runs. Skipped jobs cost no minutes.
   changes:
     name: pick checks
-    if: github.event_name != 'push' && !inputs.deploy_only
+    # Only when asked (see the top): a hand-started run (not deploy-only), or a pull request while CHECKS_ON_GITHUB is
+    # "true" or it is labelled "ci". Adding some other label doesn't start them.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && !inputs.deploy_only)
+      || (github.event_name == 'pull_request'
+      && (github.event.action != 'labeled' || github.event.label.name == 'ci')
+      && (vars.CHECKS_ON_GITHUB == 'true' || contains(github.event.pull_request.labels.*.name, 'ci')))
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
