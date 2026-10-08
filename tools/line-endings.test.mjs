@@ -13,3 +13,13 @@ test("gradlew is always checked out with LF line endings, whatever the PC's Git 
   const attributes = execFileSync("git", ["check-attr", "eol", "gradlew"], { cwd: root, encoding: "utf8" });
   assert.equal(attributes.trim(), "gradlew: eol: lf");
 });
+
+// Git doesn't rewrite an unchanged file when the attributes change, so a checkout made before them (like the deploy
+// tool's own) keeps CRLF: the image build strips it before running gradlew.
+test("the backend image strips CRLF from gradlew before running it", async () => {
+  const { readFileSync } = await import("node:fs");
+  const steps = readFileSync(join(root, "backend", "Dockerfile"), "utf8").split(/\r?\n/);
+  const strip = steps.findIndex((line) => line.startsWith("RUN sed -i 's/\\r$//' gradlew"));
+  const firstRun = steps.findIndex((line) => line.startsWith("RUN ./gradlew"));
+  assert.ok(strip >= 0 && strip < firstRun, "a CR-stripping step must come before the first gradlew run");
+});
