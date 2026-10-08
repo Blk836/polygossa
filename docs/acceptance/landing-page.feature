@@ -66,7 +66,7 @@ Feature: Landing page that turns visitors into sign-ups
     Given I have not clicked any word in the demo
     Then the demo shows a hint to click a word
     When I have looked up at least one word
-    Then the demo shows "Save these words — create a free account" linking to /signup?lang=<demo language>
+    Then the demo shows "Save these words: create a free account" linking to /signup?lang=<demo language>
 
   Scenario: The demo works from the keyboard
     When I Tab to a demo word and press Enter
