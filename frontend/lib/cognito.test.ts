@@ -7,6 +7,7 @@ import {
   encodePending,
   exchangeCode,
   expiresAt,
+  globalSignOut,
   logoutUrl,
   needsRenewal,
   renew,
@@ -58,7 +59,8 @@ describe("startLogin", () => {
       response_type: "code",
       client_id: "abc",
       redirect_uri: "https://site/api/auth/callback",
-      scope: "openid email",
+      // The last one lets the session sign itself out everywhere (Cognito's GlobalSignOut).
+      scope: "openid email aws.cognito.signin.user.admin",
       state: pending.state,
       code_challenge: await challengeFor(pending.verifier),
       code_challenge_method: "S256",
@@ -140,6 +142,27 @@ describe("renewal", () => {
     expect(needsRenewal("garbage", 0)).toBe(true);
     expect(needsRenewal(jwt({ exp: 1030 }), 1000)).toBe(true);
     expect(needsRenewal(jwt({ exp: 1060 }), 1000)).toBe(false);
+  });
+});
+
+describe("globalSignOut", () => {
+  it("asks Cognito's API in the pool's region to end every session of the token's user", async () => {
+    const fetchMock = vi.fn(async () => Response.json({}));
+    vi.stubGlobal("fetch", fetchMock);
+
+    expect(await globalSignOut(config, "access-1")).toBe(true);
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe("https://cognito-idp.eu-west-1.amazonaws.com/");
+    expect(new Headers(init.headers).get("x-amz-target")).toBe("AWSCognitoIdentityProviderService.GlobalSignOut");
+    expect(new Headers(init.headers).get("content-type")).toBe("application/x-amz-json-1.1");
+    expect(JSON.parse(init.body as string)).toEqual({ AccessToken: "access-1" });
+  });
+
+  it("reports a refusal or an unreachable Cognito", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ __type: "NotAuthorizedException" }, { status: 400 })));
+    expect(await globalSignOut(config, "a")).toBe(false);
+    vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("down"); }));
+    expect(await globalSignOut(config, "a")).toBe(false);
   });
 });
 
