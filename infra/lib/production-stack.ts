@@ -21,6 +21,8 @@ export interface ProductionProps extends cdk.StackProps {
    * which depends on the frontend.
    */
   readonly siteUrl?: string;
+  /** The owner's Google OAuth client (cdk.json's `google-client-id`), for Sign in with Google. */
+  readonly googleClientId?: string;
 }
 
 /**
@@ -59,7 +61,12 @@ export class ProductionStack extends cdk.Stack {
 
     // Backend: no load balancer and no public route in; the frontend calls it at backend.<namespace>:8080.
     const siteUrl = props.siteUrl ?? "https://site.invalid";
-    const login = userPool(this, { domainPrefix: "polygossa", siteUrl, keep: true });
+    const login = userPool(this, {
+      domainPrefix: "polygossa",
+      siteUrl,
+      keep: true,
+      googleClientId: props.googleClientId ?? "unset.apps.googleusercontent.com",
+    });
 
     const backendTask = new ecs.FargateTaskDefinition(this, "BackendTask", { cpu: 512, memoryLimitMiB: 1024 });
     const uploads = uploadsBucket(this, vpc, backendTask.taskRole);

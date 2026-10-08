@@ -28,6 +28,12 @@ Feature: Login with Cognito (docs/production.md, phase 3)
     When "ana@example.com" signs in through Cognito with that email verified
     Then they get that account, with its data, and it is linked to their Cognito identity from now on
 
+  Scenario: Signing in with Google reaches the same account as the password
+    Given an account for "ana@gmail.com", made by signing up with a password
+    When Ana chooses "Continue with Google" on Cognito's page and signs in with that Google account
+    Then she gets the same account (Google's verified email links it), with all her data
+    And the Google client's secret lives only in Secrets Manager, read at deploy, never in the code or template
+
   Scenario: An unverified email is never linked or used
     Given a Cognito identity whose email isn't verified
     When it tries to start a session

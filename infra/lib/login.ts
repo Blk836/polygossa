@@ -16,7 +16,17 @@ export interface Login {
  * authenticator app is optional. The client has no secret: the frontend's server runs the code flow with PKCE and
  * keeps the tokens, so the browser never sees them.
  */
-export function userPool(scope: Construct, opts: { domainPrefix: string; siteUrl: string; keep: boolean }): Login {
+/**
+ * Sign in with Google: the OAuth client in the owner's Google account. Its secret is kept in Secrets Manager
+ * (`polygossa/google-oauth`, made by the owner, JSON with clientSecret) and read by CloudFormation at deploy, so it
+ * never appears in the code or the template.
+ */
+export const GOOGLE_SECRET = "polygossa/google-oauth";
+
+export function userPool(
+  scope: Construct,
+  opts: { domainPrefix: string; siteUrl: string; keep: boolean; googleClientId: string },
+): Login {
   const pool = new cognito.UserPool(scope, "Users", {
     featurePlan: cognito.FeaturePlan.ESSENTIALS,
     selfSignUpEnabled: true,
@@ -39,6 +49,18 @@ export function userPool(scope: Construct, opts: { domainPrefix: string; siteUrl
     cognitoDomain: { domainPrefix: opts.domainPrefix },
     managedLoginVersion: cognito.ManagedLoginVersion.NEWER_MANAGED_LOGIN,
   });
+  // A Google sign-in becomes its own Cognito identity; the backend links it to the account with the same verified
+  // email, so signing in with Google or a password reaches the same account.
+  const google = new cognito.UserPoolIdentityProviderGoogle(scope, "Google", {
+    userPool: pool,
+    clientId: opts.googleClientId,
+    clientSecretValue: cdk.SecretValue.secretsManager(GOOGLE_SECRET, { jsonField: "clientSecret" }),
+    scopes: ["openid", "email", "profile"],
+    attributeMapping: {
+      email: cognito.ProviderAttribute.GOOGLE_EMAIL,
+      emailVerified: cognito.ProviderAttribute.GOOGLE_EMAIL_VERIFIED,
+    },
+  });
   const client = pool.addClient("Site", {
     generateSecret: false,
     authFlows: { userSrp: true },
@@ -48,13 +70,17 @@ export function userPool(scope: Construct, opts: { domainPrefix: string; siteUrl
       callbackUrls: [`${opts.siteUrl}/api/auth/callback`],
       logoutUrls: [`${opts.siteUrl}/`],
     },
-    supportedIdentityProviders: [cognito.UserPoolClientIdentityProvider.COGNITO],
+    supportedIdentityProviders: [
+      cognito.UserPoolClientIdentityProvider.COGNITO,
+      cognito.UserPoolClientIdentityProvider.GOOGLE,
+    ],
     preventUserExistenceErrors: true,
     enableTokenRevocation: true,
     accessTokenValidity: cdk.Duration.hours(1),
     idTokenValidity: cdk.Duration.hours(1),
     refreshTokenValidity: cdk.Duration.days(30),
   });
+  client.node.addDependency(google);
   // The newer hosted pages need a style; Cognito's own look until ours is designed.
   new cognito.CfnManagedLoginBranding(scope, "HostedPagesStyle", {
     userPoolId: pool.userPoolId,

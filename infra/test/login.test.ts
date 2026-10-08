@@ -6,12 +6,14 @@ import { Match, Template } from "aws-cdk-lib/assertions";
 import { defineApp } from "../lib/app.ts";
 
 const SITE = "https://site.example";
+const GOOGLE_CLIENT = "google-client.apps.googleusercontent.com";
 let production: Template;
 let qa: Template;
 
 before(() => {
   const app = new cdk.App({
-    context: { "github-repo": "owner/repo", "github-subject": "repo:owner/repo", "site-url": SITE },
+    context: { "github-repo": "owner/repo", "github-subject": "repo:owner/repo", "site-url": SITE,
+      "google-client-id": GOOGLE_CLIENT },
   });
   const stacks = defineApp(app, { account: "111111111111", region: "eu-west-1" }, "pl-cloudfront");
   production = Template.fromStack(stacks.production);
@@ -68,10 +70,25 @@ for (const [label, template, home] of [
         AllowedOAuthScopes: Match.arrayEquals(["openid", "email"]),
         CallbackURLs: [`${home}/api/auth/callback`],
         LogoutURLs: [`${home}/`],
-        SupportedIdentityProviders: ["COGNITO"],
+        SupportedIdentityProviders: Match.arrayEquals(["COGNITO", "Google"]),
         PreventUserExistenceErrors: "ENABLED",
         EnableTokenRevocation: true,
       });
+    });
+
+    it("offers Sign in with Google, its secret read from Secrets Manager at deploy and never in the template", () => {
+      template().hasResourceProperties("AWS::Cognito::UserPoolIdentityProvider", {
+        ProviderName: "Google",
+        ProviderType: "Google",
+        ProviderDetails: Match.objectLike({
+          client_id: GOOGLE_CLIENT,
+          authorize_scopes: "openid email profile",
+        }),
+        AttributeMapping: { email: "email", email_verified: "email_verified" },
+      });
+      const details = JSON.stringify(
+        Object.values(template().findResources("AWS::Cognito::UserPoolIdentityProvider"))[0].Properties.ProviderDetails);
+      assert.match(details, /resolve:secretsmanager:[^"]*polygossa\/google-oauth:SecretString:clientSecret/);
     });
   });
 }
