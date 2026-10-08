@@ -132,6 +132,15 @@ test("--run: one command takes its turn, keeps its exit code, and marks nothing"
   assert.deepEqual(calls.status, []);
 });
 
+test("--run runs the command in the folder it was started from", async () => {
+  const { deps } = world();
+  const steps = [];
+  deps.here = "frontend";
+  deps.exec = async (step) => { steps.push(step); return 0; };
+  await runChecks(["--run", "--", "npx", "playwright", "test"], deps);
+  assert.deepEqual(steps, [{ command: "npx playwright test", cwd: "frontend" }]);
+});
+
 test("--run works with uncommitted changes (it marks nothing)", async () => {
   const { deps } = world({ git: { isClean: () => false } });
   assert.equal(await runChecks(["--run", "--", "npm", "test"], deps), 0);
