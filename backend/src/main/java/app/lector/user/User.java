@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Entity
@@ -34,6 +35,9 @@ public class User {
      */
     @Column(length = 64)
     private String cognitoSub;
+
+    /** When the account last signed out everywhere: login tokens issued up to then are refused. Null if never. */
+    private Instant signedOutAt;
 
     @Column(nullable = false)
     private String displayName;
@@ -107,6 +111,15 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public void signOutEverywhere(Instant now) {
+        this.signedOutAt = now;
+    }
+
+    /** Whether a login token issued at {@code issuedAt} (whole seconds) still signs this account in. */
+    public boolean acceptsTokenIssuedAt(Instant issuedAt) {
+        return signedOutAt == null || (issuedAt != null && issuedAt.isAfter(signedOutAt.truncatedTo(ChronoUnit.SECONDS)));
     }
 
     public String getCognitoSub() {

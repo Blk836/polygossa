@@ -8,7 +8,10 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.Clock;
 import java.time.ZoneId;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import java.util.Arrays;
 import java.util.List;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -47,8 +50,10 @@ public class AccountController {
     private final CurrentUser currentUser;
     private final PlanService plans;
     private final Admins admins;
+    private final Clock clock;
 
-    public AccountController(CurrentUser currentUser, PlanService plans, Admins admins) {
+    public AccountController(CurrentUser currentUser, PlanService plans, Admins admins, Clock clock) {
+        this.clock = clock;
         this.currentUser = currentUser;
         this.plans = plans;
         this.admins = admins;
@@ -107,6 +112,17 @@ public class AccountController {
             throw ApiException.badRequest("Too many tours");
         }
         return MeDto.of(user, plans, admins);
+    }
+
+    /**
+     * Signs the account out on every device: every login token issued until now is refused. (For a Cognito session
+     * the frontend also ends Cognito's sessions, so no device can renew its token.)
+     */
+    @PostMapping("/me/sign-out-everywhere")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Transactional
+    public void signOutEverywhere(@AuthenticationPrincipal AuthUser principal) {
+        currentUser.load(principal).signOutEverywhere(clock.instant());
     }
 
     /**
