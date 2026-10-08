@@ -18,6 +18,11 @@ Feature: Admin panel (see docs/architecture/platform.md)
     When I open the account menu as an admin
     Then I see "Admin", which opens /admin
 
+  Scenario: The site's admins are set in the infrastructure
+    Given the live site is deployed from infra/
+    Then its backend's FORUM_ADMINS is exactly owner@example.com
+    And signing in there with that email shows the "Admin" item, while every other account gets 403
+
   # --- Stats ---
 
   Scenario: Users per plan and sign-ups

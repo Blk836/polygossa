@@ -87,6 +87,8 @@ export class ProductionStack extends cdk.Stack {
         // Everyone signs in through the user pool (the prod profile turns the app's own accounts off).
         COGNITO_ISSUER: login.issuer,
         COGNITO_CLIENT_ID: login.clientId,
+        // The team (admin panel, forum moderation); the prod profile names nobody by default.
+        FORUM_ADMINS: "owner@example.com",
       },
       secrets: {
         DATABASE_USER: ecs.Secret.fromSecretsManager(database.secret!, "username"),
