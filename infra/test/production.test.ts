@@ -62,18 +62,28 @@ describe("production stack", () => {
     });
   });
 
-  it("generates the database credentials and the login-token secret in Secrets Manager", () => {
-    template.resourceCountIs("AWS::SecretsManager::Secret", 2);
+  it("generates the database credentials, the login-token secret and the curator token in Secrets Manager", () => {
+    template.resourceCountIs("AWS::SecretsManager::Secret", 3);
     template.hasResourceProperties("AWS::SecretsManager::Secret", {
       GenerateSecretString: Match.objectLike({ PasswordLength: 64, ExcludePunctuation: true }),
     });
     // The OpenAI and Stripe keys are secrets too, made by hand rather than generated (ai.test.ts, stripe.test.ts).
     assert.deepEqual(secretNames(container("backend")),
-      ["DATABASE_PASSWORD", "DATABASE_USER", "JWT_SECRET", "OPENAI_API_KEY", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"]);
+      ["CURATOR_TOKEN", "DATABASE_PASSWORD", "DATABASE_USER", "JWT_SECRET", "OPENAI_API_KEY", "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET"]);
     const env = envOf(container("backend"));
-    for (const name of ["DATABASE_PASSWORD", "JWT_SECRET", "OPENAI_API_KEY", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"]) {
+    for (const name of ["CURATOR_TOKEN", "DATABASE_PASSWORD", "JWT_SECRET", "OPENAI_API_KEY", "STRIPE_SECRET_KEY",
+      "STRIPE_WEBHOOK_SECRET"]) {
       assert.equal(env[name], undefined, `${name} in plain env`);
     }
+  });
+
+  // docs/acceptance/copy-videos.feature: the import tool's token, generated and named so the tool can read it by name.
+  it("generates the curator token under a fixed name, for the import tool", () => {
+    template.hasResourceProperties("AWS::SecretsManager::Secret", {
+      Name: "polygossa/curator-token",
+      GenerateSecretString: Match.objectLike({ PasswordLength: 64, ExcludePunctuation: true }),
+    });
   });
 
   it("runs the prod profile with auto-login off", () => {

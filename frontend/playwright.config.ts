@@ -31,6 +31,8 @@ const backend = {
   PORT: backendPort,
   OPENAI_API_KEY: "",
   STORAGE_DIR: "./data/e2e-uploads",
+  // e2e/curator-proxy.spec.ts checks the curator token gets through the website to the backend.
+  CURATOR_TOKEN: "e2e-curator-token",
 };
 
 export default defineConfig({

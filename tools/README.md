@@ -100,6 +100,25 @@ The run stops early only when the token is rejected or the backend can't be reac
 files next to the list: `<list>.results.txt` has every line with its outcome as a comment, and `<list>.retry.txt` has
 the skipped, failed and not-run lines. Both are list files, so they can be fed straight back in.
 
+**Copy mode: from one backend to another** (`docs/acceptance/copy-videos.feature`). `--copy-from <url>` copies videos
+already imported on another backend (say, local) instead of asking YouTube, which often blocks cloud servers. For
+each line the tool reads the video's finished transcript, captions, title, category and length from the source (any
+owner's copy there, a public one first, then the newest) and sends it to the target (`--backend`), which saves it in
+its community library. The target works out words, level and timings itself and still runs the AI sharing check.
+The source's token is `--from-token` (default `$SOURCE_CURATOR_TOKEN`). Outcomes read "copied" / "would copy"; a
+video the source doesn't have in that language is "skipped". Messages that stop the run start with "source:" or
+"target:".
+
+Production has a curator token too: CDK generates it as the Secrets Manager entry `polygossa/curator-token`, and
+the tool reaches production's backend through the website (`--backend https://<site>`). Pass it straight from the
+AWS CLI so it is never shown:
+
+```bash
+SOURCE_CURATOR_TOKEN=local-secret \
+CURATOR_TOKEN="$(aws secretsmanager get-secret-value --profile polygossa --secret-id polygossa/curator-token --query SecretString --output text)" \
+node tools/import-videos.mjs list.txt --copy-from http://localhost:8080 --backend https://d3pd9mue4v7won.cloudfront.net --dry-run
+```
+
 **Caveat when picking videos:** a line's language picks the caption track, not the audio. A video with *translated*
 subtitles in that language is imported as that language. For example, an English song with fan-made German
 subtitles comes in as German. Check that the video is actually spoken in the language you list.

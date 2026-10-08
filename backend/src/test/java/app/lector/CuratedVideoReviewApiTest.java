@@ -106,4 +106,32 @@ class CuratedVideoReviewApiTest {
         AI.reply("{\"appropriate\":true,\"category\":\"food\"}");
         assertThat(curate(VIDEOS[2], 201).get("outcome").asString()).isEqualTo("imported");
     }
+
+    // ---- copies from another backend (docs/acceptance/copy-videos.feature) ----
+
+    private JsonNode copy(String video, boolean dryRun, int status) throws Exception {
+        return api.send(MockMvcRequestBuilders.post("/api/curator/copies").contentType(MediaType.APPLICATION_JSON)
+                .header(CuratedVideoImportApiTest.HEADER, CuratedVideoImportApiTest.TOKEN)
+                .content("{\"videoId\":\"" + video + "\",\"language\":\"fr\",\"title\":\"Le marché\","
+                        + "\"category\":\"learners\",\"durationSeconds\":60,\"content\":\"Bonjour à tous.\","
+                        + "\"dryRun\":" + dryRun + "}"), null, status);
+    }
+
+    @Test
+    void aCopyIsCheckedForSharingButKeepsItsCategory() throws Exception {
+        AI.reply("{\"appropriate\":true,\"category\":\"food\"}");
+        assertThat(copy("DDDDDDDDDDD", false, 201).get("category").asString()).isEqualTo("learners");
+        assertThat(AI.requests()).hasSize(1);
+        assertThat(AI.requests().getFirst()).contains("appropriate").doesNotContain("File the text under");
+        assertThat(YOUTUBE.requests()).isEmpty();
+    }
+
+    @Test
+    void aCopyTheAiFindsInappropriateIsRefusedAndNotSaved() throws Exception {
+        AI.reply("{\"appropriate\":false,\"reason\":\"Graphic violence\"}");
+        JsonNode r = copy("EEEEEEEEEEE", false, 422);
+        assertThat(r.get("code").asString()).isEqualTo("not_shareable");
+        assertThat(r.get("message").asString()).contains("Graphic violence");
+        assertThat(copy("EEEEEEEEEEE", true, 200).get("outcome").asString()).isEqualTo("would_import");
+    }
 }

@@ -8,7 +8,8 @@ import { clearSession, keepSessionFresh, writeSession } from "@/lib/session";
 // token is never exposed to browser JavaScript.
 
 // stripe-signature: Stripe's webhook (/api/billing/webhook) is checked against it, over the body as sent.
-const FORWARD_REQUEST_HEADERS = ["content-type", "range", "accept", "stripe-signature"];
+// x-curator-token: the import tool's secret for /api/curator/* (production's backend has no address of its own).
+const FORWARD_REQUEST_HEADERS = ["content-type", "range", "accept", "stripe-signature", "x-curator-token"];
 const FORWARD_RESPONSE_HEADERS = [
   "content-type",
   "content-length",
