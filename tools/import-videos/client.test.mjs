@@ -94,3 +94,51 @@ test("options from a failed request stop the run even if they look usable", asyn
   await assert.rejects(client(fakeFetch(500, { languages: ["fr"], categories: ["news"] }).fetch).options(),
     new Fatal("could not read the backend's options (HTTP 500)"));
 });
+
+// ---- copying between backends (docs/acceptance/copy-videos.feature) ----
+
+const exported = { videoId: "AAAAAAAAAAA", language: "fr", title: "Le marché", category: "learners", durationSeconds: 60,
+  content: "Bonjour.", cues: [] };
+
+test("a video's copy is fetched from the source by id and language, with the token", async () => {
+  const { fetch, calls } = fakeFetch(200, exported);
+  assert.deepEqual(await client(fetch).exportVideo({ ...entry, url: "https://www.youtube.com/watch?v=AAAAAAAAAAA&t=3" }),
+    { video: exported });
+  assert.equal(calls[0].url, "http://localhost:8080/api/curator/videos/AAAAAAAAAAA/copy?language=fr");
+  assert.equal(calls[0].init.headers["X-Curator-Token"], "s3cret");
+});
+
+test("a video the source doesn't have is reported, not fatal", async () => {
+  const { fetch } = fakeFetch(404, { code: "not_on_source", message: "No French copy of AAAAAAAAAAA here" });
+  assert.deepEqual(await client(fetch).exportVideo(entry), { missing: "No French copy of AAAAAAAAAAA here" });
+});
+
+test("an export that fails otherwise is reported as failed", async () => {
+  assert.deepEqual(await client(fakeFetch(500, {}).fetch).exportVideo(entry), { failed: "HTTP 500" });
+});
+
+test("a copy is posted to the target as JSON with the token and the dry-run flag", async () => {
+  const { fetch, calls } = fakeFetch(201, { outcome: "imported", title: "Le marché", category: "learners" });
+  assert.deepEqual(await client(fetch).copyVideo(exported, false),
+    { outcome: "imported", reason: "learners", title: "Le marché" });
+  assert.equal(calls[0].url, "http://localhost:8080/api/curator/copies");
+  assert.equal(calls[0].init.method, "POST");
+  assert.equal(calls[0].init.headers["Content-Type"], "application/json");
+  assert.equal(calls[0].init.headers["X-Curator-Token"], "s3cret");
+  assert.deepEqual(JSON.parse(calls[0].init.body), { ...exported, dryRun: false });
+});
+
+test("a copy the target's AI refuses is reported as refused", async () => {
+  const { fetch } = fakeFetch(422, { code: "not_shareable", message: "This can't be shared: Graphic violence." });
+  assert.deepEqual(await client(fetch).copyVideo(exported, false),
+    { outcome: "refused", reason: "This can't be shared: Graphic violence.", title: "" });
+});
+
+test("a named backend says which one stopped the run", async () => {
+  const named = (fetch) => makeClient({ baseUrl: "http://localhost:8080", token: "t", fetch, label: "source" });
+  await assert.rejects(named(fakeFetch(401, {}).fetch).exportVideo(entry), new Fatal("source: curator token rejected"));
+  await assert.rejects(named(fakeFetch(404, {}).fetch).options(),
+    new Fatal("source: bulk import is off on the backend: start it with CURATOR_TOKEN set"));
+  const refused = async () => { throw new TypeError("fetch failed"); };
+  await assert.rejects(named(refused).options(), new Fatal("source: backend not reachable at http://localhost:8080"));
+});
