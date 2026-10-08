@@ -1,6 +1,6 @@
 Feature: Local checks: the full suites run on the developer's PC, not on GitHub (cheap mode)
   GitHub Actions minutes cost about $10 on a busy day (2,000 free minutes a month went in two days), so by default
-  the gauntlet's suites run on our own PC and GitHub only deploys. Several Claude sessions work in parallel, but the PC
+  the gauntlet's suites run on our own PC (and so does the deploy: local-deploy.feature). Several Claude sessions work in parallel, but the PC
   can run one heavy suite at a time (memory, and the end-to-end suite's fixed ports), so runs take turns through one
   lock. The result is recorded on the pull request as a "local checks" mark. Running the checks on GitHub (ci.feature)
   still works, but only when asked.
@@ -100,10 +100,10 @@ Feature: Local checks: the full suites run on the developer's PC, not on GitHub 
     When a pull request is opened or updated
     Then no check job runs on GitHub and no CI minutes are used for it
 
-  Scenario: Merging to main still deploys from GitHub
+  Scenario: Merging to main is deployed from the PC
     When a pull request is merged to main
-    Then GitHub deploys production as before (staging.feature), signed in through its deploy role
-    And the checks are not run there
+    Then the session deploys main from the PC (local-deploy.feature), and GitHub runs nothing
+    And the checks are not run again
 
   Scenario: GitHub can still run the checks when asked
     When a pull request is given the label "ci" (or the workflow is started by hand on a branch)

@@ -23,6 +23,23 @@ taken over. Backend and end-to-end runs need `JAVA_HOME`; missing or outdated `n
 `npm ci` first; infra's synth gets the AWS account from the `AWS_ACCOUNT_ID` repository variable (or
 `CDK_DEFAULT_ACCOUNT`). `GH` overrides where the GitHub CLI is.
 
+## local-deploy.mjs: deploy main to production from this PC
+
+Run it right after merging a pull request (`docs/acceptance/local-deploy.feature`); GitHub no longer deploys on merge.
+
+```bash
+node tools/local-deploy.mjs           # deploy the latest main on GitHub, unless it is already live
+node tools/local-deploy.mjs --again   # deploy it even so (say, to retry after AWS had a problem)
+```
+
+It deploys from the PC's own checkout of main (`polygossa-deploy` in the main checkout's `.git` folder), so no
+session's worktree changes, and takes the same turn as the local checks. It needs Docker Desktop running and the
+`polygossa` AWS profile signed in (`aws login --profile polygossa`, 12 hours), and refuses if that profile is another
+account than the `AWS_ACCOUNT_ID` repository variable. It runs `cdk deploy PolygossaStaging PolygossaQa`, then checks
+the sign-in page and the languages list through the site, and marks main's commit "deploy production" on GitHub
+(pending, then green or red); a green mark is how it knows main is already live. `AWS_CLI` and `GH` override where the
+AWS and GitHub CLIs are.
+
 ## import-videos.mjs: bulk-import curated YouTube videos
 
 Fills Explore (and so the recommendations) with videos found across YouTube. Each video is imported into the

@@ -25,7 +25,7 @@ code is the source of truth for details, so there is never a second, stale copy.
 backend/    Spring Boot 4.1 (Java 21) — REST API; Gradle module :backend, package app.lector
 frontend/   Next.js 16 + React 19 + Tailwind 4 — UI and backend-for-frontend (BFF) API routes
 tools/      team command-line tools (plain Node, no packages): import-videos.mjs bulk-imports curated YouTube videos,
-            local-checks.mjs runs the suites on this PC
+            local-checks.mjs runs the suites on this PC, local-deploy.mjs deploys main to production from it
 infra/      AWS CDK (TypeScript, run directly by Node): production (stack PolygossaStaging) and GitHub's deploy role
 ```
 
@@ -44,7 +44,8 @@ so the checks must prove it is correct.
 3. Never delete, skip, or weaken an existing test or assertion to make
    something pass. If a test seems wrong, stop and tell me why.
 4. **The full suites run on this PC, one run at a time, through `node tools/local-checks.mjs`** ("cheap mode":
-   GitHub's minutes cost about $10 on a busy day, so GitHub only deploys; `docs/acceptance/local-checks.feature`).
+   GitHub's minutes cost about $10 on a busy day and are nearly used up, so GitHub runs nothing by default, not even
+   the deploy (step 7); `docs/acceptance/local-checks.feature`).
    Before opening or merging a pull request, commit, push, and run it from your worktree: it picks the suites your
    branch's changes need (same rules as CI; `--all` runs everything), waits its turn if another session's run is
    going (it says whose; a crashed session's turn is taken over), and puts a green or red **"local checks"** mark on
@@ -86,9 +87,14 @@ so the checks must prove it is correct.
    checks" mark (`gh pr checks` shows it; with GitHub checks on, wait for them with `gh pr checks --watch` instead).
    If main moved since the checks ran, merge main into the branch, push, and run the checks again first: the local
    checks test the branch as it is, so it must already contain the latest main. Keep few branches finishing at the
-   same time, since each merge sends the others round again and the PC runs one at a time. A merge to main deploys
-   production from GitHub without re-running the checks. If a check fails, fix it on the branch; never merge
-   red. (`gh pr merge` can't merge a change to a workflow file without the CLI's `workflow` scope; merge locally with
+   same time, since each merge sends the others round again and the PC runs one at a time. **Right after merging,
+   deploy: `node tools/local-deploy.mjs`** (from your worktree; `docs/acceptance/local-deploy.feature`). It deploys
+   the latest main to production from the PC's own copy of main, in the PC's turn, without re-running the checks;
+   skips a main that is already live (`--again` forces it); checks the site answers; and marks main's commit
+   "deploy production" on GitHub. It needs Docker Desktop running and the `polygossa` AWS sign-in (if it says the
+   sign-in expired, ask the user to run `aws login --profile polygossa`). A failed deploy is fixed forward on a new
+   branch. GitHub deploys only when asked: a hand-started `deploy_only` run, or every merge while the repository
+   variable `DEPLOY_ON_GITHUB` is `true`. If a check fails, fix it on the branch; never merge red. (`gh pr merge` can't merge a change to a workflow file without the CLI's `workflow` scope; merge locally with
    `git merge --no-ff` and push instead, and GitHub marks the pull request merged.) "Green before merging" is our rule, not GitHub's: enforcing it (branch
    protection) needs GitHub Pro or a public repository. Small commits make it easy to diff changes
    over time and bisect to the commit that broke something. Don't batch unrelated work into one commit, and list the
@@ -164,18 +170,20 @@ Tools on the dev machine (none of these are on PATH in every shell, so use the f
 - **AWS CDK** comes with `infra/` (`npx cdk diff|deploy`); deploying needs Docker running (it builds the images).
 
 When production misbehaves: the services' logs are in CloudWatch (log groups for the backend and frontend, kept a
-month), the last deploy is the latest `deploy production` job in GitHub Actions, and the
+month), the last deploy is the latest "deploy production" mark on main's commits on GitHub (or the `deploy production`
+job in GitHub Actions, when GitHub deployed), and the
 stack's state is in CloudFormation. Production is deliberately small until the beta: uploads live in an S3 bucket
 (`STORAGE_S3_BUCKET`; local runs and tests use the folder), AI is on (the OpenAI key is the Secrets Manager entry `polygossa/openai-api-key`), no Redis, a single-zone database.
 - Infrastructure is changed only through CDK (`infra/`), never by CLI or console commands. The CLI and MCP server are
   for reading, investigating and previewing (`cdk diff`).
-- Production deploys itself: CI's `deploy production` job runs `cdk deploy PolygossaStaging` on every merge to main (the
-  pull request's green "local checks" mark is the gate, step 7; a temporary hand-started `deploy_only` run skips them),
+- Production is deployed from the PC after every merge to main, by `node tools/local-deploy.mjs` (step 7; the pull
+  request's green "local checks" mark is the gate), signed in with the `polygossa` profile. GitHub's `deploy
+  production` job does the same when asked (a hand-started `deploy_only` run, or `DEPLOY_ON_GITHUB=true`),
   signed in through GitHub's OIDC as the `polygossa-github-deploy` role (its ARN is the repository variable
   `AWS_DEPLOY_ROLE_ARN`; `AWS_ACCOUNT_ID` lets CI's `cdk synth` run without AWS access). GitHub's OIDC subject names
   the repository with immutable IDs (`repo:Blk836@15254657/polygossa@1405831822`, set in `infra/cdk.json`): the role
-  must trust that form, not `repo:Blk836/polygossa`. Deploy by hand only to bootstrap or to change the deploy role itself
-  (`PolygossaGitHubDeploy`), and always `cdk diff` first. `infra/cdk.context.json` caches lookups so synth needs no AWS
+  must trust that form, not `repo:Blk836/polygossa`. Run `cdk deploy` by hand only to bootstrap or to change the
+  deploy role itself (`PolygossaGitHubDeploy`), and always `cdk diff` first. `infra/cdk.context.json` caches lookups so synth needs no AWS
   access: commit it.
 - Before AWS work, check for a relevant AWS skill and prefer it over general knowledge; verify AWS details (limits,
   permissions, API parameters) against documentation instead of guessing.

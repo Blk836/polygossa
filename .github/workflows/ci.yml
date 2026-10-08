@@ -1,6 +1,8 @@
-# A deploy to production on AWS when a pull request is merged to main (docs/acceptance/staging.feature). The gauntlet's
-# checks (see CLAUDE.md) normally run on the developer's PC instead (tools/local-checks.mjs,
-# docs/acceptance/local-checks.feature), since GitHub's minutes cost too much. They run here, on Linux like production
+# Normally nothing runs here, since GitHub's minutes cost too much: the gauntlet's checks (see CLAUDE.md) run on the
+# developer's PC (tools/local-checks.mjs, docs/acceptance/local-checks.feature), and so does the deploy to production
+# after a merge (tools/local-deploy.mjs, docs/acceptance/local-deploy.feature). GitHub deploys only when asked: a
+# hand-started deploy_only run, or every merge to main while the repository variable DEPLOY_ON_GITHUB is "true"
+# (docs/acceptance/staging.feature). The checks run here, on Linux like production
 # (docs/acceptance/ci.feature), only when asked: a pull request labelled "ci", a hand-started run, or every pull request
 # while the repository variable CHECKS_ON_GITHUB is "true". Mutation testing stays local (too slow per push). The
 # checks have no secrets and no cloud access: tests never call OpenAI or AWS. Only the deploy job signs in to AWS, with
@@ -20,10 +22,10 @@ on:
     paths-ignore: ["docs/**", "**/*.md"]
   workflow_dispatch:
     inputs:
-      # TEMPORARY, while the deploy itself is being worked on: deploy main to production by hand without the checks.
-      # Remove before production (docs/production.md, phase 8).
+      # Deploy main to production from GitHub by hand, without the checks (they ran before the merge): the fallback when
+      # the PC can't deploy (docs/acceptance/local-deploy.feature).
       deploy_only:
-        description: "Skip the checks and only deploy main to production (temporary)"
+        description: "Skip the checks and only deploy main to production"
         type: boolean
         default: false
 
@@ -216,10 +218,12 @@ jobs:
   # short-lived credentials of the deploy role (infra/lib/github-deploy-stack.ts), which only main can assume.
   deploy:
     name: deploy production
-    # A merge to main (its pull request's checks passed), or (temporary) a hand-started deploy_only run on main.
+    # Only when asked (see the top): a hand-started deploy_only run on main, or a merge to main while DEPLOY_ON_GITHUB
+    # is "true". Otherwise the PC deploys after merging (tools/local-deploy.mjs).
     if: >-
       github.ref == 'refs/heads/main'
-      && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.deploy_only))
+      && ((github.event_name == 'push' && vars.DEPLOY_ON_GITHUB == 'true')
+      || (github.event_name == 'workflow_dispatch' && inputs.deploy_only))
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
