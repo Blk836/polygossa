@@ -4,6 +4,11 @@ Feature: CI: every check runs on GitHub for every push (see docs/production.md, 
   pushed it and whatever machine they used. CI needs no AWS and no secrets. Mutation testing stays a local check (too
   slow per push), and deploying is a later step (phase 5).
 
+  Paused (October 2026): GitHub's minutes cost too much, so by default the checks run on the developer's PC
+  (local-checks.feature) and the scenarios below apply only when CI is asked to run them: a pull request labelled
+  "ci", a hand-started run, or every pull request while the repository variable CHECKS_ON_GITHUB is "true".
+  "CI is where the full suites run" is replaced by local-checks.feature until then.
+
   Background:
     Given the repository on GitHub with the CI workflow in .github/workflows/
 

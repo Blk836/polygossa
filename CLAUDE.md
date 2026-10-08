@@ -23,7 +23,8 @@ code is the source of truth for details, so there is never a second, stale copy.
 ```
 backend/    Spring Boot 4.1 (Java 21) — REST API; Gradle module :backend, package app.lector
 frontend/   Next.js 16 + React 19 + Tailwind 4 — UI and backend-for-frontend (BFF) API routes
-tools/      team command-line tools (plain Node, no packages): import-videos.mjs bulk-imports curated YouTube videos
+tools/      team command-line tools (plain Node, no packages): import-videos.mjs bulk-imports curated YouTube videos,
+            local-checks.mjs runs the suites on this PC
 infra/      AWS CDK (TypeScript, run directly by Node): production (stack PolygossaStaging) and GitHub's deploy role
 ```
 
@@ -41,18 +42,26 @@ so the checks must prove it is correct.
    For bug fixes, write a regression test that reproduces the bug first.
 3. Never delete, skip, or weaken an existing test or assertion to make
    something pass. If a test seems wrong, stop and tell me why.
-4. **Never run a whole suite locally: it overloads the machine.** That means no full `./gradlew :backend:test`,
-   `npm test`, `npm run e2e`, PIT or Stryker run, and no running several test classes or specs "to be safe". Locally,
-   run only the individual tests you are writing or changing (one backend test class with `--tests`, one Vitest file,
-   one Playwright spec file), for TDD's red and green. Verification and regression checking are what CI is for: it
-   runs every check below on each pull request, and its green run is the proof. Mutation testing (PIT, Stryker) isn't
-   run locally and CI doesn't run it yet, so say so in the report. The checks, for reference:
+4. **The full suites run on this PC, one run at a time, through `node tools/local-checks.mjs`** ("cheap mode":
+   GitHub's minutes cost about $10 on a busy day, so GitHub only deploys; `docs/acceptance/local-checks.feature`).
+   Before opening or merging a pull request, commit, push, and run it from your worktree: it picks the suites your
+   branch's changes need (same rules as CI; `--all` runs everything), waits its turn if another session's run is
+   going (it says whose; a crashed session's turn is taken over), and puts a green or red **"local checks"** mark on
+   the commit on GitHub. Its green mark is the proof. Never start a suite (full `./gradlew :backend:test`,
+   `npm run e2e`, `npm test`, PIT, Stryker) directly: two at once overload the machine and the end-to-end suite's
+   fixed ports collide. For TDD's red and green, run only the individual tests you are writing or changing; a heavy
+   one (a backend test class, a Playwright spec, mutation testing) takes its turn with
+   `node tools/local-checks.mjs --run -- <command>`. Backend and end-to-end runs need `JAVA_HOME` (see Running it).
+   Mutation testing (PIT, Stryker) isn't run unless the user asks, so say so in the report. **Checks on GitHub are
+   paused, not gone:** label a pull request `ci` (or start the workflow by hand) to run them there once, or set the
+   repository variable `CHECKS_ON_GITHUB` to `true` to run them on every pull request again; while it is `true`,
+   follow the GitHub wording in steps 6 and 7 instead of the local one. The checks, for reference:
    - tests: `./gradlew :backend:test` (backend); `cd frontend && npm test` (Vitest, pure modules only);
      `cd frontend && npm run e2e` (Playwright, `e2e/*.spec.ts`, real Chromium against a production build — any UI change
      needs a scenario here, since there are no component tests);
      `node --test "tools/**/*.test.mjs"` (tools); `cd infra && npm test && npm run typecheck` (CDK stacks, synthesized
      without AWS access).
-   - mutation testing on changed files (not run locally, see above; for when CI runs it or the user asks): `./gradlew :backend:pitest -Ppitest.since=<commit>` (PIT on just the main
+   - mutation testing on changed files (only when the user asks, in its turn with `--run`, see above): `./gradlew :backend:pitest -Ppitest.since=<commit>` (PIT on just the main
      classes changed since that commit, e.g. the one before the task's first commit; `-Ppitest.targets=app.lector.text.*`
      names them directly, and no property mutates everything), `cd frontend && npm run mutate` (Stryker; the modules it
      covers are listed in `stryker.config.mjs`; incremental: it reuses the last run's results for unchanged code and
@@ -66,15 +75,18 @@ so the checks must prove it is correct.
      `./gradlew :backend:checkstyleMain` (backend), ESLint `complexity`/`max-lines` (frontend; for tools/, from the repo root:
      `frontend/node_modules/.bin/eslint --no-config-lookup --rule '{"complexity":["error",10],"max-lines":["error",300]}' "tools/**/*.mjs"`).
 5. Respect module boundaries (see below). Do not add new dependencies without asking.
-6. End with a short report: what changed, the CI run's result (with its link), the individual tests you ran locally,
-   and anything you're
-   unsure about. "Should work" is not an acceptable status.
+6. End with a short report: what changed, the local checks' summary (each suite passed or failed, and the commit it
+   marked; with GitHub checks on, the CI run's result and link instead), the individual tests you ran, and anything
+   you're unsure about. "Should work" is not an acceptable status.
 7. Commit each incremental change to git as you go (e.g. scenarios, failing tests, implementation, a fix): one
    focused commit per step with a message saying what changed and why. Work on a feature branch, never on main:
-   push it, open a pull request (`gh pr create`), wait for CI (`gh pr checks --watch`), and merge it yourself
-   (`gh pr merge --merge --delete-branch`, keeping the commits) only when every check is green. If main moved since
-   the checks ran, merge main into the branch and wait for the checks again first. A merge to main deploys production
-   without re-running the checks (they ran on the pull request). If a check fails, fix it on the branch; never merge
+   push it, open a pull request (`gh pr create`), run the local checks on its latest commit (step 4), and merge it
+   yourself (`gh pr merge --merge --delete-branch`, keeping the commits) only when that commit has a green "local
+   checks" mark (`gh pr checks` shows it; with GitHub checks on, wait for them with `gh pr checks --watch` instead).
+   If main moved since the checks ran, merge main into the branch, push, and run the checks again first: the local
+   checks test the branch as it is, so it must already contain the latest main. Keep few branches finishing at the
+   same time, since each merge sends the others round again and the PC runs one at a time. A merge to main deploys
+   production from GitHub without re-running the checks. If a check fails, fix it on the branch; never merge
    red. (`gh pr merge` can't merge a change to a workflow file without the CLI's `workflow` scope; merge locally with
    `git merge --no-ff` and push instead, and GitHub marks the pull request merged.) "Green before merging" is our rule, not GitHub's: enforcing it (branch
    protection) needs GitHub Pro or a public repository. Small commits make it easy to diff changes
@@ -155,7 +167,7 @@ stack's state is in CloudFormation. Production is deliberately small until the b
 - Infrastructure is changed only through CDK (`infra/`), never by CLI or console commands. The CLI and MCP server are
   for reading, investigating and previewing (`cdk diff`).
 - Production deploys itself: CI's `deploy production` job runs `cdk deploy PolygossaStaging` on every merge to main (the
-  pull request's checks are the gate; a temporary hand-started `deploy_only` run skips them),
+  pull request's green "local checks" mark is the gate, step 7; a temporary hand-started `deploy_only` run skips them),
   signed in through GitHub's OIDC as the `polygossa-github-deploy` role (its ARN is the repository variable
   `AWS_DEPLOY_ROLE_ARN`; `AWS_ACCOUNT_ID` lets CI's `cdk synth` run without AWS access). GitHub's OIDC subject names
   the repository with immutable IDs (`repo:Blk836@15254657/polygossa@1405831822`, set in `infra/cdk.json`): the role
@@ -201,9 +213,10 @@ The e2e suite's own servers (frontend on :3210, backend on :8210) are not duplic
 them.
 
 **Heavy runs:** the machine has 16 GB, and IntelliJ, the dev servers and other Claude sessions take a good share.
-Whole suites (the backend suite's 4 JVMs, PIT, Stryker, the e2e suite) overloaded it and got killed, so they never run
-locally (step 4): CI runs them. Even a single backend test class shouldn't run while another Gradle test run uses this
-checkout: they share `backend/build/`, and result files vanish mid-run, failing tests that pass alone.
+Whole suites (the backend suite's 4 JVMs, PIT, Stryker, the e2e suite) overloaded it and got killed when several ran
+at once, so they run only through `tools/local-checks.mjs` (step 4), which lets one run at a time across all sessions.
+Even a single backend test class shouldn't run while another Gradle test run uses this checkout: they share
+`backend/build/`, and result files vanish mid-run, failing tests that pass alone.
 
 **Login.** Local runs sign in through the **QA user pool** (stack `PolygossaQa`, separate from production's): its
 settings are the defaults of `next dev` (`frontend/.env.development`) and Gradle's `bootRun` (`backend/build.gradle.kts`),
@@ -248,9 +261,10 @@ Optional:
 
 ## Tests
 
-These are the whole suites CI runs. Locally, run one test class or file at a time, never these (step 4), e.g.
-`./gradlew :backend:test --tests app.lector.ToursApiTest`, `npx vitest run lib/tours.test.ts`,
-`npx playwright test e2e/feature-tours.spec.ts`.
+These are the whole suites `node tools/local-checks.mjs` runs (and CI, when asked). Never start them directly (step
+4); while working, run one test class or file at a time, e.g. `./gradlew :backend:test --tests app.lector.ToursApiTest`
+or `npx playwright test e2e/feature-tours.spec.ts` (each through `node tools/local-checks.mjs --run -- <command>`),
+or `npx vitest run lib/tours.test.ts`.
 
 ```bash
 ./gradlew :backend:test                                           # unit + MockMvc integration tests (Docker needed)
