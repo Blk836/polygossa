@@ -135,11 +135,13 @@ test.describe("landing page", () => {
     // The words must be visibly apart, not just apart in the DOM (a flex container once swallowed the spaces).
     const gap = await demo(page).getByTestId("demo-hint").evaluate((p) => {
       const blue = p.querySelector(".w")!.getBoundingClientRect();
+      const before = p.firstChild!; // "Tap a ": measure to the end of the "a", not of the space after it
       const range = document.createRange();
-      range.selectNodeContents(p.firstChild!);
+      range.setStart(before, 0);
+      range.setEnd(before, before.textContent!.trimEnd().length);
       return blue.left - range.getBoundingClientRect().right;
     });
-    expect(gap).toBeGreaterThan(2);
+    expect(gap).toBeGreaterThan(1); // a space less the highlight's small negative margin is ~2px; the bug gave < 0
   });
 
   test("Pro-only features are labelled and the free path doesn't promise review", async ({ page }) => {
@@ -182,8 +184,9 @@ test.describe("landing page", () => {
     await expect(meta("twitter:card")).toHaveAttribute("content", "summary_large_image");
     const image = await meta("og:image").getAttribute("content");
     expect(image).toMatch(/^https?:\/\/[^/]+\/opengraph-image/);
-    const res = await request.get(new URL(image!).pathname + new URL(image!).search);
-    expect(res.ok()).toBe(true);
+    // As a crawler: no session and no following redirects (signed out, an app page would redirect to sign-in).
+    const res = await request.get(new URL(image!).pathname + new URL(image!).search, { maxRedirects: 0 });
+    expect(res.status()).toBe(200);
     expect(res.headers()["content-type"]).toContain("image/png");
   });
 
