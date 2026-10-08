@@ -3,6 +3,7 @@
 import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { Fatal, makeClient } from "./client.mjs";
+import { makeCopier } from "./copy.mjs";
 import { parseList } from "./list.mjs";
 import { resultsFile, retryFile, summary } from "./report.mjs";
 import { run } from "./run.mjs";
@@ -19,6 +20,10 @@ Options:
   --backend <url>    backend address (default $BACKEND_URL or http://localhost:8080)
   --token <secret>   curator token (default $CURATOR_TOKEN; must match the backend's)
 
+Copy mode: copies videos already imported on another backend, finished, instead of asking YouTube.
+  --copy-from <url>      the source backend (any owner's copy there; public and newest first)
+  --from-token <secret>  the source's curator token (default $SOURCE_CURATOR_TOKEN)
+
 Writes <list>.results.txt (every line with its outcome) and <list>.retry.txt (lines worth running again).`;
 
 const OPTIONS = {
@@ -27,6 +32,8 @@ const OPTIONS = {
   delay: { type: "string", default: "2" },
   backend: { type: "string" },
   token: { type: "string" },
+  "copy-from": { type: "string" },
+  "from-token": { type: "string" },
 };
 
 /** Runs the tool; returns the exit code (0 when the run finished, even if some videos failed). */
@@ -64,19 +71,47 @@ function settingsFrom(argv, env) {
   if (!token) {
     return "Stopped: no curator token: set CURATOR_TOKEN or pass --token (the same value the backend runs with)";
   }
+  const copy = copySettings(values, env);
+  if (typeof copy === "string") {
+    return copy;
+  }
   return { file: positionals[0], token, delayMs: delay * 1000, dryRun: values["dry-run"], language: values.language,
-    baseUrl: values.backend ?? env.BACKEND_URL ?? "http://localhost:8080" };
+    baseUrl: values.backend ?? env.BACKEND_URL ?? "http://localhost:8080", ...copy };
+}
+
+/** Copy mode's source and its token ({} without copy mode), or a message saying what's missing. */
+function copySettings(values, env) {
+  const copyFrom = values["copy-from"];
+  if (!copyFrom) {
+    return {};
+  }
+  const fromToken = values["from-token"] ?? env.SOURCE_CURATOR_TOKEN;
+  if (!fromToken) {
+    return "Stopped: no source token: set SOURCE_CURATOR_TOKEN or pass --from-token (the source backend's curator token)";
+  }
+  return { copyFrom, fromToken };
+}
+
+/** The client that imports each entry: the backend itself, or in copy mode a copier from the source to it. */
+async function importer(settings, fetch) {
+  if (!settings.copyFrom) {
+    const client = makeClient({ baseUrl: settings.baseUrl, token: settings.token, fetch });
+    return { client, options: await client.options() };
+  }
+  const source = makeClient({ baseUrl: settings.copyFrom, token: settings.fromToken, fetch, label: "source" });
+  const target = makeClient({ baseUrl: settings.baseUrl, token: settings.token, fetch, label: "target" });
+  await source.options(); // a wrong token or address stops the run before any video
+  return { client: makeCopier({ source, target }), options: await target.options() };
 }
 
 async function importList(settings, { print, sleep, fetch }) {
   const text = read(settings.file);
-  const client = makeClient({ baseUrl: settings.baseUrl, token: settings.token, fetch });
-  const options = await client.options();
+  const { client, options } = await importer(settings, fetch);
   const entries = parseList(text, { ...options, defaultLanguage: settings.language?.toLowerCase() ?? null });
   const results = await run(entries, { client, delayMs: settings.delayMs, dryRun: settings.dryRun, sleep, print });
   print(summary(results));
   if (!settings.dryRun) {
-    save(settings.file, results, print);
+    save(settings.file, results, print, settings.copyFrom ? ` --copy-from ${settings.copyFrom}` : "");
   }
   if (results.fatal) {
     print(`Stopped: ${results.fatal}`);
@@ -93,14 +128,14 @@ function read(file) {
   }
 }
 
-function save(file, results, print) {
+function save(file, results, print, mode) {
   const base = file.replace(/\.[^./\\]*$/, "");
   writeFileSync(`${base}.results.txt`, resultsFile(results));
   print(`Results: ${base}.results.txt`);
   const retry = retryFile(results);
   if (retry) {
     writeFileSync(`${base}.retry.txt`, retry);
-    print(`To retry: node tools/import-videos.mjs ${base}.retry.txt`);
+    print(`To retry: node tools/import-videos.mjs ${base}.retry.txt${mode}`);
   } else {
     rmSync(`${base}.retry.txt`, { force: true });
   }

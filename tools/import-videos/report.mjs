@@ -1,6 +1,6 @@
 // The end-of-run summary and the two files written next to the list: every result, and the lines worth retrying.
 
-const ORDER = ["imported", "would import", "already imported", "skipped", "refused", "failed", "invalid", "not run"];
+const ORDER = ["imported", "copied", "would import", "would copy","already imported", "skipped", "refused", "failed", "invalid", "not run"];
 const RETRY = new Set(["skipped", "failed", "not run"]);
 
 export function summary(results) {

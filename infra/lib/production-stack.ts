@@ -69,6 +69,12 @@ export class ProductionStack extends cdk.Stack {
       description: "Signs the app's login tokens (JWT_SECRET).",
       generateSecretString: { passwordLength: 64, excludePunctuation: true },
     });
+    // tools/import-videos.mjs reads it by name to import or copy videos into the community library.
+    const curatorToken = new secretsmanager.Secret(this, "CuratorToken", {
+      secretName: "polygossa/curator-token",
+      description: "Lets the team's video import tool use the curator endpoints (CURATOR_TOKEN).",
+      generateSecretString: { passwordLength: 64, excludePunctuation: true },
+    });
 
     const cluster = new ecs.Cluster(this, "Cluster", {
       vpc,
@@ -117,6 +123,7 @@ export class ProductionStack extends cdk.Stack {
         DATABASE_USER: ecs.Secret.fromSecretsManager(database.secret!, "username"),
         DATABASE_PASSWORD: ecs.Secret.fromSecretsManager(database.secret!, "password"),
         JWT_SECRET: ecs.Secret.fromSecretsManager(jwtSecret),
+        CURATOR_TOKEN: ecs.Secret.fromSecretsManager(curatorToken),
         OPENAI_API_KEY: ecs.Secret.fromSecretsManager(
           secretsmanager.Secret.fromSecretNameV2(this, "OpenAiKey", OPENAI_SECRET)),
         STRIPE_SECRET_KEY: ecs.Secret.fromSecretsManager(
