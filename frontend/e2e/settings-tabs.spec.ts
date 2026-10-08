@@ -21,7 +21,7 @@ async function stubPlanChange(page: Page, extra: (tier: Tier) => Partial<Me["pla
 
 test("/settings shows the strip with Profile current and no main tab marked", async ({ page }) => {
   await page.goto("/settings");
-  await expect(strip(page).getByRole("link")).toHaveText(["Profile", "Appearance", "Subscription"]);
+  await expect(strip(page).getByRole("link")).toHaveText(["Profile", "Appearance", "Subscription", "Privacy"]);
   await expect(strip(page).locator("[aria-current=page]")).toHaveText("Profile");
   await expect(topNav(page).locator("[aria-current=page]")).toHaveCount(0);
 });
@@ -30,6 +30,7 @@ for (const [tab, url, shown, hidden] of [
   ["Profile", "/settings", (p: Page) => p.getByLabel("Name"), (p: Page) => p.getByTestId("plan-card")],
   ["Appearance", "/settings/appearance", (p: Page) => p.getByRole("radiogroup", { name: "Theme" }), (p: Page) => p.getByLabel("Name")],
   ["Subscription", "/settings/subscription", (p: Page) => p.getByTestId("plan-card"), (p: Page) => p.getByRole("radiogroup", { name: "Theme" })],
+  ["Privacy", "/settings/privacy", (p: Page) => p.getByRole("link", { name: "Download my data" }), (p: Page) => p.getByTestId("plan-card")],
 ] as const) {
   test(`the ${tab} sub-tab opens ${url}`, async ({ page }) => {
     await page.goto(tab === "Profile" ? "/settings/subscription" : "/settings");

@@ -69,6 +69,7 @@ export const SETTINGS_SECTIONS: NavSection[] = [
   { href: "/settings", label: "Profile" },
   { href: "/settings/appearance", label: "Appearance" },
   { href: "/settings/subscription", label: "Subscription" },
+  { href: "/settings/privacy", label: "Privacy" },
 ];
 
 /** The Settings sub-tab for this page; undefined outside Settings. */
