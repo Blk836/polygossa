@@ -23,8 +23,8 @@ import java.util.regex.Pattern;
  */
 final class WordListParser {
 
-    /** One word as the reader splits text: letters, hyphen-joined parts, or an elided form ending in an apostrophe. */
-    private static final Pattern ONE_WORD = Pattern.compile("[\\p{L}\\p{M}]+(?:-[\\p{L}\\p{M}]+)*'?");
+    /** One word as the reader splits text: letters, with parts joined by hyphens or apostrophes ("aujourd'hui"). */
+    private static final Pattern ONE_WORD = Pattern.compile("[\\p{L}\\p{M}]+(?:['’-][\\p{L}\\p{M}]+)*");
 
     private static final String MEANING = "meaning:";
 

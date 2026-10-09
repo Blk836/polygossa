@@ -95,6 +95,22 @@ class VocabMapCatalogTest {
     }
 
     @Test
+    void anApostropheJoinsAWordButAnElidedFormIsNotOne() {
+        VocabMapCatalog catalog = fixture("apostrophes");
+        assertThat(catalog.problems()).singleElement().satisfies(p -> assertThat(p).contains("a.words:3")
+                .contains("\"j'\" is not one word"));
+        assertThat(catalog.list(Language.FR).orElseThrow().words()).extracting(MapWord::headword)
+                .contains("aujourd'hui");
+    }
+
+    @Test
+    void theRealListsHaveNoElidedForms() {
+        List<String> forms = REAL.list(Language.FR).orElseThrow().words().stream()
+                .flatMap(w -> w.forms().stream()).toList();
+        assertThat(forms).noneMatch(form -> form.endsWith("'") || form.endsWith("’"));
+    }
+
+    @Test
     void aFileWithAWrongHeaderOrDifferentMeaningColumnsIsLeftOut() {
         VocabMapCatalog catalog = fixture("badheader");
         assertThat(catalog.problems()).containsExactlyInAnyOrder(

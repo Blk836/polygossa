@@ -10,19 +10,17 @@ final class SpaceDelimitedTokenizer {
 
     private static final String LETTERS = "[\\p{L}\\p{M}]+";
 
-    /** Words joined by internal apostrophes or hyphens ("don't", "arc-en-ciel", "Baden-Württemberg"). */
+    /**
+     * Words joined by internal apostrophes or hyphens ("don't", "c'est", "dell'anno", "arc-en-ciel"): one word in
+     * every language, so clicking an elision looks up the whole word. An apostrophe not between letters is punctuation.
+     */
     private static final Pattern WORD = Pattern.compile(LETTERS + "(?:['’\\-]" + LETTERS + ")*");
-
-    /** French/Italian elisions are their own word: "l'homme" → "l'" + "homme", "dell'anno" → "dell'" + "anno". */
-    private static final Pattern ELIDING_WORD =
-            Pattern.compile(LETTERS + "['’](?=[\\p{L}\\p{M}])|" + LETTERS + "(?:-" + LETTERS + ")*");
 
     private SpaceDelimitedTokenizer() {}
 
     static List<RawToken> tokenize(Language language, String text) {
-        Pattern pattern = language == Language.FR || language == Language.IT ? ELIDING_WORD : WORD;
         List<RawToken> tokens = new ArrayList<>();
-        Matcher m = pattern.matcher(text);
+        Matcher m = WORD.matcher(text);
         int last = 0;
         while (m.find()) {
             if (m.start() > last) {
