@@ -1,8 +1,8 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
-import { AreaTiles, RegionTiles, WordTiles } from "@/components/progress/vocab-map-tiles";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { IslandMap } from "@/components/progress/island-map";
 import { WordPanel } from "@/components/progress/vocab-map-word";
 import { ErrorNote, Spinner, selectClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
@@ -16,7 +16,6 @@ import {
   storedTopBand,
   tileStats,
   withStatus,
-  type BandView,
   type MapPlace,
 } from "@/lib/vocab-map";
 import type { LanguageCode, VocabMap, WordStatus } from "@/lib/types";
@@ -110,13 +109,14 @@ function MapView({ map, top, language, onTop, onStatus }: {
   const params = useSearchParams();
   const place = placeOf(params.get("map"), map);
   const [selected, setSelected] = useState<string | null>(null);
-  const view = bandView(top, map.bands);
+  const view = useMemo(() => bandView(top, map.bands), [top, map.bands]);
   const overall = tileStats(mapWords(map), view.shown, view.next);
   const word = selectedWord(place, selected);
 
   const go = (regionId: string | null, areaId: string | null = null) => {
     const param = placeParam(regionId, areaId);
     setSelected(null);
+    if (param === params.get("map")) return;
     router.push(param ? `${pathname}?map=${param}` : pathname, { scroll: false });
   };
 
@@ -138,9 +138,7 @@ function MapView({ map, top, language, onTop, onStatus }: {
         <p className="mb-3 text-sm text-muted">Words you learn while reading fill in the map.</p>
       )}
       {view.soon && !place.area && <p className="mb-3 text-xs text-muted">{view.soon} words coming soon.</p>}
-      <div key={placeKey(place)} className="map-zoom">
-        <Level map={map} place={place} view={view} selected={selected} go={go} onSelect={setSelected} />
-      </div>
+      <IslandMap map={map} view={view} place={place} selected={selected} go={go} onSelect={setSelected} />
       {word && <WordPanel key={word.term} language={language} word={word} onSaved={onStatus} />}
     </Frame>
   );
@@ -150,27 +148,7 @@ function selectedWord(place: MapPlace, term: string | null) {
   return place.area?.words.find((w) => w.term === term) ?? null;
 }
 
-/** A new key for each place, so the tiles zoom in afresh. */
-function placeKey({ region, area }: MapPlace): string {
-  return placeParam(region?.id ?? null, area?.id ?? null) ?? "";
-}
-
 type Go = (regionId: string | null, areaId?: string | null) => void;
-
-/** The tiles for where the map is: every region, one region's areas, or one area's words. */
-function Level({ map, place, view, selected, go, onSelect }: {
-  map: VocabMap;
-  place: MapPlace;
-  view: BandView;
-  selected: string | null;
-  go: Go;
-  onSelect: (term: string) => void;
-}) {
-  const { region, area } = place;
-  if (area) return <WordTiles area={area} view={view} selected={selected} onSelect={(w) => onSelect(w.term)} />;
-  if (region) return <AreaTiles region={region} view={view} onOpen={(a) => go(region.id, a.id)} />;
-  return <RegionTiles regions={map.regions} view={view} beyondCore={map.beyondCore} onOpen={(r) => go(r.id)} />;
-}
 
 const crumbClass = "text-accent hover:underline";
 
