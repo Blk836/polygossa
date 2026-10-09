@@ -1,4 +1,6 @@
 Feature: English is a language you can learn (see docs/architecture/platform.md)
+  Note (October 2026): Wiktionary is no longer used; English words get meanings like every language
+  (lingq-style-lookup.feature).
   English is the biggest learner market, so it joins the eight languages on offer, listed first. It is
   space-delimited, tokenized in Java like the European languages, and its dictionary is English Wiktionary
   (monolingual English definitions, or native-language translations once a native language is set: see
