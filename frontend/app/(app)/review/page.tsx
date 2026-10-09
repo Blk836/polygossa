@@ -12,14 +12,17 @@ import { languageName } from "@/lib/languages";
 import { HOME } from "@/lib/nav";
 
 function CaughtUp({ ahead, onPractiseAhead }: { ahead: boolean; onPractiseAhead: () => void }) {
+  // Where the card would be: Review's tour points here when nothing is due.
   return (
-    <Empty title={ahead ? "Nothing left to practise" : "All caught up!"}>
-      <p>{ahead ? "You've reviewed everything you're learning." : "No cards are due right now."}</p>
-      <div className="mt-3 flex justify-center gap-2">
-        {!ahead && <Button variant="secondary" onClick={onPractiseAhead}>Practise ahead</Button>}
-        <Link href={HOME} className="rounded-lg bg-accent px-3.5 py-2 text-sm text-accent-ink">Read something new</Link>
-      </div>
-    </Empty>
+    <div data-tour="review-card">
+      <Empty title={ahead ? "Nothing left to practise" : "All caught up!"}>
+        <p>{ahead ? "You've reviewed everything you're learning." : "No cards are due right now."}</p>
+        <div className="mt-3 flex justify-center gap-2">
+          {!ahead && <Button variant="secondary" onClick={onPractiseAhead}>Practise ahead</Button>}
+          <Link href={HOME} className="rounded-lg bg-accent px-3.5 py-2 text-sm text-accent-ink">Read something new</Link>
+        </div>
+      </Empty>
+    </div>
   );
 }
 

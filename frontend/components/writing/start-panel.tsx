@@ -25,7 +25,7 @@ export function StartPanel({ language, onStarted }: { language: string; onStarte
   }
 
   return (
-    <div className="rounded-xl border border-line bg-card p-5">
+    <div data-tour="writing-start" className="rounded-xl border border-line bg-card p-5">
       <h2 className="font-display text-xl font-semibold">Start a writing test</h2>
       <ul className="mt-3 space-y-1 text-sm text-muted">
         <li>• You get one situation to write about in {languageName(language)}. It can&apos;t be swapped.</li>
