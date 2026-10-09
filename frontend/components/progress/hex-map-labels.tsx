@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type { CSSProperties } from "react";
-import { fitTags, type LabelPlan } from "@/lib/hex-view";
+import { fitTags, type LabelPlan, type TagFit } from "@/lib/hex-view";
 import type { HexWorld } from "@/lib/hex-world";
 import type { Camera, Size } from "@/lib/map-camera";
 import type { Point } from "@/lib/map-geometry";
@@ -24,7 +24,7 @@ function Name({ name, compact, display }: { name: string; compact: boolean; disp
  * A country's or province's name tag: its name, a small progress bar and "40 / 62", then "3 learning · +18 at A2"
  * when there is any (a country's only while it is pointed at or focused).
  */
-function Tag({ id, kind, name, words, view, where, compact, more, count = true }: {
+function Tag({ id, kind, name, words, view, where, compact, more, fit = FULL }: {
   id: string;
   kind: "country" | "area";
   name: string;
@@ -33,15 +33,16 @@ function Tag({ id, kind, name, words, view, where, compact, more, count = true }
   where: Point;
   compact: boolean;
   more: boolean;
-  /** False where a small map has no room for the count. */
-  count?: boolean;
+  /** On a small map: moved to make room, and maybe without its count. */
+  fit?: TagFit;
 }) {
   const stats = tileStats(words, view.shown, view.next);
   const share = (n: number) => `${stats.total ? (n / stats.total) * 100 : 0}%`;
+  const count = fit.show === "full";
   return (
     <div
       className={`map-tag ${kind} ${compact ? "compact" : ""} ${more ? "open-more" : ""}`}
-      style={at(where)}
+      style={{ ...at(where), marginLeft: fit.dx, marginTop: fit.dy }}
       data-testid={kind === "country" ? "region-label" : "area-label"}
       data-id={id}
     >
@@ -68,6 +69,22 @@ function Notes({ stats, next }: { stats: TileStats; next: string | null }) {
   return <span className="more">{notes.flatMap((n, i) => (i ? [<span key={`s${i}`}> · </span>, n] : [n]))}</span>;
 }
 
+const FULL: TagFit = { show: "full", dx: 0, dy: 0 };
+
+/** How each named country's tag fits on a small map, where the camera came to rest. */
+function countryFits(world: HexWorld, byId: Map<string, VocabMapRegion>, plan: LabelPlan, view: BandView, camera: Camera, viewport: Size) {
+  return fitTags(world.countries.filter((c) => plan.countries.has(c.regionId) && byId.has(c.regionId)).map((c) => {
+    const stats = tileStats(regionWords(byId.get(c.regionId)!), view.shown, view.next);
+    return {
+      id: c.regionId,
+      name: byId.get(c.regionId)!.name,
+      count: `${stats.known} / ${stats.total}`,
+      places: c.labelSpots.map((p) => ({ x: (p.x - camera.x) * camera.k + viewport.width / 2, y: (p.y - camera.y) * camera.k + viewport.height / 2 })),
+      weight: c.areas.reduce((n, a) => n + a.slots.length, 0),
+    };
+  }));
+}
+
 /** Country names far out, the names of an open country's provinces closer in; HTML over the map, the same size at every zoom. */
 export function MapTags({ world, regions, plan, view, camera, viewport, compact, pointed }: {
   world: HexWorld;
@@ -82,27 +99,21 @@ export function MapTags({ world, regions, plan, view, camera, viewport, compact,
   pointed: string | null;
 }) {
   const byId = new Map(regions.map((r) => [r.id, r]));
-  const fit = compact ? fitTags(world.countries.filter((c) => plan.countries.has(c.regionId)).map((c) => ({
-    id: c.regionId,
-    name: byId.get(c.regionId)?.name ?? "",
-    x: (c.centre.x - camera.x) * camera.k + viewport.width / 2,
-    y: (c.centre.y - camera.y) * camera.k + viewport.height / 2,
-    weight: c.areas.reduce((n, a) => n + a.slots.length, 0),
-  }))) : null;
+  const fits = compact ? countryFits(world, byId, plan, view, camera, viewport) : null;
   return (
     <div className="pointer-events-none absolute inset-0" aria-hidden>
       {world.countries.map((c) => {
         const region = byId.get(c.regionId);
         if (!region) return null;
         if (plan.countries.has(c.regionId)) {
-          const show = fit?.get(c.regionId) ?? "full";
-          return show !== "hidden" && <Tag key={c.regionId} id={c.regionId} kind="country" name={region.name} words={regionWords(region)}
-            view={view} where={c.centre} compact={compact} more={pointed === c.regionId} count={show === "full"} />;
+          const fit = fits?.get(c.regionId) ?? FULL;
+          return fit.show !== "hidden" && <Tag key={c.regionId} id={c.regionId} kind="country" name={region.name} words={regionWords(region)}
+            view={view} where={c.labelAt} compact={compact} more={pointed === c.regionId} fit={fit} />;
         }
         return c.areas.map((a) => {
           const area = region.areas.find((x) => x.id === a.areaId);
           return area && plan.areas.has(a.areaId) && (
-            <Tag key={a.areaId} id={a.areaId} kind="area" name={area.name} words={area.words} view={view} where={a.centre} compact={false} more />
+            <Tag key={a.areaId} id={a.areaId} kind="area" name={area.name} words={area.words} view={view} where={a.labelAt} compact={false} more />
           );
         });
       })}

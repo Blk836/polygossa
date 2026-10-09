@@ -5,9 +5,9 @@ import { BandSwitch, Breadcrumb, Legend, ZoomButtons, type Go } from "@/componen
 import { BeyondTheCore, MapTags } from "@/components/progress/hex-map-labels";
 import { useMapCamera } from "@/components/progress/use-map-camera";
 import { hexPath } from "@/lib/hex-grid";
-import { groundOf, labelPlan, placeBox, TILE_KINDS, tileLayers, wordFontSize, zoomLimits, type TileKind } from "@/lib/hex-view";
-import { areaTiles, layoutHexWorld, PLACE_MARGIN, TILE, type AreaShape, type HexWorld } from "@/lib/hex-world";
-import { fitBox, type Camera, type Limits, type Size } from "@/lib/map-camera";
+import { groundOf, labelPlan, placeCamera, TILE_KINDS, tileLayers, wordFontSize, zoomLimits, type TileKind } from "@/lib/hex-view";
+import { areaTiles, layoutHexWorld, TILE, type AreaShape, type HexWorld } from "@/lib/hex-world";
+import type { Size } from "@/lib/map-camera";
 import { regionWords, tileStats, type BandView, type MapPlace } from "@/lib/vocab-map";
 import type { VocabMap, VocabMapArea, VocabMapWord } from "@/lib/types";
 
@@ -52,11 +52,6 @@ const TILE_FILL: Record<TileKind, string> = {
   later: "var(--tile-later)",
 };
 
-/** Where the camera goes for a place: the country or province filling the map, or the whole world. */
-function placeCamera(world: HexWorld, regionId: string | null, areaId: string | null, viewport: Size, limits: Limits): Camera {
-  const box = placeBox(world, regionId, areaId);
-  return box ? fitBox(box, viewport, PLACE_MARGIN) : { x: world.width / 2, y: world.height / 2, k: limits.kMin };
-}
 
 function areaShape(world: HexWorld, regionId: string | null, areaId: string | null): AreaShape | undefined {
   return world.countries.find((c) => c.regionId === regionId)?.areas.find((a) => a.areaId === areaId);
@@ -87,7 +82,7 @@ export function HexMap({ map, view, top, onTop, place, selected, go, onSelect, p
   const limits = useMemo(() => zoomLimits(world, viewport), [world, viewport]);
   const regionId = place.region?.id ?? null;
   const areaId = place.area?.id ?? null;
-  const target = useMemo(() => placeCamera(world, regionId, areaId, viewport, limits), [world, regionId, areaId, viewport, limits]);
+  const target = useMemo(() => placeCamera(world, regionId, areaId, viewport), [world, regionId, areaId, viewport]);
   const { settled, zoomBy, handlers } = useMapCamera({ frameRef, svgRef, worldRef, viewport, world, limits, target });
   const at = settled ?? target;
   const plan = useMemo(() => labelPlan(world, at, viewport), [world, at, viewport]);

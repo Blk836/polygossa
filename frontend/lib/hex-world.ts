@@ -28,6 +28,8 @@ export interface AreaShape {
   /** Tile middles, from the province's middle outwards; word i (lowest band first) goes in slot i. */
   slots: Point[];
   centre: Point;
+  /** Where its name tag goes: its deepest tile, as far inside its border as it gets. */
+  labelAt: Point;
   box: Box;
   /** The province's own edge, for its focus ring. */
   outline: string;
@@ -39,6 +41,10 @@ export interface CountryShape {
   seed: Hex;
   areas: AreaShape[];
   centre: Point;
+  /** Where its name tag goes: its deepest tile, as far inside its border as it gets. */
+  labelAt: Point;
+  /** Its deepest tiles, deepest first: other places its tag can go when a neighbour's needs the room. */
+  labelSpots: Point[];
   box: Box;
   /** The country's own edge, for its focus ring. */
   outline: string;
@@ -197,6 +203,31 @@ function openSea(size: Size, tiles: Point[]): Point {
   return corners.reduce((best, c) => (clear(c) > clear(best) + 1e-6 ? c : best));
 }
 
+/**
+ * A territory's tiles from the deepest inside its border (counted in tiles from its edge) to its edge, nearest its
+ * middle first among equals: where its name tag has the most room. {@code hexes} come nearest the middle first.
+ */
+function byDepth(hexes: Hex[]): Hex[] {
+  const own = new Set(hexes.map(hexKey));
+  const depth = new Map<string, number>();
+  let ring = hexes.filter((h) => NEIGHBOURS.some(([dq, dr]) => !own.has(hexKey({ q: h.q + dq, r: h.r + dr }))));
+  for (let d = 0; ring.length > 0; d++) {
+    for (const h of ring) depth.set(hexKey(h), d);
+    const next = new Map<string, Hex>();
+    for (const h of ring) {
+      for (const [dq, dr] of NEIGHBOURS) {
+        const n = { q: h.q + dq, r: h.r + dr };
+        if (own.has(hexKey(n)) && !depth.has(hexKey(n))) next.set(hexKey(n), n);
+      }
+    }
+    ring = [...next.values()];
+  }
+  return hexes.map((h, i) => ({ h, i, d: depth.get(hexKey(h))! })).sort((a, b) => b.d - a.d || a.i - b.i).map((x) => x.h);
+}
+
+/** How many of a country's deepest tiles its tag may move between to make room for its neighbours'. */
+const LABEL_SPOTS = 40;
+
 function build(regions: VocabMapRegion[], portrait: boolean): HexWorld {
   const raw = grow(regions, portrait);
   const centres = raw.flatMap((c) => c.areas.flatMap((a) => a.hexes.map((h) => hexCentre(h, TILE, portrait))));
@@ -213,10 +244,13 @@ function build(regions: VocabMapRegion[], portrait: boolean): HexWorld {
       const d = (h: Hex) => Math.hypot(at(h).x - centre.x, at(h).y - centre.y);
       const sorted = [...hexes].sort((a, b) => d(a) - d(b) || (hexKey(a) < hexKey(b) ? -1 : 1));
       const slots = sorted.map(at);
-      return { areaId, hexes: sorted, slots, centre, box: boxAround(slots), outline: lines.areas[ci][ai] };
+      return { areaId, hexes: sorted, slots, centre, labelAt: at(byDepth(sorted)[0]), box: boxAround(slots), outline: lines.areas[ci][ai] };
     });
     const all = areas.flatMap((a) => a.slots);
-    return { regionId: c.region.id, seed: c.seed, areas, centre: mean(all), box: boxAround(all), outline: lines.countries[ci] };
+    const middle = mean(all);
+    const fromMiddle = (h: Hex) => Math.hypot(at(h).x - middle.x, at(h).y - middle.y);
+    const labelSpots = byDepth(areas.flatMap((a) => a.hexes).sort((a, b) => fromMiddle(a) - fromMiddle(b))).slice(0, LABEL_SPOTS).map(at);
+    return { regionId: c.region.id, seed: c.seed, areas, centre: middle, labelAt: labelSpots[0], labelSpots, box: boxAround(all), outline: lines.countries[ci] };
   });
   const tiles = countries.flatMap((c) => c.areas.flatMap((a) => a.slots));
   return {

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { hexPath } from "./hex-grid";
-import { fitTags, groundOf, tileKind, tileLayers, wordFontSize } from "./hex-view";
-import { layoutHexWorld, TILE } from "./hex-world";
+import { fitTags, groundOf, placeCamera, tileKind, tileLayers, wordFontSize, zoomLimits } from "./hex-view";
+import { layoutHexWorld, PLACE_MARGIN, TILE } from "./hex-world";
+import { fitBox } from "./map-camera";
 import type { VocabMapRegion, VocabMapWord } from "./types";
 import type { BandView } from "./vocab-map";
 
@@ -58,26 +59,74 @@ describe("groundOf", () => {
 });
 
 describe("fitTags", () => {
-  const spot = (id: string, x: number, y: number, weight: number, name = id) => ({ id, x, y, weight, name });
+  const spot = (id: string, x: number, y: number, weight: number, name = id, count = "0 / 11", more: { x: number; y: number }[] = []) =>
+    ({ id, places: [{ x, y }, ...more], weight, name, count });
+  const big = spot("big", 0, 0, 100, "Core words", "4 / 161");
 
-  it("shows every tag in full when they are apart", () => {
+  it("shows every tag in full, in its best place, when they are apart", () => {
     const shown = fitTags([spot("a", 0, 0, 10), spot("b", 300, 0, 5)]);
-    expect([...shown.values()]).toEqual(["full", "full"]);
+    expect([...shown.values()]).toEqual([{ show: "full", dx: 0, dy: 0 }, { show: "full", dx: 0, dy: 0 }]);
   });
 
-  it("drops the smaller country's count first, then its whole tag, when tags would overlap", () => {
-    // Close enough that both counts can't fit, but the smaller one's name alone fits above the bigger tag.
-    const near = fitTags([spot("big", 0, 0, 100, "Core words"), spot("small", 0, -34, 10, "Society & News")]);
-    expect(near.get("big")).toBe("full");
-    expect(near.get("small")).toBe("name");
-    const on = fitTags([spot("big", 0, 0, 100, "Core words"), spot("small", 4, 2, 10, "Communication")]);
-    expect(on.get("small")).toBe("hidden");
+  it("moves a smaller country's tag to the first of its other places with room", () => {
+    const fit = fitTags([big, spot("small", 0, -30, 10, "Home", "0 / 11", [{ x: 5, y: -32 }, { x: 0, y: -45 }, { x: 0, y: -60 }])]).get("small")!;
+    expect(fit).toEqual({ show: "full", dx: 0, dy: -15 });
+  });
+
+  it("drops the smaller country's count when moving isn't enough, then its whole tag", () => {
+    // Boxed in between two bigger tags: only its name fits in the gap.
+    const between = fitTags([big, spot("top", 0, -80, 50, "Home"), spot("small", 0, -40, 10, "Society & News", "0 / 1")]);
+    expect(between.get("big")!.show).toBe("full");
+    expect(between.get("top")!.show).toBe("full");
+    expect(between.get("small")!.show).toBe("name");
+    expect(fitTags([big, spot("small", 4, 2, 10, "Communication")]).get("small")!.show).toBe("hidden");
+  });
+
+  it("places a squeezed country's tag first when that lets every tag show", () => {
+    // The bigger one has room elsewhere; the smaller one has only the place they would both take.
+    const roomy = spot("roomy", 0, 0, 50, "Society & News", "0 / 1", [{ x: 0, y: -60 }]);
+    const squeezed = spot("squeezed", 0, 5, 40, "Communication", "0 / 20");
+    const fits = fitTags([roomy, squeezed]);
+    expect(fits.get("squeezed")!.show).not.toBe("hidden");
+    expect(fits.get("roomy")).toEqual({ show: "full", dx: 0, dy: -60 });
   });
 
   it("splits names after \"&\" onto two lines, so a long name takes less room across", () => {
-    const sideBySide = (name: string) => fitTags([spot("big", 0, 0, 100, "Core words"), spot("small", 110, 0, 10, name)]).get("small");
+    const sideBySide = (name: string) => fitTags([big, spot("small", 80, 0, 10, name)]).get("small")!.show;
     expect(sideBySide("Food & Drink")).toBe("full");
     expect(sideBySide("Communication and everything")).toBe("hidden");
+  });
+});
+
+describe("placeCamera", () => {
+  const regions: VocabMapRegion[] = [{ id: "food", name: "Food", areas: [
+    { id: "fruit", name: "Fruit", words: Array.from({ length: 60 }, (_, i) => word(`f${i}`, "A1")) },
+    { id: "drinks", name: "Drinks", words: Array.from({ length: 20 }, (_, i) => word(`d${i}`, "A1")) },
+  ] }];
+  const world = layoutHexWorld(regions, true);
+  const phone = { width: 358, height: 537 };
+  const desk = { width: 1100, height: 690 };
+  const fruit = world.countries[0].areas[0].box;
+
+  it("shows the whole world when no place is open", () => {
+    const limits = zoomLimits(world, desk);
+    expect(placeCamera(world, null, null, desk)).toEqual({ x: world.width / 2, y: world.height / 2, k: limits.kMin });
+  });
+
+  it("fits a country, or a province on a big screen, to the map", () => {
+    expect(placeCamera(world, "food", null, desk)).toEqual(fitBox(world.countries[0].box, desk, PLACE_MARGIN));
+    const k = fitBox(fruit, desk, PLACE_MARGIN).k;
+    expect(k * TILE * Math.sqrt(3)).toBeGreaterThanOrEqual(44);
+    expect(placeCamera(world, "food", "fruit", desk)).toEqual(fitBox(fruit, desk, PLACE_MARGIN));
+  });
+
+  it("zooms a province in far enough on a phone that every word's tile is big enough to tap", () => {
+    const cam = placeCamera(world, "food", "fruit", phone);
+    expect(cam.k * TILE * Math.sqrt(3)).toBeGreaterThanOrEqual(44);
+    expect(cam.k * TILE * Math.sqrt(3)).toBeLessThan(48);
+    expect(cam.k).toBeGreaterThan(fitBox(fruit, phone, PLACE_MARGIN).k);
+    expect({ x: cam.x, y: cam.y }).toEqual({ x: fruit.x + fruit.w / 2, y: fruit.y + fruit.h / 2 });
+    expect(zoomLimits(world, phone).kMax).toBeGreaterThanOrEqual(cam.k);
   });
 });
 

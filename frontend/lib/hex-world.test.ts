@@ -151,6 +151,46 @@ describe("layoutHexWorld", () => {
     expect(world.ground.match(/Z/g)).toHaveLength(allHexes(world).length);
   });
 
+  it("puts each country's and province's name tag on its deepest tile, as far inside its border as it gets", () => {
+    const depths = (hexes: Hex[]) => {
+      const own = new Set(hexes.map(hexKey));
+      const depth = new Map<string, number>();
+      let ring = hexes.filter((h) => NEIGHBOURS.some(([dq, dr]) => !own.has(hexKey({ q: h.q + dq, r: h.r + dr }))));
+      for (let d = 0; ring.length; d++) {
+        ring.forEach((h) => depth.set(hexKey(h), d));
+        ring = [...new Map(ring.flatMap((h) => NEIGHBOURS.map(([dq, dr]) => ({ q: h.q + dq, r: h.r + dr })))
+          .filter((n) => own.has(hexKey(n)) && !depth.has(hexKey(n))).map((n) => [hexKey(n), n])).values()];
+      }
+      return depth;
+    };
+    const check = (hexes: Hex[], slots: { x: number; y: number }[], labelAt: { x: number; y: number }) => {
+      const i = slots.findIndex((s) => s.x === labelAt.x && s.y === labelAt.y);
+      expect(i).toBeGreaterThanOrEqual(0);
+      const depth = depths(hexes);
+      expect(depth.get(hexKey(hexes[i]))).toBe(Math.max(...depth.values()));
+    };
+    for (const c of world.countries) {
+      check(c.areas.flatMap((a) => a.hexes), c.areas.flatMap((a) => a.slots), c.labelAt);
+      for (const a of c.areas) check(a.hexes, a.slots, a.labelAt);
+    }
+  });
+
+  it("offers a country's tag other places on its own land, deepest first, for when a neighbour's tag needs the room", () => {
+    for (const c of world.countries) {
+      const hexes = c.areas.flatMap((a) => a.hexes);
+      const slots = c.areas.flatMap((a) => a.slots);
+      expect(c.labelSpots[0]).toEqual(c.labelAt);
+      expect(c.labelSpots.length).toBeGreaterThan(10);
+      const own = new Set(hexes.map(hexKey));
+      const edge = (p: { x: number; y: number }) => {
+        const h = hexes[slots.findIndex((s) => s.x === p.x && s.y === p.y)];
+        return NEIGHBOURS.some(([dq, dr]) => !own.has(hexKey({ q: h.q + dq, r: h.r + dr })));
+      };
+      const firstEdge = c.labelSpots.findIndex(edge);
+      if (firstEdge >= 0) expect(c.labelSpots.slice(firstEdge).every(edge)).toBe(true);
+    }
+  });
+
   it("outlines each country and province along its own edge, for the keyboard focus ring", () => {
     const edges = (d: string) => (d.match(/M/g) ?? []).length;
     for (const c of world.countries) {

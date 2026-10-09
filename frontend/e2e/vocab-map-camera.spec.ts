@@ -51,12 +51,12 @@ test("the zoom buttons zoom in around the middle, and out a level at a time", as
   await openInFrench(page);
   const out = await restingZoom(page);
   const centre = await world(page).getAttribute("data-centre");
+  // The map reports its zoom once the glide comes to rest.
   await map(page).getByRole("button", { name: "Zoom in" }).click();
-  const zoomedIn = await restingZoom(page);
-  expect(zoomedIn).toBeGreaterThan(out * 1.3);
+  await expect.poll(() => zoom(page)).toBeGreaterThan(out * 1.3);
   await expect(world(page)).toHaveAttribute("data-centre", centre!);
   await map(page).getByRole("button", { name: "Zoom out" }).click();
-  expect(await restingZoom(page)).toBeCloseTo(out, 3);
+  await expect.poll(() => zoom(page)).toBeCloseTo(out, 3);
 
   await country(page, "Home").click();
   await province(page, "Rooms & furniture").click();
@@ -123,16 +123,17 @@ test("name tags stay on their countries while the map moves", async ({ page }) =
   await page.emulateMedia({ reducedMotion: "reduce" });
   await openInFrench(page);
   await world(page).scrollIntoViewIfNeeded();
-  const tag = label(page, "region-label", "core");
-  const target = country(page, "Core words");
+  const tag = label(page, "region-label", "food");
+  const target = country(page, "Food & Drink");
   const centreOf = async (l: Locator) => {
     const b = (await l.boundingBox())!;
     return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
   };
   const frame = (await world(page).boundingBox())!;
   await page.mouse.move(frame.x + frame.width / 2, frame.y + frame.height / 2);
-  await page.mouse.wheel(0, -200);
-  await restingZoom(page);
+  const out = await restingZoom(page);
+  await page.mouse.wheel(0, -150);
+  await expect.poll(() => zoom(page)).toBeGreaterThan(out * 1.1);
   const [t, c] = [await centreOf(tag), await centreOf(target)];
   expect(Math.abs(t.x - c.x)).toBeLessThan(frame.width * 0.08);
   expect(Math.abs(t.y - c.y)).toBeLessThan(frame.height * 0.08);

@@ -36,43 +36,67 @@ export function groundOf(points: Point[], portrait: boolean): string {
   return points.map((p) => hexPath(p, TILE, portrait)).join("");
 }
 
-/** A country's name tag on a narrow map: where it sits on screen (its middle), and how much it matters (its size). */
+/**
+ * A country's name tag on a narrow map: the places on screen it can sit (its middle), best first, and how much it
+ * matters (its size).
+ */
 export interface TagSpot {
   id: string;
   name: string;
-  x: number;
-  y: number;
+  places: Point[];
   weight: number;
+  /** Its count, "40 / 62", which sets the width of its chip. */
+  count: string;
 }
 
-/** A tag in full (name and count), its name alone, or left out. */
-export type TagShow = "full" | "name" | "hidden";
+/** A tag in full (name and count), its name alone, or left out; moved by (dx, dy) screen pixels from its best place. */
+export interface TagFit {
+  show: "full" | "name" | "hidden";
+  dx: number;
+  dy: number;
+}
 
 /** Roughly how much room a compact tag takes, in screen pixels (11px names, a 10px count chip below). */
-const TAG = { letter: 6.3, line: 13, gap: 3, chip: { w: 56, h: 16 }, margin: 2 };
+const TAG = { letter: 5.7, line: 13, gap: 3, digit: 5.6, chip: { pad: 12, h: 16 }, margin: 1 };
 
 interface Rect { left: number; top: number; right: number; bottom: number }
 
-function tagRect(s: TagSpot, show: TagShow): Rect {
+function tagRect(s: TagSpot, show: TagFit["show"], at: Point): Rect {
   const lines = s.name.split(" & ").map((l, i, all) => (i < all.length - 1 ? `${l} &` : l));
-  const w = Math.max(...lines.map((l) => l.length * TAG.letter), show === "full" ? TAG.chip.w : 0) + 2 * TAG.margin;
+  const chip = s.count.length * TAG.digit + TAG.chip.pad;
+  const w = Math.max(...lines.map((l) => l.length * TAG.letter), show === "full" ? chip : 0) + 2 * TAG.margin;
   const h = lines.length * TAG.line + (show === "full" ? TAG.gap + TAG.chip.h : 0) + 2 * TAG.margin;
-  return { left: s.x - w / 2, right: s.x + w / 2, top: s.y - h / 2, bottom: s.y + h / 2 };
+  return { left: at.x - w / 2, right: at.x + w / 2, top: at.y - h / 2, bottom: at.y + h / 2 };
 }
 
 const overlaps = (a: Rect, b: Rect) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
 
 /**
- * Which country tags a narrow map can show without any two overlapping: the biggest countries' first, in full; a
- * smaller one that would collide drops its count, and if its name still collides, is left out.
+ * Which country tags a narrow map can show without any two overlapping: the biggest countries' first, in full, in
+ * their best places. A smaller one that would collide moves to another of its places; failing that, it drops its
+ * count, and failing that, is left out. If any is left out, the tags are tried again with those first, as the others
+ * may have room elsewhere, and whichever shows more is kept.
  */
-export function fitTags(spots: TagSpot[]): Map<string, TagShow> {
+export function fitTags(spots: TagSpot[]): Map<string, TagFit> {
+  const order = [...spots].sort((a, b) => b.weight - a.weight);
+  const first = placeTags(order);
+  const left = order.filter((s) => first.get(s.id)!.show === "hidden");
+  if (left.length === 0) return first;
+  const again = placeTags([...left, ...order.filter((s) => !left.includes(s))]);
+  const hidden = (fits: Map<string, TagFit>) => [...fits.values()].filter((f) => f.show === "hidden").length;
+  return hidden(again) < hidden(first) ? again : first;
+}
+
+/** Each tag in the first of its places (and fullest form) that overlaps none placed before it. */
+function placeTags(order: TagSpot[]): Map<string, TagFit> {
   const placed: Rect[] = [];
-  const out = new Map<string, TagShow>();
-  for (const s of [...spots].sort((a, b) => b.weight - a.weight)) {
-    const show = (["full", "name"] as const).find((v) => !placed.some((p) => overlaps(p, tagRect(s, v))));
-    if (show) placed.push(tagRect(s, show));
-    out.set(s.id, show ?? "hidden");
+  const out = new Map<string, TagFit>();
+  for (const s of order) {
+    const tries = (["full", "name"] as const).flatMap((show) => s.places.map((at) => ({ show, at, rect: tagRect(s, show, at) })));
+    const fit = tries.find((t) => !placed.some((p) => overlaps(p, t.rect)));
+    if (fit) placed.push(fit.rect);
+    const [best] = s.places;
+    out.set(s.id, fit ? { show: fit.show, dx: fit.at.x - best.x, dy: fit.at.y - best.y } : { show: "hidden", dx: 0, dy: 0 });
   }
   return out;
 }
@@ -127,7 +151,23 @@ export function labelPlan(world: HexWorld, cam: Camera, viewport: Size): LabelPl
 export function zoomLimits(world: HexWorld, viewport: Size): Limits {
   const kMin = Math.min(viewport.width / world.width, viewport.height / world.height);
   const inner = world.countries.flatMap((c) => c.areas).map((a) => fitBox(a.box, viewport, PLACE_MARGIN).k);
-  return { kMin, kMax: Math.max(kMin, ...inner) };
+  return { kMin, kMax: Math.max(kMin, TAP_ZOOM, ...inner) };
+}
+
+/** A word's tile must be at least 44 pixels across its narrow way for a finger to tap it (a little over, for rounding). */
+const TAP_PX = 46;
+const TAP_ZOOM = TAP_PX / (TILE * Math.sqrt(3));
+
+/**
+ * Where the camera goes for a ?map= place: the country or province filling the map, or the whole world. A province
+ * is zoomed in at least far enough for its tiles to be tapped, so on a phone it may run off the sides, to be panned.
+ */
+export function placeCamera(world: HexWorld, regionId: string | null, areaId: string | null, viewport: Size): Camera {
+  const box = placeBox(world, regionId, areaId);
+  if (!box) return { x: world.width / 2, y: world.height / 2, k: zoomLimits(world, viewport).kMin };
+  const cam = fitBox(box, viewport, PLACE_MARGIN);
+  const isArea = world.countries.some((c) => c.regionId === regionId && c.areas.some((a) => a.areaId === areaId));
+  return isArea ? { ...cam, k: Math.max(cam.k, TAP_ZOOM) } : cam;
 }
 
 /** The country ("?map=food") or province ("food/fruit-veg") a place shows, or null for the whole world. */
