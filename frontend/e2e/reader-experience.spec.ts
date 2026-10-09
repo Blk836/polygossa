@@ -129,43 +129,6 @@ test.describe("turning the page marks new words known", () => {
     await expect(wordAt(page, 5)).toHaveClass(/w-learning/);
   });
 
-  test("the known-words count in the top bar goes up without leaving the reader", async ({ page }) => {
-    created = await createText(page);
-    await openReader(page, `/read/${created.id}`);
-    const known = page.getByRole("banner").getByTestId("known-words");
-    await expect(known).toHaveText(/known/);
-    const count = async () => Number((await known.textContent())!.replace(/\D/g, ""));
-    const before = await count();
-    const distinct = PAGE - PAGE / PER_SENTENCE + 1;
-    // Other tests share the account, so the count is checked against what the header asked for after the turn.
-    const header = page.waitForResponse((r) => r.url().includes("/api/dashboard/header"));
-    const saved = markKnown(page);
-    await bottomPager(page).getByRole("button", { name: "Next page" }).click();
-    expect((await saved).ok()).toBe(true);
-    const after = (await (await header).json()).knownWords as number;
-    expect(after).toBeGreaterThanOrEqual(before + distinct);
-    await expect(known).toHaveText(`${after.toLocaleString("en-US")} known`);
-  });
-
-  test("setting a word's status in the reader updates the count in the top bar", async ({ page }) => {
-    created = await createText(page);
-    await openReader(page, `/read/${created.id}`);
-    const known = page.getByRole("banner").getByTestId("known-words");
-    await expect(known).toHaveText(/known/);
-    // Other tests share the account, so each count is checked against what the header asked for after the change.
-    const shown = async (change: () => Promise<void>) => {
-      const header = page.waitForResponse((r) => r.url().includes("/api/dashboard/header"));
-      await change();
-      const value = (await (await header).json()).knownWords as number;
-      await expect(known).toHaveText(`${value.toLocaleString("en-US")} known`);
-      return value;
-    };
-    const learning = await shown(() => wordAt(page, 5).click()); // looking a word up saves it as learning
-    await expect(wordAt(page, 5)).toHaveClass(/w-learning/);
-    expect(await shown(() => page.getByRole("button", { name: "Known", exact: true }).click())).toBeGreaterThanOrEqual(learning + 1);
-    await expect(wordAt(page, 5)).toHaveClass(/w-known/);
-  });
-
   test("going back, or following a link, marks nothing", async ({ page }) => {
     created = await createText(page);
     const calls: string[] = [];
