@@ -15,7 +15,8 @@ import java.time.Instant;
 
 /**
  * Amazon Translate's answer for one word and language pair, kept for everyone so each is paid for once. A null
- * translation means the answer was of no use (the word itself), which is remembered too.
+ * translation means the answer was of no use (the word itself), which is remembered too; such a word is asked once more
+ * inside a sentence (translation-in-context.feature), and {@code triedInContext} remembers that this gave nothing.
  */
 @Entity
 @Table(name = "machine_translations", uniqueConstraints = @UniqueConstraint(name = "uk_machine_translation",
@@ -44,7 +45,12 @@ public class MachineTranslation {
     @Column(nullable = false)
     private Instant createdAt;
 
+    @Column(nullable = false)
+    private boolean triedInContext;
+
     protected MachineTranslation() {}
 
     public String getTranslation() { return translation; }
+
+    public boolean isTriedInContext() { return triedInContext; }
 }
