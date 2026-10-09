@@ -123,6 +123,29 @@ class ElisionTokensTest {
         assertThat(position(id)).isEqualTo(6); // still at "aime"
     }
 
+    /**
+     * Production ran out of memory loading every matching text (long video transcripts) in one transaction: each text
+     * is now fixed in a transaction of its own, so a text that can't be fixed leaves the others fixed.
+     */
+    @Test
+    void theBackfillFixesEachTextOnItsOwn() throws Exception {
+        long broken = api.createText(token, "fr", CONTENT, false);
+        long fine = api.createText(token, "fr", CONTENT, false);
+        makeLegacy(fine);
+        tx.executeWithoutResult(status -> {
+            Text text = texts.findById(broken).orElseThrow();
+            text.setTokensJson("[{\"index\":0,\"text\":\"l'\",\"word\":true,\"normalized\":\"l'\",\"sentence\":0},"); // cut off
+            texts.save(text);
+        });
+        try {
+            backfill.run(null);
+
+            assertThat(words(detail(fine))).containsExactly("C'est", "l'homme", "qu'il", "aime");
+        } finally {
+            api.delete(token, "/api/texts/" + broken, 204);
+        }
+    }
+
     @Test
     void theBackfillLeavesTextsThatAreAlreadyRightAlone() throws Exception {
         long id = api.createText(token, "fr", CONTENT, false);
