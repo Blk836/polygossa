@@ -37,3 +37,8 @@ export function parseTags(input: string): string[] {
 export function pageCount(total: number): number {
   return Math.ceil(total / PAGE_SIZE);
 }
+
+/** The status filter the page opens on: one named in the address ("?status=known"), else learning words. */
+export function initialStatus(param: string | null): string {
+  return param === "known" || param === "ignored" ? param : "learning";
+}

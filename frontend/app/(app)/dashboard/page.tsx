@@ -11,6 +11,7 @@ import { PeriodCard } from "@/components/progress/period-card";
 import { PeriodPicker } from "@/components/progress/period-picker";
 import { SkillLevelsCard } from "@/components/progress/skill-levels-card";
 import { useDashboard } from "@/components/progress/use-dashboard";
+import { VocabMapCard } from "@/components/progress/vocab-map";
 import { Empty, ErrorNote, PageHeader, Spinner, formatDuration } from "@/components/ui";
 import { languageName } from "@/lib/languages";
 import { listeningLabel, periodLabel, type StatsPeriodKey } from "@/lib/progress";
@@ -64,6 +65,10 @@ export default function DashboardPage() {
           <SkillLevelsCard key={language} language={language} />
         </div>
       )}
+
+      <div className="mt-4">
+        <VocabMapCard key={me.targetLanguage ?? "none"} language={me.targetLanguage} />
+      </div>
 
       <div className="mt-4">
         <PeriodCard stats={data.period} />

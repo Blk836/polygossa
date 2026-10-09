@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PAGE_SIZE, exportParams, pageCount, parseTags, searchParams } from "./search";
+import { PAGE_SIZE, exportParams, initialStatus, pageCount, parseTags, searchParams } from "./search";
 
 const empty = { language: "", status: "", kind: "", sort: "recent", query: "", tag: "", page: 0 };
 
@@ -27,5 +27,18 @@ describe("vocabulary search params", () => {
     expect(pageCount(0)).toBe(0);
     expect(pageCount(PAGE_SIZE)).toBe(1);
     expect(pageCount(PAGE_SIZE + 1)).toBe(2);
+  });
+});
+
+describe("initialStatus", () => {
+  it("opens on a status named in the address (the vocabulary map's Beyond the core link)", () => {
+    expect(initialStatus("known")).toBe("known");
+    expect(initialStatus("ignored")).toBe("ignored");
+    expect(initialStatus("learning")).toBe("learning");
+  });
+
+  it("opens on learning words otherwise", () => {
+    expect(initialStatus(null)).toBe("learning");
+    expect(initialStatus("everything")).toBe("learning");
   });
 });
