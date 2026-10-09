@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 import type { Token } from "@/lib/types";
-import { fitPages, splitPages, wordBreaks, type WordBox } from "./reader-fit";
+import { fitPages, reservedBelow, splitPages, wordBreaks, type WordBox } from "./reader-fit";
 import { PAGE_WORDS, SINGLE_PAGE_MAX_WORDS, type ReaderPage } from "./reader-pages";
 
 /** Room the finish panel takes below the last page, until it has been measured. */
@@ -41,10 +41,13 @@ function room(text: HTMLElement): { height: number; finish: number | null } {
   const finishHeight = finish ? finish.getBoundingClientRect().height + px(getComputedStyle(finish).marginTop) : 0;
   const end = column.lastElementChild!.getBoundingClientRect().bottom;
   const padding = px(getComputedStyle(layout).paddingBottom) + px(getComputedStyle(main).paddingBottom);
-  const bar = document.querySelector("[data-bottom-bar]")?.getBoundingClientRect().height ?? 0;
   const box = text.getBoundingClientRect();
+  // The player bar, and a mini video player when it floats over the text column (on phones it is above the text).
+  const docks = [...document.querySelectorAll<HTMLElement>("[data-bottom-bar], [data-floating-player]")]
+    .filter((el) => getComputedStyle(el).position === "fixed")
+    .map((el) => el.getBoundingClientRect());
   const above = box.top + window.scrollY;
-  const below = end - box.bottom - finishHeight + Math.max(padding, bar);
+  const below = end - box.bottom - finishHeight + Math.max(padding, reservedBelow(window.innerHeight, box, docks));
   return { height: window.innerHeight - above - below - SLACK, finish: finish?.dataset.finish === "prompt" ? finishHeight : null };
 }
 
@@ -60,13 +63,14 @@ const same = (a: number[] | null, b: number[]) => a !== null && a.length === b.l
 /**
  * Pages cut to fit the screen, measured in the browser and redone when the window, the text size or the text
  * changes. Null until measured (the server renders word-count pages instead). `measuring` says the hidden copy
- * behind `measureRef` is rendered.
+ * behind `measureRef` is rendered; a change of `layout` refits too.
  */
 export function useFitPages(
   paragraphs: Token[][],
   measureRef: RefObject<HTMLDivElement | null>,
   textRef: RefObject<HTMLDivElement | null>,
   measuring: boolean,
+  layout: unknown,
 ): ReaderPage[] | null {
   const [starts, setStarts] = useState<number[] | null>(null);
   const finish = useRef(FINISH_ESTIMATE);
@@ -104,7 +108,7 @@ export function useFitPages(
       window.removeEventListener("resize", fit);
       window.clearTimeout(first);
     };
-  }, [breaks, measureRef, textRef, measuring]);
+  }, [breaks, measureRef, textRef, measuring, layout]);
 
   return useMemo(() => (starts ? splitPages(paragraphs, starts) : null), [paragraphs, starts]);
 }

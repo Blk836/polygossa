@@ -14,8 +14,8 @@ import type { Spoken } from "./media-nav";
 import { Paragraph } from "./paragraph";
 import { ReaderHeader } from "./reader-header";
 import { pageRange, unseenOnPage } from "./reader-pages";
-import { ReaderPager } from "./reader-pager";
-import { articleClass, audioToggle, layoutClass, mediaState, onPage, pageNote, PhraseHint, showsMarker } from "./reader-parts";
+import { PageArrows, ReaderPager } from "./reader-pager";
+import { articleClass, audioToggle, layoutProps, mediaState, onPage, pageNote, PhraseHint, showsMarker } from "./reader-parts";
 import { ReaderPopup } from "./reader-popup";
 import { followsSentence, followsWord, type ReaderSettings } from "./reader-settings";
 import { nextWord, overlapping, phraseMarks, readerStats, sentenceHere, sentenceTexts, toParagraphs } from "./reader-text";
@@ -79,7 +79,8 @@ export function Reader({ initial, initialSettings, playlist }: {
   // Captions put a few words on each line; transcripts flow them into paragraphs instead.
   const paragraphs = useMemo(() => (video ? transcriptParagraphs(tokens) : toParagraphs(tokens)), [tokens, video]);
   const measuring = useMeasuring();
-  const fitted = useFitPages(paragraphs, measureRef, articleRef, measuring);
+  // Swapping the video layout can change the room below the text without resizing anything, so it refits too.
+  const fitted = useFitPages(paragraphs, measureRef, articleRef, measuring, settings.video);
   const paging = useReaderPages(text.id, tokens, paragraphs, fitted, text.progress?.position ?? null);
   const { page, pages, goTo, goToToken } = paging;
   const budgets = useMemo(() => slideBudgets(audio?.timings ?? video?.timings ?? []), [audio, video]);
@@ -179,13 +180,16 @@ export function Reader({ initial, initialSettings, playlist }: {
 
   return (
     <ListenContext.Provider value={session.listen}>
-    <div className={layoutClass(!!video, media.playerBar)}>
-      <div className="min-w-0 lg:col-start-1">
+    <div {...layoutProps(settings, !!video, media.playerBar)}>
+      <div className="reader-column min-w-0 lg:col-start-1">
         <ReaderHeader text={text} playlist={playlist} stats={stats} settings={settings} onSettings={updateSettings} audio={audioButton} media={media.shortcuts} />
       </div>
-      <VideoPanel ref={mediaRef} video={video} tokens={tokens} onSpoken={setSpoken} onJumpToToken={jumpToToken} cueToken={cueToken} />
+      <VideoPanel
+        ref={mediaRef} video={video} tokens={tokens} onSpoken={setSpoken} onJumpToToken={jumpToToken} cueToken={cueToken}
+        layout={settings.video} onLayout={(layout) => updateSettings({ video: layout })}
+      />
 
-      <div className="min-w-0 lg:col-start-1">
+      <div className="reader-column min-w-0 lg:col-start-1">
         <ErrorNote message={error} />
         <PhraseHint show={popup.phraseMode} />
         <div ref={articleRef} className="relative">
@@ -201,6 +205,7 @@ export function Reader({ initial, initialSettings, playlist }: {
               <Paragraph key={k} tokens={p} statuses={vocab.statuses} phrases={marks} sentence={followsSentence(settings.follow) ? sentenceHere(p, spoken.sentence) : null} {...overlapping(p, sel, active)} />
             ))}
           </article>
+          <PageArrows page={page} count={paging.count} onPage={changePage} />
           <FollowMarker enabled={showsMarker(followsWord(settings.follow), media.playerBar)} containerRef={articleRef} active={active} nextOf={nextOf} budgets={budgets} page={page} />
 
           {measuring && <TextMeasure ref={measureRef} paragraphs={paragraphs} className={articleClass(language, settings.size, false)} />}

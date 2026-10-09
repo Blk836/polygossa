@@ -3,9 +3,11 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { estimateTimings, youtubeWatchUrl } from "@/lib/media";
 import type { TextDetail, Token } from "@/lib/types";
+import { MiniPlayerIcon, SideBySideIcon } from "../icons";
 import { createMediaClock, type MediaClock } from "./media-clock";
 import { PlayerBar } from "./player-bar";
 import type { Spoken } from "./media-nav";
+import type { VideoLayout } from "./reader-settings";
 import { useMediaPlayer, type MediaElement, type MediaHandle } from "./use-media-player";
 import { loadYouTubeApi, type YTPlayer } from "./youtube-api";
 import { playbackOf, YT_STATE } from "./youtube-playback";
@@ -17,6 +19,9 @@ interface Props {
   onJumpToToken: (tokenIndex: number) => void;
   /** Where to cue the paused video: see `useMediaPlayer`. */
   cueToken: number | null;
+  /** Beside the text, or a mini player in the corner (wide screens only; phones always show it above the text). */
+  layout: VideoLayout;
+  onLayout: (layout: VideoLayout) => void;
 }
 
 /** Shown when embedding fails (blocked, offline, removed): the transcript stays fully usable. */
@@ -95,11 +100,37 @@ function startCued(yt: YTPlayer, cue: Cue) {
   yt.seekTo(ms / 1000, true);
 }
 
+/** Where the player sits: sticky above the text on phones; on wide screens beside the text, or floating in the corner. */
+function dockClass(mini: boolean): string {
+  const base = "sticky top-14 z-20 -mx-4 mb-6 bg-paper/95 px-4 pt-2 pb-3 backdrop-blur sm:mx-0 sm:px-0 lg:mb-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none";
+  // Above the player bar, 360 px wide: YouTube asks for a player of at least 200 × 200 px, so 16:9 needs 356.
+  if (mini) return `${base} lg:fixed lg:top-auto lg:right-6 lg:bottom-[5.5rem] lg:z-30 lg:w-[22.5rem]`;
+  return `${base} lg:top-20`;
+}
+
+/** The player bar's button that swaps between the video beside the text and the mini player (wide screens only). */
+function LayoutButton({ layout, onLayout }: { layout: VideoLayout; onLayout: (layout: VideoLayout) => void }) {
+  const mini = layout === "mini";
+  const label = mini ? "Video beside text" : "Mini player";
+  return (
+    <button
+      type="button"
+      onClick={() => onLayout(mini ? "beside" : "mini")}
+      className="hidden size-8 shrink-0 items-center justify-center rounded-full text-muted hover:bg-paper hover:text-ink lg:flex"
+      aria-label={label}
+      title={label}
+    >
+      {mini ? <SideBySideIcon className="size-4" /> : <MiniPlayerIcon className="size-4" />}
+    </button>
+  );
+}
+
 /**
- * A video lesson's player: the YouTube player (sticky above the text on narrow screens, beside it on wide ones) and the same
- * bottom player bar as audio texts, which highlights the word being spoken and follows clicks on the transcript.
+ * A video lesson's player: the YouTube player (sticky above the text on narrow screens; beside it, or a mini player, on
+ * wide ones) and the same bottom player bar as audio texts, which highlights the word being spoken and follows clicks
+ * on the transcript. Switching layouts only changes classes, so the playing video is never reloaded.
  */
-const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video, tokens, onSpoken, onJumpToToken, cueToken }, ref) {
+const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video, tokens, onSpoken, onJumpToToken, cueToken, layout, onLayout }, ref) {
   const host = useRef<HTMLDivElement>(null);
   const yt = useRef<YTPlayer | null>(null);
   // YouTube reports its time only a few times a second; the clock fills in between so the highlight keeps pace.
@@ -135,6 +166,7 @@ const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video,
     clock.current.playing = playing && !buffering; // while buffering the position waits for the data
   }, [playing, buffering]);
   const duration = (seconds || video.durationSeconds || 0) * 1000;
+  const mini = layout === "mini" && !failed;
 
   // Captions give exact timings; without them, spread the words over the length the player reports.
   const timings = useMemo(() => {
@@ -151,16 +183,16 @@ const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video,
 
   return (
     <>
-      <div className="sticky top-14 z-20 -mx-4 mb-6 bg-paper/95 px-4 pt-2 pb-3 backdrop-blur sm:mx-0 sm:px-0 lg:top-20 lg:mb-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none" data-testid="video-dock">
+      <div className={dockClass(mini)} data-testid="video-dock" data-floating-player={mini || undefined}>
         {failed ? (
           <PlayerFailed videoId={video.videoId} />
         ) : (
-          <div className="mx-auto aspect-video max-h-[42vh] overflow-hidden rounded-xl bg-black lg:max-h-none">
+          <div className={`mx-auto aspect-video max-h-[42vh] overflow-hidden rounded-xl bg-black lg:max-h-none ${mini ? "lg:shadow-2xl lg:ring-1 lg:ring-line" : ""}`}>
             <div ref={host} className="size-full" />
           </div>
         )}
       </div>
-      {!failed && <PlayerBar player={player} playing={playing} duration={duration} onClose={null} />}
+      {!failed && <PlayerBar player={player} playing={playing} duration={duration} onClose={null} extra={<LayoutButton layout={layout} onLayout={onLayout} />} />}
     </>
   );
 });

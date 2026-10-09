@@ -180,21 +180,26 @@ export function ImportSkeleton() {
 }
 
 /** A lesson: the reader's top (back link, title, stats bar), then lines of text at the lesson's width. */
-export function ReaderSkeleton() {
+export function ReaderSkeleton({ width }: { width: string }) {
+  // The reader's own canvas and column (globals.css), at the learner's text width, so nothing moves when it arrives.
   return (
-    <PageLoading label="lesson" className="mx-auto max-w-3xl">
-      <div className="mb-4">
-        <p className="text-sm text-muted">← Library</p>
-        <Bone className="mt-2 h-9 w-2/3" />
-        <Bone className="mt-2 h-4 w-48" />
-        <div className="mt-3 flex items-center gap-4 rounded-xl border border-line bg-card p-3">
-          <Bone className="h-4 w-40" /><Bone className="h-4 w-32" /><Bone className="ml-auto h-7 w-28" />
+    <div data-reader="" data-text-width={width}>
+      <PageLoading label="lesson" className="reader-column">
+        <div className="mb-5">
+          <p className="text-sm text-muted">← Library</p>
+          <div className="mt-1 flex items-center gap-3">
+            <Bone className="h-8 w-2/3 max-w-lg" />
+            <span className="ml-auto flex gap-2">{[0, 1, 2, 3].map((i) => <Bone key={i} className="size-7 rounded-full" />)}</span>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            <Bone className="h-5 w-8" /><Bone className="h-4 w-36" /><Bone className="h-4 w-full sm:ml-auto sm:w-80" />
+          </div>
         </div>
-      </div>
-      <div data-skeleton="text" className="space-y-4 pt-4">
-        {Array.from({ length: 12 }, (_, i) => <Bone key={i} className={`h-5 ${i % 4 === 3 ? "w-3/5" : "w-full"}`} />)}
-      </div>
-    </PageLoading>
+        <div data-skeleton="text" className="space-y-5 pt-2">
+          {Array.from({ length: 12 }, (_, i) => <Bone key={i} className={`h-5 ${i % 4 === 3 ? "w-3/5" : "w-full"}`} />)}
+        </div>
+      </PageLoading>
+    </div>
   );
 }
 
