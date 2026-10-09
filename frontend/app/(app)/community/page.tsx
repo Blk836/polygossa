@@ -11,7 +11,7 @@ import { ShelfRow } from "@/components/library/shelf";
 import { useRecommendations } from "@/components/library/use-recommendations";
 import { useMe } from "@/components/me-context";
 import { AddToPlaylist } from "@/components/playlists/add-to-playlist";
-import { PlaylistShelf } from "@/components/playlists/playlist-shelf";
+import { PlaylistShelf, PlaylistShelfRow, useShelfPlaylists } from "@/components/playlists/playlist-shelf";
 import { TextCard } from "@/components/text-card";
 import { useRemembered } from "@/components/use-remembered";
 import { CardsLoading, ExploreShelvesLoading } from "@/components/skeletons/card-pages";
@@ -83,19 +83,9 @@ function Explore({ language }: { language: string }) {
       <div className="mb-7"><CategoryChips options={options} value={f.category} counts={counts} onChange={(category) => set({ category, topic: null })} /></div>
 
       <ErrorNote message={error} />
-      {showShelves && (
-        <RecommendedShelves
-          shelves={recs.shelves}
-          actions={actions}
-          onOpen={recs.open}
-          onNotInterested={(t) => void recs.notInterested(t)}
-          onSeeAll={(s) => set(s.topic ? { topic: s.topic } : { category: s.category ?? null })}
-        />
-      )}
-      {showShelves && <PlaylistShelf source="shared" language={language} />}
       {f.query && <PlaylistShelf source="shared" language={language} query={f.query} />}
       {showShelves ? (
-        <ShelvesView shelves={shelves} actions={actions} onSeeAll={(category) => set({ category })} />
+        <ShelvesArea language={language} recs={recs} shelves={shelves} actions={actions} set={set} />
       ) : (
         <GridView f={f} grid={grid} error={error} actions={actions} set={set} onPage={(page) => setF((prev) => ({ ...prev, page }))} />
       )}
@@ -154,12 +144,39 @@ function GridView({ f, grid, error, actions, set, onPage }: {
   );
 }
 
-function ShelvesView({ shelves, actions, onSeeAll }: {
+/**
+ * The rows picked for you, then shared playlists, then the category rows. They load separately, so they wait for each
+ * other and appear together, in that order: otherwise the quickest (playlists) showed first and was then pushed down.
+ */
+function ShelvesArea({ language, recs, shelves, actions, set }: {
+  language: string;
+  recs: ReturnType<typeof useRecommendations>;
   shelves: Shelf[] | null;
+  actions: (t: TextSummary) => ReactNode;
+  set: (patch: Partial<ExploreFilters>) => void;
+}) {
+  const playlists = useShelfPlaylists("shared", language);
+  if (!shelves || !recs.shelves || !playlists.ready) return <ExploreShelvesLoading />;
+  return (
+    <>
+      <RecommendedShelves
+        shelves={recs.shelves}
+        actions={actions}
+        onOpen={recs.open}
+        onNotInterested={(t) => void recs.notInterested(t)}
+        onSeeAll={(s) => set(s.topic ? { topic: s.topic } : { category: s.category ?? null })}
+      />
+      <PlaylistShelfRow source="shared" lists={playlists.lists} />
+      <ShelvesView shelves={shelves} actions={actions} onSeeAll={(category) => set({ category })} />
+    </>
+  );
+}
+
+function ShelvesView({ shelves, actions, onSeeAll }: {
+  shelves: Shelf[];
   actions: (t: TextSummary) => ReactNode;
   onSeeAll: (category: Shelf["category"]) => void;
 }) {
-  if (!shelves) return <ExploreShelvesLoading />;
   if (shelves.length === 0) {
     return <Empty title="Nothing shared in this language yet">Share one of your own texts or videos from your library to get things started.</Empty>;
   }
