@@ -1,9 +1,9 @@
 word | band | area | meaning:en | forms
 # Core words: the small words every sentence needs, and common verbs, adjectives and adverbs with no one theme.
-# Forms are what the reader can save: elisions are their own word ("j'", "l'"), hyphenated words are one word.
+# Forms are what the reader can save: words joined by an apostrophe or hyphen are one word ("aujourd'hui", "arc-en-ciel").
 
 # --- Pronouns ---
-je | A1 | pronouns | I | j'
+je | A1 | pronouns | I |
 tu | A1 | pronouns | you (informal) |
 il | A1 | pronouns | he; it | ils
 elle | A1 | pronouns | she; her | elles
@@ -14,9 +14,9 @@ moi | A1 | pronouns | me |
 toi | A1 | pronouns | you (stressed) |
 lui | A1 | pronouns | him; to him, to her |
 eux | A1 | pronouns | them |
-me | A1 | pronouns | me; myself | m'
-te | A1 | pronouns | you; yourself | t'
-se | A1 | pronouns | oneself; himself, herself | s'
+me | A1 | pronouns | me; myself |
+te | A1 | pronouns | you; yourself |
+se | A1 | pronouns | oneself; himself, herself |
 y | A1 | pronouns | there; to it |
 ça | A1 | pronouns | that; it |
 rien | A1 | pronouns | nothing |
@@ -32,10 +32,10 @@ celui-ci | B1 | pronouns | this one | celle-ci ceux-ci celles-ci
 celui-là | B1 | pronouns | that one | celle-là ceux-là celles-là
 
 # --- Articles & determiners ---
-le | A1 | determiners | the | la les l'
+le | A1 | determiners | the | la les
 un | A1 | determiners | a; one | une
-de | A1 | determiners | of; from; some | d' du des
-ce | A1 | determiners | this; that; it | cet cette ces c'
+de | A1 | determiners | of; from; some | du des
+ce | A1 | determiners | this; that; it | cet cette ces
 mon | A1 | determiners | my | ma mes
 ton | A1 | determiners | your (informal) | ta tes
 son | A1 | determiners | his; her; its | sa ses
@@ -77,7 +77,7 @@ loin | A1 | prepositions | far |
 contre | A2 | prepositions | against |
 selon | A2 | prepositions | according to |
 sauf | A2 | prepositions | except |
-jusque | A2 | prepositions | until; as far as | jusqu'
+jusque | A2 | prepositions | until; as far as |
 autour | A2 | prepositions | around |
 parmi | B1 | prepositions | among |
 malgré | B1 | prepositions | despite |
@@ -101,9 +101,9 @@ parce | A1 | conjunctions | because (parce que) |
 si | A1 | conjunctions | if; so; yes (after a negative) |
 comme | A1 | conjunctions | like; as |
 puis | A1 | conjunctions | then |
-que | A1 | conjunctions | that; than | qu'
-lorsque | A2 | conjunctions | when | lorsqu'
-puisque | A2 | conjunctions | since | puisqu'
+que | A1 | conjunctions | that; than |
+lorsque | A2 | conjunctions | when |
+puisque | A2 | conjunctions | since |
 pourtant | A2 | conjunctions | yet; however |
 ni | A2 | conjunctions | neither; nor |
 sinon | A2 | conjunctions | otherwise |
@@ -331,7 +331,7 @@ là | A1 | adverbs | there |
 maintenant | A1 | adverbs | now |
 oui | A1 | adverbs | yes |
 non | A1 | adverbs | no |
-ne | A1 | adverbs | not (ne … pas) | n'
+ne | A1 | adverbs | not (ne … pas) |
 pas | A1 | adverbs | not |
 alors | A1 | adverbs | then; so |
 vite | A1 | adverbs | quickly |
