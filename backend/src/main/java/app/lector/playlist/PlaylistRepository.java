@@ -12,6 +12,8 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
 
     long countByOwnerId(Long ownerId);
 
+    List<Playlist> findByOwnerIdAndLanguageAndTitle(Long ownerId, Language language, String title);
+
     /** The user's playlists in these languages, newest first. */
     @Query("""
             select p from Playlist p join fetch p.owner
