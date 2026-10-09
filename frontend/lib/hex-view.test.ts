@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { hexPath } from "./hex-grid";
-import { groundOf, tileKind, tileLayers, wordFontSize } from "./hex-view";
+import { fitTags, groundOf, tileKind, tileLayers, wordFontSize } from "./hex-view";
 import { layoutHexWorld, TILE } from "./hex-world";
 import type { VocabMapRegion, VocabMapWord } from "./types";
 import type { BandView } from "./vocab-map";
@@ -54,6 +54,30 @@ describe("groundOf", () => {
   it("is one full-size tile outline per point", () => {
     const pts = [{ x: 0, y: 0 }, { x: 30, y: 0 }];
     expect(groundOf(pts, true)).toBe(hexPath(pts[0], TILE, true) + hexPath(pts[1], TILE, true));
+  });
+});
+
+describe("fitTags", () => {
+  const spot = (id: string, x: number, y: number, weight: number, name = id) => ({ id, x, y, weight, name });
+
+  it("shows every tag in full when they are apart", () => {
+    const shown = fitTags([spot("a", 0, 0, 10), spot("b", 300, 0, 5)]);
+    expect([...shown.values()]).toEqual(["full", "full"]);
+  });
+
+  it("drops the smaller country's count first, then its whole tag, when tags would overlap", () => {
+    // Close enough that both counts can't fit, but the smaller one's name alone fits above the bigger tag.
+    const near = fitTags([spot("big", 0, 0, 100, "Core words"), spot("small", 0, -34, 10, "Society & News")]);
+    expect(near.get("big")).toBe("full");
+    expect(near.get("small")).toBe("name");
+    const on = fitTags([spot("big", 0, 0, 100, "Core words"), spot("small", 4, 2, 10, "Communication")]);
+    expect(on.get("small")).toBe("hidden");
+  });
+
+  it("splits names after \"&\" onto two lines, so a long name takes less room across", () => {
+    const sideBySide = (name: string) => fitTags([spot("big", 0, 0, 100, "Core words"), spot("small", 110, 0, 10, name)]).get("small");
+    expect(sideBySide("Food & Drink")).toBe("full");
+    expect(sideBySide("Communication and everything")).toBe("hidden");
   });
 });
 

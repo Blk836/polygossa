@@ -127,7 +127,8 @@ export function HexMap({ map, view, top, onTop, place, selected, go, onSelect, p
           )}
         </g>
       </svg>
-      <MapTags world={world} regions={map.regions} plan={plan} view={view} compact={viewport.width < COMPACT_BELOW_PX} pointed={pointed} />
+      <MapTags world={world} regions={map.regions} plan={plan} view={view} camera={at} viewport={viewport}
+        compact={viewport.width < COMPACT_BELOW_PX} pointed={pointed} />
       <BeyondTheCore count={map.beyondCore} world={world} />
       <Breadcrumb region={place.region} area={place.area} go={go} />
       <ZoomButtons onIn={() => zoomBy(ZOOM_STEP)} onOut={zoomOut} />

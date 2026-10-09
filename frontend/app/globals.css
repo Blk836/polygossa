@@ -310,7 +310,9 @@ span.s-spoken:not(.w) {
 }
 .map-tag .more {
   color: var(--muted);
-  text-shadow: 0 0 3px var(--card);
+  padding: 0 6px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--card) 80%, transparent);
 }
 .map-tag.country .more {
   max-height: 0;

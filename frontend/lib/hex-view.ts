@@ -36,6 +36,47 @@ export function groundOf(points: Point[], portrait: boolean): string {
   return points.map((p) => hexPath(p, TILE, portrait)).join("");
 }
 
+/** A country's name tag on a narrow map: where it sits on screen (its middle), and how much it matters (its size). */
+export interface TagSpot {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  weight: number;
+}
+
+/** A tag in full (name and count), its name alone, or left out. */
+export type TagShow = "full" | "name" | "hidden";
+
+/** Roughly how much room a compact tag takes, in screen pixels (11px names, a 10px count chip below). */
+const TAG = { letter: 6.3, line: 13, gap: 3, chip: { w: 56, h: 16 }, margin: 2 };
+
+interface Rect { left: number; top: number; right: number; bottom: number }
+
+function tagRect(s: TagSpot, show: TagShow): Rect {
+  const lines = s.name.split(" & ").map((l, i, all) => (i < all.length - 1 ? `${l} &` : l));
+  const w = Math.max(...lines.map((l) => l.length * TAG.letter), show === "full" ? TAG.chip.w : 0) + 2 * TAG.margin;
+  const h = lines.length * TAG.line + (show === "full" ? TAG.gap + TAG.chip.h : 0) + 2 * TAG.margin;
+  return { left: s.x - w / 2, right: s.x + w / 2, top: s.y - h / 2, bottom: s.y + h / 2 };
+}
+
+const overlaps = (a: Rect, b: Rect) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+
+/**
+ * Which country tags a narrow map can show without any two overlapping: the biggest countries' first, in full; a
+ * smaller one that would collide drops its count, and if its name still collides, is left out.
+ */
+export function fitTags(spots: TagSpot[]): Map<string, TagShow> {
+  const placed: Rect[] = [];
+  const out = new Map<string, TagShow>();
+  for (const s of [...spots].sort((a, b) => b.weight - a.weight)) {
+    const show = (["full", "name"] as const).find((v) => !placed.some((p) => overlaps(p, tagRect(s, v))));
+    if (show) placed.push(tagRect(s, show));
+    out.set(s.id, show ?? "hidden");
+  }
+  return out;
+}
+
 /** The width of a tile's writing space, and how wide a letter is for its size. */
 const WRITING = TILE * 1.7 * 0.95;
 const LETTER = 0.55;
