@@ -4,6 +4,7 @@ import app.lector.ai.AiAllowance;
 import app.lector.ai.AiTutor;
 import app.lector.token.Language;
 import app.lector.token.TokenizationService;
+import app.lector.translation.InContext;
 import app.lector.user.AuthUser;
 import app.lector.user.CurrentUser;
 import app.lector.user.PlanService;
@@ -45,16 +46,19 @@ public class DictionaryController {
 
     /**
      * Looks up a word or phrase: its meanings in the learner's own language, from other learners' saved meanings, else
-     * a machine translation (lingq-style-lookup.feature). Never calls the AI.
+     * a machine translation (lingq-style-lookup.feature). Never calls the AI. {@code before} and {@code after} are the
+     * text around the word in its sentence, for a word Amazon gives back unchanged (translation-in-context.feature).
      */
     @GetMapping
     public WordLookup lookup(@AuthenticationPrincipal AuthUser principal,
                              @RequestParam Language language,
-                             @RequestParam String term) {
+                             @RequestParam String term,
+                             @RequestParam(required = false) String before,
+                             @RequestParam(required = false) String after) {
         String surface = checked(term);
         User user = currentUser.load(principal);
         return meanings.lookup(language, user.getNativeLanguage(), TokenizationService.normalize(surface, language),
-                surface);
+                surface, InContext.of(before, surface, after));
     }
 
     /** The AI's explanation of a word, in the learner's language, when they ask for it (Pro). */

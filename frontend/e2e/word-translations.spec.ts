@@ -80,6 +80,24 @@ test.describe("the word popup", () => {
     await expect(page.getByTestId("dictionary-links").getByRole("link")).toHaveCount(3);
   });
 
+  // translation-in-context.feature: the lookup carries the text around the copy clicked, for an echoed word.
+  test("sends the text around the clicked copy of the word with its lookup", async ({ page }) => {
+    created = await createTextWith(page, (w) => `${w(2)} ${w(1)} ${w(3)} ${w(1)} ${w(4)}.`);
+    const asked: URLSearchParams[] = [];
+    await page.route("**/api/dictionary?*", (route) => {
+      asked.push(new URL(route.request().url()).searchParams);
+      return route.fulfill({ json: { term: created!.word(1), language: created!.language, meaningLanguage: "en", meanings: ["limping"], source: "machine" } });
+    });
+    await openReader(page, `/read/${created.id}`);
+    await article(page).getByText(created.word(1), { exact: true }).nth(1).click();
+
+    await expect(page.getByTestId("meanings")).toContainText("limping");
+    expect(asked).toHaveLength(1);
+    expect(asked[0].get("term")).toBe(created.word(1));
+    expect(asked[0].get("before")).toBe(`${created.word(2)} ${created.word(1)} ${created.word(3)} `);
+    expect(asked[0].get("after")).toBe(` ${created.word(4)}.`);
+  });
+
   test("shows no dictionary definitions, and the AI explains only when asked", async ({ page }) => {
     created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
     await lookupAnswer(page, created, { meanings: ["house"], source: "machine" });

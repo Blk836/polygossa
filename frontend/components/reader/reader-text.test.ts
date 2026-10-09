@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Token } from "@/lib/types";
-import { normalizePhrase, overlapping, sentenceHere, phraseMarks, phraseRange, readerStats, sentenceTexts, toParagraphs } from "./reader-text";
+import { normalizePhrase, overlapping, sentenceHere, phraseMarks, phraseRange, readerStats, sentenceTexts, textAround, toParagraphs } from "./reader-text";
 
 /** Builds tokens like the backend: words and separators, with sentence numbers. */
 function tokens(...parts: (string | [string, number])[]): Token[] {
@@ -195,5 +195,24 @@ describe("edge cases", () => {
 
   it("phrase ranges that start on a separator move to the next word", () => {
     expect(phraseRange(tokens("El", " ", "gato"), 1, 2)).toEqual({ start: 2, end: 2 });
+  });
+});
+
+// translation-in-context.feature: the text around the clicked word, sent with its lookup.
+describe("textAround", () => {
+  const t = tokens(["Fin", 0], [". ", 0], ["Un", 1], [" ", 1], ["os", 1], [",\n ", 1], ["un", 1], ["  ", 1], ["os", 1], [" !", 1], [" ", 2], ["Autre", 2]);
+
+  it("gives the clicked copy's sentence before and after it, whitespace collapsed", () => {
+    expect(textAround(t, 8, 8)).toEqual({ before: "Un os, un ", after: " !" });
+    expect(textAround(t, 4, 4)).toEqual({ before: "Un ", after: ", un os !" });
+  });
+
+  it("gives a phrase the text around the whole selection", () => {
+    expect(textAround(t, 2, 4)).toEqual({ before: "", after: ", un os !" });
+  });
+
+  it("is empty around a word that is its whole sentence", () => {
+    const one = tokens(["Hola", 0], [". ", 0], ["Pedro", 1]);
+    expect(textAround(one, 2, 2)).toEqual({ before: "", after: "" });
   });
 });

@@ -31,4 +31,18 @@ public interface MachineTranslationRepository extends JpaRepository<MachineTrans
             """, nativeQuery = true)
     int insertIfAbsent(@Param("source") String source, @Param("target") String target, @Param("term") String term,
                        @Param("translation") String translation, @Param("createdAt") Instant createdAt);
+
+    /**
+     * Records the in-context ask of a word stored as echoed: its meaning, or null when that gave nothing too. Only the
+     * first of two asks at once counts.
+     */
+    @Modifying
+    @Transactional
+    @Query(value = """
+            update machine_translations set translation = :translation, tried_in_context = true
+            where source_language = :source and target_language = :target and term = :term
+              and translation is null and not tried_in_context
+            """, nativeQuery = true)
+    int recordInContext(@Param("source") String source, @Param("target") String target, @Param("term") String term,
+                        @Param("translation") String translation);
 }
