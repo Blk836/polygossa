@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Token } from "@/lib/types";
-import { fitPages, splitPages, wordBreaks, type FitOptions, type WordBox } from "./reader-fit";
+import { fitPages, reservedBelow, splitPages, wordBreaks, type FitOptions, type WordBox } from "./reader-fit";
 
 const H = 38; // line height
 const L = 10; // words per line
@@ -127,5 +127,34 @@ describe("wordBreaks", () => {
   it("skips a paragraph that has no words", () => {
     const t = tokens("a", "* * *", "b");
     expect(wordBreaks([[t[0]], [t[1]], [t[2]]]).map((b) => [b.index, b.paragraphEnd])).toEqual([[0, true], [2, true]]);
+  });
+});
+
+describe("reservedBelow", () => {
+  const text = { left: 200, right: 1200 };
+  const bar = { top: 830, left: 0, right: 1440 };
+
+  it("keeps the text above the player bar, which spans the window", () => {
+    expect(reservedBelow(900, text, [bar])).toBe(70);
+  });
+
+  it("reserves nothing without anything docked at the bottom", () => {
+    expect(reservedBelow(900, text, [])).toBe(0);
+  });
+
+  it("keeps the text above a floating player that overlaps its column", () => {
+    const mini = { top: 600, left: 1064, right: 1424 };
+    expect(reservedBelow(900, text, [bar, mini])).toBe(300);
+  });
+
+  it("ignores a floating player that sits in the margin beside the text", () => {
+    const mini = { top: 600, left: 1220, right: 1580 };
+    expect(reservedBelow(900, text, [bar, mini])).toBe(70);
+  });
+
+  it("counts a player that only just touches the column as clear of it", () => {
+    expect(reservedBelow(900, text, [{ top: 600, left: 1200, right: 1560 }])).toBe(0);
+    expect(reservedBelow(900, text, [{ top: 600, left: 0, right: 200 }])).toBe(0);
+    expect(reservedBelow(900, text, [{ top: 600, left: 1199, right: 1560 }])).toBe(300);
   });
 });
