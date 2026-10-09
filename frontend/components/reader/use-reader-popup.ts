@@ -2,7 +2,7 @@
 
 import { useCallback, useState, type RefObject } from "react";
 import type { Token } from "@/lib/types";
-import { normalizePhrase, phraseRange, type Range } from "./reader-text";
+import { normalizePhrase, phraseRange, textAround, type Range } from "./reader-text";
 import type { PopupTarget } from "./word-popup";
 
 const MAX_PHRASE_WORDS = 12;
@@ -76,7 +76,8 @@ export function usePopupOpeners({ tokens, sentences, popup, reveal, autoSave, on
       const t = tokens[i];
       if (!t?.word) return;
       const sentence = sentences.get(t.sentence) ?? "";
-      open({ kind: "word", term: t.normalized!, display: t.text, reading: t.reading, sentence, startToken: i }, { start: i, end: i });
+      const around = textAround(tokens, i, i);
+      open({ kind: "word", term: t.normalized!, display: t.text, reading: t.reading, sentence, around, startToken: i }, { start: i, end: i });
       if (autoSaveWord) autoSave(t, sentence);
     },
     [tokens, sentences, open, autoSave],
@@ -94,7 +95,8 @@ export function usePopupOpeners({ tokens, sentences, popup, reveal, autoSave, on
       }
       const display = slice.map((t) => t.text).join("").replace(/\s+/g, " ").trim();
       const sentence = sentences.get(tokens[range.start].sentence) ?? "";
-      open({ kind: "phrase", term: normalizePhrase(display), display, sentence, startToken: range.start }, range);
+      const around = textAround(tokens, range.start, range.end);
+      open({ kind: "phrase", term: normalizePhrase(display), display, sentence, around, startToken: range.start }, range);
     },
     [tokens, sentences, openWord, open, onError],
   );

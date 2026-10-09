@@ -56,6 +56,22 @@ export function sentenceTexts(tokens: Token[]): Map<number, string> {
   return m;
 }
 
+/**
+ * The text of the sentence before and after tokens start..end (a word or phrase), whitespace collapsed, sent with its
+ * lookup so a word Amazon gives back unchanged can be asked inside its sentence (translation-in-context.feature).
+ */
+export interface TextAround {
+  before: string;
+  after: string;
+}
+
+export function textAround(tokens: Token[], start: number, end: number): TextAround {
+  const sentence = tokens[start]?.sentence;
+  const join = (from: number, to: number) =>
+    tokens.slice(from, to).filter((t) => t.sentence === sentence).map((t) => t.text).join("").replace(/\s+/g, " ");
+  return { before: join(0, start).trimStart(), after: join(end + 1, tokens.length).trimEnd() };
+}
+
 export interface ReaderStats {
   total: number;
   /** Known plus ignored: words the reader doesn't need to learn. */

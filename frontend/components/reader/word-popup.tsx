@@ -5,16 +5,23 @@ import { api, errorMessage } from "@/lib/api";
 import type { DictionaryResult, LanguageCode, WordLookup, WordStatus } from "@/lib/types";
 import { useMe } from "../me-context";
 import { UpgradeNote } from "../ui";
+import type { TextAround } from "./reader-text";
 import { AiExplanation, DictionaryLinks, ExtraActions, Meanings, PopupHeader, StatusButtons, type SentenceState } from "./popup-parts";
 
 const lookupCache = new Map<string, Promise<WordLookup>>();
 
-/** The word's meanings in the learner's language, kept for the page's life per word and native language. */
-function lookup(language: LanguageCode, term: string, nativeLanguage: string): Promise<WordLookup> {
+/**
+ * The word's meanings in the learner's language, kept for the page's life per word and native language. The text
+ * around it lets the backend ask a word Amazon gives back unchanged inside its sentence (translation-in-context.feature).
+ */
+function lookup(language: LanguageCode, term: string, nativeLanguage: string, around: TextAround): Promise<WordLookup> {
   const key = `${nativeLanguage}:${language}:${term}`;
   let p = lookupCache.get(key);
   if (!p) {
-    p = api<WordLookup>(`dictionary?${new URLSearchParams({ language, term })}`);
+    const params = new URLSearchParams({ language, term });
+    if (around.before) params.set("before", around.before);
+    if (around.after) params.set("after", around.after);
+    p = api<WordLookup>(`dictionary?${params}`);
     p.catch(() => lookupCache.delete(key));
     lookupCache.set(key, p);
   }
@@ -27,6 +34,8 @@ export interface PopupTarget {
   display: string; // as written in the text
   reading?: string;
   sentence: string;
+  /** The sentence's text before and after it. */
+  around: TextAround;
   startToken: number;
 }
 
@@ -80,7 +89,7 @@ export function WordPopup(props: Props) {
 
   useEffect(() => {
     let cancelled = false;
-    lookup(language, target.kind === "word" ? target.display : target.term, me.nativeLanguage)
+    lookup(language, target.kind === "word" ? target.display : target.term, me.nativeLanguage, target.around)
       .then((r) => {
         if (cancelled) return;
         setResult(r);
