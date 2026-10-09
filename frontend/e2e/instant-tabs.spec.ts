@@ -34,10 +34,11 @@ async function hold(page: Page, matches: (url: URL, route: Route) => boolean) {
 }
 
 const tab = (page: Page, name: string) => page.getByRole("link", { name, exact: true });
+const card = (page: Page, title: string) => page.locator("main article").filter({ hasText: title });
 
 async function openLibrary(page: Page, title: string) {
   await page.goto("/library");
-  await expect(page.getByText(title)).toBeVisible();
+  await expect(card(page, title)).toBeVisible();
 }
 
 async function goToExplore(page: Page) {
@@ -68,8 +69,8 @@ test("a tab already seen shows its last content at once while it refreshes", asy
   const release = await hold(page, (url) => url.pathname === "/api/texts");
 
   await tab(page, "My library").click();
-  await expect(page.getByText(title)).toBeVisible({ timeout: 2000 });
-  await expect(page.locator("main").getByTestId("spinner")).toHaveCount(0);
+  await expect(card(page, title)).toBeVisible({ timeout: 2000 });
+  await expect(page.locator("main [data-testid=spinner]:visible")).toHaveCount(0);
   release();
 });
 
@@ -83,7 +84,7 @@ test("the refresh brings a remembered tab up to date", async ({ page }) => {
 
   await tab(page, "My library").click();
   await expect(page.getByRole("heading", { name: "My library" })).toBeVisible();
-  await expect(page.getByText(title)).toHaveCount(0);
+  await expect(card(page, title)).toHaveCount(0);
 });
 
 test("a change made on a page is kept for the next visit", async ({ page }) => {
@@ -91,15 +92,15 @@ test("a change made on a page is kept for the next visit", async ({ page }) => {
   const { title } = await createText(page);
   await openLibrary(page, title);
   page.once("dialog", (d) => void d.accept());
-  await page.getByTestId("card-grid").locator("article").filter({ hasText: title }).getByRole("button", { name: "Delete" }).click();
-  await expect(page.getByText(title)).toHaveCount(0);
+  await card(page, title).getByRole("button", { name: "Delete" }).click();
+  await expect(card(page, title)).toHaveCount(0);
   ownText = null;
   await goToExplore(page);
   const release = await hold(page, (url) => url.pathname === "/api/texts");
 
   await tab(page, "My library").click();
   await expect(page.getByRole("heading", { name: "My library" })).toBeVisible();
-  await expect(page.getByText(title)).toHaveCount(0);
+  await expect(card(page, title)).toHaveCount(0);
   release();
 });
 
@@ -126,6 +127,6 @@ test("a reload shows nothing remembered", async ({ page }) => {
   await page.reload();
   await expect(page.getByRole("heading", { name: "My library" })).toBeVisible();
   await expect(page.locator("main").getByTestId("spinner")).toBeVisible();
-  await expect(page.getByText(title)).toHaveCount(0);
+  await expect(card(page, title)).toHaveCount(0);
   release();
 });
