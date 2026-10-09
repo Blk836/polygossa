@@ -26,6 +26,20 @@ export function fitCircle(circle: Circle, viewport: Size, margin: number): Camer
   return { x: circle.x, y: circle.y, k };
 }
 
+/** A rectangle in world units: its top-left corner and size. */
+export interface Box {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/** The camera that shows this box as large as the viewport allows, with a margin around it. */
+export function fitBox(box: Box, viewport: Size, margin: number): Camera {
+  const k = Math.min(viewport.width / box.w, viewport.height / box.h) / (1 + margin);
+  return { x: box.x + box.w / 2, y: box.y + box.h / 2, k };
+}
+
 /** The SVG transform that draws the world through this camera. */
 export function toTransform(cam: Camera, viewport: Size): string {
   const r = (v: number) => Math.round(v * 100) / 100;
