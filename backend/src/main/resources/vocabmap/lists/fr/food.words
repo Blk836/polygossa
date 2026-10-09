@@ -16,7 +16,7 @@ carotte | A1 | fruit-veg | carrot | carottes
 citron | A2 | fruit-veg | lemon | citrons
 raisin | A2 | fruit-veg | grape | raisins
 cerise | A2 | fruit-veg | cherry | cerises
-pêche | A2 | fruit-veg | peach; fishing | pêches
+pêche | A2 | fruit-veg | peach | pêches
 ananas | A2 | fruit-veg | pineapple |
 melon | A2 | fruit-veg | = | melons
 oignon | A2 | fruit-veg | onion | oignons
@@ -45,7 +45,7 @@ céleri | B1 | fruit-veg | celery |
 radis | B1 | fruit-veg | radish |
 maïs | B1 | fruit-veg | corn |
 lentille | B1 | fruit-veg | lentil | lentilles
-avocat | B1 | fruit-veg | avocado; lawyer | avocats
+avocat | B1 | fruit-veg | avocado | avocats
 olive | B1 | fruit-veg | = | olives
 citrouille | B1 | fruit-veg | pumpkin | citrouilles
 bio | B1 | fruit-veg | organic |
@@ -101,7 +101,7 @@ crêpe | B1 | meat-fish | pancake | crêpes
 sandwich | B1 | meat-fish | = | sandwichs sandwiches
 frites | B1 | meat-fish | chips; fries |
 pizza | B1 | meat-fish | = | pizzas
-glace | A2 | meat-fish | ice cream; ice; mirror | glaces
+glace | A2 | meat-fish | ice cream | glaces
 sauce | B1 | meat-fish | = | sauces
 
 # --- Cooking & eating ---

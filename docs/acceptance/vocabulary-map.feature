@@ -118,9 +118,9 @@ Feature: Vocabulary map on Progress
     Then a panel shows "pomme", its meaning "apple", its band (A1) and my status
 
   Scenario: The meaning matches the area the word is in
-    Given "glace" is in Home › Rooms & furniture in the French list
+    Given "glace" is in Food & Drink › Meat, fish & basics in the French list
     When I tap it
-    Then its meaning is "mirror", not "ice cream"
+    Then its meaning is "ice cream", not "mirror" or "ice"
 
   Scenario: My own saved meaning wins
     Given I saved "pomme" in the reader with my own meaning "apple (fruit)"

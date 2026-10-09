@@ -151,6 +151,15 @@ class VocabMapApiTest {
     }
 
     @Test
+    void theMeaningIsTheSenseOfTheAreaTheWordIsIn() throws Exception {
+        JsonNode map = map("fr");
+        assertThat(word(map, "glace").get("meaning").asString()).isEqualTo("ice cream");
+        assertThat(word(map, "avocat").get("meaning").asString()).isEqualTo("avocado");
+        assertThat(area(map, "meat-fish").get("words")).anySatisfy(w ->
+                assertThat(w.get("term").asString()).isEqualTo("glace"));
+    }
+
+    @Test
     void myOwnSavedMeaningWins() throws Exception {
         save("pomme", "learning", "apple (fruit)");
         assertThat(word(map("fr"), "pomme").get("meaning").asString()).isEqualTo("apple (fruit)");
