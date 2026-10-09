@@ -1,8 +1,8 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { addSyncedAudio, article, cleanUp, createText, openReader, PER_SENTENCE, player, setReaderCookie, wordAt, type Created } from "./reader-helpers";
 
-// docs/acceptance/follow-along-marker.feature: while audio plays, the spoken sentence is tinted and a marker slides
-// under the spoken word. 40 words over 12 seconds of audio: a word every 0.3 s.
+// docs/acceptance/follow-along-marker.feature and reader-count-and-follow.feature: while audio plays, a marker slides
+// under the spoken word, and with "Follow along" set to include it, the spoken sentence is tinted. 40 words over 12 seconds of audio: a word every 0.3 s.
 
 let created: Created | null = null;
 
@@ -38,6 +38,9 @@ async function recordMoves(page: Page) {
 
 const moves = (page: Page) => page.evaluate(() => (window as unknown as { __moves: Move[] }).__moves);
 const clearMoves = (page: Page) => page.evaluate(() => ((window as unknown as { __moves: Move[] }).__moves = []));
+
+/** The reader cookie for Follow along: Word and sentence (the tint is off by default). */
+const BOTH = "follow%3Dboth";
 
 const marker = (page: Page) => page.getByTestId("follow-marker");
 const speaking = (page: Page) => article(page).locator(".w-speaking");
@@ -141,12 +144,14 @@ test.describe("the word marker", () => {
   });
 
   test("stays on the word when paused, and goes with the tint when the player closes", async ({ page }) => {
+    await setReaderCookie(page, BOTH);
     await openWithAudio(page);
     await playThenPause(page);
     const index = await speaking(page).getAttribute("data-i");
     await page.waitForTimeout(1000);
     await expect(speaking(page)).toHaveAttribute("data-i", index!);
     await expectMarkerUnder(page, speaking(page));
+    await expect(article(page).locator(".s-spoken").first()).toBeVisible();
     await player(page).getByRole("button", { name: "Close player" }).click();
     await expect(marker(page)).toHaveCount(0);
     await expect(article(page).locator(".s-spoken")).toHaveCount(0);
@@ -185,6 +190,8 @@ test.describe("the word marker", () => {
 });
 
 test.describe("the sentence tint", () => {
+  test.beforeEach(({ page }) => setReaderCookie(page, BOTH)); // off by default
+
   test("tints the sentence being spoken, behind words without colour, and nothing else", async ({ page }) => {
     await openWithAudio(page);
     const c = created!;
@@ -230,12 +237,38 @@ test.describe("choosing what to show", () => {
     await expect(page.getByRole("dialog", { name: "Reader settings" }).getByLabel("Follow along")).toHaveValue("sentence");
   });
 
-  test("defaults to sentence and word", async ({ page }) => {
+  test("defaults to the word only: no sentence is tinted, so coming words keep their colours", async ({ page }) => {
     await setReaderCookie(page, "");
     await openWithAudio(page);
     await playThenPause(page);
+    await expectMarkerUnder(page, speaking(page));
+    await expect(article(page).locator(".s-spoken")).toHaveCount(0);
+    expect(await background(wordAt(page, PER_SENTENCE + 1))).toBe(await tokenColour(page, "--w-new"));
+  });
+
+  test("offers Word, Word and sentence, and Sentence; Word and sentence shows both, and is remembered", async ({ page }) => {
+    await setReaderCookie(page, "");
+    await openWithAudio(page);
+    await page.getByRole("button", { name: "Reader settings" }).click();
+    const follow = page.getByRole("dialog", { name: "Reader settings" }).getByLabel("Follow along");
+    await expect(follow.locator("option")).toHaveText(["Word", "Word and sentence", "Sentence"]);
+    await follow.selectOption({ label: "Word and sentence" });
+    await page.keyboard.press("Escape");
+    await page.getByRole("button", { name: "Reader settings" }).blur();
+    await playThenPause(page);
     await expect(article(page).locator(".s-spoken").first()).toBeVisible();
     await expectMarkerUnder(page, speaking(page));
+    await openReader(page, `/read/${created!.id}`);
+    await page.getByRole("button", { name: "Reader settings" }).click();
+    await expect(page.getByRole("dialog", { name: "Reader settings" }).getByLabel("Follow along")).toHaveValue("both");
+  });
+
+  test("a Sentence choice saved before the word-only default still shows the tint without the marker", async ({ page }) => {
+    await setReaderCookie(page, "word%3D0");
+    await openWithAudio(page);
+    await playThenPause(page);
+    await expect(article(page).locator(".s-spoken").first()).toBeVisible();
+    await expect(marker(page)).toHaveCount(0);
   });
 });
 
