@@ -1,7 +1,7 @@
 // The vocabulary map's island world (vocabulary-map.feature): one island per region at a fixed place in a fixed sea, so
 // the map looks like the same world in every language; a province per area inside it, sized by its words; a dot per
 // word; and which labels to write at the current zoom. Pure and unit-tested; components/progress/island-map.tsx draws it.
-import { visibleRect, type Camera, type Rect, type Size } from "./map-camera";
+import { fitCircle, visibleRect, type Camera, type Limits, type Rect, type Size } from "./map-camera";
 import { blobPath, enclose, hashSeed, packCircles, sunflower, type Circle, type Point } from "./map-geometry";
 import type { VocabMapArea, VocabMapRegion, VocabMapWord } from "./types";
 
@@ -115,6 +115,23 @@ export function layoutWorld(regions: VocabMapRegion[]): World {
   const drafts = regions.map((r) => draft(r, slot(r.id, RING.includes(r.id) || r.id === "core" ? 0 : spare++)));
   const scale = fitScale(drafts);
   return { ...WORLD, islands: drafts.map((d) => island(d, scale)) };
+}
+
+/** Room left around an island or province the map is zoomed into, as a share of its size. */
+export const PLACE_MARGIN = 0.06;
+
+/** How far the map zooms: out to the whole world, in to its smallest province. */
+export function zoomLimits(world: World, viewport: Size): Limits {
+  const kMin = Math.min(viewport.width / world.width, viewport.height / world.height);
+  const smallest = Math.min(...world.islands.flatMap((i) => i.provinces.map((p) => p.circle.r)));
+  return { kMin, kMax: Math.max(kMin, fitCircle({ x: 0, y: 0, r: smallest }, viewport, PLACE_MARGIN).k) };
+}
+
+/** The island ("?map=food") or province ("food/fruit-veg") a place shows, or null for the whole world. */
+export function placeCircle(world: World, regionId: string | null, areaId: string | null): Circle | null {
+  const isle = world.islands.find((i) => i.region.id === regionId);
+  if (!isle) return null;
+  return isle.provinces.find((p) => p.area.id === areaId)?.circle ?? isle.circle;
 }
 
 export interface Dot extends Point {

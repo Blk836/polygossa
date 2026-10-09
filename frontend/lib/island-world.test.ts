@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { fitCircle, type Camera } from "./map-camera";
-import { BEYOND, labelPlan, layoutWorld, provinceDots, WORLD, type World } from "./island-world";
+import {
+  BEYOND,
+  labelPlan,
+  layoutWorld,
+  PLACE_MARGIN,
+  placeCircle,
+  provinceDots,
+  WORLD,
+  zoomLimits,
+  type World,
+} from "./island-world";
 import type { VocabMapRegion, VocabMapWord } from "./types";
 
 const IDS = ["people", "body", "food", "home", "shopping", "travel", "work", "nature", "time", "mind", "leisure", "society",
@@ -139,5 +149,30 @@ describe("labelPlan", () => {
     expect(out.provinces.has(province.area.id)).toBe(false);
     expect(out.islands.has("people")).toBe(false);
     expect(out.provinces.has("people-0")).toBe(false);
+  });
+});
+
+describe("zoomLimits and placeCircle", () => {
+  const viewport = { width: 800, height: 500 };
+
+  it("zooms out to the whole world and in to the smallest province", () => {
+    const { kMin, kMax } = zoomLimits(world, viewport);
+    expect(kMin).toBeCloseTo(Math.min(800 / WORLD.width, 500 / WORLD.height));
+    const smallest = Math.min(...world.islands.flatMap((i) => i.provinces.map((p) => p.circle.r)));
+    expect(kMax).toBeCloseTo(fitCircle({ x: 0, y: 0, r: smallest }, viewport, PLACE_MARGIN).k);
+  });
+
+  it("never lets the inner limit fall below the outer one", () => {
+    const tiny = layoutWorld([{ id: "core", name: "Core", areas: [{ id: "a", name: "A", words: words("a", 5000) }] }]);
+    const { kMin, kMax } = zoomLimits(tiny, { width: 4000, height: 4000 });
+    expect(kMax).toBeGreaterThanOrEqual(kMin);
+  });
+
+  it("finds the island or province a place points at, or nothing for the whole map", () => {
+    expect(placeCircle(world, "food", null)).toEqual(world.islands[2].circle);
+    expect(placeCircle(world, "food", "food-1")).toEqual(world.islands[2].provinces[1].circle);
+    expect(placeCircle(world, "food", "nope")).toEqual(world.islands[2].circle);
+    expect(placeCircle(world, null, null)).toBeNull();
+    expect(placeCircle(world, "nope", null)).toBeNull();
   });
 });
