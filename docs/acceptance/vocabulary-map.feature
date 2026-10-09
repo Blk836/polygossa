@@ -13,7 +13,7 @@ Feature: Vocabulary map on Progress
     band      = the CEFR level a word belongs to: A1 (~500 words), A2 (~1,000), B1 (~2,000), B2 (~4,000),
                 C1 (~8,000); each band includes the words of the bands below it
     known     = I marked the word known in the reader or in Vocabulary (green); learning = yellow; new = no entry
-    coverage  = known words / words in the tile (for the bands shown)
+    coverage  = known words / words in an island or province (for the bands shown)
 
   MVP: the blueprint, and one word list: French, A1 to B1 (~2,000 words), with English meanings. Other target
   languages, other native languages' meanings, and the B2 and C1 bands come later and are data only: adding them
@@ -46,21 +46,61 @@ Feature: Vocabulary map on Progress
     Then I see a "Vocabulary map" section above the period comparison
     And all the cards Progress has today are still there
 
-  Scenario: Zoomed out, I see every region with its coverage
+  # The map is a drawn island world (October 2026, replacing the first release's grid of tiles): one sea, one island
+  # per region, provinces inside each island for its areas, and a dot for every word.
+
+  Scenario: Zoomed out, I see an island world with one island per region
     Given I know 120 of the 500 French A1 words, 40 of them in Food & Drink
     When I look at the map zoomed out
-    Then I see all 14 regions as tiles
-    And each tile is shaded by its coverage and shows "known / total", e.g. "40 / 62"
+    Then I see a sea with 14 islands, one per region, each labelled with its name and "known / total", e.g. "40 / 62"
+    And every island is coloured by how much of it I know: pale when little is known, rich green when most is
+    And bigger regions are bigger islands (an island's size follows how many words it holds)
+    And the islands sit in the same places in every language, so the map always looks like the same world
     And the map's header shows my overall coverage for the bands shown, e.g. "120 / 500 core words"
 
-  Scenario: I zoom into a region, then an area, then back out
-    When I tap the Food & Drink region
-    Then the map zooms into Food & Drink and shows its areas, each with its own coverage
-    When I tap the "Fruit & vegetables" area
-    Then I see that area's words as tiles: known in green, learning in yellow, new in plain
+  Scenario: Islands are split into provinces, and provinces into word dots
+    When I look at an island
+    Then it is divided into provinces, one per area, each coloured by its own coverage
+    And inside each province every word is a small dot: green when known, yellow when learning, grey when new
+    And the next band's words are faint outlined dots
+    And from far away the dots read as texture; up close each dot has its word written beside it
+
+  Scenario: I zoom by tapping, and the camera glides
+    When I tap the Food & Drink island
+    Then the view glides in until Food & Drink fills the map, and its provinces' names and counts appear
+    When I tap the "Fruit & vegetables" province
+    Then the view glides in until that province fills the map, and every word dot shows its word
     And a breadcrumb reads "Map › Food & Drink › Fruit & vegetables"
-    When I tap "Map" in the breadcrumb, or press Back in the browser
-    Then I go back out one level at a time, to where I was
+    When I tap "Map" in the breadcrumb, the zoom-out button, or press Back in the browser
+    Then the view glides back out one level at a time, to where I was
+
+  Scenario: I can also pan and zoom freely
+    When I scroll the mouse wheel over the map, or pinch on a touch screen
+    Then the map zooms in or out around that point, between the whole world and a single province
+    When I drag the map
+    Then it pans, and stops at the edge of the world
+    And scrolling the page outside the map, or with the map zoomed fully out, still scrolls the page
+
+  Scenario: Beyond the core is the uncharted sea
+    Given I know 640 French words that are not in the list
+    Then the sea shows "Beyond the core: 640 words" at the edge of the world
+    And tapping it opens Vocabulary filtered to my known words
+
+  Scenario: Reduced motion
+    Given my device asks for reduced motion
+    When I tap an island or a province
+    Then the view jumps straight there instead of gliding
+
+  Scenario: The map can be used without a mouse and with a screen reader
+    When I move through the map with the Tab key
+    Then each island, then each province, then each word can be focused and opened with Enter
+    And each one is announced with its name and count, e.g. "Food & Drink: 40 of 62 known"
+
+  Scenario: Drawing all the words stays smooth
+    Given the French list's 2,300 words up to B1 are shown
+    When I zoom and pan
+    Then the map keeps moving smoothly on a mid-range phone
+    And no new libraries are added: the map is drawn by the app itself
 
   Scenario: The zoom level is in the address, so I can share or reload it
     Given I am zoomed into "Food & Drink › Fruit & vegetables"
@@ -75,7 +115,7 @@ Feature: Vocabulary map on Progress
 
   Scenario: Learning words count separately from known ones
     Given an area has 20 words: 5 known, 3 learning and 12 new
-    Then its tile shows "5 / 20" and a smaller "3 learning" marker
+    Then its province shows "5 / 20" and a smaller "3 learning" marker
     And only known words count towards coverage
 
   Scenario: Ignored words leave the totals
@@ -88,9 +128,9 @@ Feature: Vocabulary map on Progress
   Scenario: The map shows my band and the next one
     Given my Reading level is A2
     When I open the map
-    Then tiles count the A1 and A2 words, and coverage is for those
-    And the B1 words show faintly as "next band": each tile says e.g. "+18 at B1"
-    And inside an area, B1 words appear as faint tiles after the A1 and A2 words
+    Then islands and provinces count the A1 and A2 words, and coverage is for those
+    And the B1 words show faintly as "next band": each island and province says e.g. "+18 at B1"
+    And inside a province, B1 words appear as faint outlined dots
 
   Scenario: A learner with no level yet starts at A1
     Given I have no Reading level
@@ -98,7 +138,7 @@ Feature: Vocabulary map on Progress
 
   Scenario: I can pick which bands the map counts
     When I choose "Up to B1" in the map's band picker
-    Then every tile and the header count the A1, A2 and B1 words
+    Then every island, province and the header count the A1, A2 and B1 words
     And my choice is remembered on this device
 
   Scenario: A band with no list yet is not offered
@@ -108,13 +148,13 @@ Feature: Vocabulary map on Progress
 
   Scenario: Words outside the list still count
     Given I know 900 French words and 640 of them are not in the list (names, rare words, slang)
-    Then the map shows a "Beyond the core: 640 words" tile
+    Then the map shows "Beyond the core: 640 words" (the uncharted sea)
     And tapping it opens Vocabulary filtered to my known words
 
   # --- A word on the map ---
 
   Scenario: Tapping a word shows its meaning
-    When I tap the word "pomme" in Fruit & vegetables
+    When I tap the word dot "pomme" in Fruit & vegetables
     Then a panel shows "pomme", its meaning "apple", its band (A1) and my status
 
   Scenario: The meaning matches the area the word is in
@@ -163,16 +203,16 @@ Feature: Vocabulary map on Progress
 
   Scenario: Brand new learner
     Given I know no French words yet
-    Then every tile shows "0 / total" and the map says "Words you learn while reading fill in the map"
+    Then every island shows "0 / total" and the map says "Words you learn while reading fill in the map"
 
   Scenario: No target language picked
     Given I have no target language
-    Then the map asks me to pick a language instead of showing tiles
+    Then the map asks me to pick a language instead of showing the islands
 
   Scenario: The map works on a phone
     Given a 390 px wide screen
-    Then the tiles wrap to fit the width, with no sideways scrolling
-    And every tile and word is large enough to tap
+    Then the map fills the card's width, with no sideways page scrolling, and pinch zooms it
+    And at province zoom every word is large enough to tap
 
   Scenario: The map loads quickly for a large vocabulary
     Given I have 30,000 vocabulary entries in French
