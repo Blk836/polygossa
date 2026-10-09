@@ -26,6 +26,12 @@ export const OPENAI_SECRET = "polygossa/openai-api-key";
  */
 export const STRIPE_SECRET = "polygossa/stripe-secret-key";
 export const STRIPE_WEBHOOK_SECRET = "polygossa/stripe-webhook-secret";
+/**
+ * The webhook secret's name ends in a hyphen and six characters ("-secret"), which Secrets Manager reads as the random
+ * suffix of a complete ARN, so it can't be referenced by name: it is referenced by its complete ARN, whose suffix this
+ * is (from `aws secretsmanager describe-secret`; it changes only if the secret is deleted and made again).
+ */
+export const STRIPE_WEBHOOK_SECRET_ARN_SUFFIX = "jABTGF";
 
 export interface ProductionProps extends cdk.StackProps {
   /** CloudFront's origin-facing prefix list; looked up in the account when absent (tests pass one). */
