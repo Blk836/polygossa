@@ -100,9 +100,15 @@ Feature: Local checks: the full suites run on the developer's PC, not on GitHub 
     When a pull request is opened or updated
     Then no check job runs on GitHub and no CI minutes are used for it
 
-  Scenario: Merging to main is deployed from the PC
+  # Changed October 2026 (cheap mode): merges are no longer deployed by default, to save AWS and build costs.
+  Scenario: Merging to main is not deployed unless asked
     When a pull request is merged to main
-    Then the session deploys main from the PC (local-deploy.feature), and GitHub runs nothing
+    Then nothing is deployed and GitHub runs nothing; the change is tried on the local app
+    And production keeps running the last deployed main until the user asks for a deploy
+
+  Scenario: Deploying when the user asks
+    When the user asks for a deploy
+    Then the session deploys the latest main from the PC (local-deploy.feature)
     And the checks are not run again
 
   Scenario: GitHub can still run the checks when asked
