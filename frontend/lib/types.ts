@@ -149,11 +149,19 @@ export interface DictionaryResult {
   lemma?: string | null;
   source?: string | null;
   sourceUrl?: string | null;
-  /** The word in the learner's native language (empty when none was found); absent or null for English speakers. */
-  translations?: string[] | null;
-  translationLanguage?: string | null;
-  /** Where the translations came from: other learners' saved meanings, the dictionary, or machine translation. */
-  translationSource?: "community" | "dictionary" | "machine" | null;
+}
+
+/** What the word popup shows for a word or phrase: its meanings in the learner's own language. */
+export interface WordLookup {
+  /** The word's normalized key, as saved words keep it. */
+  term: string;
+  language: LanguageCode;
+  /** Empty when there is none to show yet. */
+  meanings: string[];
+  /** The learner's native language; null when they are reading it. */
+  meaningLanguage: string | null;
+  /** Other learners' saved meanings, or a machine translation; null without meanings. */
+  source: "community" | "machine" | null;
 }
 
 export interface VocabularyEntry {

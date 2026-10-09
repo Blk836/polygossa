@@ -1,6 +1,6 @@
-// Native-language translations in dictionary results: the setting's choices, the popup's line and what a saved word
-// keeps. Pure helpers, unit-tested.
-import type { DictionaryResult } from "./types";
+// Meanings in the learner's own language: the native-language setting's choices, the word popup's meaning line, what a
+// saved word keeps, and links out to dictionaries (lingq-style-lookup.feature). Pure helpers, unit-tested.
+import type { WordLookup } from "./types";
 
 export interface NativeLanguage {
   code: string;
@@ -37,39 +37,53 @@ export function browserNativeLanguage(tag: string | undefined): string {
   return NATIVE_LANGUAGES.some((l) => l.code === base) ? base : "en";
 }
 
-/**
- * The popup's translation line, or null when there is none to show (English speakers; words nothing was found for).
- * A word no dictionary has can still have one: other learners' meanings or a machine translation.
- */
-export function translationLine(result: DictionaryResult): { label: string; text: string; missing: boolean } | null {
-  if (!result.translations || !result.translationLanguage) return null;
-  if (!result.found && result.translations.length === 0) return null;
-  const label = NATIVE_LANGUAGES.find((l) => l.code === result.translationLanguage)?.name ?? result.translationLanguage;
-  if (result.translations.length === 0) return { label, text: `No ${label} translation found`, missing: true };
-  return { label, text: result.translations.join(", "), missing: false };
+function languageLabel(code: string): string {
+  return NATIVE_LANGUAGES.find((l) => l.code === code)?.name ?? code;
 }
 
-/** Where the translations came from, when that is worth saying: other learners, or a machine. */
-export function translationNote(result: DictionaryResult): string | null {
-  if (!result.translations?.length) return null;
-  if (result.translationSource === "community") return "saved by other learners";
-  if (result.translationSource === "machine") return "machine translation";
+/** The popup's meaning line, or null when the learner is reading their own language (nothing to translate). */
+export function meaningLine(lookup: WordLookup): { label: string; text: string; missing: boolean } | null {
+  if (!lookup.meaningLanguage) return null;
+  const label = languageLabel(lookup.meaningLanguage);
+  if (lookup.meanings.length === 0) return { label, text: `No ${label} meaning yet`, missing: true };
+  return { label, text: lookup.meanings.join(", "), missing: false };
+}
+
+/** Where the meanings came from: other learners, or a machine. */
+export function meaningNote(lookup: WordLookup): string | null {
+  if (lookup.meanings.length === 0) return null;
+  if (lookup.source === "community") return "saved by other learners";
+  if (lookup.source === "machine") return "machine translation";
   return null;
 }
 
 /** The own-language meaning a saved word keeps: the first one shown. */
-export function savedMeaning(result: DictionaryResult): string | undefined {
-  return result.translations?.[0];
+export function savedMeaning(lookup: WordLookup | null): string | undefined {
+  return lookup?.meanings[0];
 }
 
-/** Whether a lookup gave anything worth saving with the word: a dictionary entry or a translation. */
-export function hasDetails(result: DictionaryResult | null): boolean {
-  return !!result && (result.found || !!result.translations?.length);
+/** WordReference's dictionaries between two of these, either way round. */
+const WORD_REFERENCE_CORE = ["en", "es", "fr", "it", "pt", "de"];
+/** And its English dictionaries for these, either way round. */
+const WORD_REFERENCE_ENGLISH = ["nl", "sv", "ru", "pl", "tr", "ar", "ja", "zh", "ko"];
+
+function hasWordReference(from: string, to: string): boolean {
+  if (WORD_REFERENCE_CORE.includes(from) && WORD_REFERENCE_CORE.includes(to)) return true;
+  return (from === "en" && WORD_REFERENCE_ENGLISH.includes(to)) || (to === "en" && WORD_REFERENCE_ENGLISH.includes(from));
 }
 
-/** The definition a saved word keeps: its translations first, then the first two English senses. */
-export function savedDefinition(result: DictionaryResult): string {
-  const english = result.senses.slice(0, 2).map((s) => s.definition).join("; ");
-  const native = (result.translations ?? []).join(", ");
-  return [native, english].filter(Boolean).join(" — ");
+/**
+ * Full dictionaries on their own websites, from the text's language into the learner's (into English when they are
+ * reading their own language, or Spanish for English read by an English speaker): Google Translate and DeepL always,
+ * WordReference where it has the pair.
+ */
+export function dictionaryLinks(language: string, nativeLanguage: string, term: string): { name: string; url: string }[] {
+  const to = nativeLanguage !== language ? nativeLanguage : language === "en" ? "es" : "en";
+  const word = encodeURIComponent(term);
+  const links = [
+    { name: "Google Translate", url: `https://translate.google.com/?sl=${language}&tl=${to}&text=${word}&op=translate` },
+    { name: "DeepL", url: `https://www.deepl.com/translator#${language}/${to}/${word}` },
+  ];
+  if (hasWordReference(language, to)) links.push({ name: "WordReference", url: `https://www.wordreference.com/${language}${to}/${word}` });
+  return links;
 }

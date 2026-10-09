@@ -1,21 +1,13 @@
 import { expect, test, type Page } from "@playwright/test";
 import { article, cleanUp, createTextWith, openReader, type Created } from "./reader-helpers";
 
-// docs/acceptance/word-translations.feature: meanings other learners saved and machine translations in the word
-// popup, and the own-language meaning a saved word keeps. The lookups are answered in the browser: the e2e backend
-// has no machine translation and the shared test account's native language is English.
+// docs/acceptance/lingq-style-lookup.feature and word-translations.feature: the word popup's meaning line, dictionary
+// links and AI explanation, and the own-language meaning a saved word keeps. Lookups are answered in the browser: the
+// e2e backend has no machine translation. The shared test account's native language is English (every feature on).
 
 function lookupAnswer(page: Page, created: Created, extra: Record<string, unknown>) {
-  const term = created.word(1);
   return page.route("**/api/dictionary?*", (route) =>
-    route.fulfill({
-      json: {
-        term, language: created.language, found: true, pronunciation: null, lemma: null, source: "Free Dictionary API (Wiktionary)", sourceUrl: null,
-        senses: [{ partOfSpeech: "noun", definition: "dog", examples: [] }],
-        translationLanguage: "es",
-        ...extra,
-      },
-    }),
+    route.fulfill({ json: { term: created.word(1), language: created.language, meaningLanguage: "en", ...extra } }),
   );
 }
 
@@ -28,6 +20,11 @@ function vocabularyWrites(page: Page): Record<string, unknown>[] {
   return sent;
 }
 
+async function openWord(page: Page, created: Created) {
+  await openReader(page, `/read/${created.id}`);
+  await article(page).getByText(created.word(1), { exact: true }).click();
+}
+
 test.describe("the word popup", () => {
   let created: Created | null = null;
   test.afterEach(async ({ page }) => {
@@ -37,49 +34,73 @@ test.describe("the word popup", () => {
 
   test("shows meanings other learners saved, saves the first, and a click picks another", async ({ page }) => {
     created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
-    await lookupAnswer(page, created, { translations: ["perro", "can"], translationSource: "community" });
+    await lookupAnswer(page, created, { meanings: ["home", "house"], source: "community" });
     const sent = vocabularyWrites(page);
-    await openReader(page, `/read/${created.id}`);
-    await article(page).getByText(created.word(1), { exact: true }).click();
+    await openWord(page, created);
 
-    const line = page.getByTestId("translations");
-    await expect(line).toContainText("Spanish");
+    const line = page.getByTestId("meanings");
+    await expect(line).toContainText("English");
+    await expect(line).toContainText("home, house");
     await expect(line).toContainText("saved by other learners");
-    await expect(line.getByRole("button", { name: "perro" })).toHaveAttribute("aria-pressed", "true");
-    await expect.poll(() => sent.some((b) => b.meaning === "perro" && b.definition === "perro, can — dog")).toBe(true);
+    await expect(line.getByRole("button", { name: "home" })).toHaveAttribute("aria-pressed", "true");
+    await expect.poll(() => sent.some((b) => b.meaning === "home" && b.definition === "home")).toBe(true);
 
-    await line.getByRole("button", { name: "can" }).click();
-    await expect(line.getByRole("button", { name: "can" })).toHaveAttribute("aria-pressed", "true");
-    await expect(line.getByRole("button", { name: "perro" })).toHaveAttribute("aria-pressed", "false");
-    await expect.poll(() => sent.some((b) => b.meaning === "can")).toBe(true);
+    await line.getByRole("button", { name: "house" }).click();
+    await expect(line.getByRole("button", { name: "house" })).toHaveAttribute("aria-pressed", "true");
+    await expect(line.getByRole("button", { name: "home" })).toHaveAttribute("aria-pressed", "false");
     const word = created.word(1);
     await expect.poll(async () => (await (await page.request.get(`/api/vocabulary?q=${word}`)).json()).items
-      .filter((e: { term: string }) => e.term === word).map((e: { meaning?: string }) => e.meaning)).toEqual(["can"]);
+      .filter((e: { term: string }) => e.term === word)
+      .map((e: { meaning?: string; definition?: string }) => `${e.meaning}/${e.definition}`))
+      .toEqual(["house/house"]);
   });
 
-  test("labels a machine translation, also for a word no dictionary has", async ({ page }) => {
+  test("labels a machine translation and links out to dictionaries in a new tab", async ({ page }) => {
     created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
-    await lookupAnswer(page, created, { found: false, senses: [], source: null, translations: ["refrigerador"], translationSource: "machine" });
-    const sent = vocabularyWrites(page);
-    await openReader(page, `/read/${created.id}`);
-    await article(page).getByText(created.word(1), { exact: true }).click();
+    await lookupAnswer(page, created, { meanings: ["refrigerator"], source: "machine" });
+    await openWord(page, created);
 
-    const line = page.getByTestId("translations");
-    await expect(line).toContainText("refrigerador");
-    await expect(line).toContainText("machine translation");
-    await expect(page.getByText("No dictionary entry found")).toBeVisible();
-    await expect.poll(() => sent.some((b) => b.meaning === "refrigerador")).toBe(true);
+    await expect(page.getByTestId("meanings")).toContainText("refrigerator");
+    await expect(page.getByTestId("meanings")).toContainText("machine translation");
+    const links = page.getByTestId("dictionary-links").getByRole("link");
+    const word = encodeURIComponent(created.word(1));
+    const from = created.language;
+    await expect(links.getByText("Google Translate")).toHaveAttribute("href",
+      `https://translate.google.com/?sl=${from}&tl=en&text=${word}&op=translate`);
+    await expect(links.getByText("DeepL")).toHaveAttribute("href", `https://www.deepl.com/translator#${from}/en/${word}`);
+    await expect(links.getByText("WordReference")).toHaveAttribute("href", `https://www.wordreference.com/${from}en/${word}`);
+    for (const link of await links.all()) await expect(link).toHaveAttribute("target", "_blank");
   });
 
-  test("the dictionary's own translations carry no note", async ({ page }) => {
+  test("says when there is no meaning yet, and still links out", async ({ page }) => {
     created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
-    await lookupAnswer(page, created, { translations: ["perro"], translationSource: "dictionary" });
-    await openReader(page, `/read/${created.id}`);
-    await article(page).getByText(created.word(1), { exact: true }).click();
-    const line = page.getByTestId("translations");
-    await expect(line).toContainText("perro");
-    await expect(line).not.toContainText("saved by other learners");
-    await expect(line).not.toContainText("machine translation");
+    await lookupAnswer(page, created, { meanings: [], source: null });
+    await openWord(page, created);
+    await expect(page.getByTestId("meanings")).toHaveText("No English meaning yet");
+    await expect(page.getByTestId("dictionary-links").getByRole("link")).toHaveCount(3);
+  });
+
+  test("shows no dictionary definitions, and the AI explains only when asked", async ({ page }) => {
+    created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
+    await lookupAnswer(page, created, { meanings: ["house"], source: "machine" });
+    let explained = 0;
+    await page.route("**/api/dictionary/explain?*", (route) => {
+      explained += 1;
+      return route.fulfill({ json: {
+        term: created!.word(1), language: created!.language, found: true, pronunciation: null, lemma: null, source: "AI", sourceUrl: null,
+        senses: [{ partOfSpeech: "noun", definition: "a building people live in", examples: ["La casa es grande."] }],
+      } });
+    });
+    await openWord(page, created);
+    await expect(page.getByTestId("meanings")).toContainText("house");
+    await expect(page.getByText(/form of|Source:/)).toHaveCount(0);
+    await expect(page.getByTestId("ai-explanation")).toHaveCount(0);
+    expect(explained).toBe(0);
+
+    await page.getByRole("button", { name: "Explain with AI" }).click();
+    await expect(page.getByTestId("ai-explanation")).toContainText("a building people live in");
+    await expect(page.getByTestId("ai-explanation")).toContainText("La casa es grande.");
+    expect(explained).toBe(1);
   });
 });
 

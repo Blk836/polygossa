@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { savedMeaning, translationLine, translationNote } from "@/lib/dictionary";
+import { dictionaryLinks, meaningLine, meaningNote, savedMeaning } from "@/lib/dictionary";
 import { canSpeak, speak } from "@/lib/speech";
-import type { DictionaryResult, WordStatus } from "@/lib/types";
+import type { DictionaryResult, WordLookup, WordStatus } from "@/lib/types";
 import { CloseIcon, PlayIcon, SpeakerIcon } from "../icons";
 import { Spinner } from "../ui";
 import type { PopupTarget } from "./word-popup";
@@ -18,26 +18,19 @@ const STATUS_BUTTONS: { status: WordStatus; label: string; key: string; classNam
 const iconButton = "rounded-lg p-1.5 text-muted hover:bg-paper hover:text-ink";
 const actionButton = "rounded-lg border border-line px-2.5 py-1.5 hover:bg-paper";
 
-export function PopupHeader({ target, result, speechLocale, onLookupLemma, onClose }: {
+export function PopupHeader({ target, speechLocale, onClose }: {
   target: PopupTarget;
-  result: DictionaryResult | null;
   speechLocale: string;
-  onLookupLemma: (lemma: string) => void;
   onClose: () => void;
 }) {
   const showReading = !!target.reading && target.reading !== target.display;
-  const lemma = result?.lemma;
   return (
     <div className="flex items-start gap-2 border-b border-line p-4 pb-3">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-2">
           <span className="font-reading text-xl font-semibold break-words">{target.display}</span>
           {showReading && <span className="text-sm text-muted">{target.reading}</span>}
-          {result?.pronunciation && <span className="text-sm text-muted">{result.pronunciation}</span>}
         </div>
-        {lemma && (
-          <button onClick={() => onLookupLemma(lemma)} className="mt-0.5 text-xs text-accent underline">form of {lemma}</button>
-        )}
         {target.kind === "phrase" && <span className="text-xs text-muted">Phrase</span>}
       </div>
       {canSpeak() && (
@@ -50,75 +43,37 @@ export function PopupHeader({ target, result, speechLocale, onLookupLemma, onClo
   );
 }
 
-/** Definitions (first three, expandable) and up to two dictionary examples. */
-export function Senses({ result, error, isPro, onPickMeaning }: {
-  result: DictionaryResult | null;
-  error: string | null;
-  isPro: boolean;
-  onPickMeaning: (meaning: string) => void;
-}) {
-  const [showAll, setShowAll] = useState(false);
-  if (error) return <p className="text-danger">{error}</p>;
-  if (!result) return <Spinner className="text-muted" />;
-  if (!result.found) {
-    return (
-      <>
-        <Translations result={result} onPick={onPickMeaning} />
-        <p className="text-muted">No dictionary entry found. {!isPro && "Pro adds AI definitions for words the free dictionaries miss."}</p>
-      </>
-    );
-  }
-  const senses = result.senses;
-  const visible = showAll ? senses : senses.slice(0, 3);
-  const examples = senses.flatMap((s) => s.examples).filter(Boolean).slice(0, 2);
-  return (
-    <>
-      <Translations result={result} onPick={onPickMeaning} />
-      <ol className="space-y-1.5">
-        {visible.map((s, i) => (
-          <li key={i} className="flex gap-2">
-            <span className="text-muted">{i + 1}.</span>
-            <span>{s.partOfSpeech && <em className="mr-1 text-muted">{s.partOfSpeech}</em>}{s.definition}</span>
-          </li>
-        ))}
-      </ol>
-      {senses.length > 3 && (
-        <button className="text-xs text-accent underline" onClick={() => setShowAll(!showAll)}>
-          {showAll ? "Fewer meanings" : `${senses.length - 3} more meanings`}
-        </button>
-      )}
-      {examples.map((ex, i) => (
-        <p key={i} className="border-l-2 border-line pl-2 font-reading italic">{ex}</p>
-      ))}
-    </>
-  );
-}
-
 /**
- * The word in the learner's native language, above the English definitions (nothing for English speakers). The
- * saved word keeps the first meaning; clicking another keeps that one instead.
+ * The word in the learner's own language (nothing when they are reading it). The saved word keeps the first meaning;
+ * clicking another keeps that one instead.
  */
-function Translations({ result, onPick }: { result: DictionaryResult; onPick: (meaning: string) => void }) {
-  const [chosen, setChosen] = useState(savedMeaning(result));
-  const native = translationLine(result);
-  if (!native) return null;
-  if (native.missing) return <p data-testid="translations" className="text-xs text-muted">{native.text}</p>;
-  const note = translationNote(result);
+export function Meanings({ lookup, error, onPick }: {
+  lookup: WordLookup | null;
+  error: string | null;
+  onPick: (meaning: string) => void;
+}) {
+  const [chosen, setChosen] = useState(savedMeaning(lookup));
+  if (error) return <p className="text-danger">{error}</p>;
+  if (!lookup) return <Spinner className="text-muted" />;
+  const line = meaningLine(lookup);
+  if (!line) return null;
+  if (line.missing) return <p data-testid="meanings" className="text-muted">{line.text}</p>;
+  const note = meaningNote(lookup);
   return (
-    <p data-testid="translations" className="font-medium">
-      <span className="mr-1.5 text-xs font-normal text-muted">{native.label}</span>
-      {(result.translations ?? []).map((meaning, i) => (
+    <p data-testid="meanings" className="font-medium">
+      <span className="mr-1.5 text-xs font-normal text-muted">{line.label}</span>
+      {lookup.meanings.map((meaning, i) => (
         <span key={meaning}>
           {i > 0 && ", "}
           <button
             type="button"
-            aria-pressed={meaning === chosen}
+            aria-pressed={meaning === (chosen ?? savedMeaning(lookup))}
             title="Keep this meaning with the word"
             onClick={() => {
               setChosen(meaning);
               onPick(meaning);
             }}
-            className={`rounded px-0.5 ${meaning === chosen ? "bg-accent-soft text-ink" : "hover:bg-paper"}`}
+            className={`rounded px-0.5 ${meaning === (chosen ?? savedMeaning(lookup)) ? "bg-accent-soft text-ink" : "hover:bg-paper"}`}
           >
             {meaning}
           </button>
@@ -129,13 +84,30 @@ function Translations({ result, onPick }: { result: DictionaryResult; onPick: (m
   );
 }
 
-export function Source({ result }: { result: DictionaryResult | null }) {
-  if (!result?.source) return null;
+/** Full dictionaries on their own websites, in a new tab. */
+export function DictionaryLinks({ language, nativeLanguage, term }: { language: string; nativeLanguage: string; term: string }) {
   return (
-    <p className="text-xs text-muted">
-      Source:{" "}
-      {result.sourceUrl ? <a href={result.sourceUrl} target="_blank" rel="noreferrer" className="underline">{result.source}</a> : result.source}
+    <p data-testid="dictionary-links" className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+      {dictionaryLinks(language, nativeLanguage, term).map((link) => (
+        <a key={link.name} href={link.url} target="_blank" rel="noreferrer" className="text-accent underline">{link.name}</a>
+      ))}
     </p>
+  );
+}
+
+/** The AI's explanation (Pro, on demand): definitions in the learner's language, with an example. */
+export function AiExplanation({ result }: { result: DictionaryResult }) {
+  if (!result.found) return <p data-testid="ai-explanation" className="text-muted">The AI couldn&apos;t explain this one.</p>;
+  const example = result.senses.flatMap((s) => s.examples).find(Boolean);
+  return (
+    <div data-testid="ai-explanation" className="space-y-1.5 border-l-2 border-accent pl-2">
+      <ol className="space-y-1">
+        {result.senses.map((s, i) => (
+          <li key={i}>{s.partOfSpeech && <em className="mr-1 text-muted">{s.partOfSpeech}</em>}{s.definition}</li>
+        ))}
+      </ol>
+      {example && <p className="font-reading italic">{example}</p>}
+    </div>
   );
 }
 
@@ -179,11 +151,12 @@ const SENTENCE_LABELS: Record<SentenceState, string> = {
 };
 
 /** Sentence mining, AI helpers (Pro) and "play from here" (when the text has synced audio). */
-export function ExtraActions({ sentenceState, onSaveSentence, isPro, aiBusy, onTranslate, onExample, onPlay }: {
+export function ExtraActions({ sentenceState, onSaveSentence, isPro, aiBusy, onExplain, onTranslate, onExample, onPlay }: {
   sentenceState: SentenceState;
   onSaveSentence: () => void;
   isPro: boolean;
   aiBusy: boolean;
+  onExplain: () => void;
   onTranslate: () => void;
   onExample: () => void;
   /** Null when there is no synced audio. */
@@ -196,11 +169,12 @@ export function ExtraActions({ sentenceState, onSaveSentence, isPro, aiBusy, onT
       </button>
       {isPro ? (
         <>
+          <button onClick={onExplain} disabled={aiBusy} className={actionButton}>Explain with AI</button>
           <button onClick={onTranslate} disabled={aiBusy} className={actionButton}>Translate sentence</button>
           <button onClick={onExample} disabled={aiBusy} className={actionButton}>{aiBusy ? "Thinking…" : "AI example"}</button>
         </>
       ) : (
-        <Link href="/settings/subscription" className="rounded-lg px-2.5 py-1.5 text-muted underline">AI examples with Pro</Link>
+        <Link href="/settings/subscription" className="rounded-lg px-2.5 py-1.5 text-muted underline">AI explanations with Pro</Link>
       )}
       {onPlay && (
         <button onClick={onPlay} className={`ml-auto flex items-center gap-1 ${actionButton}`}>
