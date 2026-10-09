@@ -108,7 +108,13 @@ into its own worktree** (the `EnterWorktree` tool; it makes `.claude/worktrees/<
 `git stash` in the main folder: it belongs to the user and the IntelliJ dev servers. **Always work from the latest
 main, including when only answering questions.** The main folder is often on an old branch, and its CLAUDE.md can be
 stale too. So a session's first step is a worktree, which starts from `origin/main`. Without one, run `git fetch` and
-read `origin/main` (`git show origin/main:<path>`, `git grep … origin/main`). Leave the worktree (`ExitWorktree`, removing it) once its pull request is merged.
+read `origin/main` (`git show origin/main:<path>`, `git grep … origin/main`).
+**Delete your worktree when you are done:** as soon as its pull request is merged, or when the work is abandoned,
+remove it (`ExitWorktree` with remove, or `git worktree remove .claude/worktrees/<name>` from the main folder; never
+`--force` one that has uncommitted changes). Every leftover worktree keeps its own `node_modules`, build output and
+`.next`, which IntelliJ indexes: a dozen of them held gigabytes of RAM and kept the CPU busy. When tidying up others'
+worktrees, remove only those whose branch is merged into `origin/main` and whose session has ended (its lock names
+the session's pid); never one another live session is using.
 - A new worktree has no `node_modules`: run `npm ci` in `frontend/` (and `infra/`) before using them there.
 - The dev OpenAI key file (`.idea/runConfigurations/Backend.xml`, see below) exists only in the main folder.
 - Worktrees don't share a build folder, but they share the machine: the heavy-run rule below still applies. A single

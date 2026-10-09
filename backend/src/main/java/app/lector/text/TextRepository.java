@@ -30,6 +30,11 @@ public interface TextRepository extends JpaRepository<Text, Long> {
     @Query("select t from Text t where t.body.content like '%[%' or t.body.content like '%［%' or t.body.content like '%【%'")
     List<Text> findWithSquareBrackets();
 
+    /** Texts in these languages with a word token ending in an apostrophe: elisions split before they stayed one word. */
+    @Query("select t from Text t where t.language in :languages and (t.body.tokensJson like '%''\",\"word\":true%'"
+            + " or t.body.tokensJson like '%’\",\"word\":true%')")
+    List<Text> findWithSplitElisions(@Param("languages") Collection<Language> languages);
+
     /**
      * Public community content, newest first. {@code topic} is a {@link TextFeature#topicPattern} or null;
      * {@code q} must be a lower-cased LIKE pattern or null; {@code kind} is

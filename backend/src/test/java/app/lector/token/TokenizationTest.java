@@ -49,11 +49,19 @@ class TokenizationTest {
     }
 
     @Test
-    void splitsFrenchAndItalianElisions() {
-        assertThat(words(tokenize(Language.FR, "L'homme n'aime pas l’eau.")))
-                .containsExactly("L'", "homme", "n'", "aime", "pas", "l’", "eau");
-        assertThat(tokenize(Language.FR, "l’eau").getFirst().normalized()).isEqualTo("l'");
-        assertThat(words(tokenize(Language.IT, "dell'anno"))).containsExactly("dell'", "anno");
+    void keepsFrenchAndItalianElisionsTogether() {
+        assertThat(words(tokenize(Language.FR, "C'est l'homme qu'il aime, aujourd'hui. L'homme n'aime pas l’eau.")))
+                .containsExactly("C'est", "l'homme", "qu'il", "aime", "aujourd'hui", "L'homme", "n'aime", "pas", "l’eau");
+        assertThat(tokenize(Language.FR, "l’eau").getFirst().normalized()).isEqualTo("l'eau");
+        assertThat(words(tokenize(Language.IT, "dell'anno"))).containsExactly("dell'anno");
+    }
+
+    @Test
+    void anApostropheNotBetweenLettersIsPunctuation() {
+        String text = "'Bonjour' dit-il, les enfants' jeux";
+        List<Token> tokens = tokenize(Language.FR, text);
+        assertThat(words(tokens)).containsExactly("Bonjour", "dit-il", "les", "enfants", "jeux");
+        assertThat(String.join("", tokens.stream().map(Token::text).toList())).isEqualTo(text);
     }
 
     @Test
