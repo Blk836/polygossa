@@ -119,6 +119,14 @@ CURATOR_TOKEN="$(aws secretsmanager get-secret-value --profile polygossa --secre
 node tools/import-videos.mjs list.txt --copy-from http://localhost:8080 --backend https://d3pd9mue4v7won.cloudfront.net --dry-run
 ```
 
+**Playlist mode** (`docs/acceptance/copy-playlist.feature`). `--playlist "<title>"` (with an optional
+`--description`) imports nothing: it puts the list's videos, already in the community library, into a public playlist
+owned by the library account, in list order. Running it again with the same title and language updates that playlist
+(description, videos, order) instead of making a second one, and people who saved it keep it. Videos the library
+doesn't have in the playlist's language are left out and listed with their lines; a list mixing languages is refused.
+`--dry-run` says whether it would create or update the playlist. It doesn't go with `--copy-from`: copy the videos
+first, then make the playlist.
+
 **Caveat when picking videos:** a line's language picks the caption track, not the audio. A video with *translated*
 subtitles in that language is imported as that language. For example, an English song with fan-made German
 subtitles comes in as German. Check that the video is actually spoken in the language you list.

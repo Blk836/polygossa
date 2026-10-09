@@ -36,9 +36,15 @@ Feature: Putting curated videos into a community-library playlist
     Then nothing is saved and the tool says there were no videos to put in it (exit code 1)
 
   Scenario: A playlist request with missing or invalid parts is refused
-    When the backend receives a playlist without a title, with a title or description over the limits, with an
-      unknown language, or with videos in more than one language
+    When the backend receives a playlist without a title, with a title or description over the limits, or with an
+      unknown language
     Then it answers 400 and saves nothing
+
+  Scenario: A list mixing languages is refused by the tool
+    Given a list file with French and Spanish videos
+    When I run the tool with --playlist
+    Then it stops (exit code 1) saying a playlist is in one language, without asking the backend
+    And a library video in another language than the playlist's is left out like a missing one
 
   Scenario: Tokens and switched-off backends
     When the backend rejects the token, can't be reached, or runs without a curator token
