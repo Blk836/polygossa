@@ -68,6 +68,8 @@ Feature: Saving playlists
     Then it reads "Saved" and is pressed, without opening the playlist pane
     And after reloading Explore it still reads "Saved"
 
+  # The next two scenarios were replaced by library-two-tabs.feature: Saved and the Shared tab are gone; saved
+  # playlists are in My library's playlists row, and shared ones are found by searching Explore.
   Scenario: Saved playlists appear on Library > Saved, and can be unsaved there
     Given I have saved "Podcast"
     When I open /library/saved

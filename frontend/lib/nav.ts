@@ -4,7 +4,12 @@
 export interface NavSection {
   href: string;
   label: string;
+  /** Other paths that light up this sub-tab (the playlists pages under My library). */
+  also?: string[];
 }
+
+/** Where the app opens: Explore. The Library tab, the logo and signing in land here. */
+export const HOME = "/community";
 
 export interface NavGroup {
   key: "library" | "practice" | "progress" | "forum";
@@ -19,13 +24,11 @@ export interface NavGroup {
 export const NAV_GROUPS: NavGroup[] = [
   {
     key: "library",
-    href: "/library",
+    href: HOME,
     label: "Library",
     sections: [
-      { href: "/library", label: "Mine" },
-      { href: "/library/saved", label: "Saved" },
-      { href: "/community", label: "Explore" },
-      { href: "/playlists", label: "Playlists" },
+      { href: HOME, label: "Explore" },
+      { href: "/library", label: "My library", also: ["/playlists"] },
     ],
     also: ["/import", "/read"],
   },
@@ -43,6 +46,11 @@ export const NAV_GROUPS: NavGroup[] = [
   { key: "forum", href: "/forum", label: "Forum", sections: [] },
 ];
 
+/** The data-tour name a sub-tab is marked with, for the first-visit tips ("My library" → "my-library"). */
+export function sectionTourName(label: string): string {
+  return label.toLowerCase().replaceAll(" ", "-");
+}
+
 /** True when `pathname` is `href` or a page under it (`/playlists/12` is under `/playlists`, `/playlistsx` isn't). */
 export function isUnder(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(href + "/");
@@ -50,16 +58,22 @@ export function isUnder(pathname: string, href: string): boolean {
 
 /** The top-level tab that the page belongs to, if any. */
 export function activeGroup(pathname: string): NavGroup | undefined {
-  return NAV_GROUPS.find((g) => [g.href, ...g.sections.map((s) => s.href), ...(g.also ?? [])].some((href) => isUnder(pathname, href)));
+  const paths = (g: NavGroup) => [g.href, ...g.sections.flatMap((s) => [s.href, ...(s.also ?? [])]), ...(g.also ?? [])];
+  return NAV_GROUPS.find((g) => paths(g).some((href) => isUnder(pathname, href)));
 }
 
-/** The most specific section containing `pathname` (/library/saved is Saved, not Mine). */
+/** The longest of a section's paths that contains `pathname`, or -1. */
+function matchLength(s: NavSection, pathname: string): number {
+  return Math.max(-1, ...[s.href, ...(s.also ?? [])].filter((href) => isUnder(pathname, href)).map((href) => href.length));
+}
+
+/** The most specific section containing `pathname` (/settings/privacy is Privacy, not Profile). */
 function mostSpecific(sections: NavSection[], pathname: string): NavSection | undefined {
-  const matches = sections.filter((s) => isUnder(pathname, s.href));
-  return matches.sort((a, b) => b.href.length - a.href.length)[0];
+  const matches = sections.filter((s) => matchLength(s, pathname) >= 0);
+  return matches.sort((a, b) => matchLength(b, pathname) - matchLength(a, pathname))[0];
 }
 
-/** The sub-tab for this page (the most specific match: /library/saved is Saved, not Mine); undefined without a strip. */
+/** The sub-tab for this page (the most specific match); undefined without a strip. */
 export function activeSection(pathname: string): NavSection | undefined {
   return mostSpecific(NAV_GROUPS.flatMap((g) => g.sections), pathname);
 }

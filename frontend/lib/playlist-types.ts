@@ -29,7 +29,7 @@ export interface PlaylistSummary {
   updatedAt: string;
   /** Only on `GET playlists?textId=`: whether this playlist holds that text. */
   containsText?: boolean;
-  /** Whether the viewer saved it (Library > Saved). */
+  /** Whether the viewer saved it (listed in My library). */
   bookmarked: boolean;
 }
 

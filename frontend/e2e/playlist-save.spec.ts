@@ -58,25 +58,42 @@ test("Explore's playlist cards have a Save button that keeps its state", async (
   await expect(saveButton(page)).toHaveText("Saved");
 });
 
-test("saved playlists are listed on Library > Saved and can be unsaved there", async ({ page }) => {
+test("saved playlists are in My library's playlists row, once, and can be unsaved there", async ({ page }) => {
   const id = await sharedPlaylist(page);
   expect((await page.request.put(`/api/playlists/${id}/bookmark`)).ok()).toBe(true);
-  await page.goto("/library/saved");
-  const shelf = page.getByRole("region", { name: "Saved playlists" });
-  await expect(shelf.getByTestId("playlist-card").filter({ hasText: `Podcast ${tag}` })).toBeVisible();
+  await page.goto("/library");
+  const shelf = page.getByRole("region", { name: "Your playlists" });
+  await expect(shelf.getByTestId("playlist-card").filter({ hasText: `Podcast ${tag}` })).toHaveCount(1); // mine and saved: once
+  await expect(shelf.getByRole("link", { name: "All playlists →" })).toBeVisible();
   await expect(saveButton(page)).toHaveText("Saved");
   await saveButton(page).click();
   await expect(saveButton(page)).toHaveText("Save");
   await expect.poll(() => isSaved(page, id)).toBe(false);
 });
 
-test("the Shared tab on Playlists has Save buttons and My playlists doesn't", async ({ page }) => {
+test("someone else's saved playlist shows in My library's row and on the playlists page", async ({ page }) => {
+  const id = await sharedPlaylist(page);
+  expect((await page.request.put(`/api/playlists/${id}/bookmark`)).ok()).toBe(true);
+  // Seen as another learner's playlist: the e2e user is the only account, so it is left out of "mine".
+  await page.route(/\/api\/playlists(\?|$)/, async (route) => {
+    const res = await route.fetch();
+    await route.fulfill({ response: res, json: ((await res.json()) as { id: number }[]).filter((p) => p.id !== id) });
+  });
+  for (const path of ["/library", "/playlists"]) {
+    await page.goto(path);
+    await expect(card(page)).toHaveCount(1);
+    await expect(saveButton(page)).toHaveText("Saved");
+  }
+});
+
+test("the playlists page has no Shared switch or search; my own unsaved playlists have no Save button", async ({ page }) => {
   await sharedPlaylist(page);
   await page.goto("/playlists");
   await expect(card(page)).toBeVisible();
   await expect(saveButton(page)).toHaveCount(0);
-  await page.getByRole("button", { name: "Shared", exact: true }).click();
-  await expect(saveButton(page)).toHaveText("Save");
+  await expect(page.getByRole("button", { name: "Shared", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("searchbox", { name: "Search playlists" })).toHaveCount(0);
+  await expect(page.getByRole("textbox", { name: "Playlist name" })).toBeVisible();
 });
 
 test("someone else's playlist page has a Save button", async ({ page }) => {

@@ -6,10 +6,10 @@ Feature: First-visit feature tours
 
   Tours and their tips (each one or two short sentences):
     | tour      | page              | tips                                                                  |
-    | library   | Library › Mine    | Import button, Explore sub-tab, language switcher                     |
-    | explore   | Library › Explore | search and filters, the Saved sub-tab                                 |
+    | library   | Library › My library | Import button, Explore sub-tab, language switcher                  |
+    | explore   | Library › Explore | search and filters, the My library sub-tab                            |
     | import    | Import            | the source choice (text, web page, file, YouTube), the language       |
-    | playlists | Library › Playlists | the new-playlist form, the Shared tab                               |
+    | playlists | Playlists (from My library) | the new-playlist form, finding shared playlists in Explore  |
     | reader    | the reader        | click a word, select a phrase, turning the page (or Finish lesson) marks the rest known |
     | review    | Practice › Review | how review works (one tip about the whole page)                       |
     | words     | Practice › Words  | search and filters, importing words                                   |

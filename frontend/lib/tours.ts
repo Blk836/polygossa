@@ -46,7 +46,7 @@ export const TOURS: Tour[] = [
     path: "/community",
     steps: [
       { target: "explore-search", title: "Find something at your level", body: "Search titles, pick a level, or show only texts or videos. Open any card to start reading." },
-      { target: "saved", title: "Keep it for later", body: "Save a card with its bookmark and it waits for you under Saved." },
+      { target: "my-library", title: "Keep it for later", body: "Save a card with its bookmark and it waits for you in My library." },
     ],
   },
   {
@@ -62,7 +62,7 @@ export const TOURS: Tour[] = [
     path: "/playlists",
     steps: [
       { target: "playlist-create", title: "Make a playlist", body: "Name it here, then add texts and videos with the playlist button on any card or in the reader." },
-      { target: "playlist-tabs", title: "Playlists from others", body: "Shared shows playlists other learners made. Save the ones you like." },
+      { title: "Playlists from others", body: "Search Explore to find playlists other learners shared. The ones you save show up here." },
     ],
   },
   {

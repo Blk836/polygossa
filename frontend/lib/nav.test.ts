@@ -1,23 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { activeGroup, activeSection, dueBadge, NAV_GROUPS, SETTINGS_SECTIONS, settingsHashRedirect, settingsSection, tabName } from "./nav";
+import { activeGroup, activeSection, dueBadge, HOME, NAV_GROUPS, sectionTourName, SETTINGS_SECTIONS, settingsHashRedirect, settingsSection, tabName } from "./nav";
 
 describe("nav groups", () => {
   it("has four top-level tabs: Library, Practice, Progress, Forum", () => {
     expect(NAV_GROUPS.map((g) => [g.label, g.href])).toEqual([
-      ["Library", "/library"],
+      ["Library", "/community"],
       ["Practice", "/review"],
       ["Progress", "/dashboard"],
       ["Forum", "/forum"],
     ]);
   });
 
-  it("groups Mine, Saved, Explore and Playlists, and Review, Words and Write", () => {
+  it("opens Explore: HOME is where the Library tab, the logo and sign-in land", () => {
+    expect(HOME).toBe("/community");
+    expect(NAV_GROUPS[0].href).toBe(HOME);
+  });
+
+  it("groups Explore and My library, and Review, Words and Write", () => {
     expect(NAV_GROUPS.map((g) => g.sections.map((s) => [s.label, s.href]))).toEqual([
       [
-        ["Mine", "/library"],
-        ["Saved", "/library/saved"],
         ["Explore", "/community"],
-        ["Playlists", "/playlists"],
+        ["My library", "/library"],
       ],
       [
         ["Review", "/review"],
@@ -60,10 +63,11 @@ describe("activeGroup", () => {
 
 describe("activeSection", () => {
   it.each([
-    ["/library", "Mine"],
-    ["/library/saved", "Saved"],
+    ["/library", "My library"],
+    ["/library/saved", "My library"],
     ["/community", "Explore"],
-    ["/playlists/12", "Playlists"],
+    ["/playlists", "My library"],
+    ["/playlists/12", "My library"],
     ["/review", "Review"],
     ["/vocabulary", "Words"],
     ["/writing", "Write"],
@@ -73,6 +77,15 @@ describe("activeSection", () => {
 
   it.each(["/read/5", "/import", "/dashboard", "/settings", "/playlistsx", "/forum", "/forum/12"])("%s shows no sub-tab strip", (path) => {
     expect(activeSection(path)).toBeUndefined();
+  });
+});
+
+describe("sectionTourName", () => {
+  it.each([
+    ["Explore", "explore"],
+    ["My library", "my-library"],
+  ])("%s is marked %s for the tours", (label, name) => {
+    expect(sectionTourName(label)).toBe(name);
   });
 });
 

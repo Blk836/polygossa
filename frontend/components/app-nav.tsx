@@ -11,7 +11,19 @@ import { useMe } from "./me-context";
 import { useDueCount, useHeaderStats } from "./nav-data";
 import { Logo } from "./ui";
 import { BRAND } from "@/lib/brand";
-import { activeGroup, activeSection, dueBadge, NAV_GROUPS, SETTINGS_SECTIONS, settingsSection, tabName, type NavGroup, type NavSection } from "@/lib/nav";
+import {
+  activeGroup,
+  activeSection,
+  dueBadge,
+  HOME,
+  NAV_GROUPS,
+  sectionTourName,
+  SETTINGS_SECTIONS,
+  settingsSection,
+  tabName,
+  type NavGroup,
+  type NavSection,
+} from "@/lib/nav";
 
 const ICONS: Record<NavGroup["key"], ComponentType<SVGProps<SVGSVGElement>>> = {
   library: BookIcon,
@@ -45,7 +57,7 @@ function SubTabs({ label, sections, current }: { label: string; sections: NavSec
           <Link
             key={s.href}
             href={s.href}
-            data-tour={s.label.toLowerCase()}
+            data-tour={sectionTourName(s.label)}
             aria-current={here ? "page" : undefined}
             className={`relative shrink-0 px-3 py-2 text-sm transition ${
               here ? "font-medium text-ink after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-rubric" : "text-muted hover:text-ink"
@@ -60,7 +72,7 @@ function SubTabs({ label, sections, current }: { label: string; sections: NavSec
 }
 
 /**
- * Sub-tabs for the current page: the tab's pages (Library: Mine, Saved, Explore, Playlists; Practice: Review, Words,
+ * Sub-tabs for the current page: the tab's pages (Library: Explore, My library; Practice: Review, Words,
  * Write), or Settings' (Profile, Appearance, Subscription).
  */
 function SectionTabs({ pathname }: { pathname: string }) {
@@ -84,7 +96,7 @@ export function AppNav() {
     <>
       <header className="sticky top-0 z-30 border-b border-line bg-paper/90 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:gap-4">
-          <Link href="/library" aria-label={`${BRAND} home`} className="min-w-0 truncate">
+          <Link href={HOME} aria-label={`${BRAND} home`} className="min-w-0 truncate">
             <Logo className="text-xl sm:text-2xl" />
           </Link>
           <nav className="hidden flex-1 items-center gap-1 md:flex" aria-label="Main">

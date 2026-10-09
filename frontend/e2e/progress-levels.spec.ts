@@ -116,7 +116,7 @@ test("a new learner sees no levels and no overall", async ({ page }) => {
 
   await expect(card(page).getByTestId("skill-level")).toHaveText(["Not enough data", "Not enough data", "Not enough data"]);
   await expect(skill(page, "Writing").getByRole("link", { name: "Take a writing test" })).toHaveAttribute("href", "/writing");
-  await expect(skill(page, "Reading").getByRole("link", { name: "Start reading" })).toHaveAttribute("href", "/library");
+  await expect(skill(page, "Reading").getByRole("link", { name: "Start reading" })).toHaveAttribute("href", "/community");
   await expect(card(page).getByTestId("overall-level")).toHaveCount(0);
 });
 

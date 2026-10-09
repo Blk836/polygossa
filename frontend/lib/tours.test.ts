@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { sectionTourName } from "./nav";
 import { pendingTour, placeCard, sameRect, stepLabel, TOURS, tourFor, visibleRect, withSeen, type Rect } from "./tours";
 
 describe("tourFor", () => {
@@ -43,6 +44,16 @@ describe("the tours themselves", () => {
         expect(step.body.length).toBeLessThanOrEqual(170);
       }
     }
+  });
+
+  it("point at the Library's two sub-tabs, not the old Saved tab or Shared switch", () => {
+    const targets = TOURS.flatMap((t) => t.steps.map((s) => s.target));
+    expect(targets).toContain("explore");
+    expect(targets).not.toContain("saved");
+    expect(targets).not.toContain("playlist-tabs");
+    const keep = TOURS.find((t) => t.key === "explore")!.steps.find((s) => s.title === "Keep it for later")!;
+    expect(keep.target).toBe(sectionTourName("My library"));
+    expect(keep.body).toContain("My library");
   });
 
   it("point at controls by data-tour name", () => {

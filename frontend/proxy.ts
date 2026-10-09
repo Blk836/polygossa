@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { cognitoConfig } from "@/lib/cognito";
+import { HOME } from "@/lib/nav";
 import { clearSession, keepSessionFresh, writeSession } from "@/lib/session";
 
 const TOKEN_COOKIE = "lector_token";
@@ -61,7 +62,7 @@ export async function proxy(request: NextRequest) {
     if (AUTH_PAGES.includes(pathname)) return NextResponse.next();
     return (AUTO_LOGIN && (await autoLogin(request))) || signedOut(request);
   }
-  if (AUTH_PAGES.includes(pathname)) return NextResponse.redirect(new URL("/library", request.url));
+  if (AUTH_PAGES.includes(pathname)) return NextResponse.redirect(new URL(HOME, request.url));
   return renewed(request);
 }
 

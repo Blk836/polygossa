@@ -1,9 +1,10 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page, type Route } from "@playwright/test";
 import { cleanUp, createText, type Created } from "./reader-helpers";
 
-// The Library's filters, Airbnb-style: Mine / Saved are header sub-tabs, category chips sit in one bar right above the
-// cards, and everything else (texts or videos) is behind a single "Filters" button with a count badge. The list API
-// is stubbed with the test's own text in two categories, so counts and empty states are exact.
+// My library (docs/acceptance/library-two-tabs.feature): imports and saved items in one list. Its filters are
+// Airbnb-style: category chips in one bar right above the cards, and everything else (texts or videos, imported or
+// saved) behind a single "Filters" button with a count badge. Both list APIs are stubbed with the test's own text, so
+// counts and empty states are exact.
 
 let created: Created | null = null;
 
@@ -18,41 +19,170 @@ const panel = (page: Page) => page.getByRole("dialog", { name: "Filters" });
 const cards = (page: Page) => page.getByTestId("card-grid").getByRole("article");
 const chips = (page: Page) => bar(page).getByRole("group", { name: "Category" });
 
-/** Stubs GET /api/texts: two texts (news, stories) for "all" and "text", none for "video". Returns the kinds asked for. */
-async function stubLibrary(page: Page) {
+/**
+ * Stubs GET /api/texts (two of my texts, news and stories) and GET /api/library/bookmarks (`saved`, none by default),
+ * each empty for "video". Returns the kinds asked for.
+ */
+async function stubLibrary(page: Page, { saved = 0 }: { saved?: number } = {}) {
   created = await createText(page, 30);
   const template = (await (await page.request.get(`/api/texts/${created.id}`)).json()).text;
   const items = [
-    { ...template, id: created.id, title: `Filter news ${created.prefix}`, category: "news" },
-    { ...template, id: created.id + 1_000_000, title: `Filter story ${created.prefix}`, category: "stories" },
+    { ...template, id: created.id, title: `Filter news ${created.prefix}`, category: "news", mine: true },
+    { ...template, id: created.id + 1_000_000, title: `Filter story ${created.prefix}`, category: "stories", mine: true },
   ];
+  const bookmarks = Array.from({ length: saved }, (_, i) => ({
+    ...template,
+    id: created!.id + 2_000_000 + i,
+    title: `Saved news ${i} ${created!.prefix}`,
+    category: "news",
+    mine: false,
+    bookmarked: true,
+    owner: { ...template.owner, id: -1, displayName: "Other learner" },
+  }));
   const kinds: string[] = [];
-  await page.route(/\/api\/texts(\?|$)/, (route) => {
+  const answer = (list: object[]) => (route: Route) => {
     const kind = new URL(route.request().url()).searchParams.get("kind") ?? "all";
     kinds.push(kind);
-    return route.fulfill({ json: kind === "video" ? [] : items });
-  });
-  return kinds;
+    return route.fulfill({ json: kind === "video" ? [] : list });
+  };
+  await page.route(/\/api\/texts(\?|$)/, answer(items));
+  await page.route(/\/api\/library\/bookmarks(\?|$)/, answer(bookmarks));
+  return { kinds, bookmarks };
 }
 
-test.describe("sections", () => {
-  test("Mine and Saved are sub-tabs, not a toggle on the page", async ({ page }) => {
+const sourceGroup = (page: Page) => panel(page).getByRole("group", { name: "Source" });
+
+test.describe("My library", () => {
+  test("is the second sub-tab, after Explore", async ({ page }) => {
     await page.goto("/library");
     const sections = page.getByRole("navigation", { name: "Section" });
-    await expect(sections.getByRole("link")).toHaveText(["Mine", "Saved", "Explore", "Playlists"]);
-    await expect(sections.locator("[aria-current=page]")).toHaveText("Mine");
-    await expect(page.getByRole("group", { name: "Library section" })).toHaveCount(0);
-    await sections.getByRole("link", { name: "Saved" }).click();
-    await page.waitForURL("**/library/saved");
-    await expect(sections.locator("[aria-current=page]")).toHaveText("Saved");
-    await expect(page.getByRole("heading", { name: "Saved" })).toBeVisible();
+    await expect(sections.getByRole("link")).toHaveText(["Explore", "My library"]);
+    await expect(sections.locator("[aria-current=page]")).toHaveText("My library");
+    await expect(page.getByRole("heading", { name: "My library", level: 1 })).toBeVisible();
   });
 
-  test("Saved lists bookmarks", async ({ page }) => {
-    const bookmarks = page.waitForRequest((r) => new URL(r.url()).pathname === "/api/library/bookmarks");
+  test("lists my imports first, then saved items with their owner", async ({ page }) => {
+    await stubLibrary(page, { saved: 1 });
+    await page.goto("/library");
+    await expect(cards(page)).toHaveCount(3);
+    await expect(cards(page).nth(2)).toContainText("Saved news 0");
+    await expect(cards(page).nth(2)).toContainText("Other learner");
+    await expect(cards(page).nth(0)).not.toContainText("Other learner");
+  });
+
+  test("a text of mine that I also saved is listed once, as mine", async ({ page }) => {
+    const { bookmarks } = await stubLibrary(page);
+    bookmarks.push({ ...bookmarks[0], id: created!.id, title: `Filter news ${created!.prefix}`, mine: true } as never);
+    await page.goto("/library");
+    await expect(cards(page)).toHaveCount(2);
+    await expect(cards(page).filter({ hasText: "Filter news" })).toHaveCount(1);
+  });
+
+  test("the Source filter shows imported or saved items, with a removable pill", async ({ page }) => {
+    await stubLibrary(page, { saved: 1 });
+    await page.goto("/library");
+    await filtersButton(page).click();
+    await expect(sourceGroup(page).getByRole("button")).toHaveText(["All", "Imported", "Saved"]);
+    await sourceGroup(page).getByRole("button", { name: "Imported" }).click();
+    await expect(cards(page)).toHaveCount(2);
+    await expect(filtersButton(page)).toHaveAccessibleName("Filters, 1 active");
+    await sourceGroup(page).getByRole("button", { name: "Saved" }).click();
+    await expect(cards(page)).toHaveCount(1);
+    await expect(cards(page)).toContainText("Saved news 0");
+    await page.keyboard.press("Escape");
+    await bar(page).getByRole("button", { name: "Remove filter: Saved" }).click();
+    await expect(cards(page)).toHaveCount(3);
+    await expect(filtersButton(page)).toHaveAccessibleName("Filters");
+  });
+
+  test("Source, type and category combine, and the badge counts both panel filters", async ({ page }) => {
+    await stubLibrary(page, { saved: 1 });
+    await page.goto("/library");
+    await chips(page).getByRole("button", { name: "News & society" }).click();
+    await expect(cards(page)).toHaveCount(2);
+    await filtersButton(page).click();
+    await sourceGroup(page).getByRole("button", { name: "Saved" }).click();
+    await expect(cards(page)).toHaveCount(1);
+    await panel(page).getByRole("group", { name: "Show" }).getByRole("button", { name: "Videos" }).click();
+    await expect(filtersButton(page)).toHaveAccessibleName("Filters, 2 active");
+    await page.keyboard.press("Escape");
+    await expect(page.getByText("No saved videos in News & society")).toBeVisible();
+  });
+
+  test("nothing saved says so, with Clear filters", async ({ page }) => {
+    await stubLibrary(page);
+    await page.goto("/library");
+    await filtersButton(page).click();
+    await sourceGroup(page).getByRole("button", { name: "Saved" }).click();
+    await page.keyboard.press("Escape");
+    await expect(page.getByText(/^No saved .*texts or videos$/)).toBeVisible();
+    await page.getByRole("button", { name: "Clear filters" }).click();
+    await expect(cards(page)).toHaveCount(2);
+  });
+
+  test("saved cards have Unsave and no owner actions; mine have owner actions and no Unsave", async ({ page }) => {
+    await stubLibrary(page, { saved: 1 });
+    await page.goto("/library");
+    const saved = cards(page).filter({ hasText: "Saved news 0" });
+    const mine = cards(page).filter({ hasText: "Filter news" });
+    await expect(saved.getByRole("button", { name: "Unsave" })).toBeVisible();
+    await expect(saved.getByRole("button", { name: /^Add to playlist/ })).toBeVisible();
+    await expect(saved.getByRole("button", { name: /delete/i })).toHaveCount(0);
+    await expect(mine.getByRole("button", { name: "Unsave" })).toHaveCount(0);
+  });
+
+  test("Unsave removes the card at once", async ({ page }) => {
+    const { bookmarks } = await stubLibrary(page, { saved: 1 });
+    let deleted = "";
+    await page.route(`**/api/library/${bookmarks[0].id}/bookmark`, (route) => {
+      deleted = route.request().method();
+      return route.fulfill({ status: 204 });
+    });
+    await page.goto("/library");
+    await cards(page).filter({ hasText: "Saved news 0" }).getByRole("button", { name: "Unsave" }).click();
+    await expect(cards(page)).toHaveCount(2);
+    expect(deleted).toBe("DELETE");
+  });
+
+  test("a failed Unsave keeps the card and shows the error", async ({ page }) => {
+    const { bookmarks } = await stubLibrary(page, { saved: 1 });
+    await page.route(`**/api/library/${bookmarks[0].id}/bookmark`, (route) =>
+      route.fulfill({ status: 500, json: { code: "error", message: "Couldn't unsave that" } }),
+    );
+    await page.goto("/library");
+    await cards(page).filter({ hasText: "Saved news 0" }).getByRole("button", { name: "Unsave" }).click();
+    await expect(page.getByText("Couldn't unsave that")).toBeVisible();
+    await expect(cards(page)).toHaveCount(3);
+  });
+
+  test("when saved items fail to load, it shows the error, not an empty library", async ({ page }) => {
+    await stubLibrary(page);
+    await page.route(/\/api\/library\/bookmarks(\?|$)/, (route) => route.fulfill({ status: 500, json: { code: "error", message: "Bookmarks are down" } }));
+    await page.goto("/library");
+    await expect(page.getByText("Bookmarks are down")).toBeVisible();
+    await expect(page.getByText(/yet$/)).toHaveCount(0);
+  });
+
+  test("the old Saved page lands on My library filtered to Saved", async ({ page }) => {
+    await stubLibrary(page, { saved: 1 });
     await page.goto("/library/saved");
-    await bookmarks;
-    await expect(page.getByTestId("card-grid").or(page.getByText(/^No saved/))).toBeVisible();
+    await page.waitForURL("**/library?source=saved");
+    await expect(bar(page).getByRole("button", { name: "Remove filter: Saved" })).toBeVisible();
+    await expect(cards(page)).toHaveCount(1);
+  });
+
+  test("the free plan's count names imports only", async ({ page }) => {
+    // The account arrives with the page (server-side), so the free plan is stubbed on the refresh that follows an
+    // Unsave; the test account itself stays on its Classroom plan for the other tests.
+    const { bookmarks } = await stubLibrary(page, { saved: 1 });
+    await page.route(`**/api/library/${bookmarks[0].id}/bookmark`, (route) => route.fulfill({ status: 204 }));
+    await page.route("**/api/me", async (route) => {
+      const me = await (await route.fetch()).json();
+      return route.fulfill({ json: { ...me, plan: { ...me.plan, usage: { ...me.plan.usage, texts: 3 }, limits: { ...me.plan.limits, texts: 5 } } } });
+    });
+    await page.goto("/library");
+    await cards(page).filter({ hasText: "Saved news 0" }).getByRole("button", { name: "Unsave" }).click();
+    await expect(page.getByText("3 of 5 imported texts and videos on the free plan (all languages). Saved items don't count.")).toBeVisible();
   });
 });
 
@@ -82,7 +212,7 @@ test.describe("the filter bar", () => {
 
 test.describe("the Filters panel", () => {
   test("opens with Texts / Videos, applies at once and badges the button", async ({ page }) => {
-    const kinds = await stubLibrary(page);
+    const { kinds } = await stubLibrary(page);
     await page.goto("/library");
     await filtersButton(page).click();
     await expect(filtersButton(page)).toHaveAttribute("aria-expanded", "true");
@@ -96,7 +226,7 @@ test.describe("the Filters panel", () => {
   });
 
   test("Show N items closes it, and the active filter stays visible as a removable pill", async ({ page }) => {
-    const kinds = await stubLibrary(page);
+    const { kinds } = await stubLibrary(page);
     await page.goto("/library");
     await filtersButton(page).click();
     await panel(page).getByRole("group", { name: "Show" }).getByRole("button", { name: "Texts" }).click();
@@ -130,7 +260,7 @@ test.describe("the Filters panel", () => {
     await expect(panel(page)).toHaveCount(0);
     await expect(filtersButton(page)).toBeFocused();
     await filtersButton(page).click();
-    await page.getByRole("heading", { name: "Library" }).click();
+    await page.getByRole("heading", { name: "My library" }).click();
     await expect(panel(page)).toHaveCount(0);
   });
 

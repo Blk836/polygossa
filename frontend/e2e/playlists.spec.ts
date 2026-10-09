@@ -102,7 +102,7 @@ test("the owner reorders and removes items", async ({ page }) => {
   await expect.poll(() => itemTitles(page, playlist)).toEqual(["Two", "One"]);
 });
 
-test("the owner shares a playlist, which then shows in the Shared tab", async ({ page }) => {
+test("the owner shares a playlist, which a search in Explore then finds", async ({ page }) => {
   const playlist = await createPlaylist(page, "Podcast", [await createText(page, "Episode", true)]);
   await page.goto(`/playlists/${playlist}`);
   await expect(page.getByTestId("playlist-status")).toHaveText("Private");
@@ -111,11 +111,25 @@ test("the owner shares a playlist, which then shows in the Shared tab", async ({
   expect((await (await page.request.get(`/api/playlists/${playlist}`)).json()).playlist.isPublic).toBe(true);
   await expect(page.getByRole("button", { name: "Copy link" })).toBeVisible();
 
-  await page.goto("/playlists");
-  await page.getByRole("button", { name: "Shared" }).click();
-  await page.getByLabel("Search playlists").fill(`Podcast ${tag}`);
-  await page.getByLabel("Search playlists").press("Enter");
-  await expect(page.getByRole("article").filter({ hasText: `Podcast ${tag}` })).toContainText("1 item");
+  await page.goto("/community");
+  await page.getByLabel("Search titles").fill(`Podcast ${tag}`);
+  await page.getByLabel("Search titles").press("Enter");
+  const found = page.getByRole("region", { name: /^Playlists matching/ });
+  await expect(found.getByRole("article").filter({ hasText: `Podcast ${tag}` })).toContainText("1 item");
+  // The playlists row sits above the matching texts and videos.
+  const rowBox = (await found.boundingBox())!;
+  const gridBox = (await page.getByTestId("card-grid").boundingBox())!;
+  expect(rowBox.y).toBeLessThan(gridBox.y);
+});
+
+test("an Explore search that matches no playlist shows no playlists row", async ({ page }) => {
+  await page.goto("/community");
+  const searched = page.waitForRequest((r) => new URL(r.url()).pathname === "/api/playlists/shared" && new URL(r.url()).searchParams.has("q"));
+  await page.getByLabel("Search titles").fill(`nothing-${tag}`);
+  await page.getByLabel("Search titles").press("Enter");
+  await searched;
+  await expect(page.getByText("Nothing matches")).toBeVisible();
+  await expect(page.getByRole("region", { name: /^Playlists/ })).toHaveCount(0);
 });
 
 test("warns the owner when a shared playlist holds private items", async ({ page }) => {

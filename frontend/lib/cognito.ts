@@ -4,6 +4,7 @@
  * them. Configured by COGNITO_DOMAIN (the pool's hosted-pages address), COGNITO_CLIENT_ID and APP_URL (this site).
  */
 
+import { HOME } from "./nav";
 import { appUrl } from "./site";
 
 export interface CognitoConfig {
@@ -42,9 +43,9 @@ export function redirectUri(config: CognitoConfig): string {
   return `${config.appUrl}/api/auth/callback`;
 }
 
-/** Only a path on this site: anything else (another site, "//host", a backslash trick) becomes the library. */
+/** Only a path on this site: anything else (another site, "//host", a backslash trick) becomes Explore. */
 export function safeNext(next: string | null | undefined): string {
-  if (!next || !next.startsWith("/") || next.startsWith("//") || next.includes("\\")) return "/library";
+  if (!next || !next.startsWith("/") || next.startsWith("//") || next.includes("\\")) return HOME;
   return next;
 }
 

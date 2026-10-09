@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { api, errorMessage } from "@/lib/api";
 import { onboardingPath } from "@/lib/landing";
+import { HOME } from "@/lib/nav";
 import { Button, ErrorNote, Field, inputClass } from "./ui";
 
 export function AuthForm({ mode }: { mode: "login" | "signup" }) {
@@ -27,7 +28,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
       });
       const next = params.get("next");
       // New accounts go straight to onboarding: pick a language (or keep the one picked on the landing page) and read.
-      router.replace(mode === "signup" ? onboardingPath(params.get("lang")) : next && next.startsWith("/") ? next : "/library");
+      router.replace(mode === "signup" ? onboardingPath(params.get("lang")) : next && next.startsWith("/") ? next : HOME);
       router.refresh();
     } catch (err) {
       setError(errorMessage(err));

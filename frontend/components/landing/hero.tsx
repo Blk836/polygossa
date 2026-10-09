@@ -2,6 +2,7 @@ import Link from "next/link";
 import { LinkButton, Logo } from "@/components/ui";
 import { signupHref } from "@/lib/landing";
 import { LEARNING_LANGUAGES } from "@/lib/languages";
+import { HOME } from "@/lib/nav";
 import { DemoReader } from "./demo-reader";
 
 const NAV = [
@@ -22,7 +23,7 @@ export function LandingHeader({ signedIn }: { signedIn: boolean }) {
         </nav>
         <div className="ml-auto flex items-center gap-2">
           {signedIn ? (
-            <LinkButton href="/library">Open library</LinkButton>
+            <LinkButton href={HOME}>Open library</LinkButton>
           ) : (
             <>
               <LinkButton href="/login" variant="ghost">Sign in</LinkButton>

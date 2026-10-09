@@ -1,6 +1,6 @@
-import { LibraryView } from "@/components/library/library-view";
+import { redirect } from "next/navigation";
 
-/** Texts and videos bookmarked in Explore ("Saved" under Library). */
+/** Saved was its own sub-tab; it is now My library's Saved filter. */
 export default function SavedPage() {
-  return <LibraryView view="saved" />;
+  redirect("/library?source=saved");
 }

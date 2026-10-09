@@ -9,6 +9,7 @@ import { Button, ErrorNote, LevelBadge, Spinner } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import { parseLanguage } from "@/lib/landing";
 import { LEARNING_LANGUAGES } from "@/lib/languages";
+import { HOME } from "@/lib/nav";
 import type { LanguageCode, Me, TextSummary } from "@/lib/types";
 
 /** Sets the target language and fetches a few starter texts in it. */
@@ -107,7 +108,7 @@ export default function OnboardingPage() {
               <div className="flex flex-wrap items-center gap-3 pt-4 text-sm">
                 <span className="text-muted">Or bring your own:</span>
                 <Link href={`/import?language=${language}`} className="text-accent underline">Paste text or import a URL</Link>
-                <Button variant="ghost" onClick={() => router.push("/library")}>Skip for now</Button>
+                <Button variant="ghost" onClick={() => router.push(HOME)}>Skip for now</Button>
               </div>
             </div>
           )}

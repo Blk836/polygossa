@@ -1,5 +1,6 @@
 import { CheckIcon, FlameIcon } from "@/components/icons";
 import { LinkButton } from "@/components/ui";
+import { HOME } from "@/lib/nav";
 import { streakMessage, weekStrip } from "@/lib/progress";
 import type { ActivityDay, Streak } from "@/lib/types";
 
@@ -38,7 +39,7 @@ export function StreakCard({ streak, days }: { streak: Streak; days: ActivityDay
           Best streak: <span className="font-semibold text-ink tabular-nums" data-testid="best-streak">{streak.best}</span>{" "}
           {streak.best === 1 ? "day" : "days"}
         </p>
-        {!streak.activeToday && <LinkButton href="/library">Continue reading</LinkButton>}
+        {!streak.activeToday && <LinkButton href={HOME}>Continue reading</LinkButton>}
       </div>
     </section>
   );
