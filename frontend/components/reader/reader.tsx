@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { api, errorMessage } from "@/lib/api";
 import type { ReaderPlaylist } from "@/lib/playlist-types";
-import type { DictionaryResult, TextDetail, WordStatus } from "@/lib/types";
+import type { TextDetail, WordLookup, WordStatus } from "@/lib/types";
 import { useMe } from "../me-context";
 import { ErrorNote } from "../ui";
 import { AudioPanel } from "./audio-panel";
@@ -73,7 +73,7 @@ export function Reader({ initial, initialSettings, playlist }: {
     onNotice: popup.setNotice,
     onError: setError,
   });
-  const { autoSave, recordDefinition, pickMeaning, setStatus: setVocabStatus, markRemainingKnown } = vocab;
+  const { autoSave, recordLookup, pickMeaning, setStatus: setVocabStatus, markRemainingKnown } = vocab;
 
   const sentences = useMemo(() => sentenceTexts(tokens), [tokens]);
   // Captions put a few words on each line; transcripts flow them into paragraphs instead.
@@ -115,11 +115,11 @@ export function Reader({ initial, initialSettings, playlist }: {
     },
     [target, setVocabStatus],
   );
-  const onDefinition = useCallback(
-    (result: DictionaryResult) => {
-      if (target) recordDefinition(target, result);
+  const onLookup = useCallback(
+    (lookup: WordLookup) => {
+      if (target) recordLookup(target, lookup);
     },
-    [target, recordDefinition],
+    [target, recordLookup],
   );
   const onPickMeaning = useCallback(
     (meaning: string) => {
@@ -216,11 +216,10 @@ export function Reader({ initial, initialSettings, playlist }: {
               notice={popup.notice}
               hasAudio={media.synced}
               onStatus={setStatus}
-              onDefinition={onDefinition}
+              onLookup={onLookup}
               onPickMeaning={onPickMeaning}
               onSaveSentence={saveSentence}
               onPlayFromHere={playFromHere}
-              onLookupLemma={popup.lookupLemma}
               onPhraseMode={() => popup.setPhraseMode(true)}
               onClose={close}
             />

@@ -1,6 +1,7 @@
 package app.lector.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 import app.lector.TestApi;
 import app.lector.writing.MutableClock;
@@ -57,9 +58,6 @@ class AiAllowanceApiTest {
     @DynamicPropertySource
     static void ai(DynamicPropertyRegistry registry) {
         registry.add("app.openai.base-url", AI::baseUrl);
-        // No dictionary has the words, so lookups fall through to the AI dictionary.
-        registry.add("app.dictionary.free-dictionary-base-url", () -> AI.baseUrl() + "/none");
-        registry.add("app.dictionary.wiktionary-base-url", () -> AI.baseUrl() + "/none");
     }
 
     @AfterAll
@@ -107,7 +105,7 @@ class AiAllowanceApiTest {
 
         assertLimitError(translate(user, 429));
         assertLimitError(api.get(user, "/api/dictionary/example?language=es&term=hola", 429));
-        assertLimitError(api.get(user, "/api/dictionary?language=es&term=zzqx", 429));
+        assertLimitError(api.get(user, "/api/dictionary/explain?language=es&term=zzqx", 429));
         assertLimitError(api.post(user, "/api/writing", "{\"language\":\"es\",\"content\":\"Hola amigo\"}", 429));
         assertThat(AI.requests()).hasSize(sent);
     }
@@ -115,9 +113,29 @@ class AiAllowanceApiTest {
     @Test
     void eachKindOfAiCallUsesTheAllowance() throws Exception {
         api.get(user, "/api/dictionary/example?language=es&term=hola", 200);
-        api.get(user, "/api/dictionary?language=es&term=zzqx", 200);
+        api.get(user, "/api/dictionary/explain?language=es&term=zzqx", 200);
         api.post(user, "/api/writing", "{\"language\":\"es\",\"content\":\"Hola amigo\"}", 201);
         translate(user, 429);
+    }
+
+    // lingq-style-lookup.feature, "Pro asks the AI for an explanation on demand".
+
+    @Test
+    void aLookupNeverCallsTheAiButExplainDoesInTheLearnersLanguage() throws Exception {
+        api.patch(user, "/api/me", "{\"nativeLanguage\":\"fr\"}", 200);
+        api.get(user, "/api/dictionary?language=es&term=zzqx", 200);
+        assertThat(AI.requests()).isEmpty();
+        JsonNode explained = api.send(get("/api/dictionary/explain").param("language", "es").param("term", "zzqx")
+                .param("context", "Un zzqx"), user, 200);
+        assertThat(explained.get("senses").get(0).get("definition").asString()).isEqualTo("hi");
+        assertThat(AI.requests()).hasSize(1);
+        assertThat(AI.requests().get(0)).contains("zzqx").contains("French").contains("Un zzqx");
+    }
+
+    @Test
+    void explainIsForPro() throws Exception {
+        api.get(api.signup(), "/api/dictionary/explain?language=es&term=zzqx", 402);
+        assertThat(AI.requests()).isEmpty();
     }
 
     @Test

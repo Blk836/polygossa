@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, type CSSProperties } from "react";
-import type { DictionaryResult, LanguageCode, WordStatus } from "@/lib/types";
+import type { LanguageCode, WordLookup, WordStatus } from "@/lib/types";
 import { WordPopup, type PopupTarget } from "./word-popup";
 
 interface Props {
@@ -16,11 +16,10 @@ interface Props {
   notice: string | null;
   hasAudio: boolean;
   onStatus: (status: WordStatus | null) => void;
-  onDefinition: (result: DictionaryResult) => void;
+  onLookup: (lookup: WordLookup) => void;
   onPickMeaning: (meaning: string) => void;
   onSaveSentence: (translation?: string) => Promise<void>;
   onPlayFromHere: () => void;
-  onLookupLemma: (lemma: string) => void;
   onPhraseMode: () => void;
   onClose: () => void;
 }

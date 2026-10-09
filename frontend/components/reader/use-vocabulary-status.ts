@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, api, errorMessage } from "@/lib/api";
-import { hasDetails, savedDefinition, savedMeaning } from "@/lib/dictionary";
-import type { DictionaryResult, LanguageCode, TextDetail, Token, WordStatus } from "@/lib/types";
+import { savedMeaning } from "@/lib/dictionary";
+import type { LanguageCode, TextDetail, Token, WordLookup, WordStatus } from "@/lib/types";
 import type { PopupTarget } from "./word-popup";
 
 type Phrase = TextDetail["phrases"][number];
@@ -27,13 +27,10 @@ function withStatus(map: Record<string, WordStatus>, term: string, status: WordS
   return copy;
 }
 
-function definitionFields(result: DictionaryResult) {
-  return {
-    definition: savedDefinition(result),
-    meaning: savedMeaning(result),
-    partOfSpeech: result.senses[0]?.partOfSpeech || undefined,
-    pronunciation: result.pronunciation ?? undefined,
-  };
+/** A saved word keeps the first meaning shown, as its meaning and its definition (none when there was none). */
+function meaningFields(lookup: WordLookup | null): { meaning?: string; definition?: string } {
+  const meaning = savedMeaning(lookup);
+  return meaning ? { meaning, definition: meaning } : {};
 }
 
 /**
@@ -47,7 +44,7 @@ export function useVocabularyStatus(opts: Options) {
   const statusesRef = useRef(statuses);
   const pending = useRef(new Map<string, Promise<unknown>>());
   const justCreated = useRef(new Set<string>());
-  const lastResult = useRef<DictionaryResult | null>(null);
+  const lastLookup = useRef<WordLookup | null>(null);
 
   useEffect(() => {
     statusesRef.current = statuses;
@@ -89,17 +86,14 @@ export function useVocabularyStatus(opts: Options) {
     [save, onSaved, reportFailure],
   );
 
-  /** Stores the dictionary definition on a word that was auto-saved by this lookup. */
-  const recordDefinition = useCallback(
-    (target: PopupTarget, result: DictionaryResult) => {
-      lastResult.current = result;
+  /** Stores the meaning shown on a word that was auto-saved by this lookup. */
+  const recordLookup = useCallback(
+    (target: PopupTarget, lookup: WordLookup) => {
+      lastLookup.current = lookup;
       if (target.kind !== "word" || !justCreated.current.delete(target.term)) return;
-      const fields = definitionFields(result);
-      void save(target.term, {
-        ...fields,
-        pronunciation: target.reading ?? fields.pronunciation,
-        example: result.senses.flatMap((s) => s.examples)[0] ?? undefined,
-      }).catch(() => {});
+      const fields = meaningFields(lookup);
+      if (!fields.meaning && !target.reading) return;
+      void save(target.term, { ...fields, pronunciation: target.reading }).catch(() => {});
     },
     [save],
   );
@@ -131,14 +125,13 @@ export function useVocabularyStatus(opts: Options) {
         await api(`vocabulary/by-term?language=${language}&term=${encodeURIComponent(term)}`, { method: "DELETE" });
         return;
       }
-      const r = lastResult.current;
       justCreated.current.delete(term);
       await save(term, {
         displayTerm: target.display,
         kind: target.kind,
         status,
         contextSentence: target.sentence,
-        ...(isNew && r && hasDetails(r) ? definitionFields(r) : {}),
+        ...(isNew ? meaningFields(lastLookup.current) : {}),
       });
     },
     [language, save],
@@ -151,7 +144,9 @@ export function useVocabularyStatus(opts: Options) {
       const before = statusOf(target) ?? null;
       if (before === null) apply(target, "learning");
       try {
-        await save(target.term, { displayTerm: target.display, kind: target.kind, contextSentence: target.sentence, meaning });
+        await save(target.term, {
+          displayTerm: target.display, kind: target.kind, contextSentence: target.sentence, meaning, definition: meaning,
+        });
         onSaved();
       } catch (e) {
         if (before === null) apply(target, null);
@@ -187,5 +182,5 @@ export function useVocabularyStatus(opts: Options) {
     });
   }, []);
 
-  return { statuses, phrases, statusOf, autoSave, recordDefinition, pickMeaning, setStatus, markRemainingKnown };
+  return { statuses, phrases, statusOf, autoSave, recordLookup, pickMeaning, setStatus, markRemainingKnown };
 }

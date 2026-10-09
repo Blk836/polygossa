@@ -12,9 +12,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.util.LinkedHashSet;
-import java.util.Locale;
-import java.util.Set;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,16 +28,14 @@ public class DictionaryController {
 
     public record TranslateResponse(String translation) {}
 
-    private final DictionaryClient dictionary;
     private final OwnLanguageMeanings meanings;
     private final AiTutor ai;
     private final AiAllowance allowance;
     private final PlanService plans;
     private final CurrentUser currentUser;
 
-    public DictionaryController(DictionaryClient dictionary, OwnLanguageMeanings meanings, AiTutor ai,
-                                AiAllowance allowance, PlanService plans, CurrentUser currentUser) {
-        this.dictionary = dictionary;
+    public DictionaryController(OwnLanguageMeanings meanings, AiTutor ai, AiAllowance allowance, PlanService plans,
+                                CurrentUser currentUser) {
         this.meanings = meanings;
         this.ai = ai;
         this.allowance = allowance;
@@ -49,42 +44,37 @@ public class DictionaryController {
     }
 
     /**
-     * Looks up a word or phrase. Tries the form as written, then lower-case, then capitalized (German nouns), and
-     * finally the AI dictionary for Pro users when the free sources have nothing. Free-dictionary results gain
-     * translations into the learner's native language (the AI writes in it directly).
+     * Looks up a word or phrase: its meanings in the learner's own language, from other learners' saved meanings, else
+     * a machine translation (lingq-style-lookup.feature). Never calls the AI.
      */
     @GetMapping
-    public DictionaryResult lookup(@AuthenticationPrincipal AuthUser principal,
-                                   @RequestParam Language language,
-                                   @RequestParam String term,
-                                   @RequestParam(required = false) String context) {
+    public WordLookup lookup(@AuthenticationPrincipal AuthUser principal,
+                             @RequestParam Language language,
+                             @RequestParam String term) {
+        String surface = checked(term);
+        User user = currentUser.load(principal);
+        return meanings.lookup(language, user.getNativeLanguage(), TokenizationService.normalize(surface, language),
+                surface);
+    }
+
+    /** The AI's explanation of a word, in the learner's language, when they ask for it (Pro). */
+    @GetMapping("/explain")
+    public DictionaryResult explain(@AuthenticationPrincipal AuthUser principal,
+                                    @RequestParam Language language,
+                                    @RequestParam String term,
+                                    @RequestParam(required = false) String context) {
+        String surface = checked(term);
+        User user = currentUser.load(principal);
+        plans.require(user, PlanService.Feature.AI);
+        return allowance.call(user, () -> ai.define(language, user.getNativeLanguage(), surface, context));
+    }
+
+    private static String checked(String term) {
         String surface = term.strip();
         if (surface.isEmpty() || surface.length() > 200) {
             throw new IllegalArgumentException("term must be 1-200 characters");
         }
-        Locale locale = Locale.forLanguageTag(language.code());
-        Set<String> variants = new LinkedHashSet<>();
-        variants.add(surface);
-        variants.add(surface.toLowerCase(locale));
-        variants.add(surface.substring(0, 1).toUpperCase(locale) + surface.substring(1).toLowerCase(locale));
-        DictionaryResult result = null;
-        for (String variant : variants) {
-            result = dictionary.lookup(language, variant);
-            if (result.found()) {
-                break;
-            }
-        }
-        User user = currentUser.load(principal);
-        String key = TokenizationService.normalize(surface, language);
-        if (result.found()) {
-            return meanings.add(result, language, user.getNativeLanguage(), key, surface);
-        }
-        if (ai.enabled() && plans.hasFeature(user, PlanService.Feature.AI)) {
-            result = allowance.call(user, () -> ai.define(language, user.getNativeLanguage(), surface, context));
-        }
-        // The AI writes in the learner's language already; otherwise others' meanings or a machine translation help.
-        return result.found() ? result : meanings.add(DictionaryResult.notFound(key, language.code()), language,
-                user.getNativeLanguage(), key, surface);
+        return surface;
     }
 
     /** AI-generated example sentence (Pro). */
