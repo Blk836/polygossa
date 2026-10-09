@@ -38,6 +38,9 @@ class CuratorDisabledTest {
                     null, 404);
             api.send(MockMvcRequestBuilders.get("/api/curator/videos/AAAAAAAAAAA/copy").param("language", "fr")
                     .header(CuratedVideoImportApiTest.HEADER, token), null, 404);
+            api.send(MockMvcRequestBuilders.post("/api/curator/playlists").contentType(MediaType.APPLICATION_JSON)
+                    .header(CuratedVideoImportApiTest.HEADER, token)
+                    .content("{\"title\":\"T\",\"language\":\"fr\",\"videoIds\":[\"AAAAAAAAAAA\"]}"), null, 404);
             api.send(MockMvcRequestBuilders.post("/api/curator/copies").contentType(MediaType.APPLICATION_JSON)
                     .header(CuratedVideoImportApiTest.HEADER, token)
                     .content("{\"videoId\":\"AAAAAAAAAAA\",\"language\":\"fr\",\"title\":\"T\",\"content\":\"Bonjour.\"}"),

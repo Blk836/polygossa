@@ -77,6 +77,15 @@ export function makeClient({ baseUrl, token, fetch = globalThis.fetch, label = n
       return status === 404 ? { missing: body.message ?? "" } : { failed: body.message ?? `HTTP ${status}` };
     },
 
+    /** Makes or updates a library playlist; returns the backend's answer {status, body}, whatever the status. */
+    async savePlaylist(request) {
+      return call("/api/curator/playlists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(request),
+      });
+    },
+
     /** Saves an exported video on this (target) backend; returns {outcome, reason, title} as importVideo does. */
     async copyVideo(video, dryRun) {
       return post("/api/curator/copies", { ...video, dryRun });

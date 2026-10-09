@@ -208,7 +208,7 @@ public class PlaylistService {
         return playlist;
     }
 
-    private static String title(String title) {
+    static String title(String title) {
         String t = title == null ? "" : title.strip();
         if (t.isEmpty()) {
             throw ApiException.badRequest("A title is required");
@@ -219,7 +219,7 @@ public class PlaylistService {
         return t;
     }
 
-    private static String description(String description) {
+    static String description(String description) {
         String d = description == null ? "" : description.strip();
         if (d.length() > Playlist.MAX_DESCRIPTION) {
             throw ApiException.badRequest("Descriptions are limited to " + Playlist.MAX_DESCRIPTION + " characters");

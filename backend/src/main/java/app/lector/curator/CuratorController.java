@@ -1,5 +1,6 @@
 package app.lector.curator;
 
+import app.lector.curator.CuratedPlaylistService.CuratedPlaylist;
 import app.lector.curator.CuratedVideoService.CuratedVideo;
 import app.lector.text.Category;
 import app.lector.text.SubtitleParser.Cue;
@@ -32,13 +33,19 @@ public class CuratorController {
         }
     }
 
+    /** A list of curated videos to put into a library playlist, in this order. */
+    public record PlaylistRequest(String title, String description, Language language, List<String> videoIds,
+                                  boolean dryRun) {}
+
     /** What a list file may use, so the tool can check its lines before importing anything. */
     public record Options(List<Language> languages, List<Category> categories) {}
 
     private final CuratedVideoService videos;
+    private final CuratedPlaylistService playlists;
 
-    public CuratorController(CuratedVideoService videos) {
+    public CuratorController(CuratedVideoService videos, CuratedPlaylistService playlists) {
         this.videos = videos;
+        this.playlists = playlists;
     }
 
     @GetMapping("/options")
@@ -61,6 +68,14 @@ public class CuratorController {
     @PostMapping("/copies")
     public ResponseEntity<CuratedVideo> copyVideo(@RequestBody CopyRequest req) {
         return answer(videos.copy(req.copy(), req.dryRun()));
+    }
+
+    /** Makes or updates a public library playlist of curated videos. */
+    @PostMapping("/playlists")
+    public ResponseEntity<CuratedPlaylist> savePlaylist(@RequestBody PlaylistRequest req) {
+        CuratedPlaylist result = playlists.save(req.title(), req.description(), req.language(), req.videoIds(),
+                req.dryRun());
+        return ResponseEntity.status(result.created() ? HttpStatus.CREATED : HttpStatus.OK).body(result);
     }
 
     private static ResponseEntity<CuratedVideo> answer(CuratedVideo result) {
