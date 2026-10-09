@@ -114,9 +114,7 @@ export function ProgressSkeleton() {
         </CardFrame>
         <CardFrame>
           <Bone className="h-6 w-40" />
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {Array.from({ length: 8 }, (_, i) => <Bone key={i} className="h-24 rounded-lg" />)}
-          </div>
+          <Bone className="mt-4 -mx-5 aspect-[4/5] rounded-none sm:mx-0 sm:aspect-[16/10] sm:rounded-lg" />
         </CardFrame>
         <CardFrame>
           <Bone className="h-6 w-28" />
