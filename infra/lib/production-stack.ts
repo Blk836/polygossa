@@ -26,6 +26,12 @@ export const OPENAI_SECRET = "polygossa/openai-api-key";
  */
 export const STRIPE_SECRET = "polygossa/stripe-secret-key";
 export const STRIPE_WEBHOOK_SECRET = "polygossa/stripe-webhook-secret";
+/**
+ * The webhook secret's name ends in a hyphen and six characters ("-secret"), which Secrets Manager reads as the random
+ * suffix of a complete ARN, so it can't be referenced by name: it is referenced by its complete ARN, whose suffix this
+ * is (from `aws secretsmanager describe-secret`; it changes only if the secret is deleted and made again).
+ */
+export const STRIPE_WEBHOOK_SECRET_ARN_SUFFIX = "jABTGF";
 
 export interface ProductionProps extends cdk.StackProps {
   /** CloudFront's origin-facing prefix list; looked up in the account when absent (tests pass one). */
@@ -129,7 +135,10 @@ export class ProductionStack extends cdk.Stack {
         STRIPE_SECRET_KEY: ecs.Secret.fromSecretsManager(
           secretsmanager.Secret.fromSecretNameV2(this, "StripeKey", STRIPE_SECRET)),
         STRIPE_WEBHOOK_SECRET: ecs.Secret.fromSecretsManager(
-          secretsmanager.Secret.fromSecretNameV2(this, "StripeWebhookSecret", STRIPE_WEBHOOK_SECRET)),
+          secretsmanager.Secret.fromSecretCompleteArn(this, "StripeWebhookSecret", this.formatArn({
+            service: "secretsmanager", resource: "secret", arnFormat: cdk.ArnFormat.COLON_RESOURCE_NAME,
+            resourceName: `${STRIPE_WEBHOOK_SECRET}-${STRIPE_WEBHOOK_SECRET_ARN_SUFFIX}`,
+          }))),
       },
     });
     // TranslateText names no resource unless custom terminology is used, so "*", kept to this one action and region.
