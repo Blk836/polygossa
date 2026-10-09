@@ -1,0 +1,241 @@
+word | band | area | meaning:en | forms
+# Food & Drink
+
+# --- Fruit & vegetables ---
+fruit | A1 | fruit-veg | = | fruits
+légume | A1 | fruit-veg | vegetable | légumes
+pomme | A1 | fruit-veg | apple | pommes
+poire | A1 | fruit-veg | pear | poires
+banane | A1 | fruit-veg | banana | bananes
+orange | A1 | fruit-veg | = | oranges
+fraise | A1 | fruit-veg | strawberry | fraises
+tomate | A1 | fruit-veg | tomato | tomates
+patate | A1 | fruit-veg | potato (informal) | patates
+salade | A1 | fruit-veg | salad; lettuce | salades
+carotte | A1 | fruit-veg | carrot | carottes
+citron | A2 | fruit-veg | lemon | citrons
+raisin | A2 | fruit-veg | grape | raisins
+cerise | A2 | fruit-veg | cherry | cerises
+pêche | A2 | fruit-veg | peach; fishing | pêches
+ananas | A2 | fruit-veg | pineapple |
+melon | A2 | fruit-veg | = | melons
+oignon | A2 | fruit-veg | onion | oignons
+ail | A2 | fruit-veg | garlic |
+haricot | A2 | fruit-veg | bean | haricots
+champignon | A2 | fruit-veg | mushroom | champignons
+concombre | A2 | fruit-veg | cucumber | concombres
+chou | A2 | fruit-veg | cabbage | choux
+abricot | B1 | fruit-veg | apricot | abricots
+prune | B1 | fruit-veg | plum | prunes
+framboise | B1 | fruit-veg | raspberry | framboises
+myrtille | B1 | fruit-veg | blueberry | myrtilles
+pastèque | B1 | fruit-veg | watermelon | pastèques
+mangue | B1 | fruit-veg | mango | mangues
+noix | B1 | fruit-veg | walnut; nut |
+noisette | B1 | fruit-veg | hazelnut | noisettes
+amande | B1 | fruit-veg | almond | amandes
+poivron | B1 | fruit-veg | pepper (vegetable) | poivrons
+courgette | B1 | fruit-veg | = | courgettes
+aubergine | B1 | fruit-veg | = | aubergines
+épinard | B1 | fruit-veg | spinach | épinards
+poireau | B1 | fruit-veg | leek | poireaux
+brocoli | B1 | fruit-veg | broccoli | brocolis
+chou-fleur | B1 | fruit-veg | cauliflower | choux-fleurs
+céleri | B1 | fruit-veg | celery |
+radis | B1 | fruit-veg | radish |
+maïs | B1 | fruit-veg | corn |
+lentille | B1 | fruit-veg | lentil | lentilles
+avocat | B1 | fruit-veg | avocado; lawyer | avocats
+olive | B1 | fruit-veg | = | olives
+citrouille | B1 | fruit-veg | pumpkin | citrouilles
+bio | B1 | fruit-veg | organic |
+mûr | B1 | fruit-veg | ripe | mûre mûrs mûres
+
+# --- Meat, fish & basics ---
+pain | A1 | meat-fish | bread | pains
+viande | A1 | meat-fish | meat | viandes
+poisson | A1 | meat-fish | fish | poissons
+poulet | A1 | meat-fish | chicken | poulets
+œuf | A1 | meat-fish | egg | œufs
+fromage | A1 | meat-fish | cheese | fromages
+riz | A1 | meat-fish | rice |
+pâtes | A1 | meat-fish | pasta |
+beurre | A1 | meat-fish | butter |
+sucre | A1 | meat-fish | sugar | sucres
+sel | A1 | meat-fish | salt |
+jambon | A1 | meat-fish | ham | jambons
+bœuf | A2 | meat-fish | beef |
+porc | A2 | meat-fish | pork |
+steak | A2 | meat-fish | = | steaks
+saucisse | A2 | meat-fish | sausage | saucisses
+poivre | A2 | meat-fish | pepper (spice) |
+huile | A2 | meat-fish | oil | huiles
+farine | A2 | meat-fish | flour |
+confiture | A2 | meat-fish | jam | confitures
+miel | A2 | meat-fish | honey |
+yaourt | A2 | meat-fish | yoghurt | yaourts
+crème | A2 | meat-fish | cream | crèmes
+soupe | A2 | meat-fish | soup | soupes
+chocolat | A2 | meat-fish | chocolate | chocolats
+gâteau | A2 | meat-fish | cake | gâteaux
+croissant | A2 | meat-fish | = | croissants
+baguette | A2 | meat-fish | = | baguettes
+agneau | B1 | meat-fish | lamb | agneaux
+veau | B1 | meat-fish | veal; calf | veaux
+dinde | B1 | meat-fish | turkey | dindes
+canard | B1 | meat-fish | duck | canards
+saumon | B1 | meat-fish | salmon | saumons
+thon | B1 | meat-fish | tuna | thons
+crevette | B1 | meat-fish | prawn; shrimp | crevettes
+moule | B1 | meat-fish | mussel | moules
+huître | B1 | meat-fish | oyster | huîtres
+vinaigre | B1 | meat-fish | vinegar |
+moutarde | B1 | meat-fish | mustard |
+épice | B1 | meat-fish | spice | épices
+herbe | B1 | meat-fish | herb; grass | herbes
+céréales | B1 | meat-fish | cereal |
+biscuit | B1 | meat-fish | = | biscuits
+bonbon | B1 | meat-fish | sweet; candy | bonbons
+tarte | B1 | meat-fish | tart; pie | tartes
+crêpe | B1 | meat-fish | pancake | crêpes
+sandwich | B1 | meat-fish | = | sandwichs sandwiches
+frites | B1 | meat-fish | chips; fries |
+pizza | B1 | meat-fish | = | pizzas
+glace | A2 | meat-fish | ice cream; ice; mirror | glaces
+sauce | B1 | meat-fish | = | sauces
+
+# --- Cooking & eating ---
+manger | A1 | cooking | to eat | mange manges mangeons mangez mangent mangé mangée mangés mangeais mangeait mangeaient mangerai mangera
+faim | A1 | cooking | hunger |
+cuisine | A1 | cooking | kitchen; cooking | cuisines
+appétit | A2 | cooking | appetite |
+cuisiner | A2 | cooking | to cook | cuisinons cuisinez cuisinent cuisiné cuisinait
+préparer | A2 | cooking | to prepare | prépare prépares préparons préparez préparent préparé préparée préparait
+cuire | A2 | cooking | to cook; to bake | cuis cuit cuisent cuite cuits
+recette | A2 | cooking | recipe | recettes
+goûter | A2 | cooking | to taste; afternoon snack | goûte goûtes goûtent goûté goûtait
+délicieux | A2 | cooking | delicious | délicieuse délicieuses
+sucré | A2 | cooking | sweet | sucrée sucrés sucrées
+salé | A2 | cooking | salty; savoury | salée salés salées
+couper | A2 | cooking | to cut | coupe coupes coupons coupez coupent coupé coupée coupait
+mélanger | B1 | cooking | to mix | mélange mélanges mélangeons mélangez mélangent mélangé mélangeait
+éplucher | B1 | cooking | to peel | épluche épluchent épluché
+bouillir | B1 | cooking | to boil | bouillent bouilli bouillie
+frire | B1 | cooking | to fry | frit frite frits
+griller | B1 | cooking | to grill; to toast | grille grillent grillé grillée
+rôtir | B1 | cooking | to roast | rôtis rôtit rôti rôtie
+chauffer | B1 | cooking | to heat | chauffe chauffent chauffé chauffée
+réchauffer | B1 | cooking | to reheat | réchauffe réchauffent réchauffé
+verser | B1 | cooking | to pour | verse verses versent versé versait
+goût | B1 | cooking | taste | goûts
+amer | B1 | cooking | bitter | amère amers amères
+épicé | B1 | cooking | spicy | épicée épicés épicées
+fade | B1 | cooking | bland | fades
+cru | B1 | cooking | raw | crue crus crues
+saignant | B1 | cooking | rare (meat) | saignante saignants
+ingrédient | B1 | cooking | ingredient | ingrédients
+cuillerée | B1 | cooking | spoonful | cuillerées
+pincée | B1 | cooking | pinch | pincées
+tranche | B1 | cooking | slice | tranches
+morceau | B1 | cooking | piece | morceaux
+végétarien | B1 | cooking | vegetarian | végétarienne végétariens végétariennes
+nourriture | B1 | cooking | food | nourritures
+nourrir | B1 | cooking | to feed | nourris nourrit nourrissent nourri
+avaler | B1 | cooking | to swallow | avale avalent avalé
+mâcher | B1 | cooking | to chew | mâche mâchent mâché
+
+# --- Drinks ---
+boire | A1 | drinks | to drink | bois boit buvons buvez boivent bu buvais buvait boira
+eau | A1 | drinks | water | eaux
+café | A1 | drinks | coffee; café | cafés
+thé | A1 | drinks | tea | thés
+lait | A1 | drinks | milk | laits
+vin | A1 | drinks | wine | vins
+bière | A1 | drinks | beer | bières
+jus | A1 | drinks | juice |
+soif | A1 | drinks | thirst |
+boisson | A2 | drinks | drink | boissons
+verre | A2 | drinks | glass | verres
+bouteille | A2 | drinks | bottle | bouteilles
+tasse | A2 | drinks | cup | tasses
+limonade | A2 | drinks | lemonade | limonades
+glaçon | A2 | drinks | ice cube | glaçons
+apéritif | B1 | drinks | aperitif; pre-dinner drink | apéritifs apéro apéros
+cocktail | B1 | drinks | = | cocktails
+champagne | B1 | drinks | = | champagnes
+gazeux | B1 | drinks | fizzy | gazeuse gazeuses
+plat | B1 | drinks | still (water); flat; dish | plate plats plates
+pression | B1 | drinks | draught beer; pressure | pressions
+cidre | B1 | drinks | cider | cidres
+tisane | B1 | drinks | herbal tea | tisanes
+gorgée | B1 | drinks | sip | gorgées
+ivre | B1 | drinks | drunk | ivres
+expresso | B1 | drinks | espresso | expressos
+
+# --- Eating out ---
+restaurant | A1 | eating-out | = | restaurants
+menu | A1 | eating-out | set menu; menu | menus
+serveur | A1 | eating-out | waiter | serveuse serveurs serveuses
+table | A1 | eating-out | = | tables
+addition | A2 | eating-out | bill (restaurant) | additions
+commander | A2 | eating-out | to order | commande commandes commandons commandez commandent commandé commandait
+réserver | A2 | eating-out | to book | réserve réserves réservons réservez réservent réservé réservée réservait
+carte | A2 | eating-out | menu; card; map | cartes
+entrée | A2 | eating-out | starter; entrance | entrées
+dessert | A2 | eating-out | = | desserts
+pourboire | A2 | eating-out | tip | pourboires
+terrasse | A2 | eating-out | terrace | terrasses
+bistrot | A2 | eating-out | bistro | bistrots bistro
+brasserie | B1 | eating-out | brasserie; brewery | brasseries
+cuisinier | B1 | eating-out | cook | cuisinière cuisiniers cuisinières
+chef | B1 | eating-out | chef; boss | chefs
+service | B1 | eating-out | = | services
+couvert | B1 | eating-out | place setting | couverts
+formule | B1 | eating-out | set meal; formula | formules
+végétalien | B1 | eating-out | vegan | végétalienne végétaliens
+emporter | B1 | eating-out | to take away | emporte emportent emporté
+livraison | B1 | eating-out | delivery | livraisons
+livrer | B1 | eating-out | to deliver | livrons livrent livré livrée
+cantine | B1 | eating-out | canteen | cantines
+gastronomie | B1 | eating-out | gastronomy |
+étoilé | B1 | eating-out | Michelin-starred | étoilée étoilés
+client | B1 | eating-out | customer | cliente clients clientes
+satisfait | B1 | eating-out | satisfied | satisfaite satisfaits satisfaites
+plainte | B1 | eating-out | complaint | plaintes
+copieux | B1 | eating-out | hearty; generous | copieuse copieuses
+
+# --- Meals & food shopping ---
+petit-déjeuner | A1 | food-shopping | breakfast | petits-déjeuners
+déjeuner | A1 | food-shopping | lunch; to have lunch | déjeuners déjeune déjeunons déjeunez déjeunent déjeuné
+dîner | A1 | food-shopping | dinner; to have dinner | dîners dîne dînons dînez dînent dîné
+repas | A1 | food-shopping | meal |
+marché | A1 | food-shopping | market | marchés
+supermarché | A1 | food-shopping | supermarket | supermarchés
+boulangerie | A1 | food-shopping | bakery | boulangeries
+kilo | A2 | food-shopping | = | kilos
+litre | A2 | food-shopping | = | litres
+paquet | A2 | food-shopping | packet | paquets
+boîte | A2 | food-shopping | box; tin | boîtes
+frais | A2 | food-shopping | fresh; costs | fraîche fraîches
+courses | A2 | food-shopping | shopping (food) |
+boucherie | A2 | food-shopping | butcher's | boucheries
+épicerie | A2 | food-shopping | grocer's | épiceries
+pâtisserie | A2 | food-shopping | cake shop; pastry | pâtisseries
+casse-croûte | B1 | food-shopping | snack |
+pique-nique | B1 | food-shopping | picnic | pique-niques
+en-cas | B1 | food-shopping | snack |
+boulanger | B1 | food-shopping | baker | boulangère boulangers
+boucher | B1 | food-shopping | butcher | bouchère bouchers
+fromagerie | B1 | food-shopping | cheese shop | fromageries
+poissonnerie | B1 | food-shopping | fishmonger's | poissonneries
+caddie | B1 | food-shopping | shopping trolley | caddies
+panier | B1 | food-shopping | basket | paniers
+rayon | B1 | food-shopping | aisle; department; ray | rayons
+surgelé | B1 | food-shopping | frozen | surgelée surgelés surgelées
+conserve | B1 | food-shopping | tin; preserve | conserves
+douzaine | B1 | food-shopping | dozen | douzaines
+gramme | B1 | food-shopping | gram | grammes
+liste | B1 | food-shopping | list | listes
+régional | B1 | food-shopping | regional | régionale régionaux régionales
+gaspiller | B1 | food-shopping | to waste | gaspille gaspillent gaspillé
+gaspillage | B1 | food-shopping | waste | gaspillages
