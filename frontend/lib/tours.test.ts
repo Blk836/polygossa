@@ -61,6 +61,19 @@ describe("the tours themselves", () => {
       if (step.target !== undefined) expect(step.target).toMatch(/^[a-z][a-z-]*$/);
     }
   });
+
+  it("leave no tip without a target (a tip at the bottom with nothing highlighted looked misplaced)", () => {
+    for (const tour of TOURS) {
+      for (const step of tour.steps) expect(step.target, `${tour.key}: ${step.title}`).toBeDefined();
+    }
+  });
+
+  it("point Review at its goal bar then its card, Write at its start panel, Playlists' second tip at Explore", () => {
+    const targets = (key: string) => TOURS.find((t) => t.key === key)!.steps.map((s) => s.target);
+    expect(targets("review")).toEqual(["review-goal", "review-card"]);
+    expect(targets("writing")).toEqual(["writing-start"]);
+    expect(targets("playlists")).toEqual(["playlist-create", "explore"]);
+  });
 });
 
 describe("pendingTour", () => {
