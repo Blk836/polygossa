@@ -114,7 +114,7 @@ export function ProgressSkeleton() {
         </CardFrame>
         <CardFrame>
           <Bone className="h-6 w-40" />
-          <Bone className="mt-4 -mx-5 aspect-[4/5] rounded-none sm:mx-0 sm:aspect-[16/10] sm:rounded-lg" />
+          <Bone className="mt-4 -mx-5 aspect-[2/3] rounded-none sm:mx-0 sm:aspect-[16/10] sm:rounded-lg" />
         </CardFrame>
         <CardFrame>
           <Bone className="h-6 w-28" />

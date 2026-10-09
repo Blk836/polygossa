@@ -35,6 +35,9 @@ function dotsByArea(world: World, view: BandView): Map<string, AreaDots> {
   return out;
 }
 
+/** Narrower maps (phones) write island labels small, on two lines, without the notes, so neighbours don't collide. */
+const COMPACT_BELOW_PX = 560;
+
 const STATUS_TEXT: Record<string, string> = { known: "known", learning: "learning", ignored: "ignored", new: "new" };
 
 const dotFill: Record<string, string> = {
@@ -60,7 +63,8 @@ export function IslandMap({ map, view, place, selected, go, onSelect }: {
   const svgRef = useRef<SVGSVGElement>(null);
   const worldRef = useRef<SVGGElement>(null);
   const viewport = useViewport(wrapRef);
-  const world = useMemo(() => layoutWorld(map.regions), [map.regions]);
+  const portrait = viewport.height > viewport.width;
+  const world = useMemo(() => layoutWorld(map.regions, portrait), [map.regions, portrait]);
   const dots = useMemo(() => dotsByArea(world, view), [world, view]);
   const limits = useMemo(() => zoomLimits(world, viewport), [world, viewport]);
   const regionId = place.region?.id ?? null;
@@ -77,7 +81,7 @@ export function IslandMap({ map, view, place, selected, go, onSelect }: {
   return (
     <div
       ref={wrapRef}
-      className="relative -mx-5 aspect-[4/5] overflow-hidden sm:mx-0 sm:aspect-[16/10] sm:rounded-lg sm:border sm:border-line"
+      className="relative -mx-5 aspect-[2/3] overflow-hidden sm:mx-0 sm:aspect-[16/10] sm:rounded-lg sm:border sm:border-line"
       style={{ background: "var(--sea-deep)" }}
     >
       <svg
@@ -118,8 +122,8 @@ export function IslandMap({ map, view, place, selected, go, onSelect }: {
             <WordButtons dots={dots.get(place.area.id)} selected={selected} onSelect={onSelect} />
           )}
           <WordLabels plan={plan} dots={dots} />
-          <PlaceLabels plan={plan} world={world} view={view} />
-          <BeyondTheCore count={map.beyondCore} />
+          <PlaceLabels plan={plan} world={world} view={view} compact={viewport.width < COMPACT_BELOW_PX} />
+          <BeyondTheCore count={map.beyondCore} world={world} />
         </g>
       </svg>
       {place.region && (

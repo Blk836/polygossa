@@ -249,6 +249,10 @@ span.s-spoken:not(.w) {
   font-size: 13px;
   font-weight: 600;
 }
+.island-map .map-label .small {
+  font-size: 10px;
+  stroke-width: 2.5px;
+}
 .island-map .map-label .note {
   font-size: 10.5px;
   fill: var(--muted);
@@ -256,6 +260,9 @@ span.s-spoken:not(.w) {
 .island-map .map-label.beyond text {
   text-anchor: start;
   fill: var(--muted);
+}
+.island-map .map-label.beyond.end text {
+  text-anchor: end;
 }
 .island-map [role="button"],
 .island-map a {
