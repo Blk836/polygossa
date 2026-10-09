@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { TEXT_SIZES, type Follow, type ReaderSettings } from "./reader-settings";
+import { TEXT_SIZES, type Follow, type ReaderSettings, type TextWidth } from "./reader-settings";
+
+/** The reader header's tool buttons: round, quiet until hovered. */
+export const toolButton = "flex size-8 items-center justify-center rounded-full text-sm text-muted transition-colors hover:bg-card hover:text-ink";
 
 /** A button that opens a small panel below it; Escape or a click outside closes it. */
 function Menu({ label, button, children }: { label: string; button: ReactNode; children: ReactNode }) {
@@ -25,7 +28,7 @@ function Menu({ label, button, children }: { label: string; button: ReactNode; c
   return (
     <div ref={root} className="relative">
       <button
-        className={`rounded px-2 py-1 text-xs ${open ? "bg-accent-soft" : "text-muted hover:bg-paper"}`}
+        className={`${toolButton} ${open ? "bg-accent-soft text-ink" : ""}`}
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-label={label}
@@ -34,7 +37,7 @@ function Menu({ label, button, children }: { label: string; button: ReactNode; c
         {button}
       </button>
       {open && (
-        <div role="dialog" aria-label={label} className="absolute right-0 z-30 mt-2 w-72 rounded-xl border border-line bg-card p-4 text-sm shadow-lg">
+        <div role="dialog" aria-label={label} className="absolute right-0 z-30 mt-2 w-80 rounded-xl border border-line bg-card p-4 text-sm shadow-lg">
           {children}
         </div>
       )}
@@ -56,6 +59,35 @@ function Toggle({ label, hint, checked, onChange }: { label: string; hint: strin
 
 const sizeButton = "rounded border border-line px-2 py-0.5 hover:bg-paper disabled:opacity-40";
 
+const WIDTHS: { value: TextWidth; label: string }[] = [
+  { value: "standard", label: "Standard" },
+  { value: "wide", label: "Wide" },
+  { value: "full", label: "Full" },
+];
+
+/** Standard (a book-like column), Wide or Full: how many words fit on a line on a big screen. */
+function TextWidthPicker({ value, onChange }: { value: TextWidth; onChange: (width: TextWidth) => void }) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-1.5">
+      <span id="reader-text-width">Text width</span>
+      <div role="radiogroup" aria-labelledby="reader-text-width" className="inline-flex rounded-lg border border-line bg-paper p-0.5 text-xs">
+        {WIDTHS.map((w) => (
+          <button
+            key={w.value}
+            type="button"
+            role="radio"
+            aria-checked={value === w.value}
+            onClick={() => onChange(w.value)}
+            className={`rounded-md px-2.5 py-1 transition ${value === w.value ? "bg-card font-medium text-ink shadow-sm ring-1 ring-line" : "text-muted hover:text-ink"}`}
+          >
+            {w.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function SettingsMenu({ settings, onChange }: { settings: ReaderSettings; onChange: (change: Partial<ReaderSettings>) => void }) {
   return (
     <Menu label="Reader settings" button={<span aria-hidden>Aa</span>}>
@@ -66,6 +98,7 @@ export function SettingsMenu({ settings, onChange }: { settings: ReaderSettings;
           <button className={sizeButton} onClick={() => onChange({ size: settings.size + 1 })} disabled={settings.size >= TEXT_SIZES - 1} aria-label="Larger text">A+</button>
         </span>
       </div>
+      <TextWidthPicker value={settings.width} onChange={(width) => onChange({ width })} />
       <Toggle label="Quiet colours" hint="Hide new-word highlighting." checked={settings.quiet} onChange={(quiet) => onChange({ quiet })} />
       <Toggle
         label="Pause when looking up a word"

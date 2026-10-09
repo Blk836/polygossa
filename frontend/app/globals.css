@@ -173,6 +173,48 @@ span.s-spoken:not(.w) {
   letter-spacing: 0.02em;
 }
 
+/* ---- the reader's canvas: wider than other pages. The text column grows to the reader's Text width setting, plus
+   room either side for the page arrows on wide screens; a video sits beside it (or floats as a mini player). ---- */
+main:has(> [data-reader]) {
+  max-width: 100rem;
+}
+[data-reader] {
+  --text-max: 66rem;
+  --gutter: 0rem;
+  --video-width: 24rem;
+}
+[data-reader][data-text-width="standard"] {
+  --text-max: 46rem;
+}
+[data-reader][data-text-width="full"] {
+  --text-max: 100rem;
+}
+.reader-column {
+  width: 100%;
+  max-width: calc(var(--text-max) + 2 * var(--gutter));
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+@media (width >= 64rem) {
+  [data-reader][data-video-layout="beside"] {
+    display: grid;
+    grid-template-columns: minmax(0, calc(var(--text-max) + 2 * var(--gutter))) var(--video-width);
+    justify-content: center;
+    column-gap: 2rem;
+  }
+}
+@media (width >= 80rem) {
+  [data-reader] {
+    --gutter: 3.5rem;
+    --video-width: 30rem;
+  }
+}
+@media (width >= 96rem) {
+  [data-reader] {
+    --video-width: 34rem;
+  }
+}
+
 /* ---- text covers: a ruled "page" in the category's tint, for texts that have no thumbnail ---- */
 .cover {
   background-color: var(--cover-other);

@@ -101,3 +101,22 @@ export function splitPages(paragraphs: Token[][], starts: number[]): ReaderPage[
   }
   return pages;
 }
+
+/** A box docked at the bottom of the window (the player bar, a floating video), in px from the window's top-left. */
+export interface Dock {
+  top: number;
+  left: number;
+  right: number;
+}
+
+/**
+ * How much of the window's bottom the text must leave free: up to the highest dock that overlaps the text column
+ * sideways. The player bar spans the window; a floating video in the margin beside the text doesn't count.
+ */
+export function reservedBelow(windowHeight: number, text: { left: number; right: number }, docks: Dock[]): number {
+  let reserved = 0;
+  for (const d of docks) {
+    if (d.left < text.right && d.right > text.left) reserved = Math.max(reserved, windowHeight - d.top);
+  }
+  return reserved;
+}

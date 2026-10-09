@@ -9,7 +9,7 @@ import type { TextSummary } from "@/lib/types";
 import { HeadphonesIcon, PlaylistIcon } from "../icons";
 import { AddToPlaylist } from "../playlists/add-to-playlist";
 import { KnownBar, LevelBadge } from "../ui";
-import { SettingsMenu, ShortcutsMenu } from "./reader-menus";
+import { SettingsMenu, ShortcutsMenu, toolButton } from "./reader-menus";
 import type { ReaderSettings } from "./reader-settings";
 import type { ReaderStats } from "./reader-text";
 
@@ -27,42 +27,55 @@ interface Props {
   media: boolean;
 }
 
-/** Title and details, then one bar with the known-word stats and the reader's controls (the same for every kind). */
+/**
+ * A slim header, so most of the screen is text: the way back, the title with the reader's tools beside it, and one
+ * line of details with how many of the words the learner knows (the same for every kind of lesson).
+ */
 export function ReaderHeader({ text, playlist, stats, settings, onSettings, audio, media }: Props) {
   return (
-    <div className="mb-4">
+    <div className="mb-5">
       {playlist ? <PlaylistStrip playlist={playlist} /> : <Link href="/library" className="text-sm text-muted hover:text-ink">← Library</Link>}
-      <h1 className="mt-2 font-display text-3xl leading-tight font-semibold tracking-tight">{text.title}</h1>
-      <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted">
-        <LevelBadge level={text.cefrLevel} />
-        <span>{languageName(text.language)}</span>
-        <span>· {text.wordCount.toLocaleString()} words</span>
-        {!text.mine && <span>· shared by <Named name={text.owner.displayName} photoUrl={text.owner.photoUrl} /></span>}
-        {text.sourceUrl && <a href={text.sourceUrl} target="_blank" rel="noreferrer" className="underline">source</a>}
-      </div>
-      <div className="mt-3 rounded-xl border border-line bg-card p-3">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-          <span>You know <strong>{stats.percent}%</strong> of the words here</span>
-          <span className="text-muted">{stats.unseen} new · {stats.learning} learning</span>
-          <div className="ml-auto flex items-center gap-1">
-            <AddToPlaylist text={text} className="rounded px-2 py-1" />
-            {audio && (
-              <button
-                className={`rounded px-2 py-1 text-xs ${audio.open ? "bg-accent-soft" : "text-muted hover:bg-paper"}`}
-                onClick={audio.toggle}
-                aria-label={audio.exists ? "Audio" : "Add audio"}
-                title={audio.exists ? "Audio" : "Add audio"}
-                aria-pressed={audio.open}
-              >
-                <HeadphonesIcon className="size-4" />
-              </button>
-            )}
-            <SettingsMenu settings={settings} onChange={onSettings} />
-            <ShortcutsMenu media={media} />
-          </div>
+      <div className="mt-1 flex items-center gap-3">
+        <h1 title={text.title} className="line-clamp-2 min-w-0 flex-1 font-display text-2xl leading-tight font-semibold tracking-tight sm:text-[1.75rem]">
+          {text.title}
+        </h1>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <AddToPlaylist text={text} className={toolButton} />
+          {audio && (
+            <button
+              className={`${toolButton} ${audio.open ? "bg-accent-soft text-ink" : ""}`}
+              onClick={audio.toggle}
+              aria-label={audio.exists ? "Audio" : "Add audio"}
+              title={audio.exists ? "Audio" : "Add audio"}
+              aria-pressed={audio.open}
+            >
+              <HeadphonesIcon className="size-4" />
+            </button>
+          )}
+          <SettingsMenu settings={settings} onChange={onSettings} />
+          <ShortcutsMenu media={media} />
         </div>
-        <div className="mt-2"><KnownBar known={stats.known} learning={stats.learning} total={stats.total} /></div>
       </div>
+      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-muted">
+        <LevelBadge level={text.cefrLevel} />
+        <span>{languageName(text.language)} · {text.wordCount.toLocaleString()} words</span>
+        {!text.mine && <span>· shared by <Named name={text.owner.displayName} photoUrl={text.owner.photoUrl} /></span>}
+        {text.sourceUrl && <a href={text.sourceUrl} target="_blank" rel="noreferrer" className="underline decoration-line underline-offset-2 hover:text-ink">source</a>}
+        <KnownLine stats={stats} />
+      </div>
+    </div>
+  );
+}
+
+/** "You know 12% of the words", a known/learning bar, and the new and learning counts. */
+function KnownLine({ stats }: { stats: ReaderStats }) {
+  return (
+    <div data-testid="reader-known" className="flex w-full items-center gap-3 sm:ml-auto sm:w-auto">
+      <span className="whitespace-nowrap">
+        You know <strong className="font-semibold text-ink">{stats.percent}%</strong><span className="hidden sm:inline"> of the words</span>
+      </span>
+      <div className="min-w-12 flex-1 sm:w-28 sm:flex-none"><KnownBar known={stats.known} learning={stats.learning} total={stats.total} /></div>
+      <span className="whitespace-nowrap tabular-nums">{stats.unseen} new · {stats.learning} learning</span>
     </div>
   );
 }

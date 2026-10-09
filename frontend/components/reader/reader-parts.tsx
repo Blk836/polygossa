@@ -4,6 +4,7 @@ import { languageInfo } from "@/lib/languages";
 import type { LanguageCode, TextDetail } from "@/lib/types";
 import { FONT_SIZES } from "./reader-header";
 import { pageOfToken, type ReaderPage } from "./reader-pages";
+import type { ReaderSettings } from "./reader-settings";
 import type { PopupTarget } from "./word-popup";
 
 export function articleClass(language: LanguageCode, size: number, quiet: boolean): string {
@@ -44,14 +45,18 @@ export function onPage(target: PopupTarget | null, pages: ReaderPage[], page: nu
 }
 
 /**
- * The page column: one reading column for every kind; videos add a second column for the player on wide screens.
- * Room is left at the bottom for the player bar (with the page padding below it, a little more than the bar).
+ * The reader's canvas (see `[data-reader]` in globals.css): its text column grows to the Text width setting, and a
+ * video beside the text adds a second column on wide screens. The data attributes are read by that CSS, so the server
+ * renders the chosen layout. Room is left at the bottom for the player bar (with the page padding below it, a little
+ * more than the bar).
  */
-export function layoutClass(video: boolean, playerBar: boolean): string {
-  const classes = ["mx-auto max-w-3xl"];
-  if (video) classes.push("lg:grid lg:max-w-none lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-x-8 xl:grid-cols-[minmax(0,1fr)_28rem]");
-  if (playerBar) classes.push("pb-12");
-  return classes.join(" ");
+export function layoutProps(settings: Pick<ReaderSettings, "width" | "video">, video: boolean, playerBar: boolean) {
+  return {
+    "data-reader": "",
+    "data-text-width": settings.width,
+    "data-video-layout": video ? settings.video : undefined,
+    className: playerBar ? "pb-12" : undefined,
+  };
 }
 
 /** What turning the page will do, shown under the pager when that setting is on and there is something to mark. */

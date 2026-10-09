@@ -1,9 +1,15 @@
-// Reader preferences: text size, quiet colours, pausing playback on lookup, whether turning the page marks its new
-// words known, and what playback marks as it goes (the spoken word, its sentence, or both). Kept in a cookie, like
-// the theme, so the server renders the chosen text size on the first paint.
+// Reader preferences: text size and width, quiet colours, pausing playback on lookup, whether turning the page marks
+// its new words known, what playback marks as it goes (the spoken word, its sentence, or both), and where a video
+// sits. Kept in a cookie, like the theme, so the server renders the chosen layout on the first paint.
 
 /** What playback marks: the spoken word, the word and its sentence, or the sentence only. */
 export type Follow = "word" | "both" | "sentence";
+
+/** How wide the text column may grow: a book-like column, a wide one (the default), or the whole window. */
+export type TextWidth = "standard" | "wide" | "full";
+
+/** Where a video sits on wide screens: beside the text, or in a small player floating in the corner. */
+export type VideoLayout = "beside" | "mini";
 
 export interface ReaderSettings {
   /** Index into the reader's text sizes. */
@@ -16,11 +22,15 @@ export interface ReaderSettings {
   pageKnown: boolean;
   /** Follow along: underline the spoken word (the default), also tint its sentence, or tint the sentence only. */
   follow: Follow;
+  /** How wide the text column may grow. */
+  width: TextWidth;
+  /** Where a video sits on wide screens (phones always show it above the text). */
+  video: VideoLayout;
 }
 
 export const READER_SETTINGS_COOKIE = "lector_reader";
 export const TEXT_SIZES = 4;
-export const DEFAULT_READER_SETTINGS: ReaderSettings = { size: 1, quiet: false, pauseOnLookup: true, pageKnown: true, follow: "word" };
+export const DEFAULT_READER_SETTINGS: ReaderSettings = { size: 1, quiet: false, pauseOnLookup: true, pageKnown: true, follow: "word", width: "wide", video: "beside" };
 
 const ONE_YEAR_SECONDS = 365 * 24 * 60 * 60;
 
@@ -50,6 +60,15 @@ export function followsSentence(follow: Follow): boolean {
   return follow !== "word";
 }
 
+/** One of `choices`; absent means the default (settings saved before it existed), anything else is malformed. */
+function oneOf<T extends string>(value: string | null, choices: readonly T[], fallback: T): T | null {
+  if (value === null) return fallback;
+  return choices.find((c) => c === value) ?? null;
+}
+
+const WIDTHS: TextWidth[] = ["standard", "wide", "full"];
+const VIDEO_LAYOUTS: VideoLayout[] = ["beside", "mini"];
+
 function size(value: string | null): number | null {
   if (value === null) return DEFAULT_READER_SETTINGS.size;
   return /^\d$/.test(value) && Number(value) < TEXT_SIZES ? Number(value) : null;
@@ -70,6 +89,8 @@ export function parseReaderSettings(value: string | null | undefined): ReaderSet
     pauseOnLookup: flag(params.get("pause"), d.pauseOnLookup),
     pageKnown: flag(params.get("known"), d.pageKnown),
     follow: follow(params.get("follow"), params.get("word")),
+    width: oneOf(params.get("width"), WIDTHS, d.width),
+    video: oneOf(params.get("video"), VIDEO_LAYOUTS, d.video),
   };
   return Object.values(parsed).includes(null) ? DEFAULT_READER_SETTINGS : (parsed as ReaderSettings);
 }
@@ -84,6 +105,8 @@ export function readerSettingsCookie(settings: ReaderSettings): string {
   if (settings.pauseOnLookup !== d.pauseOnLookup) params.set("pause", "0");
   if (settings.pageKnown !== d.pageKnown) params.set("known", "0");
   if (settings.follow !== d.follow) params.set("follow", settings.follow);
+  if (settings.width !== d.width) params.set("width", settings.width);
+  if (settings.video !== d.video) params.set("video", settings.video);
   const value = params.toString();
   const maxAge = value ? ONE_YEAR_SECONDS : 0;
   return `${READER_SETTINGS_COOKIE}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;

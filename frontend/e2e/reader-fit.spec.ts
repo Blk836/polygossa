@@ -114,7 +114,9 @@ test.describe("pages fit the window", () => {
 
 test("on a window too short for any text, pages keep three lines, and turning from the bottom scrolls back up", async ({ page }) => {
   await setReaderCookie(page, "known%3D0");
-  await page.setViewportSize({ width: 1280, height: 420 });
+  // Too short for three lines under the header and above the pager (the slim header of the wide reader fits three
+  // lines in a 420 px window, so this is shorter).
+  await page.setViewportSize({ width: 1280, height: 360 });
   created = await createText(page);
   await openReader(page, `/read/${created.id}`);
   const lines = await article(page).evaluate((a) => Math.round(a.getBoundingClientRect().height / parseFloat(getComputedStyle(a).lineHeight)));
