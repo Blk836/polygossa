@@ -237,6 +237,7 @@ export interface ReviewStats {
 
 export type { Activity, ActivityDay, ActivityPeriod, Dashboard, GoalKind, GoalToday, PeriodStats, Streak } from "./dashboard-types";
 export type { LevelConfidence, Skill, SkillKey, SkillLevels } from "./level-types";
+export type { VocabMap, VocabMapArea, VocabMapRegion, VocabMapWord } from "./vocab-map-types";
 
 export type { Assignment, ClassDetail, ClassProgress, ClassSummary, StudentProgress } from "./class-types";
 

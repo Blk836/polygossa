@@ -113,6 +113,12 @@ export function ProgressSkeleton() {
           <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">{[0, 1, 2].map((i) => <Bone key={i} className="h-36 rounded-lg" />)}</div>
         </CardFrame>
         <CardFrame>
+          <Bone className="h-6 w-40" />
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {Array.from({ length: 8 }, (_, i) => <Bone key={i} className="h-24 rounded-lg" />)}
+          </div>
+        </CardFrame>
+        <CardFrame>
           <Bone className="h-6 w-28" />
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">{[0, 1, 2, 3, 4].map((i) => <Bone key={i} className="h-24 rounded-lg" />)}</div>
         </CardFrame>

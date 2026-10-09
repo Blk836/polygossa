@@ -1,0 +1,158 @@
+word | band | area | meaning:en | forms
+# Body & Health
+
+# --- Body parts ---
+corps | A1 | body-parts | body |
+tête | A1 | body-parts | head | têtes
+main | A1 | body-parts | hand | mains
+pied | A1 | body-parts | foot | pieds
+bras | A1 | body-parts | arm |
+jambe | A1 | body-parts | leg | jambes
+œil | A1 | body-parts | eye | yeux
+bouche | A1 | body-parts | mouth | bouches
+nez | A1 | body-parts | nose |
+oreille | A1 | body-parts | ear | oreilles
+cheveux | A1 | body-parts | hair | cheveu
+dent | A1 | body-parts | tooth | dents
+dos | A1 | body-parts | back |
+ventre | A1 | body-parts | belly; stomach | ventres
+doigt | A2 | body-parts | finger | doigts
+cou | A2 | body-parts | neck | cous
+épaule | A2 | body-parts | shoulder | épaules
+genou | A2 | body-parts | knee | genoux
+cœur | A2 | body-parts | heart | cœurs
+peau | A2 | body-parts | skin | peaux
+lèvre | A2 | body-parts | lip | lèvres
+gorge | A2 | body-parts | throat | gorges
+langue | A2 | body-parts | tongue; language | langues
+estomac | A2 | body-parts | stomach | estomacs
+poitrine | B1 | body-parts | chest | poitrines
+coude | B1 | body-parts | elbow | coudes
+poignet | B1 | body-parts | wrist | poignets
+cheville | B1 | body-parts | ankle | chevilles
+orteil | B1 | body-parts | toe | orteils
+ongle | B1 | body-parts | nail | ongles
+front | B1 | body-parts | forehead; front | fronts
+menton | B1 | body-parts | chin | mentons
+sourcil | B1 | body-parts | eyebrow | sourcils
+os | B1 | body-parts | bone |
+muscle | B1 | body-parts | = | muscles
+sang | B1 | body-parts | blood |
+cerveau | B1 | body-parts | brain | cerveaux
+poumon | B1 | body-parts | lung | poumons
+foie | B1 | body-parts | liver | foies
+rein | B1 | body-parts | kidney | reins
+hanche | B1 | body-parts | hip | hanches
+cuisse | B1 | body-parts | thigh | cuisses
+pouce | B1 | body-parts | thumb | pouces
+squelette | B1 | body-parts | skeleton | squelettes
+
+# --- Illness & symptoms ---
+malade | A1 | illness | ill; sick; patient | malades
+fièvre | A2 | illness | fever | fièvres
+rhume | A2 | illness | cold (illness) | rhumes
+grippe | A2 | illness | flu | grippes
+tousser | A2 | illness | to cough | tousse tousses toussent toussé
+douleur | A2 | illness | pain | douleurs
+blessure | A2 | illness | injury | blessures
+blessé | A2 | illness | injured | blessée blessés blessées
+fatigué | A2 | illness | tired | fatiguée fatigués fatiguées
+maladie | A2 | illness | illness; disease | maladies
+toux | B1 | illness | cough |
+éternuer | B1 | illness | to sneeze | éternue éternuent éternué
+vomir | B1 | illness | to vomit | vomis vomit vomi
+saigner | B1 | illness | to bleed | saigne saignent saigné
+brûlure | B1 | illness | burn | brûlures
+allergie | B1 | illness | allergy | allergies
+allergique | B1 | illness | allergic | allergiques
+infection | B1 | illness | = | infections
+virus | B1 | illness | = |
+symptôme | B1 | illness | symptom | symptômes
+enrhumé | B1 | illness | having a cold | enrhumée enrhumés
+nausée | B1 | illness | nausea | nausées
+épuisé | B1 | illness | exhausted | épuisée épuisés épuisées
+étourdi | B1 | illness | dizzy; absent-minded | étourdie étourdis
+cassé | B1 | illness | broken | cassée cassés cassées
+casser | B1 | illness | to break | casse casses cassons cassez cassent cassait
+gonflé | B1 | illness | swollen | gonflée gonflés gonflées
+démanger | B1 | illness | to itch | démange démangent démangé
+diabète | B1 | illness | diabetes |
+cancer | B1 | illness | = | cancers
+stress | B1 | illness | = |
+guérir | B1 | illness | to cure; to recover | guéris guérit guérissent guéri guérie
+souffrance | B1 | illness | suffering | souffrances
+handicap | B1 | illness | disability | handicaps
+
+# --- At the doctor ---
+médecin | A1 | doctor | doctor | médecins
+docteur | A1 | doctor | doctor | docteurs
+hôpital | A1 | doctor | hospital | hôpitaux
+pharmacie | A1 | doctor | pharmacy | pharmacies
+médicament | A2 | doctor | medicine | médicaments
+santé | A2 | doctor | health |
+infirmier | A2 | doctor | nurse | infirmière infirmiers infirmières
+dentiste | A2 | doctor | dentist | dentistes
+ordonnance | A2 | doctor | prescription | ordonnances
+urgence | A2 | doctor | emergency | urgences
+ambulance | A2 | doctor | = | ambulances
+pharmacien | A2 | doctor | pharmacist | pharmacienne pharmaciens
+cachet | A2 | doctor | tablet | cachets
+comprimé | B1 | doctor | pill | comprimés
+pilule | B1 | doctor | pill | pilules
+piqûre | B1 | doctor | injection; sting | piqûres
+vaccin | B1 | doctor | vaccine | vaccins
+patient | B1 | doctor | = | patiente patients patientes
+soigner | B1 | doctor | to treat; to look after | soigne soignes soignent soigné soignée soignait
+soin | B1 | doctor | care | soins
+traitement | B1 | doctor | treatment | traitements
+opération | B1 | doctor | operation | opérations
+opérer | B1 | doctor | to operate | opère opèrent opéré opérée
+chirurgien | B1 | doctor | surgeon | chirurgienne chirurgiens
+clinique | B1 | doctor | clinic | cliniques
+examen | B1 | doctor | examination; exam | examens
+analyse | B1 | doctor | test (medical); analysis | analyses
+pansement | B1 | doctor | bandage; dressing | pansements
+plâtre | B1 | doctor | plaster cast | plâtres
+consultation | B1 | doctor | = | consultations
+sirop | B1 | doctor | syrup | sirops
+thermomètre | B1 | doctor | thermometer | thermomètres
+mutuelle | B1 | doctor | top-up health insurance | mutuelles
+spécialiste | B1 | doctor | specialist | spécialistes
+diagnostic | B1 | doctor | diagnosis | diagnostics
+rétablir | B1 | doctor | to restore; to recover (se rétablir) | rétablis rétablit rétabli
+
+# --- Fitness & wellbeing ---
+dormir | A1 | fitness | to sleep | dors dort dormons dormez dorment dormi dormais dormait
+sommeil | A2 | fitness | sleep | sommeils
+repos | A2 | fitness | rest |
+reposer | A2 | fitness | to rest (se reposer) | repose reposes reposons reposez reposent reposé
+forme | A2 | fitness | shape; fitness (en forme) | formes
+régime | A2 | fitness | diet | régimes
+poids | A2 | fitness | weight |
+maigrir | A2 | fitness | to lose weight | maigris maigrit maigri
+grossir | A2 | fitness | to put on weight | grossis grossit grossi
+exercice | A2 | fitness | exercise | exercices
+respirer | A2 | fitness | to breathe | respire respires respirent respiré respirait
+réveiller | A2 | fitness | to wake up (se réveiller) | réveille réveilles réveillons réveillez réveillent réveillé réveillée
+coucher | A2 | fitness | to put to bed; to go to bed (se coucher) | couche couches couchons couchez couchent couché couchée
+fatigue | B1 | fitness | tiredness | fatigues
+sain | B1 | fitness | healthy | saine sains saines
+équilibré | B1 | fitness | balanced | équilibrée équilibrés équilibrées
+bien-être | B1 | fitness | wellbeing |
+détendre | B1 | fitness | to relax (se détendre) | détends détend détendent détendu détendue
+massage | B1 | fitness | = | massages
+méditation | B1 | fitness | = |
+yoga | B1 | fitness | = |
+étirer | B1 | fitness | to stretch | étire étirent étiré
+musculation | B1 | fitness | weight training |
+transpirer | B1 | fitness | to sweat | transpire transpirent transpiré
+énergie | B1 | fitness | energy | énergies
+endurance | B1 | fitness | = |
+hygiène | B1 | fitness | hygiene |
+fumer | B1 | fitness | to smoke | fume fumes fument fumé fumait
+tabac | B1 | fitness | tobacco | tabacs
+alcool | B1 | fitness | alcohol | alcools
+dépendance | B1 | fitness | addiction; dependence | dépendances
+sieste | B1 | fitness | nap | siestes
+insomnie | B1 | fitness | insomnia | insomnies
+cauchemar | B1 | fitness | nightmare | cauchemars

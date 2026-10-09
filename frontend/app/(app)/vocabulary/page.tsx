@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useState } from "react";
 import { useMe } from "@/components/me-context";
-import { PageHeader } from "@/components/ui";
+import { PageHeader, Spinner } from "@/components/ui";
 import { FilterBar } from "@/components/vocabulary/filters";
-import { exportParams, type Filters } from "@/components/vocabulary/search";
+import { exportParams, initialStatus, type Filters } from "@/components/vocabulary/search";
 import { SentenceList } from "@/components/vocabulary/sentence-list";
 import { WordImports } from "@/components/vocabulary/word-import";
 import { WordList } from "@/components/vocabulary/word-list";
@@ -23,21 +24,26 @@ const linkClass = "rounded-lg border border-line bg-card px-3 py-2 text-sm hover
 /** Filters and paging start over whenever the language in the top bar changes. */
 export default function VocabularyPage() {
   const { me } = useMe();
-  return <VocabularyView key={me.targetLanguage ?? "all"} />;
+  return (
+    <Suspense fallback={<Spinner />}>
+      <VocabularyView key={me.targetLanguage ?? "all"} />
+    </Suspense>
+  );
 }
 
 function VocabularyView() {
   const { me, refresh } = useMe();
+  const params = useSearchParams();
   const [tab, setTab] = useState<Tab>("words");
-  const [filters, setFilters] = useState<Filters>({
+  const [filters, setFilters] = useState<Filters>(() => ({
     language: me.targetLanguage ?? "",
-    status: "learning",
+    status: initialStatus(params.get("status")),
     kind: "",
     sort: "recent",
     query: "",
     tag: "",
     page: 0,
-  });
+  }));
   const update = useCallback((patch: Partial<Filters>) => setFilters((f) => ({ ...f, ...patch })), []);
   const exportQuery = exportParams(filters);
   const [importOpen, setImportOpen] = useState(false);

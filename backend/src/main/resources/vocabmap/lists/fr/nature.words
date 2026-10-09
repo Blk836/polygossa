@@ -1,0 +1,184 @@
+word | band | area | meaning:en | forms
+# Nature & Environment
+
+# --- Weather ---
+temps | A1 | weather | weather; time |
+soleil | A1 | weather | sun | soleils
+pluie | A1 | weather | rain | pluies
+pleuvoir | A1 | weather | to rain | pleut plu pleuvait pleuvra
+neige | A1 | weather | snow | neiges
+neiger | A1 | weather | to snow | neigé neigeait
+vent | A1 | weather | wind | vents
+nuage | A1 | weather | cloud | nuages
+météo | A1 | weather | weather forecast |
+degré | A2 | weather | degree | degrés
+température | A2 | weather | temperature | températures
+orage | A2 | weather | storm | orages
+ciel | A2 | weather | sky | cieux
+nuageux | A2 | weather | cloudy | nuageuse nuageuses
+ensoleillé | A2 | weather | sunny | ensoleillée ensoleillés
+brouillard | A2 | weather | fog | brouillards
+humide | A2 | weather | humid; damp | humides
+sec | A2 | weather | dry | sèche secs sèches
+tempête | B1 | weather | storm | tempêtes
+averse | B1 | weather | shower | averses
+éclair | B1 | weather | lightning | éclairs
+tonnerre | B1 | weather | thunder |
+grêle | B1 | weather | hail |
+gel | B1 | weather | frost; gel | gels
+geler | B1 | weather | to freeze | gèle gèlent gelé gelée
+chaleur | B1 | weather | heat | chaleurs
+canicule | B1 | weather | heatwave | canicules
+doux | B1 | weather | mild; soft; gentle | douce douces
+prévisions | B1 | weather | forecast | prévision
+climat | B1 | weather | climate | climats
+arc-en-ciel | B1 | weather | rainbow | arcs-en-ciel
+ombre | B1 | weather | shade; shadow | ombres
+souffler | B1 | weather | to blow | souffle souffles soufflent soufflé
+briller | B1 | weather | to shine | brille brillent brillé
+mouillé | B1 | weather | wet | mouillée mouillés mouillées
+tremper | B1 | weather | to soak | trempe trempent trempé trempée
+
+# --- Animals ---
+animal | A1 | animals | = | animaux
+chien | A1 | animals | dog | chienne chiens chiennes
+chat | A1 | animals | cat; chat | chatte chats chattes
+oiseau | A1 | animals | bird | oiseaux
+cheval | A1 | animals | horse | chevaux
+vache | A1 | animals | cow | vaches
+cochon | A2 | animals | pig | cochons
+mouton | A2 | animals | sheep | moutons
+lapin | A2 | animals | rabbit | lapins
+souris | A2 | animals | mouse |
+poule | A2 | animals | hen | poules
+lion | A2 | animals | = | lionne lions
+ours | A2 | animals | bear |
+singe | A2 | animals | monkey | singes
+éléphant | A2 | animals | elephant | éléphants
+serpent | A2 | animals | snake | serpents
+insecte | A2 | animals | insect | insectes
+araignée | B1 | animals | spider | araignées
+mouche | B1 | animals | fly | mouches
+moustique | B1 | animals | mosquito | moustiques
+abeille | B1 | animals | bee | abeilles
+papillon | B1 | animals | butterfly | papillons
+fourmi | B1 | animals | ant | fourmis
+loup | B1 | animals | wolf | louve loups
+renard | B1 | animals | fox | renards
+cerf | B1 | animals | deer | cerfs
+chèvre | B1 | animals | goat | chèvres
+âne | B1 | animals | donkey | ânes
+tigre | B1 | animals | tiger | tigres
+girafe | B1 | animals | giraffe | girafes
+baleine | B1 | animals | whale | baleines
+dauphin | B1 | animals | dolphin | dauphins
+requin | B1 | animals | shark | requins
+grenouille | B1 | animals | frog | grenouilles
+tortue | B1 | animals | tortoise; turtle | tortues
+écureuil | B1 | animals | squirrel | écureuils
+hérisson | B1 | animals | hedgehog | hérissons
+aigle | B1 | animals | eagle | aigles
+pigeon | B1 | animals | = | pigeons
+plume | B1 | animals | feather | plumes
+patte | B1 | animals | paw; leg (animal) | pattes
+aile | B1 | animals | wing | ailes
+nid | B1 | animals | nest | nids
+espèce | B1 | animals | species; kind |
+sauvage | B1 | animals | wild | sauvages
+domestique | B1 | animals | domestic; pet | domestiques
+élevage | B1 | animals | breeding; farming | élevages
+chasser | B1 | animals | to hunt; to chase | chasse chasses chassent chassé chassait
+
+# --- Plants ---
+fleur | A1 | plants | flower | fleurs
+arbre | A1 | plants | tree | arbres
+plante | A2 | plants | plant | plantes
+feuille | A2 | plants | leaf; sheet of paper | feuilles
+pelouse | A2 | plants | lawn | pelouses
+planter | A2 | plants | to plant | plantons plantez plantent planté
+jardiner | B1 | plants | to garden | jardine jardinent jardiné
+jardinage | B1 | plants | gardening |
+graine | B1 | plants | seed | graines
+racine | B1 | plants | root | racines
+branche | B1 | plants | branch | branches
+tronc | B1 | plants | trunk | troncs
+buisson | B1 | plants | bush | buissons
+tulipe | B1 | plants | tulip | tulipes
+marguerite | B1 | plants | daisy | marguerites
+chêne | B1 | plants | oak | chênes
+sapin | B1 | plants | fir tree | sapins
+pin | B1 | plants | pine | pins
+palmier | B1 | plants | palm tree | palmiers
+cueillir | B1 | plants | to pick | cueille cueillent cueilli cueillie
+fleurir | B1 | plants | to flower | fleurit fleurissent fleuri
+bouquet | B1 | plants | = | bouquets
+pot | B1 | plants | pot; drink | pots
+récolte | B1 | plants | harvest | récoltes
+récolter | B1 | plants | to harvest | récoltent récolté
+champ | B1 | plants | field | champs
+vigne | B1 | plants | vine; vineyard | vignes
+blé | B1 | plants | wheat | blés
+
+# --- Landscape ---
+nature | A1 | landscape | = |
+campagne | A1 | landscape | countryside | campagnes
+forêt | A1 | landscape | forest | forêts
+lac | A1 | landscape | lake | lacs
+rivière | A1 | landscape | river | rivières
+île | A2 | landscape | island | îles
+fleuve | A2 | landscape | river (to the sea) | fleuves
+colline | A2 | landscape | hill | collines
+côte | A2 | landscape | coast; rib | côtes
+océan | A2 | landscape | ocean | océans
+vallée | A2 | landscape | valley | vallées
+sable | A2 | landscape | sand | sables
+terre | A2 | landscape | earth; land; soil | terres
+désert | B1 | landscape | desert | déserts
+volcan | B1 | landscape | volcano | volcans
+falaise | B1 | landscape | cliff | falaises
+grotte | B1 | landscape | cave | grottes
+cascade | B1 | landscape | waterfall | cascades
+sommet | B1 | landscape | summit | sommets
+pente | B1 | landscape | slope | pentes
+rocher | B1 | landscape | rock | rochers
+caillou | B1 | landscape | pebble | cailloux
+vague | B1 | landscape | wave; vague | vagues
+marée | B1 | landscape | tide | marées
+rive | B1 | landscape | bank (river) | rives
+plaine | B1 | landscape | plain | plaines
+étang | B1 | landscape | pond | étangs
+source | B1 | landscape | spring; source | sources
+horizon | B1 | landscape | = | horizons
+lune | B1 | landscape | moon | lunes
+planète | B1 | landscape | planet | planètes
+univers | B1 | landscape | universe |
+monde | A1 | landscape | world |
+
+# --- The environment ---
+environnement | B1 | environment | environment | environnements
+pollution | A2 | environment | = | pollutions
+polluer | B1 | environment | to pollute | pollue polluent pollué polluée
+recycler | A2 | environment | to recycle | recycle recycles recyclons recyclez recyclent recyclé
+recyclage | B1 | environment | recycling |
+écologie | B1 | environment | ecology |
+écologique | B1 | environment | ecological; green | écologiques
+réchauffement | B1 | environment | warming |
+climatique | B1 | environment | climate (adj.) | climatiques
+protéger | B1 | environment | to protect | protège protèges protégeons protégez protègent protégé protégée
+protection | B1 | environment | = |
+solaire | B1 | environment | solar | solaires
+éolienne | B1 | environment | wind turbine | éoliennes
+nucléaire | B1 | environment | nuclear | nucléaires
+pétrole | B1 | environment | oil (crude) |
+gaz | B1 | environment | gas |
+charbon | B1 | environment | coal |
+ressource | B1 | environment | resource | ressources
+inondation | B1 | environment | flood | inondations
+sécheresse | B1 | environment | drought | sécheresses
+incendie | B1 | environment | fire | incendies
+catastrophe | B1 | environment | disaster | catastrophes
+durable | B1 | environment | sustainable; lasting | durables
+biodiversité | B1 | environment | biodiversity |
+disparition | B1 | environment | disappearance; extinction | disparitions
+menacé | B1 | environment | endangered; threatened | menacée menacés menacées
+préserver | B1 | environment | to preserve | préserve préservent préservé

@@ -217,6 +217,19 @@ span.s-spoken:not(.w) {
   }
 }
 
+/* The vocabulary map zooms in and out between the map, a region and an area (components/progress/vocab-map.tsx). */
+@keyframes map-zoom {
+  from { opacity: 0; transform: scale(0.96); }
+}
+.map-zoom {
+  animation: map-zoom 180ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-zoom {
+    animation: none;
+  }
+}
+
 /* Everything clickable shows the hand, as links do: Tailwind 4 leaves buttons on the default arrow. */
 @layer base {
   button:not(:disabled),

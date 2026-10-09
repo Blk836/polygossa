@@ -1,0 +1,97 @@
+{
+  "regions": [
+    {"id": "people", "name": "People & Relationships", "areas": [
+      {"id": "family", "name": "Family"},
+      {"id": "describing-people", "name": "Describing people"},
+      {"id": "relationships", "name": "Friends & relationships"},
+      {"id": "life-events", "name": "Life events"}
+    ]},
+    {"id": "body", "name": "Body & Health", "areas": [
+      {"id": "body-parts", "name": "Body parts"},
+      {"id": "illness", "name": "Illness & symptoms"},
+      {"id": "doctor", "name": "At the doctor"},
+      {"id": "fitness", "name": "Fitness & wellbeing"}
+    ]},
+    {"id": "food", "name": "Food & Drink", "areas": [
+      {"id": "fruit-veg", "name": "Fruit & vegetables"},
+      {"id": "meat-fish", "name": "Meat, fish & basics"},
+      {"id": "cooking", "name": "Cooking & eating"},
+      {"id": "drinks", "name": "Drinks"},
+      {"id": "eating-out", "name": "Eating out"},
+      {"id": "food-shopping", "name": "Meals & food shopping"}
+    ]},
+    {"id": "home", "name": "Home", "areas": [
+      {"id": "rooms", "name": "Rooms & furniture"},
+      {"id": "chores", "name": "Household chores"},
+      {"id": "kitchen", "name": "In the kitchen"},
+      {"id": "tools", "name": "Tools & repairs"}
+    ]},
+    {"id": "shopping", "name": "Clothes & Shopping", "areas": [
+      {"id": "clothes", "name": "Clothes"},
+      {"id": "colours", "name": "Colours & materials"},
+      {"id": "shops", "name": "Shops"},
+      {"id": "money", "name": "Money & paying"}
+    ]},
+    {"id": "travel", "name": "Travel & Transport", "areas": [
+      {"id": "transport", "name": "Getting around"},
+      {"id": "holidays", "name": "Holidays"},
+      {"id": "hotels", "name": "Hotels"},
+      {"id": "town", "name": "Directions & places in town"}
+    ]},
+    {"id": "work", "name": "Work & Study", "areas": [
+      {"id": "jobs", "name": "Jobs"},
+      {"id": "office", "name": "At work"},
+      {"id": "school", "name": "School & university"},
+      {"id": "skills", "name": "Skills"}
+    ]},
+    {"id": "nature", "name": "Nature & Environment", "areas": [
+      {"id": "weather", "name": "Weather"},
+      {"id": "animals", "name": "Animals"},
+      {"id": "plants", "name": "Plants"},
+      {"id": "landscape", "name": "Landscape"},
+      {"id": "environment", "name": "The environment"}
+    ]},
+    {"id": "time", "name": "Time & Numbers", "areas": [
+      {"id": "numbers", "name": "Numbers"},
+      {"id": "calendar", "name": "Days, months & seasons"},
+      {"id": "clock", "name": "Telling the time"},
+      {"id": "frequency", "name": "How often"},
+      {"id": "quantities", "name": "Quantities & measures"}
+    ]},
+    {"id": "mind", "name": "Feelings & Mind", "areas": [
+      {"id": "emotions", "name": "Emotions"},
+      {"id": "opinions", "name": "Opinions"},
+      {"id": "thinking", "name": "Thinking"},
+      {"id": "character", "name": "Character"}
+    ]},
+    {"id": "leisure", "name": "Leisure & Culture", "areas": [
+      {"id": "hobbies", "name": "Hobbies"},
+      {"id": "sport", "name": "Sport"},
+      {"id": "arts", "name": "Music & art"},
+      {"id": "film-books", "name": "Film & books"},
+      {"id": "celebrations", "name": "Celebrations"}
+    ]},
+    {"id": "society", "name": "Society & News", "areas": [
+      {"id": "politics", "name": "Politics"},
+      {"id": "law", "name": "Law & crime"},
+      {"id": "economy", "name": "Economy"},
+      {"id": "news", "name": "News & media"},
+      {"id": "technology", "name": "Technology"}
+    ]},
+    {"id": "communication", "name": "Communication", "areas": [
+      {"id": "conversation", "name": "Conversation"},
+      {"id": "phone-internet", "name": "Phone & internet"},
+      {"id": "messages", "name": "Letters & messages"}
+    ]},
+    {"id": "core", "name": "Core words", "areas": [
+      {"id": "pronouns", "name": "Pronouns"},
+      {"id": "determiners", "name": "Articles & determiners"},
+      {"id": "prepositions", "name": "Prepositions"},
+      {"id": "conjunctions", "name": "Conjunctions"},
+      {"id": "questions", "name": "Question words"},
+      {"id": "verbs", "name": "Common verbs"},
+      {"id": "adjectives", "name": "Common adjectives"},
+      {"id": "adverbs", "name": "Common adverbs"}
+    ]}
+  ]
+}

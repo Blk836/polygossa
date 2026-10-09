@@ -1,0 +1,381 @@
+word | band | area | meaning:en | forms
+# Core words: the small words every sentence needs, and common verbs, adjectives and adverbs with no one theme.
+# Forms are what the reader can save: elisions are their own word ("j'", "l'"), hyphenated words are one word.
+
+# --- Pronouns ---
+je | A1 | pronouns | I | j'
+tu | A1 | pronouns | you (informal) |
+il | A1 | pronouns | he; it | ils
+elle | A1 | pronouns | she; her | elles
+on | A1 | pronouns | one; we; people |
+nous | A1 | pronouns | we; us |
+vous | A1 | pronouns | you (formal or plural) |
+moi | A1 | pronouns | me |
+toi | A1 | pronouns | you (stressed) |
+lui | A1 | pronouns | him; to him, to her |
+eux | A1 | pronouns | them |
+me | A1 | pronouns | me; myself | m'
+te | A1 | pronouns | you; yourself | t'
+se | A1 | pronouns | oneself; himself, herself | s'
+y | A1 | pronouns | there; to it |
+ça | A1 | pronouns | that; it |
+rien | A1 | pronouns | nothing |
+personne | A1 | pronouns | person; nobody | personnes
+cela | A2 | pronouns | that |
+ceci | A2 | pronouns | this |
+celui | A2 | pronouns | the one | celle ceux celles
+chacun | A2 | pronouns | each one | chacune
+soi | B1 | pronouns | oneself |
+lequel | B1 | pronouns | which one | laquelle lesquels lesquelles
+dont | B1 | pronouns | whose; of which |
+celui-ci | B1 | pronouns | this one | celle-ci ceux-ci celles-ci
+celui-là | B1 | pronouns | that one | celle-là ceux-là celles-là
+
+# --- Articles & determiners ---
+le | A1 | determiners | the | la les l'
+un | A1 | determiners | a; one | une
+de | A1 | determiners | of; from; some | d' du des
+ce | A1 | determiners | this; that; it | cet cette ces c'
+mon | A1 | determiners | my | ma mes
+ton | A1 | determiners | your (informal) | ta tes
+son | A1 | determiners | his; her; its | sa ses
+notre | A1 | determiners | our | nos
+votre | A1 | determiners | your (formal or plural) | vos
+leur | A1 | determiners | their; to them | leurs
+tout | A1 | determiners | all; every; everything | toute tous toutes
+autre | A1 | determiners | other | autres
+quelque | A2 | determiners | some; a few | quelques
+chaque | A2 | determiners | each |
+plusieurs | A2 | determiners | several |
+aucun | A2 | determiners | no; none | aucune
+certain | A2 | determiners | certain; some | certaine certains certaines
+tel | B1 | determiners | such | telle tels telles
+divers | B1 | determiners | various | diverse diverses
+nul | B1 | determiners | no; useless | nulle nuls nulles
+
+# --- Prepositions ---
+à | A1 | prepositions | to; at; in | au aux
+en | A1 | prepositions | in; to; of it |
+dans | A1 | prepositions | in; inside |
+sur | A1 | prepositions | on; about |
+sous | A1 | prepositions | under |
+avec | A1 | prepositions | with |
+sans | A1 | prepositions | without |
+pour | A1 | prepositions | for; in order to |
+par | A1 | prepositions | by; through; per |
+chez | A1 | prepositions | at the home of |
+entre | A1 | prepositions | between |
+avant | A1 | prepositions | before |
+après | A1 | prepositions | after |
+devant | A1 | prepositions | in front of |
+derrière | A1 | prepositions | behind |
+vers | A1 | prepositions | towards; around |
+depuis | A1 | prepositions | since; for |
+pendant | A1 | prepositions | during; for |
+près | A1 | prepositions | near |
+loin | A1 | prepositions | far |
+contre | A2 | prepositions | against |
+selon | A2 | prepositions | according to |
+sauf | A2 | prepositions | except |
+jusque | A2 | prepositions | until; as far as | jusqu'
+autour | A2 | prepositions | around |
+parmi | B1 | prepositions | among |
+malgré | B1 | prepositions | despite |
+envers | B1 | prepositions | towards (someone) |
+dès | B1 | prepositions | from; as soon as |
+hors | B1 | prepositions | outside; out of |
+durant | B1 | prepositions | during |
+lors | B1 | prepositions | at the time of |
+au-dessus | B1 | prepositions | above |
+au-dessous | B1 | prepositions | below |
+grâce | B1 | prepositions | thanks (grâce à) |
+face | B1 | prepositions | face; facing (face à) | faces
+
+# --- Conjunctions ---
+et | A1 | conjunctions | and |
+ou | A1 | conjunctions | or |
+mais | A1 | conjunctions | but |
+donc | A1 | conjunctions | so; therefore |
+car | A1 | conjunctions | because; for |
+parce | A1 | conjunctions | because (parce que) |
+si | A1 | conjunctions | if; so; yes (after a negative) |
+comme | A1 | conjunctions | like; as |
+puis | A1 | conjunctions | then |
+que | A1 | conjunctions | that; than | qu'
+lorsque | A2 | conjunctions | when | lorsqu'
+puisque | A2 | conjunctions | since | puisqu'
+pourtant | A2 | conjunctions | yet; however |
+ni | A2 | conjunctions | neither; nor |
+sinon | A2 | conjunctions | otherwise |
+ensuite | A2 | conjunctions | next; then |
+cependant | B1 | conjunctions | however |
+tandis | B1 | conjunctions | whereas (tandis que) |
+quoique | B1 | conjunctions | although |
+afin | B1 | conjunctions | in order (afin de, afin que) |
+néanmoins | B1 | conjunctions | nevertheless |
+toutefois | B1 | conjunctions | however |
+or | B1 | conjunctions | now; yet |
+autrement | B1 | conjunctions | otherwise; differently |
+
+# --- Question words ---
+qui | A1 | questions | who; which |
+quoi | A1 | questions | what |
+où | A1 | questions | where |
+quand | A1 | questions | when |
+comment | A1 | questions | how |
+pourquoi | A1 | questions | why |
+combien | A1 | questions | how much; how many |
+quel | A1 | questions | which; what | quelle quels quelles
+est-ce | A1 | questions | is it (est-ce que) |
+
+# --- Common verbs ---
+être | A1 | verbs | to be | suis es est sommes êtes sont étais était étions étiez étaient serai sera seront serais serait soit soient
+avoir | A1 | verbs | to have | ai as a avons avez ont eu eue eus avais avait aviez avaient aurai aura auront aurais aurait
+aller | A1 | verbs | to go | vais vas va allons allez vont allé allée allés allées allais allait allaient irai ira iront irais irait
+faire | A1 | verbs | to do; to make | fais fait faisons faites font faisais faisait faisaient ferai fera feront ferais ferait
+dire | A1 | verbs | to say; to tell | dis dit disons disent dite dites disais disait disaient dirai dira diront
+pouvoir | A1 | verbs | can; to be able to | peux peut pouvons pouvez peuvent pu pouvais pouvait pouvaient pourrai pourra pourront pourrais pourrait
+vouloir | A1 | verbs | to want | veux veut voulons voulez veulent voulu voulais voulait voudrai voudra voudrais voudrait
+devoir | A1 | verbs | must; to have to; homework | dois doit devons devez doivent dû devais devait devra devrais devrait devoirs
+savoir | A1 | verbs | to know (a fact) | sais sait savons savez savent su savais savait saurai saura saurais saurait
+connaître | A1 | verbs | to know (someone, a place) | connais connaît connait connaissons connaissez connaissent connu connue connus connaissais connaissait
+voir | A1 | verbs | to see | vois voit voyons voyez voient vu vus voyais voyait verrai verra verrais verrait
+regarder | A1 | verbs | to look at; to watch | regarde regardes regardons regardez regardent regardé regardais regardait
+écouter | A1 | verbs | to listen to | écoute écoutes écoutons écoutez écoutent écouté écoutais écoutait
+venir | A1 | verbs | to come | viens vient venons venez viennent venu venue venus venais venait viendrai viendra
+partir | A1 | verbs | to leave | pars part partons partez partent partais partait partirai partira
+arriver | A1 | verbs | to arrive; to happen | arrive arrives arrivons arrivez arrivent arrivé arrivés arrivais arrivait arrivera
+entrer | A1 | verbs | to enter; to go in | entrons entrez entrent entré entrés entrais entrait
+sortir | A1 | verbs | to go out | sors sort sortons sortez sortent sorti sortis sortais sortait
+rester | A1 | verbs | to stay | reste restes restons restez restent resté restée restais restait
+prendre | A1 | verbs | to take | prends prend prenons prenez prennent pris prenais prenait prendrai prendra
+donner | A1 | verbs | to give | donne donnes donnons donnez donnent donné donnée donnais donnait donnera
+mettre | A1 | verbs | to put; to put on | mets met mettons mettez mettent mis mise mettais mettait mettra
+trouver | A1 | verbs | to find | trouve trouves trouvons trouvez trouvent trouvé trouvée trouvais trouvait
+chercher | A1 | verbs | to look for | cherche cherches cherchons cherchez cherchent cherché cherchais cherchait
+demander | A1 | verbs | to ask | demande demandes demandons demandez demandent demandé demandais demandait
+répondre | A1 | verbs | to answer | réponds répond répondons répondez répondent répondu répondais répondait
+habiter | A1 | verbs | to live (somewhere) | habite habites habitons habitez habitent habité habitais habitait
+vivre | A1 | verbs | to live | vit vivons vivez vivent vécu vivais vivait vivra
+ouvrir | A1 | verbs | to open | ouvre ouvres ouvrons ouvrez ouvrent ouvert ouverte ouverts ouvrait
+fermer | A1 | verbs | to close | ferme fermes fermons fermez ferment fermé fermée fermés fermait
+commencer | A1 | verbs | to begin | commence commences commençons commencez commencent commencé commençais commençait
+finir | A1 | verbs | to finish | finis finit finissons finissez finissent fini finie finissait
+attendre | A1 | verbs | to wait (for) | attends attend attendons attendez attendent attendu attendais attendait
+aider | A1 | verbs | to help | aide aides aidons aidez aident aidé aidait
+passer | A1 | verbs | to pass; to spend (time) | passe passes passons passez passent passé passée passais passait
+utiliser | A1 | verbs | to use | utilise utilises utilisons utilisez utilisent utilisé utilisait
+changer | A1 | verbs | to change | change changes changeons changez changent changé changeait
+montrer | A1 | verbs | to show | montrons montrez montrent montré montrait
+tenir | A2 | verbs | to hold | tiens tient tenons tenez tiennent tenu tenait tiendra
+devenir | A2 | verbs | to become | deviens devient devenons devenez deviennent devenu devenue devenait
+revenir | A2 | verbs | to come back | reviens revient revenons revenez reviennent revenu revenue revenait
+rentrer | A2 | verbs | to go home; to go back in | rentre rentres rentrons rentrez rentrent rentré rentrée rentrait
+retourner | A2 | verbs | to return; to turn over | retourne retournes retournons retournez retournent retourné retournait
+tomber | A2 | verbs | to fall | tombe tombes tombons tombez tombent tombé tombée tombait
+monter | A2 | verbs | to go up; to get in | monte montes montons montez montent monté montée montait
+descendre | A2 | verbs | to go down; to get off | descends descend descendons descendez descendent descendu descendait
+laisser | A2 | verbs | to leave; to let | laisse laisses laissons laissez laissent laissé laissait
+garder | A2 | verbs | to keep | garde gardes gardons gardez gardent gardé gardait
+perdre | A2 | verbs | to lose | perds perd perdons perdez perdent perdu perdue perdait
+gagner | A2 | verbs | to win; to earn | gagne gagnes gagnons gagnez gagnent gagné gagnait
+essayer | A2 | verbs | to try | essaie essaies essayons essayez essaient essayé essayait essaye
+oublier | A2 | verbs | to forget | oublie oublies oublions oubliez oublient oublié oubliait
+envoyer | A2 | verbs | to send | envoie envoies envoyons envoyez envoient envoyé envoyait enverra
+recevoir | A2 | verbs | to receive | reçois reçoit recevons recevez reçoivent reçu reçue recevait
+porter | A2 | verbs | to carry; to wear | portons portez portent porté portée portait
+apporter | A2 | verbs | to bring | apporte apportes apportons apportez apportent apporté apportait
+suivre | A2 | verbs | to follow | suit suivons suivez suivent suivi suivie suivait
+sembler | A2 | verbs | to seem | semble semblent semblé semblait
+paraître | A2 | verbs | to appear; to seem | parais paraît parait paraissent paru paraissait
+mener | A2 | verbs | to lead | mène mènes menons menez mènent mené menait
+tourner | A2 | verbs | to turn | tourne tournes tournons tournez tournent tourné tournait
+continuer | A2 | verbs | to continue | continue continues continuons continuez continuent continué continuait
+arrêter | A2 | verbs | to stop | arrête arrêtes arrêtons arrêtez arrêtent arrêté arrêtait
+permettre | A2 | verbs | to allow | permets permet permettons permettez permettent permettait
+manquer | A2 | verbs | to miss; to lack | manque manques manquons manquez manquent manqué manquait
+servir | A2 | verbs | to serve | sers sert servons servez servent servi servait
+plaire | A2 | verbs | to please (ça me plaît) | plais plaît plait plaisent plaisait
+retrouver | A2 | verbs | to find again; to meet up | retrouve retrouves retrouvons retrouvez retrouvent retrouvé retrouvait
+rendre | B1 | verbs | to give back; to make (someone happy) | rends rend rendons rendez rendent rendu rendue rendait
+sentir | B1 | verbs | to feel; to smell | sens sent sentons sentez sentent senti sentait
+poser | B1 | verbs | to put down; to ask (a question) | pose poses posons posez posent posé posait
+compter | B1 | verbs | to count; to intend | comptons comptez comptent compté comptait
+obtenir | B1 | verbs | to obtain | obtiens obtient obtenons obtenez obtiennent obtenu obtenait
+atteindre | B1 | verbs | to reach | atteins atteint atteignons atteignez atteignent atteignait
+tirer | B1 | verbs | to pull; to shoot | tire tires tirons tirez tirent tiré tirait
+pousser | B1 | verbs | to push; to grow | pousse pousses poussons poussez poussent poussé poussait
+lever | B1 | verbs | to raise; to lift | lève lèves levons levez lèvent levé levait
+jeter | B1 | verbs | to throw | jette jettes jetons jetez jettent jeté jetait
+cacher | B1 | verbs | to hide | cache caches cachons cachez cachent caché cachée cachait
+toucher | B1 | verbs | to touch | touche touches touchons touchez touchent touché touchait
+remplir | B1 | verbs | to fill | remplis remplit remplissons remplissez remplissent rempli remplie remplissait
+ajouter | B1 | verbs | to add | ajoute ajoutes ajoutons ajoutez ajoutent ajouté ajoutait
+éviter | B1 | verbs | to avoid | évite évites évitons évitez évitent évité évitait
+empêcher | B1 | verbs | to prevent | empêche empêches empêchons empêchez empêchent empêché empêchait
+réussir | B1 | verbs | to succeed | réussis réussit réussissons réussissez réussissent réussi réussissait
+appartenir | B1 | verbs | to belong | appartiens appartient appartiennent appartenu appartenait
+dépendre | B1 | verbs | to depend | dépends dépend dépendent dépendu dépendait
+exister | B1 | verbs | to exist | existe existent existé existait
+produire | B1 | verbs | to produce | produis produit produisons produisent produisait
+proposer | B1 | verbs | to suggest; to offer | propose proposes proposons proposez proposent proposé proposait
+représenter | B1 | verbs | to represent | représente représentent représenté représentait
+réaliser | B1 | verbs | to carry out; to realise | réalise réalises réalisons réalisez réalisent réalisé réalisait
+créer | B1 | verbs | to create | crée crées créons créez créent créé créée créait
+offrir | B1 | verbs | to offer; to give (a gift) | offre offres offrons offrez offrent offert offerte offrait
+remettre | B1 | verbs | to put back; to hand over | remets remet remettons remettez remettent remis remise remettait
+reprendre | B1 | verbs | to take back; to resume | reprends reprend reprenons reprenez reprennent repris reprise reprenait
+arracher | B1 | verbs | to pull out; to tear off | arrache arraches arrachent arraché arrachait
+soutenir | B1 | verbs | to support | soutiens soutient soutenons soutenez soutiennent soutenu soutenait
+entraîner | B1 | verbs | to lead to; to train | entraîne entraînes entraînent entraîné entraînait
+installer | B1 | verbs | to install; to settle | installe installes installons installez installent installé installée installait
+tendre | B1 | verbs | to stretch out; to tend | tends tend tendons tendez tendent tendu tendait
+souffrir | B1 | verbs | to suffer | souffre souffres souffrons souffrez souffrent souffert souffrait
+disparaître | B1 | verbs | to disappear | disparais disparaît disparait disparaissent disparu disparue disparaissait
+apparaître | B1 | verbs | to appear | apparais apparaît apparait apparaissent apparu apparue apparaissait
+convaincre | B1 | verbs | to convince | convaincs convainc convainquent convaincu convaincue convainquait
+prévenir | B1 | verbs | to warn; to prevent | préviens prévient prévenons prévenez préviennent prévenu prévenait
+agir | B1 | verbs | to act; to be about (il s'agit de) | agis agit agissons agissez agissent agi agissait
+
+# --- Common adjectives ---
+bon | A1 | adjectives | good | bonne bons bonnes
+mauvais | A1 | adjectives | bad | mauvaise mauvaises
+grand | A1 | adjectives | big; tall | grande grands grandes
+petit | A1 | adjectives | small; little | petite petits petites
+nouveau | A1 | adjectives | new | nouvel nouvelle nouveaux nouvelles
+vieux | A1 | adjectives | old | vieil vieille vieilles
+jeune | A1 | adjectives | young | jeunes
+beau | A1 | adjectives | beautiful; handsome | bel belle beaux belles
+joli | A1 | adjectives | pretty | jolie jolis jolies
+même | A1 | adjectives | same; even | mêmes
+premier | A1 | adjectives | first | première premiers premières
+dernier | A1 | adjectives | last | dernière derniers dernières
+prochain | A1 | adjectives | next | prochaine prochains prochaines
+facile | A1 | adjectives | easy | faciles
+difficile | A1 | adjectives | difficult | difficiles
+important | A1 | adjectives | = | importante importants importantes
+possible | A1 | adjectives | = | possibles
+vrai | A1 | adjectives | true; real | vraie vrais vraies
+long | A1 | adjectives | = | longue longs longues
+court | A1 | adjectives | short | courte courts courtes
+haut | A1 | adjectives | high | haute hauts hautes
+bas | A1 | adjectives | low | basse basses
+seul | A1 | adjectives | alone; only | seule seuls seules
+plein | A1 | adjectives | full | pleine pleins pleines
+vide | A1 | adjectives | empty | vides
+gros | A1 | adjectives | big; fat | grosse grosses
+chaud | A1 | adjectives | hot; warm | chaude chauds chaudes
+froid | A1 | adjectives | cold | froide froids froides
+propre | A2 | adjectives | clean; own | propres
+sale | A2 | adjectives | dirty | sales
+simple | A2 | adjectives | = | simples
+rapide | A2 | adjectives | fast | rapides
+lent | A2 | adjectives | slow | lente lents lentes
+fort | A2 | adjectives | strong; loud | forte forts fortes
+faible | A2 | adjectives | weak | faibles
+léger | A2 | adjectives | light | légère légers légères
+lourd | A2 | adjectives | heavy | lourde lourds lourdes
+large | A2 | adjectives | wide | larges
+étroit | A2 | adjectives | narrow | étroite étroits étroites
+prêt | A2 | adjectives | ready | prête prêts prêtes
+libre | A2 | adjectives | free; available | libres
+occupé | A2 | adjectives | busy; taken | occupée occupés occupées
+pareil | A2 | adjectives | the same; similar | pareille pareils pareilles
+différent | A2 | adjectives | different | différente différents différentes
+ancien | A2 | adjectives | old; former | ancienne anciens anciennes
+moderne | A2 | adjectives | = | modernes
+entier | B1 | adjectives | whole | entière entiers entières
+principal | B1 | adjectives | main | principale principaux principales
+général | B1 | adjectives | general | générale généraux générales
+particulier | B1 | adjectives | particular; private | particulière particuliers particulières
+public | B1 | adjectives | = | publique publics publiques
+privé | B1 | adjectives | private | privée privés privées
+nécessaire | B1 | adjectives | necessary | nécessaires
+utile | B1 | adjectives | useful | utiles
+inutile | B1 | adjectives | useless | inutiles
+évident | B1 | adjectives | obvious | évidente évidents évidentes
+clair | B1 | adjectives | clear; light | claire clairs claires
+sombre | B1 | adjectives | dark | sombres
+profond | B1 | adjectives | deep | profonde profonds profondes
+précis | B1 | adjectives | precise | précise précises
+rare | B1 | adjectives | = | rares
+courant | B1 | adjectives | common; current | courante courants courantes
+réel | B1 | adjectives | real | réelle réels réelles
+actuel | B1 | adjectives | current; present-day | actuelle actuels actuelles
+immense | B1 | adjectives | huge | immenses
+énorme | B1 | adjectives | enormous | énormes
+minuscule | B1 | adjectives | tiny | minuscules
+fragile | B1 | adjectives | = | fragiles
+solide | B1 | adjectives | solid; sturdy | solides
+complet | B1 | adjectives | complete; full | complète complets complètes
+parfait | B1 | adjectives | perfect | parfaite parfaits parfaites
+
+# --- Common adverbs ---
+très | A1 | adverbs | very |
+bien | A1 | adverbs | well; good |
+mal | A1 | adverbs | badly; wrong; pain | maux
+beaucoup | A1 | adverbs | a lot; many |
+peu | A1 | adverbs | little; few |
+trop | A1 | adverbs | too; too much |
+assez | A1 | adverbs | enough; quite |
+plus | A1 | adverbs | more; no more (ne … plus) |
+moins | A1 | adverbs | less |
+aussi | A1 | adverbs | also; as |
+encore | A1 | adverbs | again; still; yet |
+déjà | A1 | adverbs | already |
+toujours | A1 | adverbs | always; still |
+jamais | A1 | adverbs | never; ever |
+souvent | A1 | adverbs | often |
+ici | A1 | adverbs | here |
+là | A1 | adverbs | there |
+maintenant | A1 | adverbs | now |
+oui | A1 | adverbs | yes |
+non | A1 | adverbs | no |
+ne | A1 | adverbs | not (ne … pas) | n'
+pas | A1 | adverbs | not |
+alors | A1 | adverbs | then; so |
+vite | A1 | adverbs | quickly |
+ensemble | A1 | adverbs | together |
+peut-être | A1 | adverbs | maybe |
+surtout | A2 | adverbs | especially; above all |
+vraiment | A2 | adverbs | really |
+seulement | A2 | adverbs | only |
+presque | A2 | adverbs | almost |
+environ | A2 | adverbs | about; approximately |
+ailleurs | A2 | adverbs | elsewhere |
+partout | A2 | adverbs | everywhere |
+dehors | A2 | adverbs | outside |
+dedans | A2 | adverbs | inside |
+ainsi | A2 | adverbs | thus; like this |
+plutôt | A2 | adverbs | rather |
+tellement | A2 | adverbs | so; so much |
+tant | A2 | adverbs | so much; so many |
+exactement | A2 | adverbs | exactly |
+enfin | A2 | adverbs | finally; well |
+abord | A2 | adverbs | first (d'abord) | abords
+heureusement | A2 | adverbs | fortunately |
+malheureusement | A2 | adverbs | unfortunately |
+volontiers | B1 | adverbs | gladly |
+certes | B1 | adverbs | admittedly |
+quasiment | B1 | adverbs | practically |
+davantage | B1 | adverbs | more |
+désormais | B1 | adverbs | from now on |
+auparavant | B1 | adverbs | beforehand |
+aussitôt | B1 | adverbs | immediately |
+autant | B1 | adverbs | as much; as many |
+notamment | B1 | adverbs | in particular |
+également | B1 | adverbs | also; equally |
+justement | B1 | adverbs | precisely; just so |
+sûrement | B1 | adverbs | surely |
+évidemment | B1 | adverbs | obviously |
+forcément | B1 | adverbs | necessarily |
+complètement | B1 | adverbs | completely |
+totalement | B1 | adverbs | totally |
+lentement | B1 | adverbs | slowly |
+doucement | B1 | adverbs | gently; quietly |
+soudain | B1 | adverbs | suddenly | soudaine
+brusquement | B1 | adverbs | abruptly |
+dessus | B1 | adverbs | on top |
+dessous | B1 | adverbs | underneath |
+là-bas | B1 | adverbs | over there |
+au-delà | B1 | adverbs | beyond |
