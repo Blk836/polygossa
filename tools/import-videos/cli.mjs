@@ -4,6 +4,7 @@ import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { Fatal, makeClient } from "./client.mjs";
 import { makeCopier } from "./copy.mjs";
+import { makePlaylist } from "./playlist.mjs";
 import { parseList } from "./list.mjs";
 import { resultsFile, retryFile, summary } from "./report.mjs";
 import { run } from "./run.mjs";
@@ -24,6 +25,11 @@ Copy mode: copies videos already imported on another backend, finished, instead 
   --copy-from <url>      the source backend (any owner's copy there; public and newest first)
   --from-token <secret>  the source's curator token (default $SOURCE_CURATOR_TOKEN)
 
+Playlist mode: puts the list's videos, already in the community library, into a public library playlist in list
+order (the same title and language again updates it). Nothing is imported.
+  --playlist <title>     the playlist's title
+  --description <text>   its description
+
 Writes <list>.results.txt (every line with its outcome) and <list>.retry.txt (lines worth running again).`;
 
 const OPTIONS = {
@@ -34,6 +40,8 @@ const OPTIONS = {
   token: { type: "string" },
   "copy-from": { type: "string" },
   "from-token": { type: "string" },
+  playlist: { type: "string" },
+  description: { type: "string" },
 };
 
 /** Runs the tool; returns the exit code (0 when the run finished, even if some videos failed). */
@@ -71,12 +79,29 @@ function settingsFrom(argv, env) {
   if (!token) {
     return "Stopped: no curator token: set CURATOR_TOKEN or pass --token (the same value the backend runs with)";
   }
-  const copy = copySettings(values, env);
-  if (typeof copy === "string") {
-    return copy;
+  const mode = modeSettings(values, env);
+  if (typeof mode === "string") {
+    return mode;
   }
   return { file: positionals[0], token, delayMs: delay * 1000, dryRun: values["dry-run"], language: values.language,
-    baseUrl: values.backend ?? env.BACKEND_URL ?? "http://localhost:8080", ...copy };
+    baseUrl: values.backend ?? env.BACKEND_URL ?? "http://localhost:8080", ...mode };
+}
+
+/** Playlist or copy mode's settings ({} for a plain import), or a message saying what's wrong. */
+function modeSettings(values, env) {
+  const playlistMode = values.playlist !== undefined || values.description !== undefined;
+  return playlistMode ? playlistSettings(values) : copySettings(values, env);
+}
+
+/** Playlist mode's title and description, or a message saying what doesn't fit. */
+function playlistSettings(values) {
+  if (values.playlist === undefined) {
+    return "Stopped: --description goes with --playlist <title>";
+  }
+  if (values["copy-from"] !== undefined) {
+    return "Stopped: --playlist doesn't go with --copy-from: copy the videos first, then make the playlist";
+  }
+  return { playlist: values.playlist, description: values.description };
 }
 
 /** Copy mode's source and its token ({} without copy mode), or a message saying what's missing. */
@@ -108,6 +133,10 @@ async function importList(settings, { print, sleep, fetch }) {
   const text = read(settings.file);
   const { client, options } = await importer(settings, fetch);
   const entries = parseList(text, { ...options, defaultLanguage: settings.language?.toLowerCase() ?? null });
+  if (settings.playlist !== undefined) {
+    return makePlaylist(entries, { client, title: settings.playlist, description: settings.description,
+      dryRun: settings.dryRun, print });
+  }
   const results = await run(entries, { client, delayMs: settings.delayMs, dryRun: settings.dryRun, sleep, print });
   print(summary(results));
   if (!settings.dryRun) {
