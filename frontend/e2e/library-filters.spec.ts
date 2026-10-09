@@ -172,11 +172,16 @@ test.describe("My library", () => {
   });
 
   test("the free plan's count names imports only", async ({ page }) => {
+    // The account arrives with the page (server-side), so the free plan is stubbed on the refresh that follows an
+    // Unsave; the test account itself stays on its Classroom plan for the other tests.
+    const { bookmarks } = await stubLibrary(page, { saved: 1 });
+    await page.route(`**/api/library/${bookmarks[0].id}/bookmark`, (route) => route.fulfill({ status: 204 }));
     await page.route("**/api/me", async (route) => {
       const me = await (await route.fetch()).json();
       return route.fulfill({ json: { ...me, plan: { ...me.plan, usage: { ...me.plan.usage, texts: 3 }, limits: { ...me.plan.limits, texts: 5 } } } });
     });
     await page.goto("/library");
+    await cards(page).filter({ hasText: "Saved news 0" }).getByRole("button", { name: "Unsave" }).click();
     await expect(page.getByText("3 of 5 imported texts and videos on the free plan (all languages). Saved items don't count.")).toBeVisible();
   });
 });
