@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { CardLayoutPicker } from "@/components/card-layout-picker";
 import { useCardLayout } from "@/components/card-layout-context";
 import { KindFilterTabs } from "@/components/kind-filter";
@@ -13,6 +13,7 @@ import { useMe } from "@/components/me-context";
 import { AddToPlaylist } from "@/components/playlists/add-to-playlist";
 import { PlaylistShelf } from "@/components/playlists/playlist-shelf";
 import { TextCard } from "@/components/text-card";
+import { useRemembered } from "@/components/use-remembered";
 import { Empty, ErrorNote, PageHeader, Pager, Spinner, inputClass, selectClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import { cardGridClass } from "@/lib/card-layout";
@@ -33,37 +34,25 @@ export default function ExplorePage() {
   return <Explore key={me.targetLanguage ?? "all"} language={me.targetLanguage ?? ""} />;
 }
 
-function Explore({ language }: { language: string }) {
-  const [f, setF] = useState<ExploreFilters>({ language, category: null, level: "", kind: "all", sort: "new", query: "", page: 0, topic: null });
-  const [shelves, setShelves] = useState<Shelf[] | null>(null);
-  const [grid, setGrid] = useState<Grid | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const recs = useRecommendations(language, setError);
+/** The category shelves, and the grid once a category, search or topic is picked; each remembered per filters. */
+function useExploreData(f: ExploreFilters) {
   const showShelves = f.category === null && f.query === "" && !f.topic;
-  const set = (patch: Partial<ExploreFilters>) => setF((prev) => ({ ...prev, page: 0, ...patch }));
-
   // Shelves (and the category counts) follow language, level and type only.
   const shelvesPath = exploreQuery(f, PAGE_SIZE, true);
-  useEffect(() => {
-    let cancelled = false;
-    api<Shelf[]>(shelvesPath)
-      .then((s) => !cancelled && setShelves(s))
-      .catch((e) => !cancelled && setError(errorMessage(e)));
-    return () => {
-      cancelled = true;
-    };
-  }, [shelvesPath]);
+  const shelves = useRemembered(shelvesPath, () => api<Shelf[]>(shelvesPath));
+  const gridPath = showShelves ? null : exploreQuery(f, PAGE_SIZE);
+  const grid = useRemembered(gridPath, () => api<Grid>(gridPath!));
+  return { showShelves, shelves: shelves.data, setShelves: shelves.setData, grid: grid.data, setGrid: grid.setData, error: shelves.error ?? grid.error };
+}
 
-  useEffect(() => {
-    if (showShelves) return;
-    let cancelled = false;
-    api<Grid>(exploreQuery(f, PAGE_SIZE))
-      .then((g) => !cancelled && setGrid(g))
-      .catch((e) => !cancelled && setError(errorMessage(e)));
-    return () => {
-      cancelled = true;
-    };
-  }, [f, showShelves]);
+function Explore({ language }: { language: string }) {
+  const [f, setF] = useState<ExploreFilters>({ language, category: null, level: "", kind: "all", sort: "new", query: "", page: 0, topic: null });
+  const [failure, setError] = useState<string | null>(null);
+  const recs = useRecommendations(language, setError);
+
+  const set = (patch: Partial<ExploreFilters>) => setF((prev) => ({ ...prev, page: 0, ...patch }));
+  const { showShelves, shelves, setShelves, grid, setGrid, error: loadError } = useExploreData(f);
+  const error = failure ?? loadError;
 
   async function toggle(t: TextSummary, reaction: Reaction) {
     const on = reaction === "like" ? t.liked : t.bookmarked;

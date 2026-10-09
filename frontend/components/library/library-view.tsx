@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CardLayoutPicker } from "../card-layout-picker";
 import { useCardLayout } from "../card-layout-context";
 import { useMe } from "../me-context";
 import { AddToPlaylist } from "../playlists/add-to-playlist";
 import { PlaylistShelf } from "../playlists/playlist-shelf";
 import { TextCard } from "../text-card";
+import { useRemembered } from "../use-remembered";
 import { Button, Empty, ErrorNote, LinkButton, PageHeader, Spinner } from "../ui";
 import { FilterBar } from "./filter-bar";
 import { OwnerActions } from "./owner-actions";
@@ -55,18 +56,10 @@ export function LibraryView({ source = "all" }: { source?: SourceFilter }) {
 
 /** Your imports, then your saved items (each once), of one kind; the caller filters source and category. */
 function useLibraryTexts(kind: LibraryFilters["kind"], language: string) {
-  const [texts, setTexts] = useState<TextSummary[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    const list = (path: string) => api<TextSummary[]>(withLanguage(withKind(path, kind), language));
-    Promise.all([list("texts"), list("library/bookmarks")])
-      .then(([mine, saved]) => !cancelled && setTexts(uniqueById(mine, saved)))
-      .catch((e) => !cancelled && setError(errorMessage(e)));
-    return () => {
-      cancelled = true;
-    };
-  }, [kind, language]);
+  const list = (path: string) => api<TextSummary[]>(withLanguage(withKind(path, kind), language));
+  const { data: texts, setData: setTexts, error, setError } = useRemembered(`library:${kind}:${language}`, () =>
+    Promise.all([list("texts"), list("library/bookmarks")]).then(([mine, saved]) => uniqueById(mine, saved)),
+  );
   return { texts, setTexts, error, setError };
 }
 
