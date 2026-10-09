@@ -184,7 +184,7 @@ test.describe("page arrows beside the text", () => {
     await page.setViewportSize(LAPTOP);
     created = await createText(page);
     await openReader(page, `/read/${created.id}`);
-    const saved = page.waitForResponse((r) => r.url().includes("/api/vocabulary") && r.request().method() === "POST");
+    const saved = page.waitForResponse((r) => r.url().includes("/mark-known") && r.request().method() === "POST");
     await arrow(page, "next").click();
     await saved;
     await expect(pager(page)).toContainText("Page 2 of");
