@@ -2,13 +2,20 @@ package app.lector;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import app.lector.playlist.Playlist;
+import app.lector.playlist.PlaylistBookmarkRepository;
+import app.lector.playlist.PlaylistItemRepository;
+import app.lector.playlist.PlaylistRepository;
+import app.lector.user.LibraryAccount;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -31,9 +38,41 @@ class CuratedPlaylistApiTest {
 
     TestApi api;
 
+    @Autowired
+    PlaylistRepository playlists;
+
+    @Autowired
+    PlaylistItemRepository items;
+
+    @Autowired
+    PlaylistBookmarkRepository bookmarks;
+
+    @Autowired
+    LibraryAccount library;
+
+    @Autowired
+    TransactionTemplate tx;
+
     @BeforeEach
     void setUp() {
         api = new TestApi(mvc, json);
+    }
+
+    /**
+     * Other classes on this shared app delete the library's videos before each test, which a playlist still holding
+     * them would block: leave no library playlist behind.
+     */
+    @AfterEach
+    void removeLibraryPlaylists() {
+        library.find().ifPresent(owner -> tx.executeWithoutResult(s -> {
+            for (Playlist p : playlists.findAll()) {
+                if (p.isOwnedBy(owner)) {
+                    items.deleteByPlaylistId(p.getId());
+                    bookmarks.deleteByPlaylistId(p.getId());
+                    playlists.delete(p);
+                }
+            }
+        }));
     }
 
     /** Puts a French video into the library (through the copy endpoint) and returns its text id. */
