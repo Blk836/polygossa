@@ -8,7 +8,8 @@ import { AddToPlaylist } from "../playlists/add-to-playlist";
 import { PlaylistShelf } from "../playlists/playlist-shelf";
 import { TextCard } from "../text-card";
 import { useRemembered } from "../use-remembered";
-import { Button, Empty, ErrorNote, LinkButton, PageHeader, Spinner } from "../ui";
+import { CardsLoading } from "../skeletons/card-pages";
+import { Button, Empty, ErrorNote, LinkButton, PageHeader } from "../ui";
 import { FilterBar } from "./filter-bar";
 import { OwnerActions } from "./owner-actions";
 import { api, errorMessage } from "@/lib/api";
@@ -142,7 +143,7 @@ function Library({ source, language }: { source: SourceFilter; language: string 
         <Results shown={shown} filters={filters} language={language} onClear={() => setFilters(NO_FILTERS)}
           onChanged={replace} onRemoved={removed} onError={setError} />
       ) : (
-        !error && <Spinner />
+        !error && <CardsLoading label="your library" />
       )}
     </div>
   );

@@ -14,7 +14,8 @@ import { AddToPlaylist } from "@/components/playlists/add-to-playlist";
 import { PlaylistShelf } from "@/components/playlists/playlist-shelf";
 import { TextCard } from "@/components/text-card";
 import { useRemembered } from "@/components/use-remembered";
-import { Empty, ErrorNote, PageHeader, Pager, Spinner, inputClass, selectClass } from "@/components/ui";
+import { CardsLoading, ExploreShelvesLoading } from "@/components/skeletons/card-pages";
+import { Empty, ErrorNote, PageHeader, Pager, inputClass, selectClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import { cardGridClass } from "@/lib/card-layout";
 import { CATEGORIES, exploreQuery, gridHeading, type ExploreFilters } from "@/lib/categories";
@@ -143,7 +144,7 @@ function GridView({ f, grid, error, actions, set, onPage }: {
           <option value="popular">Most liked</option>
         </select>
       </div>
-      {!grid && !error && <Spinner />}
+      {!grid && !error && <CardsLoading label="results" />}
       {grid && grid.items.length === 0 && <Empty title="Nothing matches">Try another level, type or search.</Empty>}
       <div className={cardGridClass(layout)} data-testid="card-grid">
         {grid?.items.map((t) => <TextCard key={t.id} text={t} layout={layout} showOwner actions={actions(t)} />)}
@@ -158,7 +159,7 @@ function ShelvesView({ shelves, actions, onSeeAll }: {
   actions: (t: TextSummary) => ReactNode;
   onSeeAll: (category: Shelf["category"]) => void;
 }) {
-  if (!shelves) return <Spinner />;
+  if (!shelves) return <ExploreShelvesLoading />;
   if (shelves.length === 0) {
     return <Empty title="Nothing shared in this language yet">Share one of your own texts or videos from your library to get things started.</Empty>;
   }

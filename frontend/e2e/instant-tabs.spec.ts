@@ -126,7 +126,7 @@ test("a reload shows nothing remembered", async ({ page }) => {
 
   await page.reload();
   await expect(page.getByRole("heading", { name: "My library" })).toBeVisible();
-  await expect(page.locator("main").getByTestId("spinner")).toBeVisible();
+  await expect(page.locator("main [data-skeleton=cards]")).toBeVisible();
   await expect(card(page, title)).toHaveCount(0);
   release();
 });

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useMe } from "@/components/me-context";
-import { Empty, ErrorNote, PageHeader, Spinner, UpgradeNote } from "@/components/ui";
+import { Bone, RowsBone, SectionLoading } from "@/components/skeletons/parts";
+import { Empty, ErrorNote, PageHeader, UpgradeNote } from "@/components/ui";
 import { GradeView } from "@/components/writing/grade-view";
 import { StartPanel, WritingHistory } from "@/components/writing/start-panel";
 import { TestSession } from "@/components/writing/test-session";
@@ -14,7 +15,7 @@ export default function WritingPage() {
   const { me, isPro } = useMe();
   if (!isPro) {
     return (
-      <div>
+      <div className="mx-auto max-w-3xl">
         <PageHeader title="Writing" />
         <UpgradeNote message="Timed writing tests with AI grading are part of Pro." />
       </div>
@@ -22,7 +23,7 @@ export default function WritingPage() {
   }
   if (!me.targetLanguage) {
     return (
-      <div>
+      <div className="mx-auto max-w-3xl">
         <PageHeader title="Writing" />
         <Empty title="Choose a language first">Pick the language you&apos;re learning in the top bar.</Empty>
       </div>
@@ -68,7 +69,7 @@ function Writing({ language }: { language: string }) {
       {view.kind === "start" && (
         <>
           <StartPanel language={language} onStarted={(t) => { record(t); setView({ kind: "test", test: t }); }} />
-          {history ? <WritingHistory tests={history} onOpen={(t) => setView({ kind: "result", test: t })} /> : !error && <Spinner />}
+          {history ? <WritingHistory tests={history} onOpen={(t) => setView({ kind: "result", test: t })} /> : !error && <SectionLoading label="past tests" className="mt-8"><Bone className="mb-3 h-6 w-28" /><RowsBone count={3} lead /></SectionLoading>}
         </>
       )}
     </div>
