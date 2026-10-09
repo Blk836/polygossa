@@ -18,7 +18,7 @@ import org.springframework.web.client.RestClient;
 class TextProcessingTest {
 
     private static List<Token> tokens(Language language, String text) {
-        var props = new AppProperties(null, new AppProperties.Tokenizer("", null), null, null, null, null, List.of(), false, false);
+        var props = new AppProperties(null, new AppProperties.Tokenizer("", null), null, null, null, List.of(), false, false);
         return new TokenizationService(props, RestClient.builder()).tokenize(language, text);
     }
 

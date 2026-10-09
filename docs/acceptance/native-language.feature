@@ -1,4 +1,6 @@
 Feature: Definitions in my native language (see docs/architecture/reading.md)
+  Superseded in part (October 2026): Wiktionary is no longer used, so the popup scenarios here gave way to
+  lingq-style-lookup.feature. The native-language setting itself still works as described.
   The free dictionaries are English Wiktionary, so a Spanish speaker learning German used to get English glosses.
   Each learner now has a native language (English by default). When it isn't English, the word popup leads with
   translations into it, found through English Wiktionary's translation tables, and AI help (Pro) answers in it.

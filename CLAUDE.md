@@ -142,8 +142,8 @@ If it can't be reproduced, say so and ask instead of guessing. Pick the browser 
   CJK tokenizer service at `TOKENIZER_URL`, which the project no longer has, and must keep working when that is down).
 - Backend layering: controllers → services → repositories/entities. Controllers don't load texts from repositories
   directly (use `TextService.loadReadable`/`loadOwned`); no package depends on a controller.
-- External services (dictionary APIs, OpenAI, YouTube, Amazon Translate) only through `DictionaryClient`, `AiClient`,
-  `YouTubeClient` and `TranslationClient`.
+- External services (OpenAI, YouTube, Amazon Translate) only through `AiClient`, `YouTubeClient` and
+  `TranslationClient`.
 
 ### AWS, GitHub and production
 **Production:** https://d3pd9mue4v7won.cloudfront.net (the `SiteUrl` output of the `PolygossaStaging` stack: it was
@@ -292,8 +292,8 @@ cd frontend && npm run e2e   # Playwright (first time: npx playwright install ch
 node --test "tools/**/*.test.mjs"                                  # tools/
 ```
 
-Backend tests don't hit the network. Dictionary lookups call freedictionaryapi.com / Wiktionary for real, so check
-those against a running backend.
+Backend tests don't hit the network. Word lookups use Amazon Translate only in production (off everywhere else; tests
+use `TranslateStub`).
 
 ## Backend conventions and gotchas (Spring Boot 4 / Jackson 3)
 - Jackson 3: `tools.jackson.databind.*` (`JsonNode.asString()`, not `asText()`), exceptions are unchecked.

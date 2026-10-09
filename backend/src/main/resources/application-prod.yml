@@ -1,4 +1,4 @@
-# Production: PostgreSQL primary datastore, Redis for dictionary response caching.
+# Production: PostgreSQL primary datastore.
 spring:
   datasource:
     url: ${DATABASE_URL}

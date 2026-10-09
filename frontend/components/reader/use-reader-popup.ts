@@ -38,11 +38,7 @@ export function usePopupState(articleRef: RefObject<HTMLDivElement | null>) {
     setPhraseMode(false);
   }, []);
 
-  const lookupLemma = useCallback((lemma: string) => {
-    setTarget((t) => (t ? { ...t, kind: "word", term: lemma.toLowerCase(), display: lemma, reading: undefined } : t));
-  }, []);
-
-  return { sel, setSel, target, setTarget, anchor, notice, setNotice, phraseMode, setPhraseMode, place, close, lookupLemma };
+  return { sel, setSel, target, setTarget, anchor, notice, setNotice, phraseMode, setPhraseMode, place, close };
 }
 
 type PopupState = ReturnType<typeof usePopupState>;

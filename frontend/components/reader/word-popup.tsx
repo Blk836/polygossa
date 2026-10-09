@@ -2,22 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { api, errorMessage } from "@/lib/api";
-import { hasDetails } from "@/lib/dictionary";
-import type { DictionaryResult, LanguageCode, WordStatus } from "@/lib/types";
+import type { DictionaryResult, LanguageCode, WordLookup, WordStatus } from "@/lib/types";
+import { useMe } from "../me-context";
 import { UpgradeNote } from "../ui";
-import { ExtraActions, PopupHeader, Senses, Source, StatusButtons, type SentenceState } from "./popup-parts";
+import { AiExplanation, DictionaryLinks, ExtraActions, Meanings, PopupHeader, StatusButtons, type SentenceState } from "./popup-parts";
 
-const dictionaryCache = new Map<string, Promise<DictionaryResult>>();
+const lookupCache = new Map<string, Promise<WordLookup>>();
 
-export function lookup(language: LanguageCode, term: string, context?: string): Promise<DictionaryResult> {
-  const key = `${language}:${term}`;
-  let p = dictionaryCache.get(key);
+/** The word's meanings in the learner's language, kept for the page's life per word and native language. */
+function lookup(language: LanguageCode, term: string, nativeLanguage: string): Promise<WordLookup> {
+  const key = `${nativeLanguage}:${language}:${term}`;
+  let p = lookupCache.get(key);
   if (!p) {
-    const params = new URLSearchParams({ language, term });
-    if (context) params.set("context", context.slice(0, 300));
-    p = api<DictionaryResult>(`dictionary?${params}`);
-    p.catch(() => dictionaryCache.delete(key));
-    dictionaryCache.set(key, p);
+    p = api<WordLookup>(`dictionary?${new URLSearchParams({ language, term })}`);
+    p.catch(() => lookupCache.delete(key));
+    lookupCache.set(key, p);
   }
   return p;
 }
@@ -40,12 +39,12 @@ interface Props {
   notice: string | null;
   hasAudio: boolean;
   onStatus: (status: WordStatus | null) => void;
-  onDefinition: (result: DictionaryResult) => void;
+  /** The lookup finished: a word saved by opening the popup keeps its meaning. */
+  onLookup: (lookup: WordLookup) => void;
   /** The learner picked another own-language meaning for the word. */
   onPickMeaning: (meaning: string) => void;
   onSaveSentence: (translation?: string) => Promise<void>;
   onPlayFromHere: () => void;
-  onLookupLemma: (lemma: string) => void;
   onClose: () => void;
 }
 
@@ -69,9 +68,11 @@ function useAiAction() {
 
 /** The lookup popup. State starts fresh per word: the reader remounts it (via key) for each new target. */
 export function WordPopup(props: Props) {
-  const { target, language, onDefinition } = props;
-  const [result, setResult] = useState<DictionaryResult | null>(null);
+  const { target, language, onLookup } = props;
+  const { me } = useMe();
+  const [result, setResult] = useState<WordLookup | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [explanation, setExplanation] = useState<DictionaryResult | null>(null);
   const [aiExample, setAiExample] = useState<{ sentence: string; translation: string } | null>(null);
   const [translation, setTranslation] = useState<string | null>(null);
   const [sentenceState, setSentenceState] = useState<SentenceState>("idle");
@@ -79,22 +80,27 @@ export function WordPopup(props: Props) {
 
   useEffect(() => {
     let cancelled = false;
-    lookup(language, target.kind === "word" ? target.display : target.term, target.sentence)
+    lookup(language, target.kind === "word" ? target.display : target.term, me.nativeLanguage)
       .then((r) => {
         if (cancelled) return;
         setResult(r);
-        if (hasDetails(r)) onDefinition(r);
+        onLookup(r);
       })
       .catch((e) => !cancelled && setError(errorMessage(e)));
     return () => {
       cancelled = true;
     };
-  }, [language, target, onDefinition]);
+  }, [language, target, onLookup, me.nativeLanguage]);
+
+  function explain() {
+    const params = new URLSearchParams({ language, term: target.display, context: target.sentence.slice(0, 300) });
+    void ai.run(() => api<DictionaryResult>(`dictionary/explain?${params}`), setExplanation);
+  }
 
   function generateExample() {
     const params = new URLSearchParams({ language, term: target.display });
-    const first = result?.senses[0];
-    if (first) params.set("definition", first.definition);
+    const meaning = result?.meanings[0];
+    if (meaning) params.set("definition", meaning);
     void ai.run(() => api<{ sentence: string; translation: string }>(`dictionary/example?${params}`), setAiExample);
   }
 
@@ -117,9 +123,11 @@ export function WordPopup(props: Props) {
 
   return (
     <div className="flex max-h-[70vh] flex-col overflow-hidden rounded-t-2xl border border-line bg-card shadow-xl sm:max-h-[28rem] sm:rounded-2xl">
-      <PopupHeader target={target} result={result} speechLocale={props.speechLocale} onLookupLemma={props.onLookupLemma} onClose={props.onClose} />
+      <PopupHeader target={target} speechLocale={props.speechLocale} onClose={props.onClose} />
       <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
-        <Senses result={result} error={error} isPro={props.isPro} onPickMeaning={props.onPickMeaning} />
+        <Meanings lookup={result} error={error} onPick={props.onPickMeaning} />
+        <DictionaryLinks language={language} nativeLanguage={me.nativeLanguage} term={target.display} />
+        {explanation && <AiExplanation result={explanation} />}
         {aiExample && (
           <div className="border-l-2 border-accent pl-2">
             <p className="font-reading italic">{aiExample.sentence}</p>
@@ -131,7 +139,6 @@ export function WordPopup(props: Props) {
           <p className="font-reading">{target.sentence}</p>
           {translation && <p className="mt-1 text-xs text-muted">{translation}</p>}
         </div>
-        <Source result={result} />
         {ai.error && <p className="text-xs text-danger">{ai.error}</p>}
         {props.notice && <UpgradeNote message={props.notice} />}
       </div>
@@ -142,6 +149,7 @@ export function WordPopup(props: Props) {
           onSaveSentence={saveSentence}
           isPro={props.isPro}
           aiBusy={ai.busy}
+          onExplain={explain}
           onTranslate={translateSentence}
           onExample={generateExample}
           onPlay={props.hasAudio ? props.onPlayFromHere : null}

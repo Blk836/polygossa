@@ -1,4 +1,7 @@
 Feature: Word meanings in my own language: community meanings and machine translation (see docs/architecture/reading.md)
+  Superseded in part (October 2026, lingq-style-lookup.feature): Wiktionary's tables are gone, English speakers get
+  meanings too, and there are no dictionary definitions. Community meanings, storing, the cap, failures, picking and
+  editing a meaning still work as below.
   English Wiktionary's translation tables give a learner's own-language meaning for only some words (6 of 22 common
   words in a live sample). So the word popup now looks in three places, in order:
     1. community meanings: what other learners with the same native language saved for the word, when at least two

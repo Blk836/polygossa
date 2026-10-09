@@ -18,7 +18,7 @@ class AudioAlignerCueTest {
     private record Line(long start, long end, String text) {}
 
     private static List<Token> tokens(String text) {
-        var props = new AppProperties(null, new AppProperties.Tokenizer("", null), null, null, null, null, List.of(), false, false);
+        var props = new AppProperties(null, new AppProperties.Tokenizer("", null), null, null, null, List.of(), false, false);
         return new TokenizationService(props, RestClient.builder()).tokenize(Language.FR, text);
     }
 
