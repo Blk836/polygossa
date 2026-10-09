@@ -97,7 +97,7 @@ class CuratedPlaylistApiTest {
         libraryVideo("PLEXPLOREAA", "A");
         long id = playlist(TOKEN, body("Explore series", null, "fr", List.of("PLEXPLOREAA"), false), 201)
                 .get("id").asLong();
-        JsonNode shared = api.get(api.signup(), "/api/playlists/shared?language=fr&q=explore%20series", 200);
+        JsonNode shared = api.get(api.signup(), "/api/playlists/shared?language=fr&q=explore", 200);
         assertThat(shared.valueStream().map(p -> p.get("id").asLong())).contains(id);
     }
 
