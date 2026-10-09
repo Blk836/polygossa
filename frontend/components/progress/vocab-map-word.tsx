@@ -32,11 +32,12 @@ function useMeaning(language: LanguageCode, word: VocabMapWord): string | null |
   return found?.term === word.term ? found.meaning : undefined;
 }
 
-/** A tapped word: its meaning, band and status, with "Start learning" and "I know this" as in the reader. */
-export function WordPanel({ language, word, onSaved }: {
+/** A tapped word, over the map: its meaning, band and status, with "Start learning" and "I know this" as in the reader. */
+export function WordPanel({ language, word, onSaved, onClose }: {
   language: LanguageCode;
   word: VocabMapWord;
   onSaved: (term: string, status: WordStatus) => void;
+  onClose: () => void;
 }) {
   const meaning = useMeaning(language, word);
   const [busy, setBusy] = useState(false);
@@ -57,10 +58,15 @@ export function WordPanel({ language, word, onSaved }: {
   }
 
   return (
-    <section aria-label={`The word ${word.term}`} data-testid="map-word-panel" className="mt-4 rounded-lg border border-line bg-paper p-4">
+    <section aria-label={`The word ${word.term}`} data-testid="map-word-panel"
+      className="map-glass bottom-3 left-1/2 z-10 w-[min(22.5rem,calc(100%-1.5rem))] -translate-x-1/2 p-4 pr-10">
+      <button type="button" aria-label="Close" onClick={onClose}
+        className="absolute right-2 top-2 grid size-8 place-items-center rounded-lg text-lg leading-none text-muted hover:bg-accent-soft">
+        ×
+      </button>
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <h3 className="font-display text-xl font-semibold">{word.term}</h3>
-        <span className="rounded bg-card px-2 py-0.5 text-xs font-medium">{word.band}</span>
+        <span className="rounded bg-accent-soft px-2 py-0.5 text-xs font-medium">{word.band}</span>
         <span className="text-sm text-muted" data-testid="map-word-status">{STATUS_TEXT[word.status ?? "new"]}</span>
       </div>
       <p className="mt-2" data-testid="map-word-meaning"><MeaningText meaning={meaning} /></p>

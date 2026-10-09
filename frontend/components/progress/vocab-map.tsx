@@ -2,9 +2,9 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { IslandMap } from "@/components/progress/island-map";
+import { HexMap } from "@/components/progress/hex-map";
 import { WordPanel } from "@/components/progress/vocab-map-word";
-import { ErrorNote, Spinner, selectClass } from "@/components/ui";
+import { ErrorNote, Spinner } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import { languageName } from "@/lib/languages";
 import {
@@ -38,14 +38,23 @@ function storeBand(band: string) {
   }
 }
 
-function Frame({ children, header }: { children: React.ReactNode; header?: React.ReactNode }) {
+/** The card: its title and figures, then the map edge to edge (or a message, padded). */
+function Frame({ children, header, notes, bleed = false }: {
+  children: React.ReactNode;
+  header?: React.ReactNode;
+  notes?: React.ReactNode;
+  bleed?: boolean;
+}) {
   return (
-    <section aria-label="Vocabulary map" data-testid="vocab-map" className="rounded-xl border border-line bg-card p-5">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-display text-lg font-semibold">Vocabulary map</h2>
-        {header}
+    <section aria-label="Vocabulary map" data-testid="vocab-map" className="overflow-hidden rounded-xl border border-line bg-card">
+      <div className="px-5 pb-3 pt-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-display text-lg font-semibold">Vocabulary map</h2>
+          {header}
+        </div>
+        {notes}
       </div>
-      <div className="mt-3">{children}</div>
+      <div className={bleed ? "" : "px-5 pb-5"}>{children}</div>
     </section>
   );
 }
@@ -121,47 +130,34 @@ function MapView({ map, top, language, onTop, onStatus }: {
   };
 
   const header = (
-    <div className="flex flex-wrap items-center gap-3 text-sm">
-      <span data-testid="map-overall" className="font-medium tabular-nums">
-        {overall.known.toLocaleString()} / {overall.total.toLocaleString()} core words
-      </span>
-      <select aria-label="Bands counted" className={selectClass} value={top} onChange={(e) => onTop(e.target.value)}>
-        {map.bands.map((b) => <option key={b} value={b}>Up to {b}</option>)}
-      </select>
-    </div>
+    <span data-testid="map-overall" className="text-sm tabular-nums text-muted">
+      <b className="font-semibold text-ink">{overall.known.toLocaleString()}</b> of {overall.total.toLocaleString()} core words known
+    </span>
+  );
+  const notes = (
+    <>
+      {overall.known + overall.learning === 0 && <p className="mt-1 text-sm text-muted">Words you learn while reading fill in the map.</p>}
+      {view.soon && <p className="mt-1 text-xs text-muted">{view.soon} words coming soon.</p>}
+    </>
   );
 
   return (
-    <Frame header={header}>
-      <Breadcrumb region={place.region} area={place.area} go={go} />
-      {overall.known + overall.learning === 0 && !place.region && (
-        <p className="mb-3 text-sm text-muted">Words you learn while reading fill in the map.</p>
-      )}
-      {view.soon && !place.area && <p className="mb-3 text-xs text-muted">{view.soon} words coming soon.</p>}
-      <IslandMap map={map} view={view} place={place} selected={selected} go={go} onSelect={setSelected} />
-      {word && <WordPanel key={word.term} language={language} word={word} onSaved={onStatus} />}
+    <Frame header={header} notes={notes} bleed>
+      <HexMap
+        map={map}
+        view={view}
+        top={top}
+        onTop={onTop}
+        place={place}
+        selected={selected}
+        go={go}
+        onSelect={setSelected}
+        panel={word && <WordPanel key={word.term} language={language} word={word} onSaved={onStatus} onClose={() => setSelected(null)} />}
+      />
     </Frame>
   );
 }
 
 function selectedWord(place: MapPlace, term: string | null) {
   return place.area?.words.find((w) => w.term === term) ?? null;
-}
-
-type Go = (regionId: string | null, areaId?: string | null) => void;
-
-const crumbClass = "text-accent hover:underline";
-
-/** "Map › Food & Drink › Fruit & vegetables": every level above the current one is a way back out. */
-function Breadcrumb({ region, area, go }: MapPlace & { go: Go }) {
-  return (
-    <nav aria-label="Map location" className="mb-3 flex flex-wrap items-center gap-1 text-sm" data-testid="map-breadcrumb">
-      {region ? <button type="button" className={crumbClass} onClick={() => go(null)}>Map</button> : <span>Map</span>}
-      {region && <span aria-hidden className="text-muted">›</span>}
-      {region && area && <button type="button" className={crumbClass} onClick={() => go(region.id)}>{region.name}</button>}
-      {region && !area && <span>{region.name}</span>}
-      {area && <span aria-hidden className="text-muted">›</span>}
-      {area && <span>{area.name}</span>}
-    </nav>
-  );
 }

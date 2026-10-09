@@ -1,6 +1,6 @@
 // Mutation testing (npm run mutate). Covers the modules with unit tests: the reader's text, transcript, paging
 // (and fitting pages to the screen), settings and audio logic, word colour classes, vocabulary/review query helpers and the API client,
-// library media helpers, the video playback clock and YouTube play states, categories, theme, card layout and card status (difficulty, reading progress), playlists, the header nav and its streak/known-words figures, library filters, the landing page (sign-up links, demo reader, showreel timeline), the sign-in splash timeline, brand name, progress (streak, milestones, calendar), skill levels, the vocabulary map (and its island world's geometry and camera), Explore recommendations, the forum, profile photos (file checks, crop maths), word imports, writing tests, languages and native-language translations, the admin panel, first-visit tours and the listening clock. React components are covered by the
+// library media helpers, the video playback clock and YouTube play states, categories, theme, card layout and card status (difficulty, reading progress), playlists, the header nav and its streak/known-words figures, library filters, the landing page (sign-up links, demo reader, showreel timeline), the sign-in splash timeline, brand name, progress (streak, milestones, calendar), skill levels, the vocabulary map (and its hex continent and camera), Explore recommendations, the forum, profile photos (file checks, crop maths), word imports, writing tests, languages and native-language translations, the admin panel, first-visit tours and the listening clock. React components are covered by the
 // Playwright suite (e2e/) instead.
 /** @type {import("@stryker-mutator/api/core").PartialStrykerOptions} */
 const config = {
@@ -18,7 +18,10 @@ const config = {
     "lib/writing.ts",
     "lib/skill-levels.ts",
     "lib/vocab-map.ts",
-    "lib/island-world.ts",
+    "lib/hex-grid.ts",
+    "lib/hex-mend.ts",
+    "lib/hex-world.ts",
+    "lib/hex-view.ts",
     "lib/map-camera.ts",
     "lib/map-geometry.ts",
     "lib/recommendations.ts",

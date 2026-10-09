@@ -1,18 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { clampCamera, easeInOut, fitBox, fitCircle, panBy, toTransform, tween, visibleRect, zoomAt, type Camera, type Limits } from "./map-camera";
+import { clampCamera, easeInOut, fitBox, panBy, toTransform, tween, visibleRect, zoomAt, type Camera, type Limits } from "./map-camera";
 
 const viewport = { width: 800, height: 500 };
 const world = { width: 1600, height: 1000 };
 const limits: Limits = { kMin: 0.5, kMax: 8 };
-
-describe("fitCircle", () => {
-  it("centres the circle and makes it fill the smaller side, with a margin", () => {
-    const cam = fitCircle({ x: 300, y: 200, r: 50 }, viewport, 0.1);
-    expect(cam.x).toBe(300);
-    expect(cam.y).toBe(200);
-    expect(cam.k).toBeCloseTo(500 / (100 * 1.1));
-  });
-});
 
 describe("fitBox", () => {
   it("centres the box and fits its tighter side, with a margin", () => {

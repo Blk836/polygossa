@@ -34,6 +34,8 @@ function local(svg: SVGSVGElement, e: { clientX: number; clientY: number }): Poi
 const mid = (a: Point, b: Point): Point => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
 
 interface Options {
+  /** The map's frame: it gets --k (screen pixels per world unit) and --tx/--ty (the world's offset), for the name tags. */
+  frameRef: RefObject<HTMLDivElement | null>;
   svgRef: RefObject<SVGSVGElement | null>;
   worldRef: RefObject<SVGGElement | null>;
   viewport: Size;
@@ -45,10 +47,11 @@ interface Options {
 
 /**
  * The map's camera (vocabulary-map.feature): glides to {@code target} (or jumps, for reduced motion), and follows the
- * wheel, drags and pinches in between. It moves the world by setting its transform directly, frame by frame, and
- * reports where it came to rest ({@code settled}) so the map can choose which labels to write.
+ * wheel, drags, pinches and the zoom buttons ({@code zoomBy}) in between. It moves the world by setting its transform
+ * directly, frame by frame (and the frame's CSS variables, which place the HTML name tags), and reports where it came
+ * to rest ({@code settled}) so the map can choose which labels to write.
  */
-export function useMapCamera({ svgRef, worldRef, viewport, world, limits, target }: Options) {
+export function useMapCamera({ frameRef, svgRef, worldRef, viewport, world, limits, target }: Options) {
   const cam = useRef<Camera | null>(null);
   const frame = useRef(0);
   const settleTimer = useRef(0);
@@ -58,29 +61,46 @@ export function useMapCamera({ svgRef, worldRef, viewport, world, limits, target
   const draw = useCallback((c: Camera) => {
     cam.current = c;
     worldRef.current?.setAttribute("transform", toTransform(c, viewport));
-    svgRef.current?.style.setProperty("--k", String(c.k));
-  }, [svgRef, worldRef, viewport]);
+    const style = frameRef.current?.style;
+    style?.setProperty("--k", String(c.k));
+    style?.setProperty("--tx", String(viewport.width / 2 - c.x * c.k));
+    style?.setProperty("--ty", String(viewport.height / 2 - c.y * c.k));
+  }, [frameRef, worldRef, viewport]);
 
-  useLayoutEffect(() => {
-    const last = shown.current;
-    if (last && last.viewport === viewport && same(last.target, target)) return;
-    shown.current = { target, viewport };
+  /** Glides from where the camera is to {@code to}; jumps for reduced motion, or when asked, or with nowhere to start. */
+  const glide = useCallback((to: Camera, jump: boolean) => {
     cancelAnimationFrame(frame.current);
+    window.clearTimeout(settleTimer.current);
     const from = cam.current;
-    if (!from || last?.viewport !== viewport || reducedMotion()) {
-      draw(target);
-      frame.current = requestAnimationFrame(() => setSettled(target));
+    if (!from || jump || reducedMotion()) {
+      draw(to);
+      frame.current = requestAnimationFrame(() => setSettled(to));
       return;
     }
     const start = performance.now();
     const step = (now: number) => {
       const t = Math.min((now - start) / GLIDE_MS, 1);
-      draw(tween(from, target, easeInOut(t)));
+      draw(tween(from, to, easeInOut(t)));
       if (t < 1) frame.current = requestAnimationFrame(step);
-      else setSettled(target);
+      else setSettled(to);
     };
     frame.current = requestAnimationFrame(step);
-  }, [viewport, target, draw]);
+  }, [draw]);
+
+  useLayoutEffect(() => {
+    const last = shown.current;
+    if (last && last.viewport === viewport && same(last.target, target)) return;
+    shown.current = { target, viewport };
+    glide(target, last?.viewport !== viewport);
+  }, [viewport, target, glide]);
+
+  /** Zooms in (a factor above 1) or out around the middle of the map, gliding. */
+  const zoomBy = useCallback((factor: number) => {
+    const c = cam.current;
+    if (!c) return;
+    const middle = { x: viewport.width / 2, y: viewport.height / 2 };
+    glide(clampCamera(zoomAt(c, factor, middle, viewport), world, viewport, limits), false);
+  }, [glide, world, viewport, limits]);
 
   useEffect(() => () => {
     cancelAnimationFrame(frame.current);
@@ -111,7 +131,7 @@ export function useMapCamera({ svgRef, worldRef, viewport, world, limits, target
     return () => svg.removeEventListener("wheel", onWheel);
   }, [svgRef, limits, viewport, moveTo]);
 
-  return { settled, ...usePointers(cam, moveTo, viewport) };
+  return { settled, zoomBy, handlers: usePointers(cam, moveTo, viewport) };
 }
 
 /** Drags pan the map and two-finger pinches zoom it; a press that hardly moves stays a tap on whatever is under it. */

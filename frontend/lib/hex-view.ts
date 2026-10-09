@@ -1,8 +1,49 @@
 // What the vocabulary map's hex continent shows at a zoom (vocabulary-map.feature): country names far out, province
-// names in an open country, words in a close province; how far the map zooms; and where a ?map= place is. Pure and
-// unit-tested (hex-world.test.ts).
-import { TILE, PLACE_MARGIN, type HexWorld } from "./hex-world";
+// names in an open country, words in a close province; each tile's colour; how far the map zooms; and where a ?map=
+// place is. Pure and unit-tested (hex-world.test.ts, hex-view.test.ts).
+import { hexPath } from "./hex-grid";
+import { areaTiles, TILE, PLACE_MARGIN, type HexWorld } from "./hex-world";
 import { fitBox, visibleRect, type Box, type Camera, type Limits, type Size } from "./map-camera";
+import type { Point } from "./map-geometry";
+import type { VocabMapRegion, VocabMapWord } from "./types";
+import type { BandView } from "./vocab-map";
+
+/** A tile's colour: a counted word's status, or the next band (pale) or a later one (paler still). */
+export type TileKind = "known" | "learning" | "new" | "ignored" | "next" | "later";
+
+export const TILE_KINDS: TileKind[] = ["known", "learning", "new", "ignored", "next", "later"];
+
+export function tileKind(word: VocabMapWord, view: BandView): TileKind {
+  if (!view.shown.includes(word.band)) return word.band === view.next ? "next" : "later";
+  return word.status ?? "new";
+}
+
+/** Tiles are drawn a little smaller than their place, leaving grout between them. */
+const GROUT = 0.9;
+
+/** Every tile, as one path per kind: a handful of shapes to draw however many words the map has. */
+export function tileLayers(world: HexWorld, regions: VocabMapRegion[], view: BandView): Record<TileKind, string> {
+  const layers: Record<TileKind, string> = { known: "", learning: "", new: "", ignored: "", next: "", later: "" };
+  const areas = new Map(regions.flatMap((r) => r.areas.map((a) => [a.id, a.words] as const)));
+  for (const shape of world.countries.flatMap((c) => c.areas)) {
+    for (const t of areaTiles(shape, areas.get(shape.areaId) ?? [])) layers[tileKind(t.word, view)] += hexPath(t, TILE, world.portrait, GROUT);
+  }
+  return layers;
+}
+
+/** Full-size tiles at these points, as one path: a country's or province's whole ground, to tap or click. */
+export function groundOf(points: Point[], portrait: boolean): string {
+  return points.map((p) => hexPath(p, TILE, portrait)).join("");
+}
+
+/** The width of a tile's writing space, and how wide a letter is for its size. */
+const WRITING = TILE * 1.7 * 0.95;
+const LETTER = 0.55;
+
+/** The font size (in world units) that writes this word inside its tile: the same for short words, smaller for long. */
+export function wordFontSize(term: string): number {
+  return Math.min(TILE * 1.7 * 0.26, WRITING / (Math.max(term.length, 1) * LETTER));
+}
 
 /**
  * Once a country fills this share of the view (across or down, whichever is more), it counts as open: its provinces are
