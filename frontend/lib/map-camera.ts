@@ -1,7 +1,7 @@
 // The vocabulary map's camera (vocabulary-map.feature): where the view looks, how far it is zoomed, and how it glides.
 // A camera is the world point in the middle of the viewport plus a zoom in viewport pixels per world unit. Pure and
 // unit-tested; components/progress/use-map-camera.ts drives it from taps, the wheel, drags and pinches.
-import type { Circle, Point } from "./map-geometry";
+import type { Point } from "./map-geometry";
 
 export interface Camera {
   x: number;
@@ -20,10 +20,18 @@ export interface Limits {
   kMax: number;
 }
 
-/** The camera that shows this circle filling the viewport's smaller side, with a margin around it. */
-export function fitCircle(circle: Circle, viewport: Size, margin: number): Camera {
-  const k = Math.min(viewport.width, viewport.height) / (2 * circle.r * (1 + margin));
-  return { x: circle.x, y: circle.y, k };
+/** A rectangle in world units: its top-left corner and size. */
+export interface Box {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/** The camera that shows this box as large as the viewport allows, with a margin around it. */
+export function fitBox(box: Box, viewport: Size, margin: number): Camera {
+  const k = Math.min(viewport.width / box.w, viewport.height / box.h) / (1 + margin);
+  return { x: box.x + box.w / 2, y: box.y + box.h / 2, k };
 }
 
 /** The SVG transform that draws the world through this camera. */

@@ -1,8 +1,8 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 // Shared helpers for the vocabulary map's browser tests (vocab-map.spec.ts, vocab-map-camera.spec.ts). The map on
-// Progress (docs/acceptance/vocabulary-map.feature) is an island world with an island per region, a province per area
-// and a dot per word. The shared test user has no target language, so each test picks French in the
+// Progress (docs/acceptance/vocabulary-map.feature) is a hex continent with a country per region, a province per area
+// and a tile per word. The shared test user has no target language, so each test picks French in the
 // top bar with the switch answered in the browser (never saved), and saves the map words it needs through the API,
 // deleting them afterwards. Tests run in parallel on that one user, so each test saves different words and deletes only
 // its own.
@@ -35,13 +35,21 @@ export async function pickLanguage(page: Page, native: string) {
 }
 
 export const map = (page: Page) => page.getByTestId("vocab-map");
-export const world = (page: Page) => page.getByTestId("island-map");
-export const island = (page: Page, name: string) => map(page).getByTestId("map-island").and(page.getByRole("button", { name: new RegExp(`^${name}:`) }));
+export const world = (page: Page) => page.getByTestId("hex-map");
+export const country = (page: Page, name: string) => map(page).getByTestId("map-region").and(page.getByRole("button", { name: new RegExp(`^${name}:`) }));
 export const province = (page: Page, name: string) =>
-  map(page).getByTestId("map-province").and(page.getByRole("button", { name: new RegExp(`^${name}:`) }));
-export const label = (page: Page, kind: "island-label" | "province-label", id: string) => map(page).locator(`[data-testid="${kind}"][data-id="${id}"]`);
-export const wordDot = (page: Page, term: string) => map(page).locator(`[data-testid="map-word"][data-term="${term}"]`);
+  map(page).getByTestId("map-area").and(page.getByRole("button", { name: new RegExp(`^${name}:`) }));
+export const label = (page: Page, kind: "region-label" | "area-label", id: string) => map(page).locator(`[data-testid="${kind}"][data-id="${id}"]`);
+export const wordTile = (page: Page, term: string) => map(page).locator(`[data-testid="map-word"][data-term="${term}"]`);
+export const wordText = (page: Page, term: string) => map(page).locator("text.map-word-label").getByText(term, { exact: true });
 export const zoom = async (page: Page) => Number(await world(page).getAttribute("data-zoom"));
+export const bandButton = (page: Page, band: string) => map(page).getByRole("group", { name: "Bands counted" }).getByRole("button", { name: `Up to ${band}` });
+
+/** How many tiles of a kind (known, learning, new, ignored, next, later) the map draws: one shape each in that kind's path. */
+export async function tileCount(page: Page, kind?: string): Promise<number> {
+  const selector = kind ? `[data-testid="map-tiles"] path[data-kind="${kind}"]` : '[data-testid="map-tiles"] path';
+  return map(page).locator(selector).evaluateAll((paths) => paths.reduce((n, p) => n + (p.getAttribute("d")!.match(/M/g) ?? []).length, 0));
+}
 
 export async function save(page: Page, term: string, status: string) {
   touched.push(term);
@@ -64,7 +72,7 @@ export async function restingZoom(page: Page): Promise<number> {
 /** How many times the world's transform changes while {@code action} runs: one for a jump, many for a glide. */
 export async function transformChanges(page: Page, action: () => Promise<void>, settle: Locator): Promise<number> {
   await page.evaluate(() => {
-    const g = document.querySelector('[data-testid="island-map"] > g')!;
+    const g = document.querySelector('[data-testid="hex-map"] > g')!;
     const w = window as unknown as { __changes: number; __observer?: MutationObserver };
     w.__observer?.disconnect();
     w.__changes = 0;

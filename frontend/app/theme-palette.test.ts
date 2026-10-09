@@ -36,6 +36,8 @@ const TEXT_ON: [fg: string, bg: string][] = [
   ["rubric", "paper"], ["rubric", "card"], ["danger", "paper"], ["danger", "card"],
   ["good", "card"], ["good", "good-soft"], ["warn", "card"], ["warn", "warn-soft"], ["bad", "card"], ["bad", "bad-soft"],
   ["ink", "w-new"], ["ink", "w-learning"], ["ink", "w-known"], ["ink", "w-ignored"], ["ink", "w-active"], ["ink", "w-sentence"],
+  // The vocabulary map writes each word on its tile: ink on counted words, muted ink on the next and later bands'.
+  ["ink", "tile-known"], ["ink", "tile-learning"], ["ink", "tile-new"], ["muted", "tile-next"], ["muted", "tile-later"],
   ...["learners", "daily-life", "stories", "news", "culture", "travel", "food", "science", "history", "entertainment", "other"]
     .flatMap((c): [string, string][] => [["ink", `cover-${c}`], ["muted", `cover-${c}`]]),
 ];
@@ -69,6 +71,14 @@ describe("theme tokens", () => {
     for (const mode of [0, 1]) {
       const paper = t.get("paper")![mode];
       expect(contrast(t.get("w-sentence")![mode], paper)).toBeLessThan(contrast(t.get(status)![mode], paper));
+    }
+  });
+
+  it("makes the vocabulary map's next band paler than new words, and later bands paler still", () => {
+    for (const mode of [0, 1]) {
+      const against = (name: string) => contrast(t.get(name)![mode], t.get("tile-grout")![mode]);
+      expect(against("tile-next")).toBeLessThan(against("tile-new"));
+      expect(against("tile-later")).toBeLessThan(against("tile-next"));
     }
   });
 

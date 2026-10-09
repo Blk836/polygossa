@@ -41,13 +41,19 @@
   --w-sentence: light-dark(#ede6d5, #282f54);
   --w-marker: light-dark(#3b4ba3, #9fb0f5);
 
-  /* The vocabulary map's island world: sea, shallows, land from pale (little known) to rich green, new-word dots. */
+  /* The vocabulary map's hex continent: the sea (lit in the middle), the continent's shadow and the grout between its
+     tiles, and a tile per word: green known, yellow learning, plain new, the next band paler, later bands paler still.
+     Words are written on the tiles, so ink (and muted ink, on the paler ones) must read on every tile. */
   --sea-deep: light-dark(#bcd5df, #0e1a2a);
   --sea: light-dark(#d3e6ec, #142338);
-  --sea-shallow: light-dark(#e6f1f0, #1c3048);
-  --land: light-dark(#efe8cf, #34372b);
-  --land-rich: light-dark(#7fb26c, #3e7a45);
-  --dot-new: light-dark(#8d8b98, #74778f);
+  --sea-glow: light-dark(#e6f1f0, #1c3048);
+  --map-shadow: light-dark(#a3c1cc, #070d18);
+  --tile-grout: light-dark(#fbf6ea, #1c2036);
+  --tile-known: light-dark(#79ad69, #2f6b3e);
+  --tile-learning: light-dark(#ecc053, #7a5a1c);
+  --tile-new: light-dark(#ece2c7, #3a3d4f);
+  --tile-next: light-dark(#f4eddb, #2c3044);
+  --tile-later: light-dark(#f8f3e7, #24283c);
 
   /* Text covers: one quiet tint per library category (see lib/categories.ts). */
   --cover-learners: light-dark(#e4e7f6, #252b52);
@@ -225,53 +231,111 @@ span.s-spoken:not(.w) {
   }
 }
 
-/* The vocabulary map's island world (components/progress/island-map.tsx). The camera sets --k (screen pixels per world
-   unit); island and province labels undo it, so they stay the same size on screen at every zoom. */
-.island-map {
+/* The vocabulary map's hex continent (components/progress/hex-map*.tsx). The camera sets --k (screen pixels per world
+   unit) and --tx/--ty (where the world's origin is on screen) on the frame each frame; a name tag sits at its world
+   point (--x, --y) through them, so tags follow the map without React redrawing them. */
+.hex-map {
   --k: 1;
+  --tx: 0;
+  --ty: 0;
+  background: radial-gradient(110% 90% at 50% 45%, var(--sea-glow), var(--sea) 65%, var(--sea-deep));
 }
-.island-map text {
+.hex-map .map-word-label {
   fill: var(--ink);
-  stroke: var(--card);
-  paint-order: stroke;
-  stroke-linejoin: round;
+  font-weight: 500;
   text-anchor: middle;
+  dominant-baseline: central;
 }
-.island-map .map-label {
-  transform: scale(calc(1 / var(--k)));
-}
-.island-map .map-label text {
-  font-size: 12px;
-  stroke-width: 3px;
-  font-variant-numeric: tabular-nums;
-}
-.island-map .map-label .name {
-  font-size: 13px;
-  font-weight: 600;
-}
-.island-map .map-label .small {
-  font-size: 10px;
-  stroke-width: 2.5px;
-}
-.island-map .map-label .note {
-  font-size: 10.5px;
+.hex-map .map-word-label.faint {
   fill: var(--muted);
+  font-weight: 400;
 }
-.island-map .map-label.beyond text {
-  text-anchor: start;
-  fill: var(--muted);
-}
-.island-map .map-label.beyond.end text {
-  text-anchor: end;
-}
-.island-map [role="button"],
-.island-map a {
+.hex-map svg [role="button"] {
   outline: none;
 }
-.island-map :focus-visible .map-focus {
+.hex-map :focus-visible > .map-focus {
   stroke: var(--accent);
   stroke-width: 3px;
   vector-effect: non-scaling-stroke;
+}
+.map-tag {
+  position: absolute;
+  left: calc(var(--tx) * 1px + var(--x) * var(--k) * 1px);
+  top: calc(var(--ty) * 1px + var(--y) * var(--k) * 1px);
+  transform: translate(-50%, -50%);
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  text-align: center;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.map-tag .name {
+  font-weight: 600;
+  font-size: 13px;
+  text-shadow: 0 0 3px var(--card), 0 0 6px var(--card);
+}
+.map-tag.compact .name {
+  font-size: 11px;
+}
+.map-tag .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 7px 2px 6px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--card) 88%, transparent);
+  border: 1px solid color-mix(in oklab, var(--ink) 10%, transparent);
+}
+.map-tag.compact .chip {
+  padding: 1px 5px;
+  font-size: 10px;
+}
+.map-tag .bar {
+  display: flex;
+  width: 26px;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--tile-new);
+}
+.map-tag .bar i {
+  display: block;
+  height: 100%;
+}
+.map-tag.compact .bar {
+  display: none;
+}
+.map-tag .more {
+  color: var(--muted);
+  padding: 0 6px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--card) 80%, transparent);
+}
+.map-tag.country .more {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 160ms, opacity 160ms;
+}
+.map-tag.country.open-more .more {
+  max-height: 20px;
+  opacity: 1;
+}
+.map-glass {
+  position: absolute;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--card) 88%, transparent);
+  border: 1px solid color-mix(in oklab, var(--ink) 10%, transparent);
+  box-shadow: 0 6px 20px -8px color-mix(in oklab, var(--ink) 35%, transparent);
+  backdrop-filter: blur(8px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-tag.country .more {
+    transition: none;
+  }
 }
 
 /* Everything clickable shows the hand, as links do: Tailwind 4 leaves buttons on the default arrow. */
