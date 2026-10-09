@@ -14,17 +14,13 @@ function lineAt(text, start) {
   return text.slice(start, nextLineStart(text, start)).replace(/\r?\n$/, "");
 }
 
-function dropLines(text, from, to) {
-  let start = from;
-  let end = to;
-  const previous = start === 0 ? null : lineAt(text, lineStart(text, start - 1));
+function dropLines(text, start, end) {
+  const previous = start === 0 ? "" : lineAt(text, lineStart(text, start - 1));
   const following = end < text.length ? lineAt(text, end) : null;
-  const previousBlank = previous === null || blank(previous);
-  if (previousBlank && following !== null && blank(following)) end = nextLineStart(text, end);
-  else if (previous !== null && blank(previous) && following !== null && closes(following)) {
-    start = lineStart(text, start - 1);
-  }
-  return text.slice(0, start) + text.slice(end);
+  if (!blank(previous) || following === null) return text.slice(0, start) + text.slice(end);
+  if (blank(following)) return text.slice(0, start) + text.slice(nextLineStart(text, end));
+  const from = closes(following) && start > 0 ? lineStart(text, start - 1) : start;
+  return text.slice(0, from) + text.slice(end);
 }
 
 function removeOne(text, [start, end]) {
