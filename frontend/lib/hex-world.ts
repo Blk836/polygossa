@@ -1,11 +1,10 @@
 // The vocabulary map's hex continent (vocabulary-map.feature): one landmass with a hexagonal tile per word. Each region
 // is a country grown from a fixed place (the same in every language), each area a province grown inside its country,
-// and each province's tiles are ordered from its middle out so the lowest band sits in the centre. Also: which labels
-// to show at a zoom, how far the map zooms, and where a ?map= place is. Pure and unit-tested; components/progress/
-// hex-map.tsx draws it.
+// and each province's tiles are ordered from its middle out so the lowest band sits in the centre. Pure and
+// unit-tested; lib/hex-view.ts says what to show at a zoom, and components/progress/hex-map.tsx draws it.
 import { edgeBetween, growTerritories, hexCentre, hexKey, hexPath, NEIGHBOURS, nearestHex, pieceCount, type Hex } from "./hex-grid";
 import { mendTerritories } from "./hex-mend";
-import { fitBox, visibleRect, type Box, type Camera, type Limits, type Size } from "./map-camera";
+import type { Box, Size } from "./map-camera";
 import { hashSeed, type Point } from "./map-geometry";
 import type { VocabMapRegion, VocabMapWord } from "./types";
 
@@ -30,6 +29,8 @@ export interface AreaShape {
   slots: Point[];
   centre: Point;
   box: Box;
+  /** The province's own edge, for its focus ring. */
+  outline: string;
 }
 
 export interface CountryShape {
@@ -39,6 +40,8 @@ export interface CountryShape {
   areas: AreaShape[];
   centre: Point;
   box: Box;
+  /** The country's own edge, for its focus ring. */
+  outline: string;
 }
 
 export interface HexWorld extends Size {
@@ -137,24 +140,39 @@ function provincesOf(region: VocabMapRegion, hexes: Hex[], at: (h: Hex) => Point
   return best;
 }
 
-/** The edges between tiles: along the coast, between countries, and between provinces of one country. */
-function borders(raw: Raw[], portrait: boolean, shift: (p: Point) => Point): HexWorld["borders"] {
+interface Edges {
+  lines: HexWorld["borders"];
+  /** Each country's own outline, and each of its provinces' (by country, then province). */
+  countries: string[];
+  areas: string[][];
+}
+
+/** Files one tile edge: into the shared border lines (once per pair of tiles) and into the outlines it bounds. */
+function fileEdge(out: Edges, d: string, mine: [number, number], other: [number, number] | undefined, first: boolean) {
+  const [ci, ai] = mine;
+  const country = !other || other[0] !== ci;
+  if (country) out.countries[ci] += d;
+  if (country || other[1] !== ai) out.areas[ci][ai] += d;
+  const line = !other ? "coast" : !first ? null : country ? "countries" : "areas";
+  if (line) out.lines[line] += d;
+}
+
+/** The edges between tiles: the coast and the borders between countries and provinces, plus each one's outline. */
+function edges(raw: Raw[], portrait: boolean, shift: (p: Point) => Point): Edges {
   const owner = new Map<string, [number, number]>();
   raw.forEach((c, ci) => c.areas.forEach((a, ai) => a.hexes.forEach((h) => owner.set(hexKey(h), [ci, ai]))));
-  const out = { coast: "", countries: "", areas: "" };
+  const out: Edges = { lines: { coast: "", countries: "", areas: "" }, countries: raw.map(() => ""), areas: raw.map((c) => c.areas.map(() => "")) };
   const seg = ([p, q]: [Point, Point]) => {
     const [a, b] = [shift(p), shift(q)];
     return `M${a.x.toFixed(1)} ${a.y.toFixed(1)}L${b.x.toFixed(1)} ${b.y.toFixed(1)}`;
   };
-  for (const [key, [ci, ai]] of owner) {
+  for (const [key, mine] of owner) {
     const [q, r] = key.split(",").map(Number);
     for (const [dq, dr] of NEIGHBOURS) {
       const n = { q: q + dq, r: r + dr };
       const other = owner.get(hexKey(n));
-      const edge = () => seg(edgeBetween({ q, r }, n, TILE, portrait));
-      if (!other) out.coast += edge();
-      else if (key < hexKey(n) && other[0] !== ci) out.countries += edge();
-      else if (key < hexKey(n) && other[1] !== ai) out.areas += edge();
+      if (other && other[0] === mine[0] && other[1] === mine[1]) continue;
+      fileEdge(out, seg(edgeBetween({ q, r }, n, TILE, portrait)), mine, other, key < hexKey(n));
     }
   }
   return out;
@@ -178,16 +196,17 @@ function build(regions: VocabMapRegion[], portrait: boolean): HexWorld {
   const width = height * aspect;
   const shift = (p: Point): Point => ({ x: p.x - box.x + (width - box.w) / 2, y: p.y - box.y + (height - box.h) / 2 });
   const at = (h: Hex) => shift(hexCentre(h, TILE, portrait));
-  const countries = raw.map((c) => {
-    const areas = c.areas.map(({ areaId, hexes }) => {
+  const lines = edges(raw, portrait, shift);
+  const countries = raw.map((c, ci) => {
+    const areas = c.areas.map(({ areaId, hexes }, ai) => {
       const centre = mean(hexes.map(at));
       const d = (h: Hex) => Math.hypot(at(h).x - centre.x, at(h).y - centre.y);
       const sorted = [...hexes].sort((a, b) => d(a) - d(b) || (hexKey(a) < hexKey(b) ? -1 : 1));
       const slots = sorted.map(at);
-      return { areaId, hexes: sorted, slots, centre, box: boxAround(slots) };
+      return { areaId, hexes: sorted, slots, centre, box: boxAround(slots), outline: lines.areas[ci][ai] };
     });
     const all = areas.flatMap((a) => a.slots);
-    return { regionId: c.region.id, seed: c.seed, areas, centre: mean(all), box: boxAround(all) };
+    return { regionId: c.region.id, seed: c.seed, areas, centre: mean(all), box: boxAround(all), outline: lines.countries[ci] };
   });
   const tiles = countries.flatMap((c) => c.areas.flatMap((a) => a.slots));
   return {
@@ -197,7 +216,7 @@ function build(regions: VocabMapRegion[], portrait: boolean): HexWorld {
     countries,
     beyond: openSea({ width, height }, tiles),
     ground: tiles.map((t) => hexPath(t, TILE, portrait)).join(""),
-    borders: borders(raw, portrait, shift),
+    borders: lines.lines,
   };
 }
 
@@ -225,55 +244,4 @@ const bandRank = (w: VocabMapWord) => (BAND_ORDER.includes(w.band) ? BAND_ORDER.
 export function areaTiles(shape: AreaShape, words: VocabMapWord[]): (Point & { word: VocabMapWord })[] {
   const order = words.map((w, i) => ({ w, i })).sort((a, b) => bandRank(a.w) - bandRank(b.w) || a.i - b.i);
   return order.slice(0, shape.slots.length).map(({ w }, i) => ({ ...shape.slots[i], word: w }));
-}
-
-/**
- * Once a country fills this share of the view (across or down, whichever is more), it counts as open: its provinces are
- * named. A province filling this share is close: its words are written in its tiles.
- */
-const COUNTRY_OPEN = 0.5;
-const AREA_CLOSE = 0.8;
-/** A tile must be at least this many pixels across for its word to be written in it. */
-const WORD_PX = 24;
-
-export interface LabelPlan {
-  countries: Set<string>;
-  areas: Set<string>;
-  /** Areas whose tiles have their words written in them. */
-  words: Set<string>;
-}
-
-/** What to write at this zoom: country names far out, province names in an open country, words in a close province. */
-export function labelPlan(world: HexWorld, cam: Camera, viewport: Size): LabelPlan {
-  const plan: LabelPlan = { countries: new Set(), areas: new Set(), words: new Set() };
-  const view = visibleRect(cam, viewport);
-  const seen = (b: Box) => b.x + b.w >= view.left && b.x <= view.right && b.y + b.h >= view.top && b.y <= view.bottom;
-  const fills = (b: Box) => Math.max((b.w * cam.k) / viewport.width, (b.h * cam.k) / viewport.height);
-  for (const c of world.countries) {
-    if (!seen(c.box)) continue;
-    if (fills(c.box) < COUNTRY_OPEN) {
-      plan.countries.add(c.regionId);
-      continue;
-    }
-    for (const a of c.areas) {
-      if (!seen(a.box)) continue;
-      const close = fills(a.box) >= AREA_CLOSE && TILE * Math.sqrt(3) * cam.k >= WORD_PX;
-      (close ? plan.words : plan.areas).add(a.areaId);
-    }
-  }
-  return plan;
-}
-
-/** How far the map zooms: out to the whole world, in to its smallest province. */
-export function zoomLimits(world: HexWorld, viewport: Size): Limits {
-  const kMin = Math.min(viewport.width / world.width, viewport.height / world.height);
-  const inner = world.countries.flatMap((c) => c.areas).map((a) => fitBox(a.box, viewport, PLACE_MARGIN).k);
-  return { kMin, kMax: Math.max(kMin, ...inner) };
-}
-
-/** The country ("?map=food") or province ("food/fruit-veg") a place shows, or null for the whole world. */
-export function placeBox(world: HexWorld, regionId: string | null, areaId: string | null): Box | null {
-  const country = world.countries.find((c) => c.regionId === regionId);
-  if (!country) return null;
-  return country.areas.find((a) => a.areaId === areaId)?.box ?? country.box;
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { hexCentre, hexKey, NEIGHBOURS, nearestHex, type Hex } from "./hex-grid";
-import { areaTiles, labelPlan, layoutHexWorld, placeBox, PLACE_MARGIN, TILE, zoomLimits, type HexWorld } from "./hex-world";
+import { labelPlan, placeBox, zoomLimits } from "./hex-view";
+import { areaTiles, layoutHexWorld, PLACE_MARGIN, TILE, type HexWorld } from "./hex-world";
 import { fitBox } from "./map-camera";
 import type { VocabMapRegion, VocabMapWord } from "./types";
 
@@ -119,6 +120,20 @@ describe("layoutHexWorld", () => {
   it("draws the coast, the borders between countries and the thinner ones between provinces", () => {
     for (const d of [world.borders.coast, world.borders.countries, world.borders.areas]) expect(d).toMatch(/^M[\d.\- L]+/);
     expect(world.ground.match(/Z/g)).toHaveLength(allHexes(world).length);
+  });
+
+  it("outlines each country and province along its own edge, for the keyboard focus ring", () => {
+    const edges = (d: string) => (d.match(/M/g) ?? []).length;
+    for (const c of world.countries) {
+      expect(c.outline).toMatch(/^M/);
+      const tiles = c.areas.reduce((s, a) => s + a.hexes.length, 0);
+      expect(edges(c.outline)).toBeLessThan(tiles * 6);
+      for (const a of c.areas) expect(edges(a.outline)).toBeGreaterThanOrEqual(6);
+    }
+    // A single tile's outline is its six edges.
+    const one = layoutHexWorld([{ id: "core", name: "Core", areas: [{ id: "a", name: "A", words: [word("je", "A1")] }] }], false);
+    expect(edges(one.countries[0].outline)).toBe(6);
+    expect(edges(one.countries[0].areas[0].outline)).toBe(6);
   });
 
   it("is reused while the map's shape stays the same, whatever the words' statuses", () => {
