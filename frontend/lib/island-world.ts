@@ -5,10 +5,11 @@ import { fitCircle, visibleRect, type Camera, type Limits, type Rect, type Size 
 import { blobPath, enclose, hashSeed, packCircles, sunflower, type Circle, type Point } from "./map-geometry";
 import type { VocabMapArea, VocabMapRegion, VocabMapWord } from "./types";
 
+/** The world as laid out for a landscape map; a portrait map (a phone) gets it turned on its side. */
 export const WORLD: Size = { width: 1600, height: 1080 };
 
 /** Where "Beyond the core" (known words outside the list) is written: the uncharted sea in the world's corner. */
-export const BEYOND: Point = { x: 150, y: 1010 };
+const BEYOND: Point = { x: 150, y: 1010 };
 
 /** The ring of themed islands around Core words, clockwise from the top. Changing it moves islands for everyone. */
 const RING = ["people", "body", "food", "home", "shopping", "travel", "work", "nature", "time", "mind", "leisure", "society",
@@ -47,15 +48,33 @@ export interface IslandShape {
 
 export interface World extends Size {
   islands: IslandShape[];
+  /** Where the uncharted sea ("Beyond the core") is. */
+  beyond: Point;
 }
+
+const onRing = (a: number): Point => ({ x: CENTRE.x + RING_RADIUS.x * Math.cos(a), y: CENTRE.y + RING_RADIUS.y * Math.sin(a) });
+
+/** Places evenly spaced along the ring (by distance, not angle, which would crowd its narrow ends), from the top. */
+const RING_PLACES: Point[] = (() => {
+  const steps = 3600;
+  const along = [0];
+  for (let s = 1; s <= steps; s++) {
+    const a = -Math.PI / 2 + (s / steps) * Math.PI * 2;
+    const b = -Math.PI / 2 + ((s - 1) / steps) * Math.PI * 2;
+    along.push(along[s - 1] + Math.hypot(onRing(a).x - onRing(b).x, onRing(a).y - onRing(b).y));
+  }
+  const total = along[steps];
+  return RING.map((_, i) => {
+    const s = along.findIndex((d) => d >= (i / RING.length) * total);
+    return onRing(-Math.PI / 2 + (s / steps) * Math.PI * 2);
+  });
+})();
 
 /** The fixed centre of a region's island. */
 function slot(id: string, spareIndex: number): Point {
   if (id === "core") return CENTRE;
   const i = RING.indexOf(id);
-  if (i < 0) return SPARE[spareIndex % SPARE.length];
-  const a = -Math.PI / 2 + (i / RING.length) * Math.PI * 2;
-  return { x: CENTRE.x + RING_RADIUS.x * Math.cos(a), y: CENTRE.y + RING_RADIUS.y * Math.sin(a) };
+  return i < 0 ? SPARE[spareIndex % SPARE.length] : RING_PLACES[i];
 }
 
 interface Draft {
@@ -77,11 +96,11 @@ function draft(region: VocabMapRegion, at: Point): Draft {
 }
 
 /** The largest scale (world units per province unit) at which no island's shallows touch another, the edge or the sea. */
-function fitScale(drafts: Draft[]): number {
+function fitScale(drafts: Draft[], size: Size, beyond: Point): number {
   let scale = Infinity;
   drafts.forEach((a, i) => {
-    const edge = Math.min(a.at.x, WORLD.width - a.at.x, a.at.y, WORLD.height - a.at.y) - SEA;
-    const sea = Math.hypot(a.at.x - BEYOND.x, a.at.y - BEYOND.y) - 6 * SEA;
+    const edge = Math.min(a.at.x, size.width - a.at.x, a.at.y, size.height - a.at.y) - SEA;
+    const sea = Math.hypot(a.at.x - beyond.x, a.at.y - beyond.y) - 6 * SEA;
     scale = Math.min(scale, edge / a.outer, sea / a.outer);
     for (const b of drafts.slice(i + 1)) {
       scale = Math.min(scale, (Math.hypot(a.at.x - b.at.x, a.at.y - b.at.y) - SEA) / (a.outer + b.outer));
@@ -109,12 +128,18 @@ function island(d: Draft, scale: number): IslandShape {
   };
 }
 
-/** The world for this map: islands at their fixed places, scaled together so the biggest still fit. */
-export function layoutWorld(regions: VocabMapRegion[]): World {
+/**
+ * The world for this map: islands at their fixed places, scaled together so the biggest still fit. A portrait map gets
+ * the world turned on its side (every place mirrored across the diagonal), so a phone's tall screen isn't mostly sea.
+ */
+export function layoutWorld(regions: VocabMapRegion[], portrait = false): World {
+  const turn = (p: Point): Point => (portrait ? { x: p.y, y: p.x } : p);
+  const size = portrait ? { width: WORLD.height, height: WORLD.width } : WORLD;
+  const beyond = turn(BEYOND);
   let spare = 0;
-  const drafts = regions.map((r) => draft(r, slot(r.id, RING.includes(r.id) || r.id === "core" ? 0 : spare++)));
-  const scale = fitScale(drafts);
-  return { ...WORLD, islands: drafts.map((d) => island(d, scale)) };
+  const drafts = regions.map((r) => draft(r, turn(slot(r.id, RING.includes(r.id) || r.id === "core" ? 0 : spare++))));
+  const scale = fitScale(drafts, size, beyond);
+  return { ...size, beyond, islands: drafts.map((d) => island(d, scale)) };
 }
 
 /** Room left around an island or province the map is zoomed into, as a share of its size. */

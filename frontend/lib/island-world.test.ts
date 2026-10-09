@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { fitCircle, type Camera } from "./map-camera";
 import {
-  BEYOND,
   labelPlan,
   layoutWorld,
   PLACE_MARGIN,
@@ -47,7 +46,7 @@ describe("layoutWorld", () => {
       expect(y - r).toBeGreaterThanOrEqual(0);
       expect(x + r).toBeLessThanOrEqual(WORLD.width);
       expect(y + r).toBeLessThanOrEqual(WORLD.height);
-      expect(dist(a.shallows, BEYOND)).toBeGreaterThan(r + 60);
+      expect(dist(a.shallows, world.beyond)).toBeGreaterThan(r + 60);
       for (const b of world.islands) {
         if (a !== b) expect(dist(a.shallows, b.shallows)).toBeGreaterThanOrEqual(a.shallows.r + b.shallows.r);
       }
@@ -62,6 +61,28 @@ describe("layoutWorld", () => {
       expect(i.circle.x).toBeCloseTo(world.islands[n].circle.x, 6);
       expect(i.circle.y).toBeCloseTo(world.islands[n].circle.y, 6);
     });
+  });
+
+  it("turns the world on its side for a portrait map (a phone), keeping every island's place in the ring", () => {
+    const tall = layoutWorld(french, true);
+    expect([tall.width, tall.height]).toEqual([WORLD.height, WORLD.width]);
+    tall.islands.forEach((isle, i) => {
+      expect(isle.shallows.x).toBeCloseTo(world.islands[i].shallows.y, 6);
+      expect(isle.shallows.y).toBeCloseTo(world.islands[i].shallows.x, 6);
+      expect(isle.shallows.x + isle.shallows.r).toBeLessThanOrEqual(tall.width);
+      expect(isle.shallows.y + isle.shallows.r).toBeLessThanOrEqual(tall.height);
+      expect(dist(isle.shallows, tall.beyond)).toBeGreaterThan(isle.shallows.r + 60);
+    });
+    expect(tall.beyond).toEqual({ x: world.beyond.y, y: world.beyond.x });
+  });
+
+  it("spaces the ring of islands evenly, so no two neighbours crowd each other", () => {
+    const ring = world.islands.filter((i) => i.region.id !== "core").map((i) => i.shallows);
+    const gaps = ring.map((c, i) => dist(c, ring[(i + 1) % ring.length]));
+    expect(Math.min(...gaps)).toBeGreaterThan(Math.max(...gaps) * 0.9);
+    // Islands use the sea: the median island is at least a twelfth of the world's height across.
+    const radii = world.islands.map((i) => i.circle.r).sort((a, b) => a - b);
+    expect(radii[7] * 2).toBeGreaterThan(WORLD.height / 12);
   });
 
   it("makes bigger regions bigger islands", () => {
