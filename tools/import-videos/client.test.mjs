@@ -134,6 +134,16 @@ test("a copy the target's AI refuses is reported as refused", async () => {
     { outcome: "refused", reason: "This can't be shared: Graphic violence.", title: "" });
 });
 
+test("a playlist is posted as JSON with the token, and the answer passed back whatever its status", async () => {
+  const request = { title: "Series", language: "fr", videoIds: ["AAAAAAAAAAA"], dryRun: false };
+  const { fetch, calls } = fakeFetch(422, { code: "no_videos", message: "None" });
+  assert.deepEqual(await client(fetch).savePlaylist(request), { status: 422, body: { code: "no_videos", message: "None" } });
+  assert.equal(calls[0].url, "http://localhost:8080/api/curator/playlists");
+  assert.equal(calls[0].init.method, "POST");
+  assert.equal(calls[0].init.headers["X-Curator-Token"], "s3cret");
+  assert.deepEqual(JSON.parse(calls[0].init.body), request);
+});
+
 test("a named backend says which one stopped the run", async () => {
   const named = (fetch) => makeClient({ baseUrl: "http://localhost:8080", token: "t", fetch, label: "source" });
   await assert.rejects(named(fakeFetch(401, {}).fetch).exportVideo(entry), new Fatal("source: curator token rejected"));
