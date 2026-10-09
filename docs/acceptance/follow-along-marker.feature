@@ -3,6 +3,8 @@ Feature: Follow-along marker while audio or video plays
   sentence being spoken (where am I?) and a thin marker under the word being spoken (what am I hearing?) that slides
   from word to word instead of jumping. It replaces the yellow fill on the spoken word, which looked like the
   "learning" colour and hid the word's own colour while it was spoken.
+  Since October 2026 the sentence tint is off by default (it covered the coming words' colours); "Follow along" turns
+  it back on (reader-count-and-follow.feature). The tint scenarios below describe it while it is on.
 
   Background:
     Given I am reading a text with synced audio or a video with word timings
@@ -81,7 +83,7 @@ Feature: Follow-along marker while audio or video plays
 
   Scenario: The default
     Given I have never changed "Follow along"
-    Then playback shows both the sentence tint and the word marker
+    Then playback shows the word marker only, with no sentence tint
 
   Scenario: Quiet colours do not hide where playback is
     Given "quiet colours" is on in Reader settings

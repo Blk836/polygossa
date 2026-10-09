@@ -187,7 +187,8 @@ test.describe("quiet colours", () => {
     created = await createText(page, 120);
     await addSyncedAudio(page, created.id);
     for (const quiet of [false, true]) {
-      await setReaderCookie(page, quiet ? "quiet%3D1" : "");
+      // With the sentence tint on (it is off by default), so both follow-along marks are checked.
+      await setReaderCookie(page, quiet ? "quiet%3D1%26follow%3Dboth" : "follow%3Dboth");
       await openReader(page, `/read/${created.id}`);
       await page.keyboard.press("]");
       await expect(wordAt(page, PER_SENTENCE)).toHaveClass(/w-speaking/);
