@@ -119,7 +119,7 @@ test.describe("landing page", () => {
     await page.goto("/");
     await expect(page).toHaveURL("/");
     const header = page.getByRole("banner");
-    await expect(header.getByRole("link", { name: "Open library" })).toHaveAttribute("href", "/library");
+    await expect(header.getByRole("link", { name: "Open library" })).toHaveAttribute("href", "/community");
     await expect(header.getByRole("link", { name: "Start free" })).toHaveCount(0);
   });
 

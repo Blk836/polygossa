@@ -126,11 +126,11 @@ test.describe("auth pages and auto-login", () => {
     await expect(page).toHaveURL(/\/library$/);
   });
 
-  test("a signed-in visitor opening /login or /signup is sent to the library", async ({ page }) => {
+  test("a signed-in visitor opening /login or /signup is sent to Explore", async ({ page }) => {
     await page.goto("/library"); // auto-login sets the session cookie
     for (const path of ["/login", "/signup"]) {
       await page.goto(path);
-      await expect(page).toHaveURL(/\/library$/);
+      await expect(page).toHaveURL(/\/community$/);
     }
   });
 });

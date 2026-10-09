@@ -69,7 +69,7 @@ describe("evidenceText", () => {
 
 describe("emptyHint", () => {
   it("says what to do to get a level", () => {
-    expect(emptyHint("reading")).toEqual({ text: "Mark words as known while you read to see your reading level.", href: "/library", action: "Start reading" });
+    expect(emptyHint("reading")).toEqual({ text: "Mark words as known while you read to see your reading level.", href: "/community", action: "Start reading" });
     expect(emptyHint("listening")).toEqual({ text: "Finish a video or an audio lesson to see your listening level.", href: "/community", action: "Watch a video" });
     expect(emptyHint("writing")).toEqual({ text: "Take a writing test to see your writing level.", href: "/writing", action: "Take a writing test" });
   });

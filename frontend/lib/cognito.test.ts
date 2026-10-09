@@ -45,8 +45,8 @@ describe("safeNext", () => {
   });
 
   it.each([null, "", "https://evil.example", "//evil.example", "/\\evil.example", "review"])(
-    "sends %s to the library instead",
-    (next) => expect(safeNext(next)).toBe("/library"),
+    "sends %s to Explore instead",
+    (next) => expect(safeNext(next)).toBe("/community"),
   );
 });
 
@@ -69,10 +69,10 @@ describe("startLogin", () => {
     expect(pending.state).not.toBe(pending.verifier);
   });
 
-  it("sends sign-up to the sign-up page, and a foreign return address to the library", async () => {
+  it("sends sign-up to the sign-up page, and a foreign return address to Explore", async () => {
     const { pending, url } = await startLogin(config, "signup", "https://evil.example");
     expect(new URL(url).pathname).toBe("/signup");
-    expect(pending.next).toBe("/library");
+    expect(pending.next).toBe("/community");
   });
 
   it("makes a new state every time", async () => {
@@ -96,7 +96,7 @@ describe("pending sign-in cookie", () => {
     expect(decodePending(undefined)).toBeNull();
     expect(decodePending("not json")).toBeNull();
     expect(decodePending(JSON.stringify({ state: "s" }))).toBeNull();
-    expect(decodePending(JSON.stringify({ state: "s", verifier: "v", next: "//evil" }))?.next).toBe("/library");
+    expect(decodePending(JSON.stringify({ state: "s", verifier: "v", next: "//evil" }))?.next).toBe("/community");
   });
 });
 

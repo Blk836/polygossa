@@ -105,10 +105,9 @@ test("a shared playlist's card, pane and page show its owner's photo", async () 
   await post(ana.context.request, `/api/playlists/${id}`, { isPublic: true }, "patch");
 
   const { page } = teacher;
-  await page.goto("/playlists");
-  await page.getByRole("button", { name: "Shared" }).click();
-  await page.getByRole("searchbox", { name: "Search playlists" }).fill(title);
-  await page.getByRole("searchbox", { name: "Search playlists" }).press("Enter");
+  await page.goto("/community");
+  await page.getByRole("searchbox", { name: "Search titles" }).fill(title);
+  await page.getByRole("searchbox", { name: "Search titles" }).press("Enter");
   const card = page.getByTestId("playlist-card").filter({ hasText: title });
   await expectPhotos(card, { ben: false });
   await card.getByRole("button", { name: title }).click();

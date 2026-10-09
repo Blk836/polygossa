@@ -55,6 +55,17 @@ test.describe("feature tours", () => {
     await context.close();
   });
 
+  test("Explore's tour points its save tip at the My library sub-tab", async ({ browser }) => {
+    const { context, page } = await newcomer(browser);
+    await page.goto("/community");
+    await tip(page).getByRole("button", { name: "Next" }).click();
+    await expect(page.getByRole("dialog", { name: "Keep it for later" })).toContainText("My library");
+    const tab = (await page.getByRole("navigation", { name: "Section" }).getByRole("link", { name: "My library" }).boundingBox())!;
+    const ring = (await highlight(page).boundingBox())!;
+    expect(Math.abs(ring.x + ring.width / 2 - (tab.x + tab.width / 2))).toBeLessThan(3);
+    await context.close();
+  });
+
   test("the page underneath stays usable while a tip is showing", async ({ browser }) => {
     const { context, page } = await newcomer(browser);
     await page.goto("/library");

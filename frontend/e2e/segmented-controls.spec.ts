@@ -41,9 +41,9 @@ async function expectOneLineLinks(group: Locator, labels: string[]) {
 test.describe("Library page, desktop", () => {
   test.use({ viewport: DESKTOP });
 
-  test("Mine / Saved and All / Texts / Videos are one line high", async ({ page }) => {
+  test("Explore / My library and All / Texts / Videos are one line high", async ({ page }) => {
     await openFilters(page);
-    await expectOneLineLinks(librarySections(page), ["Mine", "Saved", "Explore", "Playlists"]);
+    await expectOneLineLinks(librarySections(page), ["Explore", "My library"]);
     await expectOneLineButtons(kindTabs(page), ["All", "Texts", "Videos"]);
   });
 
@@ -59,7 +59,7 @@ test.describe("Library page, mobile", () => {
 
   test("All / Texts / Videos spans the sheet, buttons share it equally and stay one line", async ({ page }) => {
     await openFilters(page);
-    await expectOneLineLinks(librarySections(page), ["Mine", "Saved", "Explore", "Playlists"]);
+    await expectOneLineLinks(librarySections(page), ["Explore", "My library"]);
     const kinds = kindTabs(page);
     await expectOneLineButtons(kinds, ["All", "Texts", "Videos"]);
     expect((await box(kinds)).width).toBeGreaterThan(MOBILE.width * 0.8);

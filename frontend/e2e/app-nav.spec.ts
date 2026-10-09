@@ -22,10 +22,11 @@ test.describe("top-level tabs", () => {
   });
 
   for (const [path, tab, current, all] of [
-    ["/library", "Library", "Mine", ["Mine", "Saved", "Explore", "Playlists"]],
-    ["/library/saved", "Library", "Saved", ["Mine", "Saved", "Explore", "Playlists"]],
-    ["/community", "Library", "Explore", ["Mine", "Saved", "Explore", "Playlists"]],
-    ["/playlists", "Library", "Playlists", ["Mine", "Saved", "Explore", "Playlists"]],
+    ["/community", "Library", "Explore", ["Explore", "My library"]],
+    ["/library", "Library", "My library", ["Explore", "My library"]],
+    ["/library/saved", "Library", "My library", ["Explore", "My library"]],
+    ["/playlists", "Library", "My library", ["Explore", "My library"]],
+    ["/playlists/999999", "Library", "My library", ["Explore", "My library"]],
     ["/review", "Practice", "Review", ["Review", "Words", "Write"]],
     ["/vocabulary", "Practice", "Words", ["Review", "Words", "Write"]],
     ["/writing", "Practice", "Write", ["Review", "Words", "Write"]],
@@ -71,9 +72,19 @@ test.describe("top-level tabs", () => {
     await sections(page).getByRole("link", { name: "Words" }).click();
     await page.waitForURL("**/vocabulary");
     await topNav(page).getByRole("link", { name: "Library" }).click();
+    await page.waitForURL("**/community"); // the Library tab opens Explore
+    await expect(sections(page).locator("[aria-current=page]")).toHaveText("Explore");
+    await sections(page).getByRole("link", { name: "My library" }).click();
     await page.waitForURL("**/library");
-    await sections(page).getByRole("link", { name: "Explore" }).click();
-    await page.waitForURL("**/community");
+    await expect(page.getByRole("heading", { name: "My library", level: 1 })).toBeVisible();
+  });
+
+  test("the logo opens Explore from anywhere in the app", async ({ page }) => {
+    for (const path of ["/library", "/review", "/settings"]) {
+      await page.goto(path);
+      await page.getByRole("banner").getByRole("link", { name: /home$/ }).click();
+      await page.waitForURL("**/community");
+    }
   });
 });
 
