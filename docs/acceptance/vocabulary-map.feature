@@ -9,14 +9,15 @@ Feature: Vocabulary map on Progress
   Terms:
     blueprint = the fixed regions and areas, shared by all languages
     word list = one language's words; each has a headword, its common forms, an area, a band, and its meaning in
-                every native language learners can choose (19 today)
+                the native languages the list covers
     band      = the CEFR level a word belongs to: A1 (~500 words), A2 (~1,000), B1 (~2,000), B2 (~4,000),
                 C1 (~8,000); each band includes the words of the bands below it
     known     = I marked the word known in the reader or in Vocabulary (green); learning = yellow; new = no entry
     coverage  = known words / words in the tile (for the bands shown)
 
-  First release: the blueprint, and A1 to B1 word lists (~2,000 words) for the six languages taught today (English,
-  Spanish, French, German, Italian, Portuguese). B2 and C1 lists come later and change only the data, not the screens.
+  MVP: the blueprint, and one word list: French, A1 to B1 (~2,000 words), with English meanings. Other target
+  languages, other native languages' meanings, and the B2 and C1 bands come later and are data only: adding them
+  changes no screens and no code.
 
   Draft blueprint (14 regions; names can change before building):
     People & Relationships  family, describing people, personality, relationships, life events
@@ -36,7 +37,7 @@ Feature: Vocabulary map on Progress
                             common adjectives and adverbs that belong to no theme
 
   Background:
-    Given I am signed in and my target language is Spanish
+    Given I am signed in, my target language is French and my native language is English
 
   # --- The map ---
 
@@ -46,9 +47,9 @@ Feature: Vocabulary map on Progress
     And all the cards Progress has today are still there
 
   Scenario: Zoomed out, I see every region with its coverage
-    Given I know 120 of the 500 Spanish A1 words, 40 of them in Food & Drink
+    Given I know 120 of the 500 French A1 words, 40 of them in Food & Drink
     When I look at the map zoomed out
-    Then I see all 14 regions as tiles, each the same in every language
+    Then I see all 14 regions as tiles
     And each tile is shaded by its coverage and shows "known / total", e.g. "40 / 62"
     And the map's header shows my overall coverage for the bands shown, e.g. "120 / 500 core words"
 
@@ -66,10 +67,10 @@ Feature: Vocabulary map on Progress
     When I reload the page
     Then I am still zoomed into Fruit & vegetables
 
-  Scenario: Words show in the form I know them
-    Given the Spanish list has the headword "comer" with the forms "como", "comes", "come", "comí", "comido", ...
-    And I marked "comí" known while reading, but never "comer" itself
-    Then "comer" counts as known on the map
+  Scenario: Words count in whatever form I know them
+    Given the French list has the headword "manger" with the forms "mange", "manges", "mangeons", "mangé", ...
+    And I marked "mangé" known while reading, but never "manger" itself
+    Then "manger" counts as known on the map
     And if one form is known and another learning, the word counts as known
 
   Scenario: Learning words count separately from known ones
@@ -78,8 +79,8 @@ Feature: Vocabulary map on Progress
     And only known words count towards coverage
 
   Scenario: Ignored words leave the totals
-    Given I marked the list word "yo" as ignored
-    Then "yo" shows as ignored in its area
+    Given I marked the list word "je" as ignored
+    Then "je" shows as ignored in its area
     And it counts neither as known nor towards the area's total
 
   # --- Bands ---
@@ -101,42 +102,41 @@ Feature: Vocabulary map on Progress
     And my choice is remembered on this device
 
   Scenario: A band with no list yet is not offered
-    Given the Spanish list stops at B1
+    Given the French list stops at B1
     Then the band picker offers A1, A2 and B1 only
     And at B1, the next band says "B2 words coming soon" instead of a number
 
-  Scenario: Words outside the lists still count
-    Given I know 900 words and 640 of them are not in the Spanish list (names, rare words, slang)
+  Scenario: Words outside the list still count
+    Given I know 900 French words and 640 of them are not in the list (names, rare words, slang)
     Then the map shows a "Beyond the core: 640 words" tile
     And tapping it opens Vocabulary filtered to my known words
 
   # --- A word on the map ---
 
-  Scenario: Tapping a word shows its meaning in my own language
-    Given my native language is Polish
-    When I tap the word "manzana" in Fruit & vegetables
-    Then a panel shows "manzana", its meaning in Polish "jabłko", its band (A1) and my status
+  Scenario: Tapping a word shows its meaning
+    When I tap the word "pomme" in Fruit & vegetables
+    Then a panel shows "pomme", its meaning "apple", its band (A1) and my status
 
   Scenario: The meaning matches the area the word is in
-    Given "banco" is in Home › Rooms & furniture in the Spanish list
-    And my native language is English
+    Given "glace" is in Home › Rooms & furniture in the French list
     When I tap it
-    Then its meaning is "bench", not "bank"
+    Then its meaning is "mirror", not "ice cream"
 
   Scenario: My own saved meaning wins
-    Given I saved "manzana" in the reader with my own meaning "jabłko (owoc)"
+    Given I saved "pomme" in the reader with my own meaning "apple (fruit)"
     When I tap it on the map
-    Then the panel shows "jabłko (owoc)"
+    Then the panel shows "apple (fruit)"
 
-  Scenario: A missing meaning falls back to the reader's lookup
-    Given the list has no meaning for "manzana" in my native language
-    When I tap it
+  Scenario: A native language the list doesn't cover falls back to the reader's lookup
+    Given my native language is Polish, and the French list has English meanings only
+    When I tap "pomme"
     Then the panel looks the meaning up the way the reader's word popup does (other learners' meanings, then
-      machine translation)
+      machine translation), in Polish
     And if that fails too, the panel shows the word and says no meaning was found
+    And it never shows the English meaning to a learner whose native language isn't English
 
   Scenario: I can learn a word from the map
-    Given "pera" is new to me
+    Given "poire" is new to me
     When I tap it and choose "Start learning"
     Then it becomes a learning word (yellow) and goes into my reviews, like saving it in the reader
     And the area's "learning" marker goes up by one without reloading
@@ -151,23 +151,23 @@ Feature: Vocabulary map on Progress
 
   # --- Languages and empty states ---
 
-  Scenario: Every language has the same blueprint
-    When I switch my target language to German
-    Then the map shows the same 14 regions and the same areas
-    And the tiles count the German list and my German words
+  Scenario: A language without a list yet
+    When I switch my target language to Spanish
+    Then the map says "The vocabulary map is coming soon for Spanish"
+    And the rest of Progress works as before
+
+  Scenario: A new language's list needs no code
+    Given a test-only word list for Spanish that fills the same blueprint
+    When I switch my target language to Spanish
+    Then the map shows the same 14 regions and areas, counting the Spanish list and my Spanish words
 
   Scenario: Brand new learner
-    Given I know no Spanish words yet
+    Given I know no French words yet
     Then every tile shows "0 / total" and the map says "Words you learn while reading fill in the map"
 
   Scenario: No target language picked
     Given I have no target language
     Then the map asks me to pick a language instead of showing tiles
-
-  Scenario: A paused language has no map
-    Given my target language is Japanese
-    Then the map says the vocabulary map isn't available for Japanese yet
-    And the rest of Progress works as before
 
   Scenario: The map works on a phone
     Given a 390 px wide screen
@@ -175,20 +175,20 @@ Feature: Vocabulary map on Progress
     And every tile and word is large enough to tap
 
   Scenario: The map loads quickly for a large vocabulary
-    Given I have 30,000 vocabulary entries in Spanish
+    Given I have 30,000 vocabulary entries in French
     When I open Progress
     Then the map answers in under a second
 
-  # --- Keeping the lists right (checked by tests, not seen by learners) ---
+  # --- Keeping the list right (checked by tests, not seen by learners) ---
 
-  Scenario: Every language's list fits the blueprint
+  Scenario: Every list fits the blueprint
     Then every word in every list names an area that exists in the blueprint
     And no headword appears twice in one language's list
-    And each band's size is within 15% of its target in every language that has that band
-    And every area has at least one word up to B1 in every language
-    And every word has a meaning in every native language, and no meaning is just the word copied unchanged
-      (except where both languages really spell it the same, which the list marks)
+    And each band's size is within 15% of its target
+    And every area has at least one word up to B1
+    And every word has a meaning in each native language its list covers, and no meaning is just the word copied
+      unchanged (except where both languages really spell it the same, which the list marks)
 
-  Scenario: The lists don't depend on AI at runtime
+  Scenario: The map doesn't depend on AI at runtime
     Given AI is switched off (no OpenAI key), as on staging
     Then the map works exactly the same
