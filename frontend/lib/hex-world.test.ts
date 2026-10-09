@@ -49,6 +49,30 @@ function connected(hexes: Hex[]): boolean {
   return seen.size === all.size;
 }
 
+/** Sea tiles the open sea can't reach: an inland lake or lagoon. */
+function lakes(w: HexWorld): number {
+  const land = new Set(allHexes(w).map(hexKey));
+  const qs = allHexes(w).map((h) => h.q);
+  const rs = allHexes(w).map((h) => h.r);
+  const [q0, q1, r0, r1] = [Math.min(...qs) - 2, Math.max(...qs) + 2, Math.min(...rs) - 2, Math.max(...rs) + 2];
+  const inside = (h: Hex) => h.q >= q0 && h.q <= q1 && h.r >= r0 && h.r <= r1;
+  const sea = new Set([hexKey({ q: q0, r: r0 })]);
+  const todo: Hex[] = [{ q: q0, r: r0 }];
+  while (todo.length) {
+    const h = todo.pop()!;
+    for (const [dq, dr] of NEIGHBOURS) {
+      const n = { q: h.q + dq, r: h.r + dr };
+      if (inside(n) && !land.has(hexKey(n)) && !sea.has(hexKey(n))) {
+        sea.add(hexKey(n));
+        todo.push(n);
+      }
+    }
+  }
+  let count = 0;
+  for (let q = q0; q <= q1; q++) for (let r = r0; r <= r1; r++) if (!land.has(hexKey({ q, r })) && !sea.has(hexKey({ q, r }))) count++;
+  return count;
+}
+
 describe("layoutHexWorld", () => {
   it("gives every word exactly one tile, and no tile to two words", () => {
     world.countries.forEach((c, i) => c.areas.forEach((a, j) => expect(a.hexes).toHaveLength(FRENCH[i][1][j])));
@@ -66,6 +90,11 @@ describe("layoutHexWorld", () => {
   it("grows the countries into one continent", () => {
     expect(connected(allHexes(world))).toBe(true);
   });
+
+  it("leaves no sea inside the continent", () => {
+    expect(lakes(world)).toBe(0);
+  });
+
 
   it("grows each country from the same place in every language", () => {
     const other = layoutHexWorld(regions(FRENCH.map(([id, a]) => [id, a.map((n) => Math.max(5, Math.round(n * 0.6)))])), false);
@@ -217,5 +246,15 @@ describe("labelPlan, zoomLimits and placeBox", () => {
       }
     }
     expect(nearestHex(hexCentre({ q: 0, r: 0 }, TILE, false), TILE, false)).toEqual({ q: 0, r: 0 });
+  });
+});
+
+describe("layoutHexWorld for other list sizes", () => {
+  // Last in the file, as it builds other layouts that push the French one out of the cache.
+  it.each([0.5, 2])("leaves no sea inside the continent, and every country whole, for a list %s times the size", (scale) => {
+    const w = layoutHexWorld(regions(FRENCH.map(([id, a]) => [id, a.map((n) => Math.max(3, Math.round(n * scale)))])), false);
+    expect(lakes(w)).toBe(0);
+    expect(connected(allHexes(w))).toBe(true);
+    for (const c of w.countries) expect(connected(c.areas.flatMap((a) => a.hexes)), c.regionId).toBe(true);
   });
 });

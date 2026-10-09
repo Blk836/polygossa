@@ -16,7 +16,7 @@ export const PLACE_MARGIN = 0.06;
 /** The ring of themed countries around Core words, clockwise from the top. Changing it moves countries for everyone. */
 const RING = ["people", "body", "food", "home", "shopping", "travel", "work", "nature", "time", "mind", "leisure", "society",
   "communication"];
-const RING_RADIUS = { x: 430, y: 290 };
+const RING_RADIUS = { x: 340, y: 230 };
 /** Places for regions added to the blueprint later, out past the ring. */
 const SPARE: Point[] = [{ x: 0, y: -540 }, { x: 760, y: 0 }, { x: 0, y: 540 }, { x: -760, y: 0 }];
 const ASPECT = { landscape: 16 / 10, portrait: 2 / 3 };
@@ -110,12 +110,22 @@ interface Raw {
   areas: { areaId: string; hexes: Hex[] }[];
 }
 
-/** Countries grown together from their seeds, then each split into provinces. */
+const MIDDLE = "core";
+
+/**
+ * Core words grown first, in the middle; then the other countries together from their seeds, each leaning towards the
+ * middle so they close up round it into one continent with no inland sea. Then each is split into provinces.
+ */
 function grow(regions: VocabMapRegion[], portrait: boolean): Raw[] {
   let spare = 0;
   const seeds = regions.map((r) => seedOf(r.id, () => spare++));
   const quota = (r: VocabMapRegion) => Math.max(1, r.areas.reduce((s, a) => s + Math.max(a.words.length, 1), 0));
-  const countries = growTerritories(regions.map((r, i) => ({ id: r.id, seed: seeds[i], quota: quota(r) })));
+  const grower = (r: VocabMapRegion, i: number) => ({ id: r.id, seed: seeds[i], quota: quota(r) });
+  const middle = growTerritories(regions.flatMap((r, i) => (r.id === MIDDLE ? [grower(r, i)] : [])));
+  const blocked = new Set([...middle.values()].flat().map(hexKey));
+  const centre = nearestHex({ x: 0, y: 0 }, TILE, false);
+  const ring = growTerritories(regions.flatMap((r, i) => (r.id === MIDDLE ? [] : [{ ...grower(r, i), pull: centre }])), undefined, 0, blocked);
+  const countries = mendTerritories(new Map([...middle, ...ring]));
   const at = (h: Hex) => hexCentre(h, TILE, portrait);
   return regions.map((region, i) => {
     const provinces = provincesOf(region, countries.get(region.id) ?? [], at);

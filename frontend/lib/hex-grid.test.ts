@@ -89,6 +89,25 @@ describe("growTerritories", () => {
     expect(radius).toBeLessThan(10 * Math.sqrt(3) * 5); // a 61-tile hexagon is 4 rings out
   });
 
+  it("never takes a blocked tile, growing round it instead", () => {
+    const blocked = growTerritories([{ id: "middle", seed: { q: 0, r: 0 }, quota: 37 }]).get("middle")!;
+    const out = growTerritories([{ id: "a", seed: { q: 5, r: 0 }, quota: 60 }], undefined, 0, new Set(blocked.map(hexKey))).get("a")!;
+    expect(out).toHaveLength(60);
+    expect(out.filter((h) => blocked.some((b) => hexKey(b) === hexKey(h)))).toEqual([]);
+    expect(connected(out)).toBe(true);
+  });
+
+  it("leans a pulled territory towards its pull, closing up against what is there", () => {
+    const middle = growTerritories([{ id: "m", seed: { q: 0, r: 0 }, quota: 37 }]).get("m")!;
+    const blocked = new Set(middle.map(hexKey));
+    const touching = (hexes: Hex[]) => hexes.filter((h) => NEIGHBOURS.some(([dq, dr]) => blocked.has(hexKey({ q: h.q + dq, r: h.r + dr })))).length;
+    const free = growTerritories([{ id: "a", seed: { q: 9, r: 0 }, quota: 40 }], undefined, 0, blocked).get("a")!;
+    const pulled = growTerritories([{ id: "a", seed: { q: 9, r: 0 }, quota: 40, pull: { q: 0, r: 0 } }], undefined, 0, blocked).get("a")!;
+    expect(touching(free)).toBe(0);
+    expect(touching(pulled)).toBeGreaterThan(3);
+    expect(pulled[0]).toEqual({ q: 9, r: 0 });
+  });
+
   it("is the same every time", () => {
     const run = () => growTerritories([
       { id: "a", seed: { q: 0, r: 0 }, quota: 50 },

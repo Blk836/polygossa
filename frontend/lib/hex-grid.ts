@@ -58,6 +58,8 @@ export interface Grower {
   id: string;
   seed: Hex;
   quota: number;
+  /** A tile the territory also leans towards, so it closes up against whatever lies that way. */
+  pull?: Hex;
 }
 
 interface Growth extends Grower {
@@ -67,11 +69,18 @@ interface Growth extends Grower {
   frontier: Map<string, { hex: Hex; d: number }>;
 }
 
-/** How far a tile is from a grower's seed, with a little seeded wobble so borders aren't ruler-straight. */
+/** How strongly a pulled territory leans towards its pull, against staying round its seed. */
+const PULL = 1;
+
+const apart = (a: Hex, b: Hex) => {
+  const [p, q] = [hexCentre(a, 1, false), hexCentre(b, 1, false)];
+  return Math.hypot(p.x - q.x, p.y - q.y);
+};
+
+/** How far a tile is from a grower's seed (and its pull), with a little seeded wobble so borders aren't ruler-straight. */
 function distance(h: Hex, g: Growth): number {
-  const a = hexCentre(h, 1, false);
-  const b = hexCentre(g.seed, 1, false);
-  return Math.hypot(a.x - b.x, a.y - b.y) + (hashSeed(hexKey(h) + g.id + (g.salt || "")) % 100) / 180;
+  const pull = g.pull ? PULL * apart(h, g.pull) : 0;
+  return apart(h, g.seed) + pull + (hashSeed(hexKey(h) + g.id + (g.salt || "")) % 100) / 180;
 }
 
 /** The grower furthest behind its quota (as a share), so territories grow at an even pace. */
@@ -161,10 +170,11 @@ export function pieceCount(hexes: Hex[]): number {
 /**
  * Territories grown in turns from their seeds, nearest tiles first, until each has exactly its quota of tiles. With
  * {@code allowed}, only those tiles are shared out (their count must cover the quotas); otherwise the grid is open.
+ * {@code blocked} tiles are already someone else's, and are grown round.
  */
-export function growTerritories(growers: Grower[], allowed?: Hex[], salt = 0): Map<string, Hex[]> {
+export function growTerritories(growers: Grower[], allowed?: Hex[], salt = 0, blocked?: Set<string>): Map<string, Hex[]> {
   const inside = allowed && new Set(allowed.map(hexKey));
-  const taken = new Set<string>();
+  const taken = new Set<string>(blocked);
   const free = (k: string) => !taken.has(k) && (!inside || inside.has(k));
   const growths: Growth[] = growers.map((g) => ({ ...g, salt, hexes: [], frontier: new Map([[hexKey(g.seed), { hex: g.seed, d: 0 }]]) }));
   for (let g = behind(growths); g; g = behind(growths)) {
