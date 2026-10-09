@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { api, errorMessage } from "@/lib/api";
+import { api } from "@/lib/api";
 import { languageName } from "@/lib/languages";
 import type { Page, VocabularyEntry } from "@/lib/types";
 import { Empty, ErrorNote, Pager, Spinner } from "../ui";
+import { useRemembered } from "../use-remembered";
 import { EntryRow } from "./entry-row";
 import { pageCount, searchParams, type Filters } from "./search";
 
@@ -17,22 +17,8 @@ export function WordList({ filters, onPage, onTag, onChanged }: {
   /** Called after an edit or delete (plan usage may have changed). */
   onChanged: () => void;
 }) {
-  const [data, setData] = useState<Page<VocabularyEntry> | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    api<Page<VocabularyEntry>>(`vocabulary?${searchParams(filters)}`)
-      .then((d) => {
-        if (cancelled) return;
-        setData(d);
-        setError(null);
-      })
-      .catch((e) => !cancelled && setError(errorMessage(e)));
-    return () => {
-      cancelled = true;
-    };
-  }, [filters]);
+  const path = `vocabulary?${searchParams(filters)}`;
+  const { data, setData, error } = useRemembered(path, () => api<Page<VocabularyEntry>>(path));
 
   function replace(updated: VocabularyEntry) {
     setData((d) => d && { ...d, items: d.items.map((x) => (x.id === updated.id ? updated : x)) });

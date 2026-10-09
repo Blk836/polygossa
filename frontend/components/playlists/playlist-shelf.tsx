@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { uniqueById } from "@/lib/library-filters";
 import { shelfCardLayout, shelfCardWidth } from "@/lib/card-layout";
 import { withLanguage } from "@/lib/media";
 import type { PlaylistSummary } from "@/lib/playlist-types";
 import { useCardLayout } from "../card-layout-context";
+import { useRemembered } from "../use-remembered";
 import { PlaylistCard } from "./playlist-card";
 
 const SOURCES = {
@@ -35,19 +35,11 @@ export function saveable(p: PlaylistSummary): boolean {
  */
 export function PlaylistShelf({ source, language, query = "" }: { source: keyof typeof SOURCES; language: string; query?: string }) {
   const { layout } = useCardLayout();
-  const [lists, setLists] = useState<PlaylistSummary[]>([]);
   const { blurb } = SOURCES[source];
   const title = query ? `Playlists matching “${query}”` : SOURCES[source].title;
-
-  useEffect(() => {
-    let cancelled = false;
-    loadPlaylists(source, language, query)
-      .then((l) => !cancelled && setLists(l.filter((p) => p.itemCount > 0)))
-      .catch(() => !cancelled && setLists([])); // the shelf is extra: the page works without it
-    return () => {
-      cancelled = true;
-    };
-  }, [source, language, query]);
+  // The shelf is extra: if it can't load, the page works without it.
+  const { data } = useRemembered(`playlists:${source}:${language}:${query}`, () => loadPlaylists(source, language, query));
+  const lists = (data ?? []).filter((p) => p.itemCount > 0);
 
   if (lists.length === 0) return null;
   const id = `playlist-shelf-${source}`;
