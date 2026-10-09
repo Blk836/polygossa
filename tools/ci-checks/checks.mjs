@@ -10,10 +10,9 @@ const RULES = [
   [/^tools\/ci-checks(\/|\.mjs$)/, null],
   [/^docs\/|\.md$/, []],
   [/^(backend\/|gradle\/|config\/checkstyle\/|build\.gradle\.kts$|settings\.gradle\.kts$|gradlew(\.bat)?$)/,
-    ["backend", "e2e"]],
-  // The tools checks lint with ESLint from frontend/'s packages.
+    ["backend", "e2e", "tools"]],
   [/^frontend\//, ["frontend", "tools", "e2e"]],
-  [/^infra\//, ["infra"]],
+  [/^infra\//, ["infra", "tools"]],
   [/^tools\//, ["tools"]],
 ];
 

@@ -9,14 +9,14 @@ test("the checks are backend, end-to-end, frontend, infra and tools", () => {
   assert.deepEqual(ALL, ["backend", "e2e", "frontend", "infra", "tools"]);
 });
 
-test("backend changes run the backend and end-to-end checks", () => {
-  assert.deepEqual(checksFor(["backend/src/main/java/app/lector/App.java"]), only("backend", "e2e"));
+test("backend changes run the backend, end-to-end and tools (no comments) checks", () => {
+  assert.deepEqual(checksFor(["backend/src/main/java/app/lector/App.java"]), only("backend", "e2e", "tools"));
 });
 
 test("the Gradle build and the checkstyle rules count as the backend", () => {
   for (const file of ["build.gradle.kts", "settings.gradle.kts", "gradle/wrapper/gradle-wrapper.properties",
     "gradle/libs.versions.toml", "gradlew", "gradlew.bat", "config/checkstyle/checkstyle.xml"]) {
-    assert.deepEqual(checksFor([file]), only("backend", "e2e"), file);
+    assert.deepEqual(checksFor([file]), only("backend", "e2e", "tools"), file);
   }
 });
 
@@ -25,8 +25,8 @@ test("frontend changes run the frontend, tools (they use its ESLint) and end-to-
   assert.deepEqual(checksFor(["frontend/package-lock.json"]), only("frontend", "tools", "e2e"));
 });
 
-test("infra changes run only the infra checks", () => {
-  assert.deepEqual(checksFor(["infra/lib/staging-stack.ts"]), only("infra"));
+test("infra changes run the infra and tools (no comments) checks", () => {
+  assert.deepEqual(checksFor(["infra/lib/staging-stack.ts"]), only("infra", "tools"));
 });
 
 test("tools changes run only the tools checks", () => {
@@ -34,7 +34,7 @@ test("tools changes run only the tools checks", () => {
 });
 
 test("changes in several parts run each part's checks", () => {
-  assert.deepEqual(checksFor(["backend/x.java", "infra/lib/y.ts"]), only("backend", "e2e", "infra"));
+  assert.deepEqual(checksFor(["backend/x.java", "infra/lib/y.ts"]), only("backend", "e2e", "infra", "tools"));
   assert.deepEqual(checksFor(["tools/a.mjs", "infra/b.ts"]), only("tools", "infra"));
 });
 
@@ -52,12 +52,12 @@ test("a file outside the known parts runs everything", () => {
 });
 
 test("docs and Markdown files run nothing, but don't stop other parts' checks", () => {
-  assert.deepEqual(checksFor(["docs/architecture/README.md", "CLAUDE.md", "frontend/README.md"]), only());
-  assert.deepEqual(checksFor(["docs/acceptance/ci.feature", "infra/lib/x.ts"]), only("infra"));
+  assert.deepEqual(checksFor(["docs/marketing.md", "CLAUDE.md", "frontend/README.md"]), only());
+  assert.deepEqual(checksFor(["docs/acceptance/ci.feature", "infra/lib/x.ts"]), only("infra", "tools"));
 });
 
 test("Windows-style paths and blank lines are handled", () => {
-  assert.deepEqual(checksFor(["", "  ", "infra\\lib\\x.ts"]), only("infra"));
+  assert.deepEqual(checksFor(["", "  ", "infra\\lib\\x.ts"]), only("infra", "tools"));
 });
 
 test("an unknown list of changed files runs everything", () => {
