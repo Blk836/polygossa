@@ -135,7 +135,10 @@ export class ProductionStack extends cdk.Stack {
         STRIPE_SECRET_KEY: ecs.Secret.fromSecretsManager(
           secretsmanager.Secret.fromSecretNameV2(this, "StripeKey", STRIPE_SECRET)),
         STRIPE_WEBHOOK_SECRET: ecs.Secret.fromSecretsManager(
-          secretsmanager.Secret.fromSecretNameV2(this, "StripeWebhookSecret", STRIPE_WEBHOOK_SECRET)),
+          secretsmanager.Secret.fromSecretCompleteArn(this, "StripeWebhookSecret", this.formatArn({
+            service: "secretsmanager", resource: "secret", arnFormat: cdk.ArnFormat.COLON_RESOURCE_NAME,
+            resourceName: `${STRIPE_WEBHOOK_SECRET}-${STRIPE_WEBHOOK_SECRET_ARN_SUFFIX}`,
+          }))),
       },
     });
     // TranslateText names no resource unless custom terminology is used, so "*", kept to this one action and region.
