@@ -1,100 +1,89 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import {
+  cleanUpAfterEach,
+  island,
+  label,
+  map,
+  openInFrench,
+  pickLanguage,
+  province,
+  restingZoom,
+  save,
+  touched,
+  wordDot,
+  world,
+} from "./vocab-map-helpers";
 
-// The vocabulary map on Progress (docs/acceptance/vocabulary-map.feature). The shared test user has no target language,
-// so each test picks French in the top bar with the switch answered in the browser (never saved), and saves the map
-// words it needs through the API, deleting them afterwards. Tests run in parallel on that one user, so each test saves
-// different words and deletes only its own.
+// The vocabulary map on Progress (docs/acceptance/vocabulary-map.feature): the island world, its counts, bands and
+// words. The camera's tests are in vocab-map-camera.spec.ts; the helpers and the shared test user's rules in
+// vocab-map-helpers.ts.
 
-/** The French words this test saved, from the map or the API: deleted after it. */
-const touched: string[] = [];
-
-async function clearWords(page: Page) {
-  for (const term of touched.splice(0)) {
-    await page.request.delete(`/api/vocabulary/by-term?language=fr&term=${encodeURIComponent(term)}`);
-  }
-}
-
-/** Opens Progress with French picked in the top bar, answered in the browser so the test user keeps no language. */
-async function openInFrench(page: Page, path = "/dashboard") {
-  await page.goto(path);
-  const me = await (await page.request.get("/api/me")).json();
-  await page.route("**/api/me", (route) => {
-    if (route.request().method() !== "PATCH") return route.continue();
-    const { targetLanguage } = route.request().postDataJSON();
-    return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ...me, targetLanguage }) });
-  });
-  await pickLanguage(page, "Français");
-  await expect(map(page).getByTestId("map-overall")).toBeVisible();
-}
-
-async function pickLanguage(page: Page, native: string) {
-  await page.getByRole("banner").getByRole("button", { name: /Change language/ }).click();
-  await page.getByRole("menu", { name: "Language" }).getByRole("menuitemradio", { name: new RegExp(native) }).click();
-}
-
-const map = (page: Page) => page.getByTestId("vocab-map");
-const tile = (page: Page, name: string) => map(page).getByRole("button", { name: new RegExp(`^${name}:`) });
-const wordTile = (page: Page, term: string) => map(page).getByTestId("map-word").filter({ hasText: new RegExp(`^${term}$`) });
-
-async function save(page: Page, term: string, status: string) {
-  touched.push(term);
-  const res = await page.request.post("/api/vocabulary", { data: { language: "fr", term, status } });
-  expect(res.ok(), await res.text()).toBe(true);
-}
-
-test.beforeEach(async ({ page }) => {
-  await page.goto("/library"); // signs in (auto-login) for page.request
-});
-
-test.afterEach(async ({ page }) => {
-  await clearWords(page);
-  try {
-    await page.evaluate(() => window.localStorage.removeItem("lector_map_band"));
-  } catch {
-    // The page may already be gone.
-  }
-});
+cleanUpAfterEach();
 
 test("without a target language the map asks me to pick one", async ({ page }) => {
   await page.goto("/dashboard");
   await expect(map(page)).toContainText("Pick the language you're learning");
+  await expect(world(page)).toHaveCount(0);
 });
 
-test("the map sits above the period comparison and shows every region", async ({ page }) => {
+test("the map is an island world above the period comparison, with an island per region", async ({ page }) => {
   await openInFrench(page);
-  await expect(map(page).getByTestId("map-tile")).toHaveCount(14);
+  await expect(map(page).getByTestId("map-island")).toHaveCount(14);
+  await expect(map(page).getByTestId("island-label")).toHaveCount(14);
   await expect(map(page).getByTestId("beyond-core")).toBeVisible();
+  await expect(island(page, "Food & Drink")).toHaveAttribute("aria-label", /^Food & Drink: \d+ of \d+ known$/);
+  await expect(label(page, "island-label", "food").getByTestId("tile-count")).toHaveText(/^\d+ \/ \d+$/);
+  // Bigger regions are bigger islands: Core words holds the most words, Communication the fewest.
+  const core = (await island(page, "Core words").boundingBox())!;
+  const communication = (await island(page, "Communication").boundingBox())!;
+  expect(core.width).toBeGreaterThan(communication.width * 1.5);
+  // A dot per word, from far away too: at least the A1 and A2 words.
+  expect(await map(page).locator("circle").count()).toBeGreaterThan(1000);
+
   const mapBox = (await map(page).boundingBox())!;
   const periodBox = (await page.getByRole("region", { name: "Last week" }).boundingBox())!;
   expect(mapBox.y).toBeLessThan(periodBox.y);
   await expect(page.getByRole("region", { name: "Skill levels" })).toBeVisible();
-  await expect(tile(page, "Food & Drink").getByTestId("tile-count")).toHaveText(/^\d+ \/ \d+$/);
 });
 
-test("I zoom into a region and an area, and back out with the breadcrumb, Back and a reload", async ({ page }) => {
+test("tapping glides into an island and a province, and the breadcrumb, Back and a reload keep up", async ({ page }) => {
   await openInFrench(page);
-  await tile(page, "Food & Drink").click();
-  await expect(map(page).getByTestId("map-tile")).toHaveCount(6);
-  await tile(page, "Fruit & vegetables").click();
+  const out = await restingZoom(page);
+  await island(page, "Food & Drink").click();
+  await expect(map(page).getByTestId("map-province")).toHaveCount(6);
+  await expect(label(page, "province-label", "fruit-veg")).toContainText("Fruit & vegetables");
+  await expect(label(page, "island-label", "food")).toHaveCount(0);
+  const atIsland = await restingZoom(page);
+  expect(atIsland).toBeGreaterThan(out * 2);
+
+  await province(page, "Fruit & vegetables").click();
   await expect(map(page).getByTestId("map-breadcrumb")).toHaveText("Map›Food & Drink›Fruit & vegetables");
-  await expect(wordTile(page, "pomme")).toBeVisible();
+  await expect(map(page).locator("text.map-word-label", { hasText: /^pomme$/ })).toBeVisible();
+  expect(await restingZoom(page)).toBeGreaterThan(atIsland);
   expect(new URL(page.url()).searchParams.get("map")).toBe("food/fruit-veg");
 
   await page.reload();
   await pickLanguage(page, "Français");
-  await expect(wordTile(page, "pomme")).toBeVisible();
+  await expect(wordDot(page, "pomme")).toBeVisible();
 
   await page.goBack();
   await expect(map(page).getByTestId("map-breadcrumb")).toHaveText("Map›Food & Drink");
+  await expect(map(page).getByTestId("map-word")).toHaveCount(0);
+  await map(page).getByRole("button", { name: "Zoom out" }).click();
+  await expect(map(page).getByTestId("map-breadcrumb")).toHaveText("Map");
+  await expect(map(page).getByTestId("island-label")).toHaveCount(14);
+  expect(await restingZoom(page)).toBeCloseTo(out, 3);
+
+  await island(page, "Home").click();
   await map(page).getByRole("button", { name: "Map", exact: true }).click();
-  await expect(map(page).getByTestId("map-tile")).toHaveCount(14);
+  await expect(map(page).getByTestId("map-province")).toHaveCount(0);
 });
 
 test("a word counts in the form I know it, and tapping it shows its meaning", async ({ page }) => {
   await save(page, "mangé", "known");
   await openInFrench(page, "/dashboard?map=food/cooking");
-  await expect(wordTile(page, "manger")).toHaveAttribute("data-status", "known");
-  await wordTile(page, "manger").click();
+  await expect(wordDot(page, "manger")).toHaveAttribute("data-status", "known");
+  await wordDot(page, "manger").click();
   const panel = map(page).getByTestId("map-word-panel");
   await expect(panel.getByTestId("map-word-meaning")).toHaveText("to eat");
   await expect(panel.getByTestId("map-word-status")).toHaveText("Known");
@@ -104,24 +93,23 @@ test("a word counts in the form I know it, and tapping it shows its meaning", as
 test("I start learning a word from the map, then mark one known", async ({ page }) => {
   touched.push("poire", "pomme");
   await openInFrench(page, "/dashboard?map=food");
-  const area = tile(page, "Fruit & vegetables");
-  await expect(area.getByTestId("tile-learning")).toHaveCount(0);
-  await area.click();
+  await expect(label(page, "province-label", "fruit-veg").getByTestId("tile-learning")).toHaveCount(0);
+  await province(page, "Fruit & vegetables").click();
 
-  await wordTile(page, "poire").click();
+  await wordDot(page, "poire").click();
   const panel = map(page).getByTestId("map-word-panel");
   await expect(panel).toContainText("pear");
   await panel.getByRole("button", { name: "Start learning" }).click();
-  await expect(wordTile(page, "poire")).toHaveAttribute("data-status", "learning");
+  await expect(wordDot(page, "poire")).toHaveAttribute("data-status", "learning");
   const saved = await (await page.request.get("/api/vocabulary?language=fr&status=learning&q=poire")).json();
   expect(saved.items.map((e: { term: string }) => e.term)).toContain("poire");
 
-  await wordTile(page, "pomme").click();
+  await wordDot(page, "pomme").click();
   await panel.getByRole("button", { name: "I know this" }).click();
-  await expect(wordTile(page, "pomme")).toHaveAttribute("data-status", "known");
+  await expect(wordDot(page, "pomme")).toHaveAttribute("data-status", "known");
 
-  await map(page).getByRole("button", { name: "Food & Drink" }).click();
-  await expect(tile(page, "Fruit & vegetables").getByTestId("tile-learning")).toHaveText("1 learning");
+  await map(page).getByTestId("map-breadcrumb").getByRole("button", { name: "Food & Drink" }).click();
+  await expect(label(page, "province-label", "fruit-veg").getByTestId("tile-learning")).toHaveText("1 learning");
 });
 
 test("the free plan's limit stops Start learning with the reader's upgrade message", async ({ page }) => {
@@ -131,10 +119,10 @@ test("the free plan's limit stops Start learning with the reader's upgrade messa
       body: JSON.stringify({ code: "upgrade_required", message: "You've reached the free plan's 20 saved words." }) });
   });
   await openInFrench(page, "/dashboard?map=food/fruit-veg");
-  await wordTile(page, "banane").click();
+  await wordDot(page, "banane").click();
   await map(page).getByRole("button", { name: "Start learning" }).click();
   await expect(map(page)).toContainText("You've reached the free plan's 20 saved words.");
-  await expect(wordTile(page, "banane")).toHaveAttribute("data-status", "new");
+  await expect(wordDot(page, "banane")).toHaveAttribute("data-status", "new");
 });
 
 test("a native language the list doesn't cover gets the reader's lookup", async ({ page }) => {
@@ -147,7 +135,7 @@ test("a native language the list doesn't cover gets the reader's lookup", async 
   await page.route("**/api/dictionary?**", (route) => route.fulfill({ status: 200, contentType: "application/json",
     body: JSON.stringify({ term: "pomme", language: "fr", meanings: ["jabłko"], meaningLanguage: "pl", source: "machine" }) }));
   await openInFrench(page, "/dashboard?map=food/fruit-veg");
-  await wordTile(page, "pomme").click();
+  await wordDot(page, "pomme").click();
   await expect(map(page).getByTestId("map-word-meaning")).toHaveText("jabłko");
 });
 
@@ -156,12 +144,14 @@ test("the band picker changes what counts, and is remembered", async ({ page }) 
   const overall = map(page).getByTestId("map-overall");
   await expect(map(page).getByLabel("Bands counted")).toHaveValue("A1");
   const a1 = await overall.textContent();
-  await expect(tile(page, "Food & Drink").getByTestId("tile-next")).toHaveText(/^\+\d+ at A2$/);
+  await expect(label(page, "island-label", "food").getByTestId("tile-next")).toHaveText(/^\+\d+ at A2$/);
+  const dotsAtA1 = await map(page).locator("circle").count();
 
   await map(page).getByLabel("Bands counted").selectOption("B1");
   await expect(overall).not.toHaveText(a1!);
   await expect(map(page)).toContainText("B2 words coming soon.");
-  await expect(tile(page, "Food & Drink").getByTestId("tile-next")).toHaveCount(0);
+  await expect(label(page, "island-label", "food").getByTestId("tile-next")).toHaveCount(0);
+  expect(await map(page).locator("circle").count()).toBeGreaterThan(dotsAtA1);
 
   await page.reload();
   await pickLanguage(page, "Français");
@@ -175,20 +165,10 @@ test("a language without a list says the map is coming soon", async ({ page }) =
   await expect(page.getByRole("region", { name: "Skill levels" })).toBeVisible();
 });
 
-test("Beyond the core opens my known words", async ({ page }) => {
+test("Beyond the core is the uncharted sea, and opens my known words", async ({ page }) => {
   await openInFrench(page);
+  await expect(map(page).getByTestId("beyond-core")).toHaveAttribute("aria-label", /^Beyond the core: [\d,]+ words$/);
   await map(page).getByTestId("beyond-core").click();
   await expect(page).toHaveURL(/\/vocabulary\?status=known$/);
   await expect(page.getByLabel("Status")).toHaveValue("known");
-});
-
-test("the map fits a phone", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.emulateMedia({ reducedMotion: "reduce" }); // measure the tiles at full size, not mid-zoom
-  await openInFrench(page, "/dashboard?map=food/fruit-veg");
-  await expect(wordTile(page, "pomme")).toBeVisible();
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-  expect(overflow).toBe(0);
-  const box = (await wordTile(page, "pomme").boundingBox())!;
-  expect(box.height).toBeGreaterThanOrEqual(44);
 });

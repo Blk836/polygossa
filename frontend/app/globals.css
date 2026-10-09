@@ -41,6 +41,14 @@
   --w-sentence: light-dark(#ede6d5, #282f54);
   --w-marker: light-dark(#3b4ba3, #9fb0f5);
 
+  /* The vocabulary map's island world: sea, shallows, land from pale (little known) to rich green, new-word dots. */
+  --sea-deep: light-dark(#bcd5df, #0e1a2a);
+  --sea: light-dark(#d3e6ec, #142338);
+  --sea-shallow: light-dark(#e6f1f0, #1c3048);
+  --land: light-dark(#efe8cf, #34372b);
+  --land-rich: light-dark(#7fb26c, #3e7a45);
+  --dot-new: light-dark(#8d8b98, #74778f);
+
   /* Text covers: one quiet tint per library category (see lib/categories.ts). */
   --cover-learners: light-dark(#e4e7f6, #252b52);
   --cover-daily-life: light-dark(#f3e6d3, #3a2f22);
@@ -217,17 +225,53 @@ span.s-spoken:not(.w) {
   }
 }
 
-/* The vocabulary map zooms in and out between the map, a region and an area (components/progress/vocab-map.tsx). */
-@keyframes map-zoom {
-  from { opacity: 0; transform: scale(0.96); }
+/* The vocabulary map's island world (components/progress/island-map.tsx). The camera sets --k (screen pixels per world
+   unit); island and province labels undo it, so they stay the same size on screen at every zoom. */
+.island-map {
+  --k: 1;
 }
-.map-zoom {
-  animation: map-zoom 180ms ease-out;
+.island-map text {
+  fill: var(--ink);
+  stroke: var(--card);
+  paint-order: stroke;
+  stroke-linejoin: round;
+  text-anchor: middle;
 }
-@media (prefers-reduced-motion: reduce) {
-  .map-zoom {
-    animation: none;
-  }
+.island-map .map-label {
+  transform: scale(calc(1 / var(--k)));
+}
+.island-map .map-label text {
+  font-size: 12px;
+  stroke-width: 3px;
+  font-variant-numeric: tabular-nums;
+}
+.island-map .map-label .name {
+  font-size: 13px;
+  font-weight: 600;
+}
+.island-map .map-label .small {
+  font-size: 10px;
+  stroke-width: 2.5px;
+}
+.island-map .map-label .note {
+  font-size: 10.5px;
+  fill: var(--muted);
+}
+.island-map .map-label.beyond text {
+  text-anchor: start;
+  fill: var(--muted);
+}
+.island-map .map-label.beyond.end text {
+  text-anchor: end;
+}
+.island-map [role="button"],
+.island-map a {
+  outline: none;
+}
+.island-map :focus-visible .map-focus {
+  stroke: var(--accent);
+  stroke-width: 3px;
+  vector-effect: non-scaling-stroke;
 }
 
 /* Everything clickable shows the hand, as links do: Tailwind 4 leaves buttons on the default arrow. */
