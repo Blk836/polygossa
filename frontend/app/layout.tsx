@@ -26,9 +26,6 @@ export async function generateMetadata(): Promise<Metadata> {
     description: DESCRIPTION,
     openGraph: { type: "website", siteName: BRAND, title: SHARE_TITLE, description: DESCRIPTION },
     twitter: { card: "summary_large_image", title: SHARE_TITLE, description: DESCRIPTION },
-    // With translate="no" below: browser translation rewrites text React rendered and crashes the page (and translating
-    // a lesson defeats the point). Chrome otherwise offers it whenever a lesson makes the page read as another language.
-    other: { google: "notranslate" },
   };
 }
 
@@ -53,6 +50,13 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       data-theme={themeAttribute(theme)}
       className={`${instrumentSans.variable} ${fraunces.variable} ${literata.variable} h-full antialiased`}
     >
+      <head>
+        {/* With translate="no" above: browser translation rewrites text React rendered and crashes the page (and
+            translating a lesson defeats the point). Chrome otherwise offers it whenever a lesson makes the page read as
+            another language. Written here, not in the metadata: pages with a loading outline stream their metadata
+            into the body once it resolves, and this tag must be in the head from the first byte. */}
+        <meta name="google" content="notranslate" />
+      </head>
       <body className="min-h-full flex flex-col font-sans">
         <ThemeProvider initial={theme}>
           <CardLayoutProvider initial={cardLayout}>{children}</CardLayoutProvider>
