@@ -8,7 +8,8 @@ Feature: Vocabulary map on Progress
 
   Terms:
     blueprint = the fixed regions and areas, shared by all languages
-    word list = one language's words; each has a headword, its common forms, an English gloss, an area and a band
+    word list = one language's words; each has a headword, its common forms, an area, a band, and its meaning in
+                every native language learners can choose (19 today)
     band      = the CEFR level a word belongs to: A1 (~500 words), A2 (~1,000), B1 (~2,000), B2 (~4,000),
                 C1 (~8,000); each band includes the words of the bands below it
     known     = I marked the word known in the reader or in Vocabulary (green); learning = yellow; new = no entry
@@ -111,10 +112,28 @@ Feature: Vocabulary map on Progress
 
   # --- A word on the map ---
 
-  Scenario: Tapping a word shows what it is
+  Scenario: Tapping a word shows its meaning in my own language
+    Given my native language is Polish
     When I tap the word "manzana" in Fruit & vegetables
-    Then a panel shows "manzana", its English gloss "apple", its band (A1) and my status
-    And if I saved my own meaning for it, that meaning shows instead of the gloss
+    Then a panel shows "manzana", its meaning in Polish "jabłko", its band (A1) and my status
+
+  Scenario: The meaning matches the area the word is in
+    Given "banco" is in Home › Rooms & furniture in the Spanish list
+    And my native language is English
+    When I tap it
+    Then its meaning is "bench", not "bank"
+
+  Scenario: My own saved meaning wins
+    Given I saved "manzana" in the reader with my own meaning "jabłko (owoc)"
+    When I tap it on the map
+    Then the panel shows "jabłko (owoc)"
+
+  Scenario: A missing meaning falls back to the reader's lookup
+    Given the list has no meaning for "manzana" in my native language
+    When I tap it
+    Then the panel looks the meaning up the way the reader's word popup does (other learners' meanings, then
+      machine translation)
+    And if that fails too, the panel shows the word and says no meaning was found
 
   Scenario: I can learn a word from the map
     Given "pera" is new to me
@@ -167,6 +186,8 @@ Feature: Vocabulary map on Progress
     And no headword appears twice in one language's list
     And each band's size is within 15% of its target in every language that has that band
     And every area has at least one word up to B1 in every language
+    And every word has a meaning in every native language, and no meaning is just the word copied unchanged
+      (except where both languages really spell it the same, which the list marks)
 
   Scenario: The lists don't depend on AI at runtime
     Given AI is switched off (no OpenAI key), as on staging
