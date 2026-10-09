@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { TEXT_SIZES, type ReaderSettings } from "./reader-settings";
+import { TEXT_SIZES, type Follow, type ReaderSettings } from "./reader-settings";
 
 /** A button that opens a small panel below it; Escape or a click outside closes it. */
 function Menu({ label, button, children }: { label: string; button: ReactNode; children: ReactNode }) {
@@ -86,10 +86,11 @@ export function SettingsMenu({ settings, onChange }: { settings: ReaderSettings;
         </span>
         <select
           className="rounded border border-line bg-card px-1.5 py-0.5"
-          value={settings.followWord ? "word" : "sentence"}
-          onChange={(e) => onChange({ followWord: e.target.value === "word" })}
+          value={settings.follow}
+          onChange={(e) => onChange({ follow: e.target.value as Follow })}
         >
-          <option value="word">Sentence and word</option>
+          <option value="word">Word</option>
+          <option value="both">Word and sentence</option>
           <option value="sentence">Sentence</option>
         </select>
       </label>

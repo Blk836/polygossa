@@ -1,5 +1,9 @@
 // Reader preferences: text size, quiet colours, pausing playback on lookup, whether turning the page marks its new
-// words known, and whether playback marks the spoken word as well as its sentence. Kept in a cookie, like the theme, so the server renders the chosen text size on the first paint.
+// words known, and what playback marks as it goes (the spoken word, its sentence, or both). Kept in a cookie, like
+// the theme, so the server renders the chosen text size on the first paint.
+
+/** What playback marks: the spoken word, the word and its sentence, or the sentence only. */
+export type Follow = "word" | "both" | "sentence";
 
 export interface ReaderSettings {
   /** Index into the reader's text sizes. */
@@ -10,13 +14,13 @@ export interface ReaderSettings {
   pauseOnLookup: boolean;
   /** Turning to the next page marks the words on it that have no status as known (as in LingQ). */
   pageKnown: boolean;
-  /** Follow along: mark the spoken word under its tinted sentence (else the sentence only). */
-  followWord: boolean;
+  /** Follow along: underline the spoken word (the default), also tint its sentence, or tint the sentence only. */
+  follow: Follow;
 }
 
 export const READER_SETTINGS_COOKIE = "lector_reader";
 export const TEXT_SIZES = 4;
-export const DEFAULT_READER_SETTINGS: ReaderSettings = { size: 1, quiet: false, pauseOnLookup: true, pageKnown: true, followWord: true };
+export const DEFAULT_READER_SETTINGS: ReaderSettings = { size: 1, quiet: false, pauseOnLookup: true, pageKnown: true, follow: "word" };
 
 const ONE_YEAR_SECONDS = 365 * 24 * 60 * 60;
 
@@ -24,6 +28,26 @@ function flag(value: string | null, fallback: boolean): boolean | null {
   if (value === null) return fallback;
   if (value === "1") return true;
   return value === "0" ? false : null;
+}
+
+const FOLLOWS: Follow[] = ["word", "both", "sentence"];
+
+/** `follow` is the stored choice; `word=0` is how "Sentence" was stored while the default was word and sentence. */
+function follow(value: string | null, legacyWord: string | null): Follow | null {
+  if (value !== null) return FOLLOWS.find((f) => f === value) ?? null;
+  const word = flag(legacyWord, true);
+  if (word === null) return null;
+  return word ? DEFAULT_READER_SETTINGS.follow : "sentence";
+}
+
+/** Whether playback underlines the spoken word. */
+export function followsWord(follow: Follow): boolean {
+  return follow !== "sentence";
+}
+
+/** Whether playback tints the spoken sentence. */
+export function followsSentence(follow: Follow): boolean {
+  return follow !== "word";
 }
 
 function size(value: string | null): number | null {
@@ -45,7 +69,7 @@ export function parseReaderSettings(value: string | null | undefined): ReaderSet
     quiet: flag(params.get("quiet"), d.quiet),
     pauseOnLookup: flag(params.get("pause"), d.pauseOnLookup),
     pageKnown: flag(params.get("known"), d.pageKnown),
-    followWord: flag(params.get("word"), d.followWord),
+    follow: follow(params.get("follow"), params.get("word")),
   };
   return Object.values(parsed).includes(null) ? DEFAULT_READER_SETTINGS : (parsed as ReaderSettings);
 }
@@ -59,7 +83,7 @@ export function readerSettingsCookie(settings: ReaderSettings): string {
   if (settings.quiet !== d.quiet) params.set("quiet", "1");
   if (settings.pauseOnLookup !== d.pauseOnLookup) params.set("pause", "0");
   if (settings.pageKnown !== d.pageKnown) params.set("known", "0");
-  if (settings.followWord !== d.followWord) params.set("word", "0");
+  if (settings.follow !== d.follow) params.set("follow", settings.follow);
   const value = params.toString();
   const maxAge = value ? ONE_YEAR_SECONDS : 0;
   return `${READER_SETTINGS_COOKIE}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;

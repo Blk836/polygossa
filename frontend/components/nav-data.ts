@@ -10,10 +10,11 @@ import type { ReviewStats } from "@/lib/types";
 const TICK_MS = 30_000;
 
 /**
- * Cards due for review (words and sentences), for the Practice badge. Fetched again on every page change, so it
- * follows reviews and newly saved words. Null while loading or when stats aren't available (e.g. the plan lacks SRS).
+ * Cards due for review (words and sentences), for the Practice badge. Fetched again on every page change and whenever
+ * `refreshed` changes (a new object each time the account is refreshed), so it follows reviews and newly saved words.
+ * Null while loading or when stats aren't available (e.g. the plan lacks SRS).
  */
-export function useDueCount(language: string, pathname: string): number | null {
+export function useDueCount(language: string, pathname: string, refreshed: unknown): number | null {
   const [due, setDue] = useState<number | null>(null);
   useEffect(() => {
     let cancelled = false;
@@ -23,15 +24,16 @@ export function useDueCount(language: string, pathname: string): number | null {
     return () => {
       cancelled = true;
     };
-  }, [language, pathname]);
+  }, [language, pathname, refreshed]);
   return due;
 }
 
 /**
- * Known words and the streak, fetched again on every page change. `secondsLeftToday` counts down while the page stays
- * open; at midnight the stats are fetched afresh, since an unpractised day ends the streak. Null when unavailable.
+ * Known words and the streak, fetched again on every page change and whenever `refreshed` changes (so turning a page
+ * that marks its words known shows at once). `secondsLeftToday` counts down while the page stays open; at midnight
+ * the stats are fetched afresh, since an unpractised day ends the streak. Null when unavailable.
  */
-export function useHeaderStats(language: string, pathname: string): HeaderStats | null {
+export function useHeaderStats(language: string, pathname: string, refreshed: unknown): HeaderStats | null {
   const [loaded, setLoaded] = useState<{ stats: HeaderStats; at: number } | null>(null);
   const [now, setNow] = useState(0);
   const [day, setDay] = useState(0);
@@ -49,7 +51,7 @@ export function useHeaderStats(language: string, pathname: string): HeaderStats 
     return () => {
       cancelled = true;
     };
-  }, [language, pathname, day]);
+  }, [language, pathname, day, refreshed]);
 
   useEffect(() => {
     if (!loaded) return;

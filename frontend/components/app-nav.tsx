@@ -88,8 +88,10 @@ export function AppNav() {
   const pathname = usePathname();
   const { me } = useMe();
   const language = me.targetLanguage ?? "";
-  const due = useDueCount(language, pathname);
-  const stats = useHeaderStats(language, pathname);
+  // Fetched again on every page change, and whenever the account is refreshed (after saving a word, turning a page
+  // that marks words known, finishing a lesson), so the counts follow reading without leaving the page.
+  const due = useDueCount(language, pathname, me);
+  const stats = useHeaderStats(language, pathname, me);
   const active = activeGroup(pathname);
 
   return (

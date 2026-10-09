@@ -17,7 +17,7 @@ import { pageRange, unseenOnPage } from "./reader-pages";
 import { ReaderPager } from "./reader-pager";
 import { articleClass, audioToggle, layoutClass, mediaState, onPage, pageNote, PhraseHint, showsMarker } from "./reader-parts";
 import { ReaderPopup } from "./reader-popup";
-import type { ReaderSettings } from "./reader-settings";
+import { followsSentence, followsWord, type ReaderSettings } from "./reader-settings";
 import { nextWord, overlapping, phraseMarks, readerStats, sentenceHere, sentenceTexts, toParagraphs } from "./reader-text";
 import { transcriptParagraphs } from "./reader-transcript";
 import { TextMeasure } from "./text-measure";
@@ -198,10 +198,10 @@ export function Reader({ initial, initialSettings, playlist }: {
             onClick={input.onClick}
           >
             {paging.paragraphs.map((p, k) => (
-              <Paragraph key={k} tokens={p} statuses={vocab.statuses} phrases={marks} sentence={sentenceHere(p, spoken.sentence)} {...overlapping(p, sel, active)} />
+              <Paragraph key={k} tokens={p} statuses={vocab.statuses} phrases={marks} sentence={followsSentence(settings.follow) ? sentenceHere(p, spoken.sentence) : null} {...overlapping(p, sel, active)} />
             ))}
           </article>
-          <FollowMarker enabled={showsMarker(settings.followWord, media.playerBar)} containerRef={articleRef} active={active} nextOf={nextOf} budgets={budgets} page={page} />
+          <FollowMarker enabled={showsMarker(followsWord(settings.follow), media.playerBar)} containerRef={articleRef} active={active} nextOf={nextOf} budgets={budgets} page={page} />
 
           {measuring && <TextMeasure ref={measureRef} paragraphs={paragraphs} className={articleClass(language, settings.size, false)} />}
 
