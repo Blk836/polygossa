@@ -50,7 +50,7 @@ export function evidenceText(key: SkillKey, levels: SkillLevels, listened: strin
 export function emptyHint(key: SkillKey): { text: string; href: string; action: string } {
   switch (key) {
     case "reading":
-      return { text: "Mark words as known while you read to see your reading level.", href: "/library", action: "Start reading" };
+      return { text: "Mark words as known while you read to see your reading level.", href: "/community", action: "Start reading" };
     case "listening":
       return { text: "Finish a video or an audio lesson to see your listening level.", href: "/community", action: "Watch a video" };
     default:

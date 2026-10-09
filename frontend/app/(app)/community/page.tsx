@@ -103,6 +103,7 @@ function Explore({ language }: { language: string }) {
         />
       )}
       {showShelves && <PlaylistShelf source="shared" language={language} />}
+      {f.query && <PlaylistShelf source="shared" language={language} query={f.query} />}
       {showShelves ? (
         <ShelvesView shelves={shelves} actions={actions} onSeeAll={(category) => set({ category })} />
       ) : (

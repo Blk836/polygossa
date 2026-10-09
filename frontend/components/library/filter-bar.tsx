@@ -2,12 +2,11 @@
 
 import { useCallback, useRef, useState } from "react";
 import { CloseIcon } from "../icons";
-import { KindFilterTabs } from "../kind-filter";
+import { KindFilterTabs, SegmentedFilter } from "../kind-filter";
 import { Button } from "../ui";
 import { useDismiss } from "../use-dismiss";
 import { CategoryChips } from "./category-chips";
-import { extraFilterCount, NO_FILTERS, showLabel, type LibraryFilters } from "@/lib/library-filters";
-import { KIND_FILTERS } from "@/lib/media";
+import { extraFilterCount, filterPills, NO_FILTERS, showLabel, SOURCE_FILTERS, type LibraryFilters } from "@/lib/library-filters";
 import type { Category } from "@/lib/types";
 
 function FiltersIcon() {
@@ -38,6 +37,8 @@ function FiltersPanel({ filters, onChange, count, onClose }: {
         <h2 className="font-display text-lg font-semibold">Filters</h2>
         <p className="mt-4 mb-2 text-sm font-medium">Type</p>
         <KindFilterTabs value={filters.kind} onChange={(kind) => onChange({ ...filters, kind })} />
+        <p className="mt-4 mb-2 text-sm font-medium">Source</p>
+        <SegmentedFilter label="Source" options={SOURCE_FILTERS} value={filters.source} onChange={(source) => onChange({ ...filters, source })} />
         <div className="mt-5 flex items-center justify-between gap-3 border-t border-line pt-4">
           <button type="button" className="text-sm font-medium underline underline-offset-2" onClick={() => onChange(NO_FILTERS)}>
             Clear all
@@ -50,8 +51,8 @@ function FiltersPanel({ filters, onChange, count, onClose }: {
 }
 
 /**
- * The Library's one filter bar, right above the cards (Airbnb-style): category chips to browse by, then a single
- * Filters button for the rest, badged with how many are set; those also show as pills that remove them.
+ * My library's one filter bar, right above the cards (Airbnb-style): category chips to browse by, then a single
+ * Filters button for the rest (type and source), badged with how many are set; those also show as pills that remove them.
  */
 export function FilterBar({ categories, filters, onChange, count }: {
   categories: Category[];
@@ -68,24 +69,24 @@ export function FilterBar({ categories, filters, onChange, count }: {
   useDismiss(open, close, root, refocus);
 
   const extra = extraFilterCount(filters);
-  const kindLabel = KIND_FILTERS.find((k) => k.id === filters.kind)?.label;
 
   return (
     <section aria-label="Filter library" className="mb-4 flex items-start gap-2">
       <div className="min-w-0 flex-1">
         {categories.length > 1 && <CategoryChips options={categories} value={filters.category} onChange={(category) => onChange({ ...filters, category })} />}
       </div>
-      {extra > 0 && (
+      {filterPills(filters).map((pill) => (
         <button
+          key={pill.label}
           type="button"
-          aria-label={`Remove filter: ${kindLabel}`}
-          onClick={() => onChange({ ...filters, kind: "all" })}
+          aria-label={`Remove filter: ${pill.label}`}
+          onClick={() => onChange(pill.without)}
           className="flex shrink-0 items-center gap-1 rounded-full bg-accent-soft py-1.5 pr-2 pl-3 text-sm font-medium hover:bg-accent-soft/70"
         >
-          {kindLabel}
+          {pill.label}
           <CloseIcon className="size-3.5" />
         </button>
-      )}
+      ))}
       <div ref={root} className="relative shrink-0">
         <button
           ref={button}
