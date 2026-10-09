@@ -10,7 +10,6 @@ public record AppProperties(
         @DefaultValue Jwt jwt,
         @DefaultValue Tokenizer tokenizer,
         @DefaultValue Storage storage,
-        @DefaultValue Dictionary dictionary,
         @DefaultValue OpenAi openai,
         @DefaultValue Billing billing,
         @DefaultValue("http://localhost:3000") List<String> corsOrigins,
@@ -31,11 +30,6 @@ public record AppProperties(
     public record Storage(@DefaultValue("./data/uploads") String dir, @DefaultValue("50MB") String maxAudioSize,
                           @DefaultValue("") String s3Bucket, @DefaultValue("eu-west-1") String s3Region,
                           @DefaultValue("") String s3Endpoint) {}
-
-    public record Dictionary(
-            @DefaultValue("https://freedictionaryapi.com/api/v1") String freeDictionaryBaseUrl,
-            @DefaultValue("https://en.wiktionary.org/api/rest_v1") String wiktionaryBaseUrl,
-            @DefaultValue("5s") Duration timeout) {}
 
     /** OpenAI-compatible chat completions endpoint used for AI definitions, examples and the writing tutor. */
     public record OpenAi(

@@ -7,8 +7,8 @@ import app.lector.token.NativeLanguage;
 import app.lector.translation.MachineTranslationRepository;
 import app.lector.translation.TranslateStub;
 import app.lector.translation.TranslationUsageRepository;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -115,7 +115,11 @@ class WordTranslationsApiTest {
     }
 
     private JsonNode lookup(String token, String term) throws Exception {
-        return api.get(token, "/api/dictionary?language=fr&term=" + URLEncoder.encode(term, StandardCharsets.UTF_8), 200);
+        return lookup(token, term, 200);
+    }
+
+    private JsonNode lookup(String token, String term, int status) throws Exception {
+        return api.send(get("/api/dictionary").param("language", "fr").param("term", term), token, status);
     }
 
     private static List<String> meanings(JsonNode result) {
@@ -204,8 +208,8 @@ class WordTranslationsApiTest {
     @Test
     void aBlankOrOverlongTermIsRefused() throws Exception {
         String token = learner("en");
-        api.get(token, "/api/dictionary?language=fr&term=%20%20", 400);
-        api.get(token, "/api/dictionary?language=fr&term=" + "a".repeat(201), 400);
+        lookup(token, "  ", 400);
+        lookup(token, "a".repeat(201), 400);
         assertThat(TRANSLATE.requests()).isEmpty();
     }
 

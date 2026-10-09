@@ -31,7 +31,6 @@ spring:
       fail-on-null-for-primitives: false
   cache:
     type: simple
-    cache-names: dictionary
   data:
     redis:
       repositories:
