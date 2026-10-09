@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useRemembered } from "../use-remembered";
 import { api, errorMessage } from "@/lib/api";
 import {
   impressionBatches,
@@ -18,31 +18,28 @@ function log(body: object) {
   void api("recommendations/events", { body: { ...body } }).catch(() => {});
 }
 
+/** The shelves, logging the cards shown as impressions; none when they can't load (they are extra). */
+function loadShelves(language: string): Promise<RecommendedShelf[]> {
+  return api<Recommendations>(recommendationsPath(language))
+    .then((r) => {
+      impressionBatches(r.shelves).forEach(log);
+      return r.shelves;
+    })
+    .catch(() => []);
+}
+
 /**
- * Explore's personalised shelves for a language: loaded once (cards shown are logged as impressions), with "Not
- * interested" and open logging. They are extra: if they can't load, Explore just shows its category shelves.
+ * Explore's personalised shelves for a language, with "Not interested" and open logging. Remembered like the page's
+ * other rows, so a return visit shows them at once while they refresh. They are extra: if they can't load, Explore
+ * just shows its category shelves. `shelves` is null until the first answer.
  */
 export function useRecommendations(language: string, onError: (message: string) => void) {
-  const [shelves, setShelves] = useState<RecommendedShelf[] | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    api<Recommendations>(recommendationsPath(language))
-      .then((r) => {
-        if (cancelled) return;
-        setShelves(r.shelves);
-        impressionBatches(r.shelves).forEach(log);
-      })
-      .catch(() => !cancelled && setShelves([]));
-    return () => {
-      cancelled = true;
-    };
-  }, [language]);
+  const { data: shelves, setData: setShelves } = useRemembered(`recommendations:${language}`, () => loadShelves(language));
 
   /** Applies a change to every recommended card (e.g. a like toggled elsewhere on the page). */
-  const mapTexts = useCallback((change: (t: TextSummary) => TextSummary) => {
+  const mapTexts = (change: (t: TextSummary) => TextSummary) => {
     setShelves((s) => s?.map((shelf) => ({ ...shelf, items: shelf.items.map((it) => ({ ...it, text: change(it.text) })) })) ?? null);
-  }, []);
+  };
 
   async function notInterested(t: TextSummary) {
     setShelves((s) => s && withoutItem(s, t.id));

@@ -31,7 +31,7 @@ function GoalRing({ done, goal }: { done: number; goal: number }) {
 export function GoalBar({ stats }: { stats: ReviewStats }) {
   const remaining = Math.max(0, stats.dailyGoal - stats.reviewedToday);
   return (
-    <div className="mb-6 flex items-center gap-4 rounded-xl border border-line bg-card p-4">
+    <div data-tour="review-goal" className="mb-6 flex items-center gap-4 rounded-xl border border-line bg-card p-4">
       <GoalRing done={stats.reviewedToday} goal={stats.dailyGoal} />
       <div className="flex-1 text-sm">
         <p className="font-medium">{stats.goalMet ? "Daily goal reached!" : `${remaining} more to reach today's goal`}</p>
@@ -116,7 +116,7 @@ export function Flashcard({ card, remaining, revealed, busy, onReveal, onRate }:
   const locale = languageInfo(card.language)?.speechLocale ?? card.language;
   const frontSize = card.type === "sentence" ? "text-2xl leading-relaxed" : "text-4xl";
   return (
-    <div className="rounded-2xl border border-line bg-card shadow-sm">
+    <div data-tour="review-card" className="rounded-2xl border border-line bg-card shadow-sm">
       <div className="flex items-center justify-between border-b border-line px-5 py-2 text-xs text-muted">
         <span>{card.type === "sentence" ? "Sentence" : "Word"} · {remaining} left</span>
         {canSpeak() && (

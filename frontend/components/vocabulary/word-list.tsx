@@ -3,7 +3,9 @@
 import { api } from "@/lib/api";
 import { languageName } from "@/lib/languages";
 import type { Page, VocabularyEntry } from "@/lib/types";
-import { Empty, ErrorNote, Pager, Spinner } from "../ui";
+import { WordRowsBone } from "../skeletons/pages";
+import { SectionLoading } from "../skeletons/parts";
+import { Empty, ErrorNote, Pager } from "../ui";
 import { useRemembered } from "../use-remembered";
 import { EntryRow } from "./entry-row";
 import { pageCount, searchParams, type Filters } from "./search";
@@ -32,7 +34,7 @@ export function WordList({ filters, onPage, onTag, onChanged }: {
   }
 
   if (error) return <ErrorNote message={error} />;
-  if (!data) return <Spinner />;
+  if (!data) return <SectionLoading label="words"><WordRowsBone /></SectionLoading>;
   const where = filters.language ? ` in ${languageName(filters.language)}` : "";
   return (
     <>

@@ -12,7 +12,8 @@ import { PeriodPicker } from "@/components/progress/period-picker";
 import { SkillLevelsCard } from "@/components/progress/skill-levels-card";
 import { useDashboard } from "@/components/progress/use-dashboard";
 import { VocabMapCard } from "@/components/progress/vocab-map";
-import { Empty, ErrorNote, PageHeader, Spinner, formatDuration } from "@/components/ui";
+import { ProgressSkeleton } from "@/components/skeletons/pages";
+import { Empty, ErrorNote, PageHeader, formatDuration } from "@/components/ui";
 import { languageName } from "@/lib/languages";
 import { listeningLabel, periodLabel, type StatsPeriodKey } from "@/lib/progress";
 import type { Dashboard, LanguageCode } from "@/lib/types";
@@ -35,7 +36,7 @@ export default function DashboardPage() {
   const [period, setPeriod] = useState<StatsPeriodKey>("week");
   const { data, error } = useDashboard(period);
 
-  if (!data) return error ? <ErrorNote message={error} /> : <Spinner />;
+  if (!data) return error ? <ErrorNote message={error} /> : <ProgressSkeleton />;
   const label = periodLabel(data.period.period); // the figures shown, which lag the picker while loading
 
   const { language, known, growth } = languageFigures(data, me.targetLanguage);

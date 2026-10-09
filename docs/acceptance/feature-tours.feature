@@ -11,9 +11,9 @@ Feature: First-visit feature tours
     | import    | Import            | the source choice (text, web page, file, YouTube), the language       |
     | playlists | Playlists (from My library) | the new-playlist form, finding shared playlists in Explore  |
     | reader    | the reader        | click a word, select a phrase, turning the page (or Finish lesson) marks the rest known |
-    | review    | Practice › Review | how review works (one tip about the whole page)                       |
+    | review    | Practice › Review | the daily goal bar, then the card (or "All caught up") (tours-point.feature) |
     | words     | Practice › Words  | search and filters, importing words                                   |
-    | writing   | Practice › Write  | what a writing test is (one tip about the whole page)                 |
+    | writing   | Practice › Write  | the "Start a writing test" panel (tours-point.feature)                |
     | progress  | Progress          | streak and daily goal, known words and levels                         |
     | forum     | Forum             | the categories                                                        |
 
