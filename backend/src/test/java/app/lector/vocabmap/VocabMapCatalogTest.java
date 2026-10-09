@@ -95,6 +95,17 @@ class VocabMapCatalogTest {
     }
 
     @Test
+    void aFileWithAWrongHeaderOrDifferentMeaningColumnsIsLeftOut() {
+        VocabMapCatalog catalog = fixture("badheader");
+        assertThat(catalog.problems()).containsExactlyInAnyOrder(
+                "fr/a.words:1: the header must be word, band, area, the same meaning columns in every file, then forms",
+                "fr/c.words:1: the header must be word, band, area, the same meaning columns in every file, then forms");
+        assertThat(catalog.list(Language.FR).orElseThrow().words()).extracting(MapWord::headword)
+                .containsExactly("poire");
+        assertThat(catalog.list(Language.FR).orElseThrow().meaningLanguages()).containsExactly(NativeLanguage.EN);
+    }
+
+    @Test
     void aNewLanguageNeedsOnlyAList() {
         VocabMapCatalog withSpanish = fixture("good");
         assertThat(withSpanish.problems()).isEmpty();

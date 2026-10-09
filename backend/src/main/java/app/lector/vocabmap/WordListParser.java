@@ -66,22 +66,30 @@ final class WordListParser {
 
     /** The meaning languages a header names, or null (reported) when the header is wrong. */
     private List<NativeLanguage> header(String name, String line) {
-        String[] cells = cells(line);
-        List<NativeLanguage> columns = new ArrayList<>();
-        boolean shape = cells.length >= 4 && cells[0].equals("word") && cells[1].equals("band")
-                && cells[2].equals("area") && cells[cells.length - 1].equals("forms");
-        for (int i = 3; shape && i < cells.length - 1; i++) {
-            shape = cells[i].startsWith(MEANING);
-            if (shape) {
-                columns.add(NativeLanguage.fromCode(cells[i].substring(MEANING.length())));
-            }
-        }
-        if (!shape || meaningLanguages != null && !meaningLanguages.equals(columns)) {
+        List<NativeLanguage> columns = meaningColumns(cells(line));
+        if (columns == null || meaningLanguages != null && !meaningLanguages.equals(columns)) {
             problems.add(name + ":1: the header must be word, band, area, the same meaning columns in every file,"
                     + " then forms");
             return null;
         }
         meaningLanguages = columns;
+        return columns;
+    }
+
+    /** The languages of a header's meaning columns, or null when it isn't word, band, area, meaning:xx..., forms. */
+    private static List<NativeLanguage> meaningColumns(String[] cells) {
+        boolean shape = cells.length >= 4 && cells[0].equals("word") && cells[1].equals("band")
+                && cells[2].equals("area") && cells[cells.length - 1].equals("forms");
+        if (!shape) {
+            return null;
+        }
+        List<NativeLanguage> columns = new ArrayList<>();
+        for (int i = 3; i < cells.length - 1; i++) {
+            if (!cells[i].startsWith(MEANING)) {
+                return null;
+            }
+            columns.add(NativeLanguage.fromCode(cells[i].substring(MEANING.length())));
+        }
         return columns;
     }
 
