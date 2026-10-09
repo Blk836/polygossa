@@ -112,10 +112,14 @@ export function ProgressSkeleton() {
           <Bone className="h-6 w-48" />
           <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">{[0, 1, 2].map((i) => <Bone key={i} className="h-36 rounded-lg" />)}</div>
         </CardFrame>
-        <CardFrame>
-          <Bone className="h-6 w-40" />
-          <Bone className="mt-4 -mx-5 aspect-[2/3] rounded-none sm:mx-0 sm:aspect-[16/10] sm:rounded-lg" />
-        </CardFrame>
+        {/* The vocabulary map: its title and figure, then the map edge to edge, as the card has it. */}
+        <div className="overflow-hidden rounded-xl border border-line bg-card">
+          <div className="flex flex-wrap items-baseline justify-between gap-2 px-5 pb-3 pt-5">
+            <Bone className="h-6 w-40" />
+            <Bone className="h-4 w-48" />
+          </div>
+          <Bone className="aspect-[2/3] rounded-none sm:aspect-[16/10]" />
+        </div>
         <CardFrame>
           <Bone className="h-6 w-28" />
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">{[0, 1, 2, 3, 4].map((i) => <Bone key={i} className="h-24 rounded-lg" />)}</div>
