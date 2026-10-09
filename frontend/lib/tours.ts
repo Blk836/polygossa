@@ -3,7 +3,8 @@
 // components/feature-tour.tsx for the card. Pure data and helpers, unit-tested.
 
 export interface TourStep {
-  /** The data-tour name of the control this tip points at; none for a tip about the page as a whole. */
+  /** The data-tour name of the control this tip points at. Every tip has one: a tip with none shows at the bottom of
+   * the screen with nothing highlighted, which looks misplaced (docs/acceptance/tours-point.feature). */
   target?: string;
   title: string;
   body: string;
@@ -62,7 +63,7 @@ export const TOURS: Tour[] = [
     path: "/playlists",
     steps: [
       { target: "playlist-create", title: "Make a playlist", body: "Name it here, then add texts and videos with the playlist button on any card or in the reader." },
-      { title: "Playlists from others", body: "Search Explore to find playlists other learners shared. The ones you save show up here." },
+      { target: "explore", title: "Playlists from others", body: "Search Explore to find playlists other learners shared. The ones you save show up here." },
     ],
   },
   {
@@ -79,7 +80,8 @@ export const TOURS: Tour[] = [
     path: "/review",
     needs: ["pro"],
     steps: [
-      { title: "Review before you forget", body: "Words you save come back here when they're due. Recall the meaning, show the answer, then rate how well you knew it." },
+      { target: "review-goal", title: "Review before you forget", body: "Words you save come back here when they're due. A few each day reach your daily goal and keep your streak going." },
+      { target: "review-card", title: "Recall, then rate", body: "Try to recall the meaning, show the answer, then rate how well you knew it. Words you know well come back less often." },
     ],
   },
   {
@@ -95,7 +97,7 @@ export const TOURS: Tour[] = [
     path: "/writing",
     needs: ["pro", "language"],
     steps: [
-      { title: "Test your writing", body: "Write about a short situation against the clock. AI grades it, corrects it and sets your writing level." },
+      { target: "writing-start", title: "Test your writing", body: "Write about a short situation against the clock. AI grades it, corrects it and sets your writing level." },
     ],
   },
   {

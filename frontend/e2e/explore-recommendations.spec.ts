@@ -59,8 +59,11 @@ test("For you comes from the real API, each card says why, and Not interested re
   const id = Number(href?.split("/").pop());
   const title = (await first.getByRole("link").first().textContent()) ?? "";
   try {
+    // The card leaves at once; the server is asked afterwards, so wait for its answer before checking with it.
+    const saved = page.waitForResponse((res) => res.url().includes(`/api/recommendations/not-interested/${id}`) && res.request().method() === "PUT");
     await first.getByRole("button", { name: "Not interested" }).click();
     await expect(forYou.getByRole("link", { name: title, exact: true })).toHaveCount(0);
+    expect((await saved).ok()).toBe(true);
     const recs = await (await page.request.get("/api/recommendations")).json();
     for (const s of recs.shelves) expect(s.items.map((i: { text: { id: number } }) => i.text.id)).not.toContain(id);
   } finally {

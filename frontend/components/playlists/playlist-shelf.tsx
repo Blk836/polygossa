@@ -29,18 +29,31 @@ export function saveable(p: PlaylistSummary): boolean {
   return !p.mine || p.bookmarked;
 }
 
+type ShelfSource = keyof typeof SOURCES;
+
+/**
+ * A playlist shelf's playlists (those with items), remembered per source, language and search. `ready` once they
+ * answered or failed: the shelf is extra, so a failure just leaves it out.
+ */
+export function useShelfPlaylists(source: ShelfSource, language: string, query = "") {
+  const { data, error } = useRemembered(`playlists:${source}:${language}:${query}`, () => loadPlaylists(source, language, query));
+  return { lists: (data ?? []).filter((p) => p.itemCount > 0), ready: data !== null || error !== null };
+}
+
 /**
  * A sideways-scrolling row of playlist cards (yours, or shared ones, optionally matching a search) in the top bar's
  * language, sized like the text cards around it. Hidden while loading and when there are none.
  */
-export function PlaylistShelf({ source, language, query = "" }: { source: keyof typeof SOURCES; language: string; query?: string }) {
+export function PlaylistShelf({ source, language, query = "" }: { source: ShelfSource; language: string; query?: string }) {
+  const { lists } = useShelfPlaylists(source, language, query);
+  return <PlaylistShelfRow source={source} query={query} lists={lists} />;
+}
+
+/** The shelf for playlists already loaded (see useShelfPlaylists); nothing when there are none. */
+export function PlaylistShelfRow({ source, query = "", lists }: { source: ShelfSource; query?: string; lists: PlaylistSummary[] }) {
   const { layout } = useCardLayout();
   const { blurb } = SOURCES[source];
   const title = query ? `Playlists matching “${query}”` : SOURCES[source].title;
-  // The shelf is extra: if it can't load, the page works without it.
-  const { data } = useRemembered(`playlists:${source}:${language}:${query}`, () => loadPlaylists(source, language, query));
-  const lists = (data ?? []).filter((p) => p.itemCount > 0);
-
   if (lists.length === 0) return null;
   const id = `playlist-shelf-${source}`;
   return (

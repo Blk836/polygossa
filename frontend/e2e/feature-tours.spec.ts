@@ -1,4 +1,4 @@
-import { expect, test, type Browser, type BrowserContext, type Page } from "@playwright/test";
+import { expect, test, type Browser, type BrowserContext, type Locator, type Page } from "@playwright/test";
 import type { Me } from "../lib/types";
 
 // feature-tours.feature: a short tour the first time a new account opens each main page.
@@ -23,6 +23,20 @@ async function goPro(page: Page) {
 
 const tip = (page: Page) => page.getByTestId("tour");
 const highlight = (page: Page) => page.getByTestId("tour-highlight");
+
+/** The highlight rings `target`, and the tip sits clear of it (beside, above or below). */
+async function expectHighlightAround(page: Page, target: Locator) {
+  await expect(highlight(page)).toBeVisible();
+  await expect.poll(async () => {
+    const box = (await target.boundingBox())!;
+    const ring = (await highlight(page).boundingBox())!;
+    return Math.max(Math.abs(ring.x + ring.width / 2 - (box.x + box.width / 2)), Math.abs(ring.y + ring.height / 2 - (box.y + box.height / 2)));
+  }).toBeLessThan(3);
+  const ring = (await highlight(page).boundingBox())!;
+  const card = (await tip(page).boundingBox())!;
+  const apart = card.x >= ring.x + ring.width || card.x + card.width <= ring.x || card.y >= ring.y + ring.height || card.y + card.height <= ring.y;
+  expect(apart, "the tip doesn't cover what it points at").toBe(true);
+}
 
 test.describe("feature tours", () => {
   test("a new account gets the Library tour once, pointing at each control in turn", async ({ browser }) => {
@@ -151,15 +165,38 @@ test.describe("feature tours", () => {
     await context.close();
   });
 
-  test("a tip about the whole page sits at the bottom of the screen with no highlight", async ({ browser }) => {
+  // docs/acceptance/tours-point.feature: Review's tips used to sit at the bottom with nothing highlighted.
+  test("Review's tour points at the daily goal, then the card", async ({ browser }) => {
     const { context, page } = await newcomer(browser);
     await goPro(page); // Review is part of Pro: on Free it has no tour (see below)
     await page.goto("/review");
     await expect(page.getByRole("dialog", { name: "Review before you forget" })).toBeVisible();
-    await expect(tip(page)).toContainText("1 of 1");
-    await expect(highlight(page)).toHaveCount(0);
-    const card = (await tip(page).boundingBox())!;
-    expect(card.y + card.height).toBeGreaterThan(900 - 60);
+    await expect(tip(page)).toContainText("1 of 2");
+    await expectHighlightAround(page, page.locator("[data-tour=review-goal]"));
+
+    await tip(page).getByRole("button", { name: "Next" }).click();
+    await expect(tip(page)).toContainText("2 of 2");
+    await expectHighlightAround(page, page.locator("[data-tour=review-card]"));
+    await context.close();
+  });
+
+  test("Write's tour points at where a test starts", async ({ browser }) => {
+    const { context, page } = await newcomer(browser);
+    await goPro(page);
+    expect((await page.request.patch("/api/me", { data: { targetLanguage: "es" } })).ok()).toBe(true);
+    await page.goto("/writing");
+    await expect(page.getByRole("dialog", { name: "Test your writing" })).toBeVisible();
+    await expectHighlightAround(page, page.locator("[data-tour=writing-start]"));
+    await context.close();
+  });
+
+  test("Playlists' second tip points at the Explore tab", async ({ browser }) => {
+    const { context, page } = await newcomer(browser);
+    await page.goto("/playlists");
+    await expect(tip(page)).toContainText("1 of 2");
+    await tip(page).getByRole("button", { name: "Next" }).click();
+    await expect(page.getByRole("dialog", { name: "Playlists from others" })).toBeVisible();
+    await expectHighlightAround(page, page.locator("[data-tour=explore]:visible"));
     await context.close();
   });
 

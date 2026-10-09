@@ -4,7 +4,8 @@ import { Named } from "@/components/avatar";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { Badge, Empty, ErrorNote, LinkButton, PageHeader, Pager, Spinner } from "@/components/ui";
+import { ForumSkeleton, ForumThreadsLoading } from "@/components/skeletons/pages";
+import { Badge, Empty, ErrorNote, LinkButton, PageHeader, Pager } from "@/components/ui";
 import { useRemembered } from "@/components/use-remembered";
 import { api } from "@/lib/api";
 import {
@@ -25,7 +26,7 @@ const tabClass = (current: boolean) =>
 /** The forum: threads by category, pinned first, then by latest post. */
 export default function ForumPage() {
   return (
-    <Suspense fallback={<Spinner />}>
+    <Suspense fallback={<ForumSkeleton />}>
       <ForumView />
     </Suspense>
   );
@@ -59,7 +60,7 @@ function ForumView() {
       {list ? (
         <Threads list={list} showCategory={category === null} page={page} onPage={(p) => router.push(forumPageHref(category, p))} />
       ) : (
-        !error && <Spinner />
+        !error && <ForumThreadsLoading />
       )}
     </div>
   );
