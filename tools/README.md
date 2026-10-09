@@ -40,7 +40,8 @@ node tools/stripe-setup.mjs --live               # only with a live key, on purp
 
 ## local-deploy.mjs: deploy main to production from this PC
 
-Run it right after merging a pull request (`docs/acceptance/local-deploy.feature`); GitHub no longer deploys on merge.
+Run it when production should get the latest main (`docs/acceptance/local-deploy.feature`). Merges are not deployed by
+default ("cheap" mode, to save costs), and GitHub no longer deploys on merge.
 
 ```bash
 node tools/local-deploy.mjs           # deploy the latest main on GitHub, unless it is already live
