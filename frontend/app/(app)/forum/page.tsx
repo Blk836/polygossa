@@ -3,9 +3,10 @@
 import { Named } from "@/components/avatar";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense } from "react";
 import { Badge, Empty, ErrorNote, LinkButton, PageHeader, Pager, Spinner } from "@/components/ui";
-import { api, errorMessage } from "@/lib/api";
+import { useRemembered } from "@/components/use-remembered";
+import { api } from "@/lib/api";
 import {
   FORUM_CATEGORIES,
   categoryFromParam,
@@ -35,18 +36,8 @@ function ForumView() {
   const router = useRouter();
   const category = categoryFromParam(params.get("category"));
   const page = Math.max(0, Number(params.get("page")) || 0);
-  const [list, setList] = useState<ThreadList | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    api<ThreadList>(forumListPath(category, page))
-      .then((l) => !cancelled && setList(l))
-      .catch((e) => !cancelled && setError(errorMessage(e)));
-    return () => {
-      cancelled = true;
-    };
-  }, [category, page]);
+  const path = forumListPath(category, page);
+  const { data: list, error } = useRemembered(path, () => api<ThreadList>(path));
 
   const newHref = category && category !== "announcements" ? `/forum/new?category=${category}` : "/forum/new";
   return (

@@ -1,26 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { ErrorNote, Spinner, formatDuration } from "@/components/ui";
-import { api, errorMessage } from "@/lib/api";
+import { useRemembered } from "@/components/use-remembered";
+import { api } from "@/lib/api";
 import { languageName } from "@/lib/languages";
 import { confidenceText, emptyHint, evidenceText, isEstimate, levelText, overallText, SKILLS, SKILL_NAMES } from "@/lib/skill-levels";
 import type { LanguageCode, SkillKey, SkillLevels } from "@/lib/types";
 
 /** Reading, Listening and Writing levels in one language. Key it by language so a switch starts afresh. */
 export function SkillLevelsCard({ language }: { language: LanguageCode }) {
-  const [levels, setLevels] = useState<SkillLevels | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    api<SkillLevels>(`levels?language=${language}`)
-      .then((l) => !cancelled && setLevels(l))
-      .catch((e) => !cancelled && setError(errorMessage(e)));
-    return () => {
-      cancelled = true;
-    };
-  }, [language]);
+  const { data: levels, error } = useRemembered(`levels:${language}`, () => api<SkillLevels>(`levels?language=${language}`));
 
   return (
     <section aria-label="Skill levels" className="rounded-xl border border-line bg-card p-5">
@@ -30,10 +20,9 @@ export function SkillLevelsCard({ language }: { language: LanguageCode }) {
           <p className="text-sm font-medium" data-testid="overall-level">{overallText(levels.overall)}</p>
         )}
       </div>
-      {error ? (
-        <div className="mt-3"><ErrorNote message={error} /></div>
-      ) : !levels ? (
-        <Spinner />
+      {error && <div className="mt-3"><ErrorNote message={error} /></div>}
+      {!levels ? (
+        !error && <Spinner />
       ) : (
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
           {SKILLS.map((key) => <SkillTile key={key} skillKey={key} levels={levels} />)}
