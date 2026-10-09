@@ -25,7 +25,7 @@ code is the source of truth for details, so there is never a second, stale copy.
 backend/    Spring Boot 4.1 (Java 21) — REST API; Gradle module :backend, package app.lector
 frontend/   Next.js 16 + React 19 + Tailwind 4 — UI and backend-for-frontend (BFF) API routes
 tools/      team command-line tools (plain Node, no packages): import-videos.mjs bulk-imports curated YouTube videos,
-            local-checks.mjs runs the suites on this PC, local-deploy.mjs deploys main to production from it
+            local-checks.mjs runs the suites on this PC, local-deploy.mjs deploys main to production from it (on request)
 infra/      AWS CDK (TypeScript, run directly by Node): production (stack PolygossaStaging) and GitHub's deploy role
 ```
 
@@ -44,8 +44,8 @@ so the checks must prove it is correct.
 3. Never delete, skip, or weaken an existing test or assertion to make
    something pass. If a test seems wrong, stop and tell me why.
 4. **The full suites run on this PC, one run at a time, through `node tools/local-checks.mjs`** ("cheap mode":
-   GitHub's minutes cost about $10 on a busy day and are nearly used up, so GitHub runs nothing by default, not even
-   the deploy (step 7); `docs/acceptance/local-checks.feature`).
+   GitHub's minutes cost about $10 on a busy day and are nearly used up, so GitHub runs nothing by default, and a merge
+   isn't deployed to production unless the user asks (step 7); `docs/acceptance/local-checks.feature`).
    Before opening or merging a pull request, commit, push, and run it from your worktree: it picks the suites your
    branch's changes need (same rules as CI; `--all` runs everything), waits its turn if another session's run is
    going (it says whose; a crashed session's turn is taken over), and puts a green or red **"local checks"** mark on
@@ -87,8 +87,10 @@ so the checks must prove it is correct.
    checks" mark (`gh pr checks` shows it; with GitHub checks on, wait for them with `gh pr checks --watch` instead).
    If main moved since the checks ran, merge main into the branch, push, and run the checks again first: the local
    checks test the branch as it is, so it must already contain the latest main. Keep few branches finishing at the
-   same time, since each merge sends the others round again and the PC runs one at a time. **Right after merging,
-   deploy: `node tools/local-deploy.mjs`** (from your worktree; `docs/acceptance/local-deploy.feature`). It deploys
+   same time, since each merge sends the others round again and the PC runs one at a time. **Merging is the end: don't
+   deploy to production unless the user asks** ("cheap" mode, to save AWS and build costs; changes are tried on the
+   local app, so production runs behind main until a deploy). When asked, deploy with `node tools/local-deploy.mjs`
+   (from your worktree; `docs/acceptance/local-deploy.feature`). It deploys
    the latest main to production from the PC's own copy of main, in the PC's turn, without re-running the checks;
    skips a main that is already live (`--again` forces it); checks the site answers; and marks main's commit
    "deploy production" on GitHub. It needs Docker Desktop running and the `polygossa` AWS sign-in (if it says the
@@ -156,7 +158,8 @@ If it can't be reproduced, say so and ask instead of guessing. Pick the browser 
 built as staging and became production in October 2026; the stack keeps its name, since renaming a CloudFormation
 stack rebuilds everything). No real users yet. Sign-in through its Cognito user pool, no auto-login. Test accounts made there use
 `@example.com` addresses. **QA** is the local app; it signs in through a QA Cognito user pool (stack `PolygossaQa`) in the same
-AWS account, while its database stays in Docker. There is no cloud staging: treat every merge to main as a release.
+AWS account, while its database stays in Docker. There is no cloud staging: treat main as releasable, since the next
+deploy (on request) ships everything merged so far.
 
 Setup and decisions: [production plan](docs/production.md). AWS is our own AWS Organization: a management account
 (`322126339607`; administration and billing, owned by the user) and a member account for the app, named
@@ -183,8 +186,9 @@ stack's state is in CloudFormation. Production is deliberately small until the b
 (`STORAGE_S3_BUCKET`; local runs and tests use the folder), AI is on (the OpenAI key is the Secrets Manager entry `polygossa/openai-api-key`), no Redis, a single-zone database.
 - Infrastructure is changed only through CDK (`infra/`), never by CLI or console commands. The CLI and MCP server are
   for reading, investigating and previewing (`cdk diff`).
-- Production is deployed from the PC after every merge to main, by `node tools/local-deploy.mjs` (step 7; the pull
-  request's green "local checks" mark is the gate), signed in with the `polygossa` profile. GitHub's `deploy
+- Production is deployed from the PC only when the user asks, by `node tools/local-deploy.mjs` (step 7; it deploys
+  the latest main, whose pull requests each had a green "local checks" mark), signed in with the `polygossa` profile.
+  What is live is the latest "deploy production" mark on main's commits, which may be behind main. GitHub's `deploy
   production` job does the same when asked (a hand-started `deploy_only` run, or `DEPLOY_ON_GITHUB=true`),
   signed in through GitHub's OIDC as the `polygossa-github-deploy` role (its ARN is the repository variable
   `AWS_DEPLOY_ROLE_ARN`; `AWS_ACCOUNT_ID` lets CI's `cdk synth` run without AWS access). GitHub's OIDC subject names
