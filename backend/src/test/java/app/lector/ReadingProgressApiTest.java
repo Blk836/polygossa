@@ -10,11 +10,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** POST /api/texts/{id}/progress: how far the viewer has read, shown on Library/Explore cards and used to resume. */
 @ApiTest
 class ReadingProgressApiTest {
 
-    // Ten words; word n is token 2n (each followed by a space, the last by "."), so token 19 is the final ".".
     private static final String CONTENT = "uno dos tres cuatro cinco seis siete ocho nueve diez.";
 
     @Autowired
@@ -42,7 +40,6 @@ class ReadingProgressApiTest {
         return save(token, text, "{\"position\":" + position + "}", 200);
     }
 
-    /** The text's summary in the owner's own list (Library). */
     private JsonNode mine(String user) throws Exception {
         for (JsonNode t : api.get(user, "/api/texts", 200)) {
             if (t.get("id").asLong() == text) {
@@ -52,7 +49,6 @@ class ReadingProgressApiTest {
         throw new AssertionError("text not listed");
     }
 
-    /** The text's summary in the public library (Explore search). */
     private JsonNode explore(String user) throws Exception {
         for (JsonNode t : api.get(user, "/api/library?language=es&size=50", 200).get("items")) {
             if (t.get("id").asLong() == text) {
@@ -75,7 +71,7 @@ class ReadingProgressApiTest {
 
     @Test
     void savingAPositionShowsThePercentReadEverywhere() throws Exception {
-        JsonNode saved = at(8); // the 5th word: 4 of 10 words lie before it
+        JsonNode saved = at(8);
         assertThat(saved.get("position").asInt()).isEqualTo(8);
         assertThat(saved.get("percent").asInt()).isEqualTo(40);
         assertThat(saved.get("completed").asBoolean()).isFalse();
@@ -105,7 +101,7 @@ class ReadingProgressApiTest {
     void percentRoundsDown() throws Exception {
         String content = "a b c d e f.";
         long six = api.createText(token, "es", content, false);
-        JsonNode r = save(token, six, "{\"position\":2}", 200); // 1 of 6 words before: 16.7%
+        JsonNode r = save(token, six, "{\"position\":2}", 200);
         assertThat(r.get("percent").asInt()).isEqualTo(16);
     }
 

@@ -14,10 +14,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The forum: threads in fixed categories, plain-text posts in order. Authors edit and delete their own posts
- * (deleting a thread's first post deletes the thread); admins start announcements, pin, lock and delete anything.
- */
 @Service
 public class ForumService {
 
@@ -91,7 +87,6 @@ public class ForumService {
         return Post.of(posts.save(new ForumPost(thread, author, b, now)), author);
     }
 
-    /** Only the author edits a post, admins included. */
     @Transactional
     public Post edit(User user, Long postId, String body) {
         ForumPost post = post(postId);
@@ -120,13 +115,8 @@ public class ForumService {
         }
     }
 
-    /** What removing someone's posts took away. */
     public record Removed(int posts, int threads) {}
 
-    /**
-     * Removes every post by {@code author} (admin moderation): threads they started go with all their replies, as
-     * deleting a thread's first post does; their replies elsewhere go alone.
-     */
     @Transactional
     public Removed removeAllBy(User author) {
         int removedPosts = 0;
@@ -145,7 +135,6 @@ public class ForumService {
         return new Removed(removedPosts, removedThreads);
     }
 
-    /** Pins or locks a thread (null leaves that alone); admins only. */
     @Transactional
     public ThreadSummary moderate(User user, Long threadId, Boolean pinned, Boolean locked) {
         if (!isAdmin(user)) {
@@ -176,7 +165,6 @@ public class ForumService {
         return page;
     }
 
-    /** Stripped of surrounding blank space, and between {@code min} and {@code max} characters. */
     private static String text(String value, int min, int max, String what) {
         String s = value == null ? "" : value.strip();
         if (s.length() < min || s.length() > max) {

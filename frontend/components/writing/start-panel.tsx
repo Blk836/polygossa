@@ -7,7 +7,6 @@ import { languageName } from "@/lib/languages";
 import type { CefrLevel, WritingTest } from "@/lib/types";
 import { WRITING_LEVELS } from "@/lib/writing";
 
-/** Pick a level and start; the rules are stated up front because they're strict. */
 export function StartPanel({ language, onStarted }: { language: string; onStarted: (t: WritingTest) => void }) {
   const [level, setLevel] = useState<CefrLevel>("B1");
   const [busy, setBusy] = useState(false);
@@ -56,7 +55,6 @@ const STATUS: Record<WritingTest["status"], string> = {
   graded: "",
 };
 
-/** Past tests in this language, newest first. */
 export function WritingHistory({ tests, onOpen }: { tests: WritingTest[]; onOpen: (t: WritingTest) => void }) {
   const done = tests.filter((t) => t.status === "graded" || t.status === "ungraded" || t.status === "expired");
   if (done.length === 0) return null;

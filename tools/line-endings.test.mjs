@@ -1,6 +1,3 @@
-// Regression: the first deploy from the PC (tools/local-deploy.mjs) failed building the backend image with
-// "./gradlew: not found". Git on Windows checked gradlew out with CRLF line endings, and Linux in Docker can't run a
-// shell script whose first line ends in "\r". Files run inside Linux images must always be checked out with LF.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -14,8 +11,6 @@ test("gradlew is always checked out with LF line endings, whatever the PC's Git 
   assert.equal(attributes.trim(), "gradlew: eol: lf");
 });
 
-// Git doesn't rewrite an unchanged file when the attributes change, so a checkout made before them (like the deploy
-// tool's own) keeps CRLF: the image build strips it before running gradlew.
 test("the backend image strips CRLF from gradlew before running it", async () => {
   const { readFileSync } = await import("node:fs");
   const steps = readFileSync(join(root, "backend", "Dockerfile"), "utf8").split(/\r?\n/);

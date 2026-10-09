@@ -12,7 +12,6 @@ public interface ForumThreadRepository extends JpaRepository<ForumThread, Long> 
 
     List<ForumThread> findByAuthorId(Long authorId);
 
-    /** Threads in a category (every category when null), in the page's sort order. */
     @EntityGraph(attributePaths = "author")
     @Query("select t from ForumThread t where (:category is null or t.category = :category)")
     Page<ForumThread> list(@Param("category") ForumCategory category, Pageable page);

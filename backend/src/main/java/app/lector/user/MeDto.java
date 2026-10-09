@@ -15,9 +15,7 @@ public record MeDto(
         String timezone,
         PlanService.PlanInfo plan,
         String photoUrl,
-        /* one of the team: sees the admin panel */
         boolean admin,
-        /* first-visit tours: on or off, and the ones already seen */
         Tours tours) {
 
     static MeDto of(User user, PlanService plans, Admins admins) {

@@ -3,7 +3,6 @@ package app.lector.book;
 import app.lector.common.ApiException;
 import app.lector.text.TextService;
 
-/** Recognises an uploaded book by its first bytes (a zip is an EPUB, "%PDF" a PDF) and reads its chapters. */
 public final class BookReader {
 
     static final int MAX_CHAPTERS = 300;

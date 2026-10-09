@@ -11,10 +11,6 @@ import java.util.Collections;
 import java.util.List;
 import tools.jackson.databind.json.JsonMapper;
 
-/**
- * A local stand-in for an OpenAI-compatible chat completions endpoint. Answers every request with the configured JSON
- * object as the assistant's message, or with an HTTP error when failing.
- */
 public final class OpenAiStub implements AutoCloseable {
 
     private final HttpServer server;
@@ -41,17 +37,14 @@ public final class OpenAiStub implements AutoCloseable {
         return "http://127.0.0.1:" + server.getAddress().getPort();
     }
 
-    /** The JSON object the "model" answers with. */
     public void reply(String json) {
         this.reply = json;
     }
 
-    /** The assistant message content sent as is, e.g. text that isn't JSON. */
     public void replyRaw(String content) {
         this.rawContent = content;
     }
 
-    /** Waits this long before answering, to exceed the client's timeout. */
     public void delay(java.time.Duration delay) {
         this.delayMillis = delay.toMillis();
     }
@@ -60,24 +53,20 @@ public final class OpenAiStub implements AutoCloseable {
         this.failing = failing;
     }
 
-    /** Request bodies received so far. */
     public List<String> requests() {
         synchronized (requests) {
             return List.copyOf(requests);
         }
     }
 
-    /** The JSON object the "model" answers with when the request contains {@code marker} (first match wins). */
     public void replyWhen(String marker, String json) {
         repliesWhen.put(marker, json);
     }
 
-    /** The vector /embeddings returns when the input contains {@code marker} (first match wins). */
     public void embedWhen(String marker, float... vector) {
         vectorsWhen.put(marker, vector);
     }
 
-    /** The vector /embeddings returns when no marker matches. */
     public void defaultVector(float... vector) {
         this.defaultVector = vector;
     }
@@ -86,12 +75,10 @@ public final class OpenAiStub implements AutoCloseable {
         this.embeddingsFailing = failing;
     }
 
-    /** The whole /embeddings response body, sent as is (e.g. one without a vector). */
     public void embeddingResponseRaw(String body) {
         this.rawEmbeddingResponse = body;
     }
 
-    /** Request bodies /embeddings received so far. */
     public List<String> embeddingRequests() {
         synchronized (embeddingRequests) {
             return List.copyOf(embeddingRequests);

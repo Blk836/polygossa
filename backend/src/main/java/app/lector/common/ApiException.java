@@ -2,7 +2,6 @@ package app.lector.common;
 
 import org.springframework.http.HttpStatus;
 
-/** An error that maps directly onto an HTTP response with a user-facing message. */
 public class ApiException extends RuntimeException {
 
     private final HttpStatus status;
@@ -38,12 +37,10 @@ public class ApiException extends RuntimeException {
         return new ApiException(HttpStatus.CONFLICT, "conflict", message);
     }
 
-    /** The request is well-formed but can't be carried out (e.g. a video with no usable captions). */
     public static ApiException unprocessable(String message) {
         return new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "unprocessable", message);
     }
 
-    /** The user's plan does not include a feature or they hit a plan limit. */
     public static ApiException upgradeRequired(String message) {
         return new ApiException(HttpStatus.PAYMENT_REQUIRED, "upgrade_required", message);
     }

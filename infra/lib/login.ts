@@ -4,27 +4,13 @@ import type { Construct } from "constructs";
 import { styleAssets, styleSettings } from "./hosted-pages-style.ts";
 
 export interface Login {
-  /** The issuer the backend checks tokens against (https://cognito-idp.<region>.amazonaws.com/<pool id>). */
   readonly issuer: string;
   readonly clientId: string;
-  /** The hosted pages' address, e.g. https://polygossa.auth.eu-west-1.amazoncognito.com. */
   readonly domain: string;
 }
 
-/**
- * A Cognito user pool with its hosted sign-in pages and one app client for the site at `siteUrl`
- * (docs/acceptance/cognito-login.feature). People sign up with their email, which Cognito verifies; MFA by
- * authenticator app is optional. The client has no secret: the frontend's server runs the code flow with PKCE and
- * keeps the tokens, so the browser never sees them.
- */
-/**
- * Sign in with Google: the OAuth client in the owner's Google account. Its secret is kept in Secrets Manager
- * (`polygossa/google-oauth`, made by the owner, JSON with clientSecret) and read by CloudFormation at deploy, so it
- * never appears in the code or the template.
- */
 export const GOOGLE_SECRET = "polygossa/google-oauth";
 
-/** The name on the hosted pages' wordmark: BRAND_NAME, as the backend and frontend read it, or the default. */
 const BRAND = process.env.BRAND_NAME?.trim() || "Polygossa";
 
 export function userPool(
@@ -53,8 +39,6 @@ export function userPool(
     cognitoDomain: { domainPrefix: opts.domainPrefix },
     managedLoginVersion: cognito.ManagedLoginVersion.NEWER_MANAGED_LOGIN,
   });
-  // A Google sign-in becomes its own Cognito identity; the backend links it to the account with the same verified
-  // email, so signing in with Google or a password reaches the same account.
   const google = new cognito.UserPoolIdentityProviderGoogle(scope, "Google", {
     userPool: pool,
     clientId: opts.googleClientId,
@@ -70,7 +54,6 @@ export function userPool(
     authFlows: { userSrp: true },
     oAuth: {
       flows: { authorizationCodeGrant: true },
-      // COGNITO_ADMIN lets a session call Cognito's API for its own user: signing out everywhere.
       scopes: [cognito.OAuthScope.OPENID, cognito.OAuthScope.EMAIL, cognito.OAuthScope.COGNITO_ADMIN],
       callbackUrls: [`${opts.siteUrl}/api/auth/callback`],
       logoutUrls: [`${opts.siteUrl}/`],
@@ -86,7 +69,6 @@ export function userPool(
     refreshTokenValidity: cdk.Duration.days(30),
   });
   client.node.addDependency(google);
-  // The hosted pages in the app's colours and wordmark (hosted-pages-style.ts).
   new cognito.CfnManagedLoginBranding(scope, "HostedPagesStyle", {
     userPoolId: pool.userPoolId,
     clientId: client.userPoolClientId,

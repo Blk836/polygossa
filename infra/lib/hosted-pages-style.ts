@@ -1,12 +1,5 @@
 import type * as cognito from "aws-cdk-lib/aws-cognito";
 
-/**
- * Cognito's hosted sign-in pages in the app's look (docs/acceptance/cognito-login.feature): the theme's colours
- * (frontend/app/globals.css) in light and dark mode, following the device like the app, and the wordmark as the
- * form's logo. Only these settings are given; Cognito keeps its own for the rest.
- */
-
-/** The app's theme tokens, light and dark (globals.css), as Cognito's rrggbbaa. */
 const THEME = {
   paper: ["f6f1e7", "141729"],
   card: ["fffcf6", "1c2036"],
@@ -22,7 +15,6 @@ type Token = keyof typeof THEME;
 const light = (t: Token) => `${THEME[t][0]}ff`;
 const dark = (t: Token) => `${THEME[t][1]}ff`;
 
-/** Settings for both modes, from a function naming tokens for one mode. */
 function modes<T>(pick: (c: (t: Token) => string) => T) {
   return { lightMode: pick(light), darkMode: pick(dark) };
 }
@@ -52,10 +44,6 @@ export function styleSettings() {
   };
 }
 
-/**
- * The wordmark (the brand and a dot, like the app's Logo) as an SVG, for one mode. Cognito accepts logos from 1:1 to
- * 4:1 (width:height), so a long name gets a taller canvas, with the text centred in it.
- */
 function wordmark(brand: string, ink: string, rubric: string): string {
   const width = 24 + brand.length * 20;
   const height = Math.max(48, Math.ceil(width / 3.5));

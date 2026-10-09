@@ -1,8 +1,5 @@
 import { Bone, ButtonBone, CardFrame, PageLoading, RowsBone, SectionLoading, SkeletonHeader } from "./parts";
 
-// Outlines of the app's other pages, each laid out like its page (docs/acceptance/page-skeletons.feature).
-
-/** Review's daily goal bar: the ring, two lines and the streak. */
 export function GoalBarBone() {
   return (
     <div data-skeleton="goal" className="mb-6 flex items-center gap-4 rounded-xl border border-line bg-card p-4">
@@ -16,7 +13,6 @@ export function GoalBarBone() {
   );
 }
 
-/** One flashcard, its word in the middle and the answer buttons under it. */
 export function FlashcardBone() {
   return (
     <div data-skeleton="flashcard" className="rounded-2xl border border-line bg-card shadow-sm">
@@ -40,7 +36,6 @@ export function ReviewSkeleton() {
   );
 }
 
-/** The Words list's rows: term, meaning and context, like EntryRow. */
 export function WordRowsBone({ count = 6 }: { count?: number }) {
   return (
     <div data-skeleton="rows">
@@ -91,7 +86,6 @@ export function WritingSkeleton() {
   );
 }
 
-/** The Progress page below its header, laid out like the real cards. */
 export function ProgressSkeleton() {
   return (
     <PageLoading label="Progress">
@@ -112,7 +106,6 @@ export function ProgressSkeleton() {
           <Bone className="h-6 w-48" />
           <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">{[0, 1, 2].map((i) => <Bone key={i} className="h-36 rounded-lg" />)}</div>
         </CardFrame>
-        {/* The vocabulary map: its title and figure, then the map edge to edge, as the card has it. */}
         <div className="overflow-hidden rounded-xl border border-line bg-card">
           <div className="flex flex-wrap items-baseline justify-between gap-2 px-5 pb-3 pt-5">
             <Bone className="h-6 w-40" />
@@ -179,9 +172,7 @@ export function ImportSkeleton() {
   );
 }
 
-/** A lesson: the reader's top (back link, title, stats bar), then lines of text at the lesson's width. */
 export function ReaderSkeleton({ width }: { width: string }) {
-  // The reader's own canvas and column (globals.css), at the learner's text width, so nothing moves when it arrives.
   return (
     <div data-reader="" data-text-width={width}>
       <PageLoading label="lesson" className="reader-column">
@@ -203,7 +194,6 @@ export function ReaderSkeleton({ width }: { width: string }) {
   );
 }
 
-/** A Settings tab's content (the Settings title and tabs stay on screen around it). */
 export function SettingsSkeleton({ label }: { label: string }) {
   return (
     <PageLoading label={label} className="space-y-4">
@@ -218,7 +208,6 @@ export function SettingsSkeleton({ label }: { label: string }) {
   );
 }
 
-/** For pages without an outline of their own: content shapes and no title. */
 export function NeutralSkeleton() {
   return (
     <PageLoading>

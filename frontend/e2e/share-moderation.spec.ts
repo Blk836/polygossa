@@ -1,8 +1,5 @@
 import { expect, test } from "@playwright/test";
 
-// When the server refuses to share content (docs/acceptance/share-moderation.feature), the user sees why. The dev
-// server has no AI key, so the refusal is simulated by answering the request here.
-
 const REFUSED = {
   code: "not_shareable",
   message: "This can't be shared in the community library: Graphic violence. Import it without sharing to read it yourself.",

@@ -7,7 +7,6 @@ import app.lector.text.TextDtos.KnownStats;
 import java.time.Duration;
 import java.time.Instant;
 
-/** Scores one candidate for one learner: its parts, total, explore score and whether it is outside their topics. */
 final class CandidateScorer {
 
     private final TasteProfile profile;

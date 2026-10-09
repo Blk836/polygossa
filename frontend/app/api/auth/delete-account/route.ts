@@ -4,10 +4,6 @@ import { deleteCognitoUser } from "@/lib/cognito-api";
 import { BACKEND_URL } from "@/lib/server-api";
 import { clearSession, currentAccess } from "@/lib/session";
 
-/**
- * Deletes the account (docs/acceptance/gdpr.feature): the backend removes all of its data first; then, for a
- * Cognito session, the user is deleted from the pool too. This device then signs out like a normal sign-out.
- */
 export async function POST(request: Request) {
   const jar = await cookies();
   const config = cognitoConfig();
@@ -28,7 +24,6 @@ export async function POST(request: Request) {
   const cognito = config !== null && jar.has(REFRESH_COOKIE);
   clearSession(jar);
   if (!cognito) return new Response(null, { status: 204 });
-  // The account's data is already gone; a pool user left behind would only get a new, empty account.
   await deleteCognitoUser(config, access);
   return Response.json({ redirect: logoutUrl(config) });
 }

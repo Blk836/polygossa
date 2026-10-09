@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 class ElisionJoinerTest {
 
-    /** Tokens as the reader split French before elisions were kept together. */
     private static List<Token> legacy(String... parts) {
         List<Token> tokens = new ArrayList<>();
         for (String part : parts) {

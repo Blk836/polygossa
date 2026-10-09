@@ -17,7 +17,6 @@ const BASE =
   "inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition " +
   "disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
-/** A button's look, for a plain link that must leave the app (e.g. to a route that redirects to another site). */
 export function buttonClass(variant: Variant = "primary"): string {
   return `${BASE} ${VARIANTS[variant]}`;
 }
@@ -34,7 +33,6 @@ export function LinkButton({
   return <Link className={`${BASE} ${VARIANTS[variant]} ${className}`} {...props} />;
 }
 
-/** The wordmark: the brand name set in the display serif with a rubric full stop. */
 export function Logo({ className = "" }: { className?: string }) {
   return (
     <span className={`font-display font-semibold tracking-tight ${className}`}>
@@ -80,10 +78,6 @@ export function Badge({ children, className = "" }: { children: ReactNode; class
   return <span className={`rounded-full border border-line px-2 py-0.5 text-xs text-muted ${className}`}>{children}</span>;
 }
 
-/**
- * A small spinning ring; with "reduce motion" on, a still dot. Pass {@code decorative} when text next to it already
- * says what is happening, so screen readers don't also hear "Loading".
- */
 export function Spinner({ className = "", decorative = false }: { className?: string; decorative?: boolean }) {
   return (
     <span
@@ -127,12 +121,10 @@ export const inputClass =
   "w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink placeholder:text-muted " +
   "focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30";
 
-/** Form and filter dropdowns: rounded like the cards, with the app's chevron (styles in globals.css). */
 export const selectClass =
   "w-full rounded-xl border border-line bg-card px-3 py-2 text-sm text-ink transition hover:border-accent/50 " +
   "focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30";
 
-/** Small dropdowns inside a card or toolbar (category, word status, playback speed): a rounded pill. */
 export const chipSelectClass =
   "rounded-full border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:border-accent/50 " +
   "focus:outline-none focus:ring-2 focus:ring-accent/30";
@@ -166,13 +158,11 @@ export function formatDuration(seconds: number): string {
   return `${Math.floor(m / 60)}h ${m % 60}m`;
 }
 
-/** An API failure: plan-limit errors get the upgrade prompt, everything else a plain error message. */
 export function FailureNote({ error }: { error: ApiError | string | null }) {
   if (error instanceof ApiError && error.upgradeRequired) return <UpgradeNote message={error.message} />;
   return <ErrorNote message={error instanceof ApiError ? error.message : error} />;
 }
 
-/** Previous / next pagination; hidden when everything fits on one page. */
 export function Pager({ page, pages, onPage }: { page: number; pages: number; onPage: (page: number) => void }) {
   if (pages <= 1) return null;
   return (

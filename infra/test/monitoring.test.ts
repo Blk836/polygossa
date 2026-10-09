@@ -1,4 +1,3 @@
-// docs/acceptance/monitoring.feature: production's alarms and budget, synthesized without AWS access.
 import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
 import * as cdk from "aws-cdk-lib";
@@ -18,7 +17,6 @@ before(() => {
   template = Template.fromStack(stack);
 });
 
-/** The alarm whose description starts with `start`. */
 function alarm(start: string): Record<string, unknown> {
   const found = Object.values(template.findResources("AWS::CloudWatch::Alarm"))
     .map((a) => a.Properties as Record<string, unknown>)

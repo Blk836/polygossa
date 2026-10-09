@@ -1,15 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// Saving playlists like texts (docs/acceptance/saved-playlists.feature), and playlist cards showing a pointer.
-// Data is created through the API and deleted after; the e2e user can save its own shared playlists, like its texts.
-
 let textIds: number[] = [];
 let playlistIds: number[] = [];
 let tag = "";
 let language = "es";
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("/library"); // signs in (auto-login) and sets the session cookie used by page.request
+  await page.goto("/library");
   language = (await (await page.request.get("/api/me")).json()).targetLanguage ?? "es";
   tag = `ps${Math.floor(Math.random() * 1e9).toString(36)}`;
 });
@@ -21,7 +18,6 @@ test.afterEach(async ({ page }) => {
   playlistIds = [];
 });
 
-/** A shared playlist with one public text. */
 async function sharedPlaylist(page: Page): Promise<number> {
   const text = await page.request.post("/api/texts", {
     data: { title: `Episode ${tag}`, language, content: `${tag}alpha.`, isPublic: true, category: "stories" },
@@ -52,7 +48,7 @@ test("Explore's playlist cards have a Save button that keeps its state", async (
   await saveButton(page).click();
   await expect(saveButton(page)).toHaveText("Saved");
   await expect(saveButton(page)).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByRole("dialog")).toBeHidden(); // saving doesn't open the playlist
+  await expect(page.getByRole("dialog")).toBeHidden();
   await expect.poll(() => isSaved(page, id)).toBe(true);
   await page.reload();
   await expect(saveButton(page)).toHaveText("Saved");
@@ -63,7 +59,7 @@ test("saved playlists are in My library's playlists row, once, and can be unsave
   expect((await page.request.put(`/api/playlists/${id}/bookmark`)).ok()).toBe(true);
   await page.goto("/library");
   const shelf = page.getByRole("region", { name: "Your playlists" });
-  await expect(shelf.getByTestId("playlist-card").filter({ hasText: `Podcast ${tag}` })).toHaveCount(1); // mine and saved: once
+  await expect(shelf.getByTestId("playlist-card").filter({ hasText: `Podcast ${tag}` })).toHaveCount(1);
   await expect(shelf.getByRole("link", { name: "All playlists →" })).toBeVisible();
   await expect(saveButton(page)).toHaveText("Saved");
   await saveButton(page).click();
@@ -74,7 +70,6 @@ test("saved playlists are in My library's playlists row, once, and can be unsave
 test("someone else's saved playlist shows in My library's row and on the playlists page", async ({ page }) => {
   const id = await sharedPlaylist(page);
   expect((await page.request.put(`/api/playlists/${id}/bookmark`)).ok()).toBe(true);
-  // Seen as another learner's playlist: the e2e user is the only account, so it is left out of "mine".
   await page.route(/\/api\/playlists(\?|$)/, async (route) => {
     const res = await route.fetch();
     await route.fulfill({ response: res, json: ((await res.json()) as { id: number }[]).filter((p) => p.id !== id) });
@@ -98,7 +93,6 @@ test("the playlists page has no Shared switch or search; my own unsaved playlist
 
 test("someone else's playlist page has a Save button", async ({ page }) => {
   const id = await sharedPlaylist(page);
-  // Seen as another learner would see it: the e2e user is the only account, so mark it as not ours.
   await page.route(`**/api/playlists/${id}`, async (route) => {
     if (route.request().method() !== "GET") return route.continue();
     const res = await route.fetch();
@@ -126,8 +120,6 @@ test("a save the server rejects goes back to Save", async ({ page }) => {
 test("hovering a playlist card shows the pointer, like a text card", async ({ page }) => {
   await sharedPlaylist(page);
   await page.goto("/community");
-  // Other playlists in the dev database can push the card below the fold, where elementFromPoint finds nothing, and
-  // cards still loading above it can move it after it was measured: measure again until both points show the pointer.
   await expect.poll(async () => {
     await card(page).scrollIntoViewIfNeeded();
     const box = (await card(page).boundingBox())!;

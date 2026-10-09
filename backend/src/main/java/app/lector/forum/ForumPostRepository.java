@@ -15,7 +15,6 @@ public interface ForumPostRepository extends JpaRepository<ForumPost, Long> {
     @EntityGraph(attributePaths = "author")
     Page<ForumPost> findByThreadIdOrderByIdAsc(Long threadId, Pageable page);
 
-    /** The post that opened the thread. */
     Optional<ForumPost> findFirstByThreadIdOrderByIdAsc(Long threadId);
 
     List<ForumPost> findByAuthorIdOrderByIdAsc(Long authorId);

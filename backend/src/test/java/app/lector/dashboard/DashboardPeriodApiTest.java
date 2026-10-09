@@ -10,7 +10,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** GET /api/dashboard?period=…: the Progress page's stats for the last week, month, quarter, year or all time. */
 @ApiTest
 class DashboardPeriodApiTest {
 

@@ -21,7 +21,6 @@ function usageLine(plan: PlanInfo): string {
 
 const linkClass = "rounded-lg border border-line bg-card px-3 py-2 text-sm hover:bg-paper";
 
-/** Filters and paging start over whenever the language in the top bar changes. */
 export default function VocabularyPage() {
   const { me } = useMe();
   return (

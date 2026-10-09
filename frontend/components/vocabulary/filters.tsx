@@ -4,7 +4,6 @@ import { useState } from "react";
 import { inputClass, selectClass } from "../ui";
 import type { Filters } from "./search";
 
-/** Search box and filter selects; changing any filter returns to the first page. */
 export function FilterBar({ filters, wordsTab, onChange }: {
   filters: Filters;
   wordsTab: boolean;

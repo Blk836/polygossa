@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-/** reading-listening-goals.feature: what a daily goal measures, its limits, and when a day reaches it. */
 class DailyGoalTest {
 
     @ParameterizedTest

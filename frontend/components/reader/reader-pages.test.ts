@@ -17,10 +17,6 @@ import {
 } from "./reader-pages";
 import { toParagraphs } from "./reader-text";
 
-/**
- * Builds tokens the way the backend does: words and separators alternate, a separator holding "." ends a sentence,
- * and "\n\n" inside a separator starts a new paragraph.
- */
 function build(parts: string[]): Token[] {
   let sentence = 0;
   return parts.map((text, index) => {
@@ -31,7 +27,6 @@ function build(parts: string[]): Token[] {
   });
 }
 
-/** `paragraphs` paragraphs of `sentences` sentences of `words` words each. */
 function text(paragraphs: number, sentences: number, words: number): Token[] {
   const parts: string[] = [];
   for (let p = 0; p < paragraphs; p++) {
@@ -49,7 +44,6 @@ function text(paragraphs: number, sentences: number, words: number): Token[] {
   return build(parts);
 }
 
-/** One paragraph per size, each a single sentence of that many words. */
 function paras(...sizes: number[]): Token[] {
   const parts: string[] = [];
   sizes.forEach((n, p) => {
@@ -74,30 +68,30 @@ describe("toPages", () => {
   });
 
   it("keeps a text of up to the single-page limit on one page", () => {
-    const tokens = text(10, 1, SINGLE_PAGE_MAX_WORDS / 10); // 300 words in 10 paragraphs
+    const tokens = text(10, 1, SINGLE_PAGE_MAX_WORDS / 10);
     const pages = toPages(tokens);
     expect(pages).toHaveLength(1);
     expect(pages[0]).toEqual(toParagraphs(tokens));
   });
 
   it("splits a text just over the single-page limit", () => {
-    expect(toPages(text(1, 31, 10)).length).toBeGreaterThan(1); // 310 words
+    expect(toPages(text(1, 31, 10)).length).toBeGreaterThan(1);
   });
 
   it("splits long texts at paragraph boundaries into pages of about the target size", () => {
-    const tokens = text(10, 4, 25); // ten 100-word paragraphs
+    const tokens = text(10, 4, 25);
     const pages = toPages(tokens);
     expect(pages.map(pageWords)).toEqual([200, 200, 200, 200, 200]);
-    for (const page of pages) for (const p of page) expect(wordCount(p)).toBe(100); // no paragraph split
+    for (const page of pages) for (const p of page) expect(wordCount(p)).toBe(100);
   });
 
   it("adds a paragraph when that brings the page closer to the target", () => {
-    const pages = toPages(text(12, 1, 60)); // 60-word paragraphs: 240 is closer to 250 than 180 or 300
+    const pages = toPages(text(12, 1, 60));
     expect(pages.map(pageWords)).toEqual([240, 240, 240]);
   });
 
   it("adds a paragraph that lands nearer the target even when it goes over", () => {
-    expect(toPages(text(4, 1, 150)).map(pageWords)).toEqual([300, 300]); // 300 is 50 off, 150 is 100 off
+    expect(toPages(text(4, 1, 150)).map(pageWords)).toEqual([300, 300]);
   });
 
   it("starts a new page rather than go over the maximum", () => {
@@ -105,7 +99,7 @@ describe("toPages", () => {
   });
 
   it("splits a transcript with no paragraph breaks at sentence ends", () => {
-    const tokens = text(1, 100, 10); // one 1,000-word paragraph of 10-word sentences
+    const tokens = text(1, 100, 10);
     const pages = toPages(tokens);
     expect(pages.map(pageWords)).toEqual([250, 250, 250, 250]);
     for (const page of pages.slice(0, -1)) {
@@ -116,13 +110,10 @@ describe("toPages", () => {
   });
 
   it("prefers a sentence end to an exact page size", () => {
-    // 30-word sentences: 240 words is the closest sentence end to 250
     expect(toPages(text(1, 20, 30)).map(pageWords)).toEqual([240, 240, 120]);
   });
 
   it("starts a new page when a long paragraph would push it past the maximum, even if nearer the target", () => {
-    // A 20-word paragraph, then one of an 83-word and a 250-word sentence (packed as one 333-word piece):
-    // 20 + 333 = 353 is nearer 250 than 20 is, but over the maximum.
     const big = (n: number, tag: string) => Array.from({ length: n }, (_, k) => [`${tag}${k}`, k < n - 1 ? " " : ". "]).flat();
     const tokens = build([...big(20, "a").slice(0, -1), ".\n\n", ...big(83, "b"), ...big(250, "c").slice(0, -1), "."]);
     expect(toPages(tokens).map(pageWords)).toEqual([20, 333]);
@@ -135,7 +126,7 @@ describe("toPages", () => {
     for (const page of pages) expect(pageWords(page)).toBeLessThanOrEqual(MAX_PAGE_WORDS);
     expect(pages.map(pageWords)).toEqual([250, 250, 200]);
     const words = pages.flat(2).filter((t) => t.word);
-    expect(words.map((t) => t.text)).toEqual(tokens.filter((t) => t.word).map((t) => t.text)); // none cut
+    expect(words.map((t) => t.text)).toEqual(tokens.filter((t) => t.word).map((t) => t.text));
   });
 
   it("never puts more than the maximum on a page", () => {
@@ -159,7 +150,7 @@ describe("toPages", () => {
   });
 
   it("merges a tiny last page into the previous one", () => {
-    expect(toPages(text(1, 52, 10)).map(pageWords)).toEqual([250, 270]); // 250 + 250 + 20
+    expect(toPages(text(1, 52, 10)).map(pageWords)).toEqual([250, 270]);
     expect(toPages(paras(150, 150, MIN_LAST_PAGE_WORDS - 1)).map(pageWords)).toEqual([300 + MIN_LAST_PAGE_WORDS - 1]);
   });
 
@@ -185,7 +176,6 @@ describe("toPages", () => {
   });
 });
 
-// Pages are built inside beforeEach, not while tests are collected, so mutation testing can see them run.
 describe("pageOfToken", () => {
   const tokens = text(1, 100, 10);
   let pages: ReaderPage[] = [];
@@ -290,7 +280,7 @@ describe("pageTokens and unseenOnPage", () => {
   });
 
   it("counts distinct words on the page with no status", () => {
-    expect(unseenOnPage(page, {})).toBe(4); // uno counted once
+    expect(unseenOnPage(page, {})).toBe(4);
     expect(unseenOnPage(page, { uno: "learning", dos: "known", tres: "ignored" })).toBe(1);
     expect(unseenOnPage(page, { uno: "known", dos: "known", tres: "known", cuatro: "learning" })).toBe(0);
     expect(unseenOnPage([], {})).toBe(0);

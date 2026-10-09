@@ -11,7 +11,6 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import java.time.Instant;
 
-/** A recommended item shown on Explore (impression) or opened from it, with its shelf and position. */
 @Entity
 @Table(name = "recommendation_events", indexes = {
         @Index(name = "idx_rec_events_user", columnList = "user_id,text_id"),
@@ -44,7 +43,6 @@ public class RecommendationEvent {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    /** An impression's unweighted score parts (interest … format), or null (opens, older pages, Continue reading). */
     private Double partInterest;
     private Double partTopic;
     private Double partComprehension;
@@ -67,7 +65,6 @@ public class RecommendationEvent {
     public Long getUserId() { return userId; }
     public Instant getCreatedAt() { return createdAt; }
 
-    /** The seven parts in Scoring.Part order, or null when none were logged. */
     public double[] parts() {
         if (partInterest == null) {
             return null;

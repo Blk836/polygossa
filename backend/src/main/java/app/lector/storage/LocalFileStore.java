@@ -9,7 +9,6 @@ import java.nio.file.StandardCopyOption;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpStatus;
 
-/** Uploads in a local folder: local runs (QA) and tests. Spring answers Range requests for these files itself. */
 public class LocalFileStore implements FileStore {
 
     private final Path root;
@@ -43,7 +42,6 @@ public class LocalFileStore implements FileStore {
         try {
             Files.deleteIfExists(root.resolve(name));
         } catch (IOException ignored) {
-            // Orphaned files are harmless; nothing else to do.
         }
     }
 }

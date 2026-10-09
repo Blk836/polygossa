@@ -6,7 +6,6 @@ import { markerBox, planMove, type Box, type Move } from "./follow-marker";
 interface Shown {
   index: number;
   box: Box;
-  /** The page it was shown on: a marker from another page never slides onto this one. */
   key: unknown;
 }
 
@@ -34,7 +33,6 @@ function keyframes(move: Move, from: Box | null, to: Box | null): Keyframe[] | n
   }
 }
 
-/** Sets where the marker rests after `move`, and animates the way there. */
 function apply(el: HTMLDivElement, move: Move, from: Box | null, to: Box | null) {
   if (move.kind === "none") return;
   for (const a of el.getAnimations()) a.cancel();
@@ -56,22 +54,12 @@ function moveInput(prev: Shown | null, active: number | null, to: Box | null, ne
   };
 }
 
-/**
- * The bar under the spoken word (docs/acceptance/follow-along-marker.feature): slides along a line, hops across line
- * breaks and jumps, fades where speech starts and stops, and keeps to its word when the text reflows. Rendered inside
- * the positioned box that holds the words, each with its index in `data-i`.
- */
 export function FollowMarker({ enabled = true, containerRef, active, nextOf, budgets = NO_BUDGETS, page }: {
-  /** Off: nothing is drawn (Follow along: Sentence, or no player). */
   enabled?: boolean;
   containerRef: RefObject<HTMLElement | null>;
-  /** The spoken word's index. */
   active: number | null;
-  /** The word after a word: the next word slides, any other hops. Stable (memoized). */
   nextOf: (index: number) => number | null;
-  /** Index → time until the next word starts (slideBudgets); without one a move takes its full time. */
   budgets?: Map<number, number>;
-  /** The page shown: a marker never slides from one page onto another. */
   page?: unknown;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -98,7 +86,6 @@ export function FollowMarker({ enabled = true, containerRef, active, nextOf, bud
     shown.current = to && active !== null ? { index: active, box: to, key: page } : null;
   }, [enabled, active, page, nextOf, budgets, boxOf]);
 
-  // Text size or window changes rewrap the lines: put the marker back under its word at once.
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;

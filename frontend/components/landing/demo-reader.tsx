@@ -12,7 +12,6 @@ const STATUS_BUTTONS: { status: DemoStatus; label: string; className: string }[]
   { status: "known", label: "Known", className: "bg-known" },
 ];
 
-/** The landing page's try-it-now reader: a sample sentence per language whose words open a definition card. */
 export function DemoReader() {
   const [language, setLanguage] = useState<LanguageCode>("es");
   const [state, setState] = useState(() => initialDemoState(DEMOS.es));
@@ -96,7 +95,6 @@ export function DemoReader() {
               </div>
             </div>
           ) : (
-            // Plain text flow, not flex: a flex container makes each text run its own item and drops the spaces.
             <p className="rounded-xl border border-dashed border-line px-4 py-6 text-sm text-muted" data-testid="demo-hint">
               Tap a <span className="w w-new px-1">blue</span> word to see what it means.
             </p>

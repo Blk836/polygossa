@@ -16,7 +16,6 @@ function Tile({ label, value, change, testId }: { label: string; value: string; 
   );
 }
 
-/** The chosen window's figures (last week by default), each set against the same length of time before it. */
 export function PeriodCard({ stats }: { stats: PeriodStats }) {
   const { period, days, current, previous } = stats;
   const label = periodLabel(period);

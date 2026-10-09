@@ -1,24 +1,15 @@
 import type { ReactNode } from "react";
 import { cardGridClass, shelfCardLayout, shelfCardWidth, type CardLayout } from "@/lib/card-layout";
 
-// The pieces of the pages' loading outlines (docs/acceptance/page-skeletons.feature): grey shapes sized and spaced
-// like the content they stand in for, so a page fills in without moving. `data-skeleton` names each piece.
-
-/** A grey shape; it pulses unless the learner asked for reduced motion. */
 export function Bone({ className = "", part }: { className?: string; part?: string }) {
-  const rounding = /\brounded/.test(className) ? "" : "rounded-md"; // one rounding class, or Tailwind's order picks
+  const rounding = /\brounded/.test(className) ? "" : "rounded-md";
   return <div data-bone data-skeleton={part} className={`${rounding} bg-line motion-safe:animate-pulse ${className}`} />;
 }
 
-/** A white card like the page's own (border, padding), holding grey shapes. */
 export function CardFrame({ className = "", part, children }: { className?: string; part?: string; children: ReactNode }) {
   return <div data-skeleton={part} className={`rounded-xl border border-line bg-card p-5 ${className}`}>{children}</div>;
 }
 
-/**
- * A whole page's outline: one busy region for screen readers ("Loading Explore"), its shapes hidden from them.
- * `label` names the page, or is omitted for the neutral outline.
- */
 export function PageLoading({ label = "page", className = "", children }: { label?: string; className?: string; children: ReactNode }) {
   return (
     <div data-testid="page-loading" role="status" aria-busy="true" aria-label={`Loading ${label}`} className={className}>
@@ -27,7 +18,6 @@ export function PageLoading({ label = "page", className = "", children }: { labe
   );
 }
 
-/** Part of a page still loading its content (the page around it has arrived). */
 export function SectionLoading({ label, className = "", children }: { label: string; className?: string; children: ReactNode }) {
   return (
     <div data-testid="section-loading" role="status" aria-busy="true" aria-label={`Loading ${label}`} className={className}>
@@ -36,7 +26,6 @@ export function SectionLoading({ label, className = "", children }: { label: str
   );
 }
 
-/** Like PageHeader: the page's real title (styled as its heading), a subtitle line, and its buttons. */
 export function SkeletonHeader({ title, subtitle = true, actions }: { title: string; subtitle?: boolean; actions?: ReactNode }) {
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
@@ -49,13 +38,10 @@ export function SkeletonHeader({ title, subtitle = true, actions }: { title: str
   );
 }
 
-/** A button-sized shape (`w-*` sets its width). */
 export const ButtonBone = ({ className = "w-24" }: { className?: string }) => <Bone className={`h-9 rounded-lg ${className}`} />;
 
-/** The card-layout picker's three icons. */
 export const LayoutPickerBone = () => <Bone className="h-[2.625rem] w-[7.25rem] rounded-lg" />;
 
-/** One text card, shaped like TextCard in that layout. */
 export function CardBone({ layout, className = "" }: { layout: CardLayout; className?: string }) {
   if (layout === "list") {
     return (
@@ -87,7 +73,6 @@ export function CardBone({ layout, className = "" }: { layout: CardLayout; class
   );
 }
 
-/** A page of cards in the learner's layout. */
 export function CardGridBone({ layout, count = 8 }: { layout: CardLayout; count?: number }) {
   return (
     <div data-skeleton="cards" data-layout={layout} className={cardGridClass(layout)}>
@@ -96,7 +81,6 @@ export function CardGridBone({ layout, count = 8 }: { layout: CardLayout; count?
   );
 }
 
-/** A titled, sideways-scrolling row of cards, like Explore's shelves. */
 export function ShelfBone({ layout }: { layout: CardLayout }) {
   return (
     <section data-skeleton="shelf" data-layout={layout} className="mb-9">
@@ -113,7 +97,6 @@ export function ShelfBone({ layout }: { layout: CardLayout }) {
   );
 }
 
-/** A bordered list of rows (threads, past tests, classes): `lines` grey lines per row. */
 export function RowsBone({ count = 5, className = "", lead = false }: { count?: number; className?: string; lead?: boolean }) {
   return (
     <ul data-skeleton="rows" className={`divide-y divide-line overflow-hidden rounded-xl border border-line bg-card ${className}`}>

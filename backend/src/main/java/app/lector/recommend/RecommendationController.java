@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Explore's personalised shelves, and the feedback that shapes them. Free on every plan. */
 @RestController
 @RequestMapping("/api/recommendations")
 public class RecommendationController {
@@ -78,7 +77,6 @@ public class RecommendationController {
         feedback.log(currentUser.load(principal), req.type(), req.shelf(), req.items());
     }
 
-    /** The weight fit over the last {@code days} days: configured and learned weights, and which ranking uses. */
     @GetMapping("/weights")
     public WeightLearningJob.Fit weights(@RequestParam(defaultValue = "28") int days,
                                          @RequestParam(defaultValue = "open") String outcome) {

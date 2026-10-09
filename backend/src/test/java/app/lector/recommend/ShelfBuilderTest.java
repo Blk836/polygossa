@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
-/** Feature: Explore recommendations, each card's reason and the exploration label (explore-recommendations.feature). */
 class ShelfBuilderTest {
 
     private static final Weights EQUAL = new Weights(1, 1, 1, 1, 1, 1, 1);
@@ -87,13 +86,10 @@ class ShelfBuilderTest {
         List<ShelfBuilder.Pick> withTopics = ShelfBuilder.forYou(cs, LIKES_COOKING, props(3), true);
         assertThat(withTopics.get(2).reason()).isEqualTo(Reason.simple("explore"));
         assertThat(withTopics.get(0).reason()).isEqualTo(Reason.known(96.0));
-        // A new learner has no usual topics, so nothing is "different".
         assertThat(ShelfBuilder.forYou(cs, NO_HISTORY, props(3), true).get(2).reason()).isEqualTo(Reason.known(96.0));
-        // The slot went to an item inside the usual topics: an ordinary reason.
         List<Candidate> inside = cs.stream().map(c -> ranked(c.id(), c.score(), false)).toList();
         assertThat(ShelfBuilder.forYou(inside, LIKES_COOKING, props(3), true).get(2).reason())
                 .isEqualTo(Reason.known(96.0));
-        // Exploration off: no slot is one.
         assertThat(ShelfBuilder.forYou(cs, LIKES_COOKING, props(0), true)).extracting(ShelfBuilder.Pick::reason)
                 .doesNotContain(Reason.simple("explore"));
     }

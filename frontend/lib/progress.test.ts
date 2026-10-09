@@ -90,7 +90,6 @@ describe("calendarWeeks", () => {
     Array.from({ length: count }, (_, i) => day(new Date(Date.parse(from) + i * 86_400_000).toISOString().slice(0, 10)));
 
   it("puts consecutive days in Monday-first weeks, padding before the first day", () => {
-    // 2026-03-18 is a Wednesday.
     const weeks = calendarWeeks(run("2026-03-18", 6));
     expect(weeks.map((w) => w.map((d) => d?.day.slice(8) ?? null))).toEqual([
       [null, null, "18", "19", "20", "21", "22"],

@@ -10,13 +10,10 @@ import { useRemembered } from "../use-remembered";
 import { EntryRow } from "./entry-row";
 import { pageCount, searchParams, type Filters } from "./search";
 
-/** The filtered, paged list of words and phrases. */
 export function WordList({ filters, onPage, onTag, onChanged }: {
   filters: Filters;
   onPage: (page: number) => void;
-  /** Filters the list to a tag ("" clears it). */
   onTag: (tag: string) => void;
-  /** Called after an edit or delete (plan usage may have changed). */
   onChanged: () => void;
 }) {
   const path = `vocabulary?${searchParams(filters)}`;

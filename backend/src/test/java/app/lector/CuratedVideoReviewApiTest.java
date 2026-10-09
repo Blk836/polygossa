@@ -18,7 +18,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Bulk-imported videos go through the same AI category and sharing check as a shared Library import. */
 @SpringBootTest(properties = {
         "test.database=curatedreview",
         "app.seed-samples=false",
@@ -29,7 +28,6 @@ import tools.jackson.databind.ObjectMapper;
 @AutoConfigureMockMvc
 class CuratedVideoReviewApiTest {
 
-    /** Each test imports its own video, since the library keeps every video it imported. */
     private static final String[] VIDEOS = {"AAAAAAAAAAA", "BBBBBBBBBBB", "CCCCCCCCCCC"};
     private static final OpenAiStub AI = ImportCategoryApiTest.start(OpenAiStub::new);
     private static final YouTubeStub YOUTUBE = ImportCategoryApiTest.start(YouTubeStub::new);
@@ -70,7 +68,6 @@ class CuratedVideoReviewApiTest {
                 .content(CuratedVideoImportApiTest.body("https://youtu.be/" + video, "fr", null, false)), null, status);
     }
 
-    /** Whether the video was saved: a dry run says so without importing anything. */
     private boolean saved(String video) throws Exception {
         return !"would_import".equals(api.send(MockMvcRequestBuilders.post("/api/curator/videos")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -106,8 +103,6 @@ class CuratedVideoReviewApiTest {
         AI.reply("{\"appropriate\":true,\"category\":\"food\"}");
         assertThat(curate(VIDEOS[2], 201).get("outcome").asString()).isEqualTo("imported");
     }
-
-    // ---- copies from another backend (docs/acceptance/copy-videos.feature) ----
 
     private JsonNode copy(String video, boolean dryRun, int status) throws Exception {
         return api.send(MockMvcRequestBuilders.post("/api/curator/copies").contentType(MediaType.APPLICATION_JSON)

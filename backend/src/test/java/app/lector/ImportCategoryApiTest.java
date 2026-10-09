@@ -22,10 +22,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Feature: imports are filed under a category by AI (docs/acceptance/auto-category.feature). The daily AI allowance
- * is 0 here, to show that categorising doesn't use it.
- */
 @SpringBootTest(properties = {
         "test.database=importcategory",
         "app.seed-samples=false",
@@ -97,7 +93,6 @@ class ImportCategoryApiTest {
                 .param("language", "es"), user, 201);
     }
 
-    /** The one request the AI got: it names the title, the content's start and every category code. */
     private void askedOnceAbout(String title, String content) {
         assertThat(AI.requests()).hasSize(1);
         String request = AI.requests().get(0);
@@ -107,8 +102,6 @@ class ImportCategoryApiTest {
             assertThat(request).contains(code);
         }
     }
-
-    // ---- each kind of import ----
 
     @Test
     void aPastedTextIsCategorisedByAi() throws Exception {
@@ -145,8 +138,6 @@ class ImportCategoryApiTest {
         assertThat(importVideo().get("category").asString()).isEqualTo("food");
         askedOnceAbout("Clase", "Hola amigos");
     }
-
-    // ---- when the AI isn't asked or can't help ----
 
     @Test
     void aChosenCategoryIsKeptWithoutAskingTheAi() throws Exception {

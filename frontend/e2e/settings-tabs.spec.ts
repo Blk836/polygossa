@@ -1,16 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 import type { Me, Tier } from "../lib/types";
 
-// Settings' sub-tabs (Profile, Appearance, Subscription): docs/acceptance/settings-tabs.feature. Plan changes are
-// stubbed so parallel tests keep seeing the test account's Classroom plan; profile saves are real and restored.
-
 const strip = (page: Page) => page.getByRole("navigation", { name: "Settings pages" });
 const topNav = (page: Page) => page.getByRole("banner").getByRole("navigation", { name: "Main" });
 const planCard = (page: Page, name: string) => page.getByTestId("plan-card").filter({ has: page.getByText(name, { exact: true }) });
 
 const FREE_PLAN = { limits: { texts: 5, savedWords: 500 }, usage: { texts: 2, savedWords: 40 } };
 
-/** Answers plan changes with the current account on the requested tier, as the backend would, without saving it. */
 async function stubPlanChange(page: Page, extra: (tier: Tier) => Partial<Me["plan"]> = () => ({})) {
   await page.route("**/api/me/plan", async (route) => {
     const me = (await (await page.request.get("/api/me")).json()) as Me;
@@ -56,7 +52,7 @@ test("Classes has no settings strip", async ({ page }) => {
 });
 
 test("saving the profile updates the account menu", async ({ page }) => {
-  await page.goto("/settings"); // signs in (auto-login) before the API calls below
+  await page.goto("/settings");
   const before = (await (await page.request.get("/api/me")).json()) as Me;
   const name = `Tab tester ${Date.now()}`;
   try {

@@ -25,14 +25,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * The configured brand (Polygossa unless BRAND_NAME is set) is the name people see: the starter-library owner and Anki
- * exports. Each subclass runs these scenarios against one configuration.
- */
 @AutoConfigureMockMvc
 abstract class BrandScenarios {
 
-    /** The name the subclass configures (or expects as the default). */
     abstract String brand();
 
     @Autowired
@@ -61,7 +56,7 @@ abstract class BrandScenarios {
         TestApi api = new TestApi(mvc, json);
         String viewer = api.signup();
         List<Long> fresh = starterIds(api, viewer);
-        assertThat(fresh).hasSize(6); // one starter per language you can learn (learning-languages.feature)
+        assertThat(fresh).hasSize(6);
 
         User library = users.findByEmailIgnoreCase(SampleContentSeeder.LIBRARY_EMAIL).orElseThrow();
         library.setDisplayName("Lector Library");
@@ -74,7 +69,6 @@ abstract class BrandScenarios {
         assertThat(starterIds(api, viewer)).containsExactlyInAnyOrderElementsOf(fresh);
     }
 
-    /** The deck name, its description, the note type name and a note's tags, read back from an exported package. */
     private record Deck(String name, String description, String noteType, String tags) {}
 
     private Deck exportAnki(String token, String query) throws Exception {

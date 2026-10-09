@@ -7,7 +7,6 @@ interface Props {
   count: number;
   onPage: (page: number) => void;
   className?: string;
-  /** A line under the controls, e.g. what turning the page will do. */
   note?: string | null;
 }
 
@@ -15,10 +14,6 @@ const button = "flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-s
 const quiet = `${button} border-line bg-card text-muted hover:border-accent/40 hover:text-ink`;
 const primary = `${button} border-accent bg-accent font-medium text-accent-ink shadow-sm hover:opacity-90`;
 
-/**
- * Previous / "Page n of N" with a progress bar / Next, under the text; Next is the main button. Hidden for a single
- * page. The note line keeps its height when empty, so every page has the same room for text.
- */
 export function ReaderPager({ page, count, onPage, className = "", note }: Props) {
   if (count <= 1) return null;
   return (
@@ -47,11 +42,6 @@ export function ReaderPager({ page, count, onPage, className = "", note }: Props
   );
 }
 
-/**
- * Tall arrows either side of the text on wide screens, for turning pages with the mouse. The pager under the text
- * stays the accessible way (these are out of the tab order and hidden from screen readers), so there is only one
- * "Next page" button. None before the first page or after the last.
- */
 export function PageArrows({ page, count, onPage }: { page: number; count: number; onPage: (page: number) => void }) {
   if (count <= 1) return null;
   return (

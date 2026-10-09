@@ -10,13 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-/**
- * A word's machine translation into a learner's native language (word-translations.feature). Each word and language
- * pair is asked of Amazon Translate once and stored for everyone; within the monthly character cap, and never when
- * machine translation is off. Failures are not stored, so a later lookup tries again. A word that comes back unchanged
- * is asked once more, marked inside its sentence, and the marked words become its meaning
- * (translation-in-context.feature).
- */
 @Service
 public class MachineTranslations {
 
@@ -37,10 +30,6 @@ public class MachineTranslations {
         this.clock = clock;
     }
 
-    /**
-     * The translation of {@code text} (a form of the word {@code term}, its normalized key) from {@code source} into
-     * {@code target}, or empty when there is none to show. {@code context} is the word inside its sentence, if any.
-     */
     public Optional<String> translate(Language source, NativeLanguage target, String term, String text,
                                       Optional<InContext> context) {
         if (!client.enabled() || term.isEmpty() || term.length() > 200) {
@@ -57,7 +46,6 @@ public class MachineTranslations {
         return alone(source, target, term, text, context);
     }
 
-    /** Asks a word nobody looked up yet on its own, stores the answer, and asks in context if it came back unchanged. */
     private Optional<String> alone(Language source, NativeLanguage target, String term, String text,
                                    Optional<InContext> context) {
         Optional<String> answer = send(text, source, target);
@@ -69,7 +57,6 @@ public class MachineTranslations {
         return useful != null ? Optional.of(useful) : inContext(source, target, term, context);
     }
 
-    /** Asks a word stored as echoed again inside its sentence, and stores what that gave. */
     private Optional<String> inContext(Language source, NativeLanguage target, String term,
                                        Optional<InContext> context) {
         if (context.isEmpty()) {
@@ -84,7 +71,6 @@ public class MachineTranslations {
         return meaning;
     }
 
-    /** Amazon's answer for {@code text}, counted against the monthly cap; empty when capped or on failure. */
     private Optional<String> send(String text, Language source, NativeLanguage target) {
         String month = YearMonth.now(clock.withZone(ZoneOffset.UTC)).toString();
         if (usage.add(month, text.length(), settings.monthlyCharacterCap()) == 0) {

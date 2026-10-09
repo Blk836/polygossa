@@ -13,10 +13,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Feature: Explore recommendations: "Not interested", interests and logged events
- * (docs/acceptance/explore-recommendations.feature).
- */
 @org.springframework.boot.test.context.SpringBootTest(properties = {
         "test.database=recfeedback",
         "app.seed-samples=false"
@@ -54,8 +50,6 @@ class RecommendationFeedbackApiTest {
         author = api.signupPro();
     }
 
-    // ---- Not interested ----
-
     @Test
     void notInterestedRemovesAnItemFromEveryShelf() throws Exception {
         long dull = fx.publicText(author, "Dull", "news");
@@ -75,7 +69,6 @@ class RecommendationFeedbackApiTest {
         api.put(learner, "/api/library/" + liked + "/like", "", 204);
         long news = fx.publicText(author, "More news", "news");
         api.put(learner, "/api/recommendations/not-interested/" + dull, "", 204);
-        // news now counts -4 (outside my topics), food +3: stretch-free data, so check the topic shelf and For you
         JsonNode recs = fx.recommendations(learner);
         assertThat(shelf(recs, "topic").get("category").asString()).isEqualTo("food");
         assertThat(ids(shelf(recs, "for-you"))).containsExactly(liked, news);
@@ -97,8 +90,6 @@ class RecommendationFeedbackApiTest {
         api.put(learner, "/api/recommendations/not-interested/" + secret, "", 404);
         api.put(learner, "/api/recommendations/not-interested/999999", "", 404);
     }
-
-    // ---- interests ----
 
     @Test
     void interestsCanBeSavedReadAndCleared() throws Exception {
@@ -126,8 +117,6 @@ class RecommendationFeedbackApiTest {
         assertThat(topic.get("category").asString()).isEqualTo("food");
         assertThat(ids(topic)).containsExactly(food);
     }
-
-    // ---- events ----
 
     @Test
     void impressionsAndOpensAreLoggedWithShelfAndPosition() throws Exception {
@@ -170,8 +159,6 @@ class RecommendationFeedbackApiTest {
         api.post(learner, "/api/recommendations/events", "{\"type\":\"impression\",\"shelf\":\"for-you\",\"items\":["
                 + hundred + "]}", 204);
     }
-
-    // ---- deleting a text ----
 
     @Test
     void deletingATextDeletesItsDismissalsAndEvents() throws Exception {

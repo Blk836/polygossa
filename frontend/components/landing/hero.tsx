@@ -36,7 +36,6 @@ export function LandingHeader({ signedIn }: { signedIn: boolean }) {
   );
 }
 
-/** "I want to learn…" chips: each starts sign-up with that language chosen. */
 export function LanguagePicker({ tone = "plain" }: { tone?: "plain" | "inverse" }) {
   const chip = tone === "inverse"
     ? "border-accent-ink/30 text-accent-ink hover:bg-accent-ink/10"

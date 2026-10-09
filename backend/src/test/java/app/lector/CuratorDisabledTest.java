@@ -10,10 +10,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Scenario: without a curator token on the backend, bulk import is off and looks as if it doesn't exist. The shared
- * {@link ApiTest} app runs with no curator token.
- */
 @ApiTest
 class CuratorDisabledTest {
 
@@ -47,6 +43,6 @@ class CuratorDisabledTest {
                     null, 404);
         }
         api.send(MockMvcRequestBuilders.get("/api/curator/options"), learner, 404);
-        assertThat(library.find()).isEmpty(); // nothing was imported, so the library account was never created
+        assertThat(library.find()).isEmpty();
     }
 }

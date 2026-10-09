@@ -145,7 +145,6 @@ public class ClassroomService {
         assignments.delete(a);
     }
 
-    /** Teachers can remove any student; students can remove themselves (leave the class). */
     @Transactional
     public void removeMember(User user, Long classId, Long studentId) {
         Classroom c = loadVisible(user, classId);
@@ -174,7 +173,6 @@ public class ClassroomService {
         events.publishEvent(new ClassMembersChanged(teacher.getId()));
     }
 
-    /** Aggregate reading progress and vocabulary growth per student, in the class's language. */
     @Transactional(readOnly = true)
     public ClassProgress progress(User teacher, Long classId) {
         Classroom c = loadTaught(teacher, classId);

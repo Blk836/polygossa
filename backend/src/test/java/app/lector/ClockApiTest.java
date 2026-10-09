@@ -10,11 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 
-/**
- * Like {@link ApiTest}, but the app's clock is {@link TestClock#CLOCK}, which tests move to cross days and deadlines.
- * Every class with this setup shares one app (on its own database, so the fixed clock never meets data written
- * against the real one); the clock goes back to its start before each test, so no test sees time another one moved.
- */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

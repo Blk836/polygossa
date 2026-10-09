@@ -3,14 +3,9 @@ import type { Construct } from "constructs";
 import { userPool } from "./login.ts";
 
 export interface QaProps extends cdk.StackProps {
-  /** The owner's Google OAuth client (cdk.json's `google-client-id`); one client serves both pools. */
   readonly googleClientId?: string;
 }
 
-/**
- * The QA resources: local runs (the QA environment) sign in through this user pool, kept apart from production's so
- * local accounts never mix with real ones. Its database stays in Docker on the developer's machine.
- */
 export class QaStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: QaProps = {}) {
     super(scope, id, props);

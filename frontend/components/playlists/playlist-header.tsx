@@ -10,10 +10,6 @@ import type { PlaylistDetail, PlaylistSummary } from "@/lib/playlist-types";
 import { Button, ErrorNote, Field, LinkButton, inputClass } from "../ui";
 import { SavePlaylistButton } from "./save-playlist";
 
-/**
- * Title, description and progress, the Start / Continue button, and for the owner: edit, share, copy link, delete;
- * for everyone else: Save.
- */
 export function PlaylistHeader({ detail, onChanged, onDeleted }: {
   detail: PlaylistDetail;
   onChanged: (p: PlaylistSummary) => void;
@@ -55,7 +51,6 @@ function Meta({ playlist: p }: { playlist: PlaylistSummary }) {
   );
 }
 
-/** On a shared playlist: the owner's private items are left out for everyone else. */
 function PrivateNote({ count }: { count: number }) {
   if (count === 0) return null;
   return (

@@ -19,10 +19,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Feature: Import my words from LingQ and Readlang (docs/acceptance/word-import.feature), import history: a successful
- * import replaces earlier rows for the same source and language; a failure replaces only an earlier failure.
- */
 @YouTubeApiTest
 class WordImportHistoryApiTest {
 
@@ -47,7 +43,6 @@ class WordImportHistoryApiTest {
         me = api.signupPro();
     }
 
-    /** A LingQ key whose account has one French, German and Spanish word, so every import succeeds. */
     private static String goodKey() {
         String key = "k" + UUID.randomUUID().toString().replace("-", "");
         YouTubeApiTest.LINGQ.account(key).card("fr", "maison", 0, 0, null, null).card("de", "Haus", 0, 0, null, null);
@@ -66,7 +61,6 @@ class WordImportHistoryApiTest {
         return api.send(req, user, 202);
     }
 
-    /** Polls the import until it has finished, then returns its id. */
     private long await(String user, JsonNode started) throws Exception {
         long id = started.get("id").asLong();
         long deadline = System.currentTimeMillis() + 15_000;
@@ -88,7 +82,6 @@ class WordImportHistoryApiTest {
         return await(user, lingq(user, "rejected", language));
     }
 
-    /** My history as "id source language state", newest first. */
     private List<String> history(String user) throws Exception {
         List<String> out = new ArrayList<>();
         for (JsonNode job : api.get(user, "/api/word-imports", 200)) {

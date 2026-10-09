@@ -16,11 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * A fake S3 on localhost for backend tests (path-style requests: /bucket/key): PUT stores an object, GET returns it
- * (whole, or the part an HTTP Range asks for), DELETE removes it. {@link #fail} makes every request answer 500, as an
- * unreachable or broken S3 would. Every request is recorded as "METHOD /bucket/key".
- */
 public final class S3Stub implements AutoCloseable {
 
     private static final Pattern RANGE = Pattern.compile("bytes=(\\d+)-(\\d*)");
@@ -41,7 +36,6 @@ public final class S3Stub implements AutoCloseable {
         return "http://127.0.0.1:" + server.getAddress().getPort();
     }
 
-    /** Forgets every object and request, and answers normally again. */
     public void reset() {
         objects.clear();
         types.clear();
@@ -53,7 +47,6 @@ public final class S3Stub implements AutoCloseable {
         this.failing = failing;
     }
 
-    /** Stored objects by "bucket/key". */
     public Map<String, byte[]> objects() {
         return objects;
     }
@@ -137,7 +130,6 @@ public final class S3Stub implements AutoCloseable {
         }
     }
 
-    /** The request body, decoded from the SDK's aws-chunked encoding when it uses it. */
     private static byte[] body(HttpExchange exchange) throws IOException {
         byte[] raw;
         try (InputStream in = exchange.getRequestBody()) {
@@ -150,7 +142,6 @@ public final class S3Stub implements AutoCloseable {
         return chunked ? dechunk(raw) : raw;
     }
 
-    /** aws-chunked: "<hex size>[;chunk-signature=…]\r\n<data>\r\n" repeated, ending with a zero-size chunk. */
     static byte[] dechunk(byte[] raw) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         int pos = 0;

@@ -21,7 +21,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Feature: Japanese, Chinese and Korean are not offered for learning (docs/acceptance/learning-languages.feature). */
 @ApiTest
 class LearningLanguagesApiTest {
 
@@ -51,7 +50,6 @@ class LearningLanguagesApiTest {
         assertThat(error.get("message").asString()).contains("isn't offered for learning");
     }
 
-    /** A public text stored in a paused language, as rows from before this change are. */
     private Text storedPublicText(User owner, Language language) {
         Text t = new Text(owner, "Paused " + language.code(), language, "text");
         t.setTokensJson("[]");
@@ -155,7 +153,6 @@ class LearningLanguagesApiTest {
         assertThat(languages(api.get(user, "/api/playlists", 200))).doesNotContainAnyElementsOf(PAUSED);
         assertThat(languages(api.get(user, "/api/playlists/shared", 200))).doesNotContainAnyElementsOf(PAUSED);
 
-        // Nothing is deleted: the rows are all still there.
         assertThat(texts.findAllById(paused)).hasSize(3);
     }
 

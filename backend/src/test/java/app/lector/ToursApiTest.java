@@ -11,7 +11,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** feature-tours.feature: which first-visit tours an account still gets, kept on the account. */
 @ApiTest
 class ToursApiTest {
 

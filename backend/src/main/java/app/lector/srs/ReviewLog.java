@@ -16,7 +16,6 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDate;
 
-/** One flashcard review; drives the daily goal and streak. */
 @Entity
 @Table(name = "review_logs", indexes = @Index(name = "idx_review_user_date", columnList = "user_id,review_date"))
 public class ReviewLog {
@@ -45,7 +44,6 @@ public class ReviewLog {
     @Column(nullable = false)
     private Instant reviewedAt = Instant.now();
 
-    /** Calendar day in the user's time zone. */
     @Column(name = "review_date", nullable = false)
     private LocalDate reviewDate;
 

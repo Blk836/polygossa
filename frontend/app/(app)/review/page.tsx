@@ -12,7 +12,6 @@ import { languageName } from "@/lib/languages";
 import { HOME } from "@/lib/nav";
 
 function CaughtUp({ ahead, onPractiseAhead }: { ahead: boolean; onPractiseAhead: () => void }) {
-  // Where the card would be: Review's tour points here when nothing is due.
   return (
     <div data-tour="review-card">
       <Empty title={ahead ? "Nothing left to practise" : "All caught up!"}>

@@ -14,7 +14,6 @@ import java.util.TreeMap;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** The admin panel's figures: users, plans, sign-ups, active users and content, by UTC day. */
 @Service
 public class AdminStats {
 

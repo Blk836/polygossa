@@ -13,12 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-/** Feature: Reading, Listening and Writing levels from the learner's evidence (docs/acceptance/skill-levels.feature). */
 class SkillLevelsTest {
 
     private static final Map<String, Integer> NONE = Map.of();
-
-    // ---- Reading ----
 
     @ParameterizedTest
     @CsvSource({
@@ -51,7 +48,6 @@ class SkillLevelsTest {
 
     @Test
     void finishedTextsCountAtTheirLevelAndBelow() {
-        // 1 B1 + 2 B2 = 3 texts at B1 or harder
         assertThat(SkillLevels.reading(Language.ES, 600, Map.of("B1", 1, "B2", 2)).level()).isEqualTo("A2");
     }
 
@@ -100,8 +96,6 @@ class SkillLevelsTest {
         assertThat(r.evidence()).isEqualTo(finished);
     }
 
-    // ---- Listening ----
-
     @Test
     void noListeningIsNotEnoughData() {
         Skill l = SkillLevels.listening(Language.ES, 3000, NONE);
@@ -146,8 +140,6 @@ class SkillLevelsTest {
         assertThat(l.evidence()).isEqualTo(finished);
     }
 
-    // ---- Writing ----
-
     @Test
     void noGradedTestsIsNotEnoughData() {
         Skill w = SkillLevels.writing(List.of());
@@ -163,11 +155,8 @@ class SkillLevelsTest {
 
     @Test
     void recentGradesWeighMore() {
-        // newest first, weights 5,4,3,2,1: C1 has 5+4 = 9 of 15
         assertThat(SkillLevels.writing(List.of("C1", "C1", "A1", "A1", "A1")).level()).isEqualTo("C1");
-        // A1 has 3+2+1 = 6 of 15, under half
         assertThat(SkillLevels.writing(List.of("A2", "A2", "A1", "A1", "A1")).level()).isEqualTo("A2");
-        // exactly half (7 of 14) goes to the lower level
         assertThat(SkillLevels.writing(List.of("A1", "B2", "B2", "A1")).level()).isEqualTo("A1");
         assertThat(SkillLevels.writing(List.of("B2", "A1", "A1", "B2")).level()).isEqualTo("A1");
         assertThat(SkillLevels.writing(List.of("A1", "B2")).level()).isEqualTo("A1");
@@ -195,8 +184,6 @@ class SkillLevelsTest {
     void writingConfidence(int tests, Confidence confidence) {
         assertThat(SkillLevels.writing(java.util.Collections.nCopies(tests, "B1")).confidence()).isEqualTo(confidence);
     }
-
-    // ---- Overall ----
 
     private static Skill at(String level) {
         return new Skill(level, Confidence.LOW, 1);

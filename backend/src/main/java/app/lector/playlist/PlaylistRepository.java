@@ -14,7 +14,6 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
 
     List<Playlist> findByOwnerIdAndLanguageAndTitle(Long ownerId, Language language, String title);
 
-    /** The user's playlists in these languages, newest first. */
     @Query("""
             select p from Playlist p join fetch p.owner
             where p.owner.id = :ownerId and p.language in :languages
@@ -22,7 +21,6 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
             """)
     List<Playlist> findMine(@Param("ownerId") Long ownerId, @Param("languages") Collection<Language> languages);
 
-    /** Shared playlists, most recently changed first. {@code q} must be a lower-cased LIKE pattern or null. */
     @Query("""
             select p from Playlist p join fetch p.owner
             where p.isPublic = true and p.language in :languages

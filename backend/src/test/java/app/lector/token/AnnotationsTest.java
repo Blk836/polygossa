@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-/** Caption annotations like "[musique]" are not words. */
 class AnnotationsTest {
 
     private static List<Token> tokenize(Language language, String text) {

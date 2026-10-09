@@ -11,11 +11,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.translate.TranslateClient;
 import software.amazon.awssdk.services.translate.TranslateClientBuilder;
 
-/**
- * Amazon Translate, the only way the app reaches it. Off (and never calling AWS) unless {@code app.translation.enabled}
- * is set. Credentials come from the SDK's default chain: the task's role on AWS. A failure or an answer slower than the
- * timeout is "no translation"; the caller tries again on a later lookup.
- */
 @Component
 public class TranslationClient {
 
@@ -42,7 +37,6 @@ public class TranslationClient {
         return client != null;
     }
 
-    /** {@code text} translated from {@code source} into {@code target} (language codes), or empty on any failure. */
     public Optional<String> translate(String text, String source, String target) {
         if (client == null) {
             return Optional.empty();

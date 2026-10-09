@@ -11,7 +11,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-/** A category the learner said they like (onboarding), for recommendations before there is any history. */
 @Entity
 @Table(name = "user_interests", uniqueConstraints = @UniqueConstraint(name = "uk_interest",
         columnNames = {"user_id", "category"}))

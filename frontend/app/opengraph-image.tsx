@@ -1,9 +1,6 @@
 import { ImageResponse } from "next/og";
 import { BRAND } from "@/lib/brand";
 
-// The picture chat apps and social sites show for a shared link: the promise, beside a line of the reader with its
-// word colours (the light theme's paper, ink and rubric from globals.css; an image can't use CSS variables).
-
 export const alt = `${BRAND}: learn a language from things you actually want to read`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";

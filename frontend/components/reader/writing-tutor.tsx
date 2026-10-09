@@ -6,7 +6,6 @@ import { languageName } from "@/lib/languages";
 import type { LanguageCode, WritingSubmission } from "@/lib/types";
 import { Button, ErrorNote, UpgradeNote, inputClass } from "../ui";
 
-/** AI writing tutor: write a short response to the text in the target language and get corrections. */
 export function WritingTutor({ textId, language, isPro }: { textId: number; language: LanguageCode; isPro: boolean }) {
   const [content, setContent] = useState("");
   const [history, setHistory] = useState<WritingSubmission[]>([]);

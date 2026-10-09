@@ -22,10 +22,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Feature: login with Cognito (docs/acceptance/cognito-login.feature), set up as production is: Cognito configured
- * (a fake pool, {@link CognitoStub}) and the app's own accounts and auto-login off.
- */
 @SpringBootTest(properties = {
         "test.database=cognito",
         "app.seed-samples=false",
@@ -70,7 +66,6 @@ class CognitoLoginApiTest {
         return name + "-" + System.nanoTime() + "@example.com";
     }
 
-    /** Starts a session the way the frontend does after Cognito's sign-in returns. */
     private JsonNode startSession(String access, String id, String nativeLanguage, int status) throws Exception {
         String body = json.writeValueAsString(java.util.Map.of("idToken", id, "nativeLanguage", nativeLanguage));
         var response = mvc.perform(post("/api/auth/cognito").header("Authorization", "Bearer " + access)

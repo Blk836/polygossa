@@ -42,7 +42,6 @@ interface FeatureProps {
   points: string[];
   visual: ReactNode;
   flip?: boolean;
-  /** Only on the Pro plan: says so beside the title. */
   pro?: boolean;
 }
 

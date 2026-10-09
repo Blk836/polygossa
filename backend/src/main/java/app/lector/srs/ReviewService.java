@@ -62,10 +62,6 @@ public class ReviewService {
         this.plans = plans;
     }
 
-    /**
-     * Due cards, oldest first, words and sentences interleaved. With {@code ahead} the queue also includes
-     * not-yet-due cards so a user can keep practising after clearing the day's reviews.
-     */
     @Transactional(readOnly = true)
     public List<Card> queue(User user, Language language, int limit, boolean ahead) {
         plans.require(user, PlanService.Feature.SRS);
@@ -146,7 +142,6 @@ public class ReviewService {
                 reviewedToday, goal, reviewedToday >= goal, streak(perDay, today, goal), history);
     }
 
-    /** Consecutive days meeting the goal, ending today (or yesterday if today's goal isn't met yet). */
     static int streak(Map<LocalDate, Long> perDay, LocalDate today, int goal) {
         LocalDate day = perDay.getOrDefault(today, 0L) >= goal ? today : today.minusDays(1);
         int streak = 0;

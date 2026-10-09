@@ -12,7 +12,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Saving (bookmarking) playlists, like texts in Explore: who can save which, and the Saved list. */
 @ApiTest
 class PlaylistBookmarkApiTest {
 
@@ -33,7 +32,6 @@ class PlaylistBookmarkApiTest {
         owner = api.signupPro();
     }
 
-    /** A playlist of {@code owner}'s with one public text, shared. */
     private long shared(String title, String language) throws Exception {
         long p = create(api, owner, title, language);
         api.put(owner, "/api/playlists/" + p + "/items/" + api.createText(owner, language, "Un.", true), "", 204);

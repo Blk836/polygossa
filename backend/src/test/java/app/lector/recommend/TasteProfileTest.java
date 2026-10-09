@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
-/** Feature: Explore recommendations, the learner's taste (docs/acceptance/explore-recommendations.feature). */
 class TasteProfileTest {
 
     private static Engaged engaged(double weight, float[] vector, Category category, String... topics) {
@@ -23,8 +22,6 @@ class TasteProfileTest {
     private static TasteProfile of(Engaged... engaged) {
         return TasteProfile.of(List.of(engaged), Set.of(), List.of());
     }
-
-    // ---- taste vector ----
 
     @Test
     void theTasteIsTheWeightedAverageOfWhatWasEnjoyed() {
@@ -65,12 +62,9 @@ class TasteProfileTest {
         assertThat(p.taste()).containsExactly(0f, 1f);
     }
 
-    // ---- topics and categories ----
-
     @Test
     void topicAffinityIsTheMeanNormalisedWeightOfTheItemsTagsAndCategory() {
         TasteProfile p = of(engaged(4, null, Category.FOOD, "cooking", "spain"), engaged(-2, null, Category.NEWS, "politics"));
-        // weights: cooking 4, spain 4, category:food 4, politics -2, category:news -2; max |w| = 4
         assertThat(p.affinity(List.of("cooking"), Category.FOOD)).isCloseTo(1, within(1e-9));
         assertThat(p.affinity(List.of("cooking", "football"), Category.FOOD)).isCloseTo(2.0 / 3, within(1e-9));
         assertThat(p.affinity(List.of("politics"), Category.NEWS)).isCloseTo(-0.5, within(1e-9));
@@ -138,23 +132,17 @@ class TasteProfileTest {
         assertThat(p.favouriteTag(List.of())).isEmpty();
     }
 
-    // ---- format ----
-
     @Test
     void formatAffinityFromWhatWasEnjoyed() {
         TasteProfile p = of(format(3, true, 200), format(1, false, 5000));
-        // kind: video (3 - 1) / 4 = 0.5; length: short (3 - 1) / 4 = 0.5
         assertThat(p.formatAffinity(true, 100)).isCloseTo(0.5, within(1e-9));
-        // text: (1 - 3) / 4; long: (1 - 3) / 4
         assertThat(p.formatAffinity(false, 2000)).isCloseTo(-0.5, within(1e-9));
-        // video, but medium length: (0.5 + (0 - 4) / 4) / 2
         assertThat(p.formatAffinity(true, 800)).isCloseTo(-0.25, within(1e-9));
     }
 
     @Test
     void lengthBucketsAreUnderThreeHundredUnderFifteenHundredAndLonger() {
         TasteProfile p = of(format(1, false, 299), format(1, false, 300), format(1, false, 1499), format(1, false, 1500));
-        // kind: all text; length: each bucket gets its own weight against the rest
         assertThat(p.formatAffinity(false, 0)).isCloseTo((1 + (1 - 3) / 4.0) / 2, within(1e-9));
         assertThat(p.formatAffinity(false, 1000)).isCloseTo((1 + (2 - 2) / 4.0) / 2, within(1e-9));
         assertThat(p.formatAffinity(false, 9000)).isCloseTo((1 + (1 - 3) / 4.0) / 2, within(1e-9));

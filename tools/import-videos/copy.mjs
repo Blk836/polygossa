@@ -1,6 +1,3 @@
-// Copy mode: each list entry is read, finished, from a source backend and saved on the target, so the target never
-// asks YouTube. A copier stands in for the client's importVideo, so the run, report and files work as for imports.
-
 const RENAMED = { imported: "copied", "would import": "would copy" };
 
 export function makeCopier({ source, target }) {

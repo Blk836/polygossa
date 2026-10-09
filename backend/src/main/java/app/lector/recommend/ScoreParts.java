@@ -1,9 +1,5 @@
 package app.lector.recommend;
 
-/**
- * A ranked card's unweighted score parts, sent with the card and logged back with its impression so weights can be
- * learned. Boxed: an event may leave a part out, which makes the whole batch invalid.
- */
 public record ScoreParts(Double interest, Double topic, Double comprehension, Double level, Double popular,
                          Double fresh, Double format) {
 
@@ -19,7 +15,6 @@ public record ScoreParts(Double interest, Double topic, Double comprehension, Do
         return new Double[] {interest, topic, comprehension, level, popular, fresh, format};
     }
 
-    /** All seven present, each in [-1, 50]. */
     boolean valid() {
         for (Double v : boxed()) {
             if (v == null || v.isNaN() || v < MIN || v > MAX) {

@@ -2,7 +2,6 @@ import { languageName } from "@/lib/languages";
 import { milestone } from "@/lib/progress";
 import type { LanguageCode } from "@/lib/types";
 
-/** Known words in the current language, with a bar to the next milestone. */
 export function MilestoneCard({ known, language }: { known: number; language: LanguageCode | null }) {
   const m = milestone(known);
   const name = language ? `${languageName(language)} ` : "";

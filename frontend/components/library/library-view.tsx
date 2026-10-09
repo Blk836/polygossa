@@ -28,7 +28,6 @@ import {
 import { withKind, withLanguage } from "@/lib/media";
 import type { TextSummary } from "@/lib/types";
 
-/** Import starts in the current language. */
 function importHref(language: string): string {
   return language ? `/import?language=${language}` : "/import";
 }
@@ -48,14 +47,11 @@ function EmptyLibrary({ filters, language, onClear }: { filters: LibraryFilters;
   );
 }
 
-/** My library: your imports and the items you saved in Explore, in one list, with the filter bar right above it. */
 export function LibraryView({ source = "all" }: { source?: SourceFilter }) {
   const { me } = useMe();
-  // Filters restart whenever the language in the top bar changes.
   return <Library key={me.targetLanguage ?? "all"} source={source} language={me.targetLanguage ?? ""} />;
 }
 
-/** Your imports, then your saved items (each once), of one kind; the caller filters source and category. */
 function useLibraryTexts(kind: LibraryFilters["kind"], language: string) {
   const list = (path: string) => api<TextSummary[]>(withLanguage(withKind(path, kind), language));
   const { data: texts, setData: setTexts, error, setError } = useRemembered(`library:${kind}:${language}`, () =>
@@ -64,7 +60,6 @@ function useLibraryTexts(kind: LibraryFilters["kind"], language: string) {
   return { texts, setTexts, error, setError };
 }
 
-/** Unsave for a saved card: it leaves the list once the server agrees. */
 function UnsaveButton({ text, onUnsaved, onError }: { text: TextSummary; onUnsaved: (t: TextSummary) => void; onError: (message: string) => void }) {
   async function unsave() {
     try {
@@ -81,7 +76,6 @@ function UnsaveButton({ text, onUnsaved, onError }: { text: TextSummary; onUnsav
   );
 }
 
-/** The cards the filters let through, or why there are none. */
 function Results({ shown, filters, language, onClear, onChanged, onRemoved, onError }: {
   shown: TextSummary[];
   filters: LibraryFilters;

@@ -18,11 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Timed writing tests. The situation comes from a fixed bank and can't be rerolled while a test is open; the minimum
- * length applies to early hand-ins only (at 0:00 whatever was written is taken, and a short answer's score is capped);
- * nothing is accepted after the deadline plus a short grace. Writing is kept even when grading fails.
- */
 @Service
 public class WritingTestService {
 
@@ -51,7 +46,6 @@ public class WritingTestService {
         this.json = json;
     }
 
-    /** Starts a test, or returns the one already open in this language. */
     @Transactional
     public TestDto start(User user, Language language, String level) {
         plans.require(user, PlanService.Feature.AI);
@@ -105,7 +99,6 @@ public class WritingTestService {
         return dto(test);
     }
 
-    /** Retries grading a handed-in test whose grading failed. */
     @Transactional
     public TestDto grade(User user, Long id) {
         WritingTest test = load(user, id);

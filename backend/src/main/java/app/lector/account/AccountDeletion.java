@@ -12,16 +12,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Delete my account (docs/acceptance/gdpr.feature): removes everything of the account from the database and its
- * files from storage, in one transaction. Its texts go through {@link TextService#delete}, which also clears other
- * learners' references to them (their words keep, without the link). AccountDeletionApiTest scans every table for a
- * leftover, so a new table naming an account must be added here.
- */
 @Service
 public class AccountDeletion {
 
-    /** Tables whose rows belong to one account through user_id, deleted outright. */
     static final List<String> OWN_ROWS = List.of(
             "ai_usage", "playlist_bookmarks", "reading_progress", "reading_sessions", "recommendation_events",
             "review_logs", "sentence_cards", "text_dismissals", "text_reactions", "user_days", "user_interests",
@@ -45,13 +38,11 @@ public class AccountDeletion {
         this.users = users;
     }
 
-    /** Deletes the account once {@code confirmEmail} is its email (any case). */
     @Transactional
     public void delete(User user, String confirmEmail) {
         if (confirmEmail == null || !confirmEmail.trim().equalsIgnoreCase(user.getEmail())) {
             throw ApiException.badRequest("Type your account's email to confirm");
         }
-        // First, so a deleted account is never charged again; if Stripe can't be reached, nothing is deleted.
         billing.cancelForDeletion(user);
         long id = user.getId();
         for (Long text : jdbc.queryForList("select id from texts where owner_id = ?", Long.class, id)) {
@@ -65,7 +56,6 @@ public class AccountDeletion {
             jdbc.update("delete from " + table + " where user_id = ?", id);
         }
         jdbc.update("delete from classroom_members where student_id = ?", id);
-        // The team's moderation record stays, without saying who it was about.
         jdbc.update("update admin_actions set target_user_id = null, target_email = null where target_user_id = ?", id);
         storage.delete(user.getPhotoFile());
         users.delete(user);
@@ -86,7 +76,6 @@ public class AccountDeletion {
         jdbc.update("delete from classrooms where teacher_id = ?", id);
     }
 
-    /** Their threads (with every reply) and their replies elsewhere; those threads' reply counts follow. */
     private void deleteForumContent(long id) {
         List<Long> repliedTo = jdbc.queryForList(
                 "select distinct thread_id from forum_posts where author_id = ?", Long.class, id);

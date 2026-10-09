@@ -1,18 +1,13 @@
 import { expect, test, type Browser, type BrowserContext, type Page } from "@playwright/test";
 import type { Me } from "../lib/types";
 
-// Helpers for the profile photo specs (docs/acceptance/profile-photo.feature). Each test signs up its own users in
-// their own browser contexts, so photos never touch the shared test account other specs use.
-
 export type Person = { context: BrowserContext; page: Page; me: Me };
 
-/** Signs up a fresh user, named `name`, in a new browser context (with a touch screen when `hasTouch`). */
 export async function signUp(browser: Browser, name: string, viewport = { width: 1280, height: 900 }, hasTouch = false): Promise<Person> {
   const context = await browser.newContext({ baseURL: test.info().project.use.baseURL, viewport, hasTouch });
   const email = `photo-${Date.now()}-${Math.random().toString(36).slice(2)}@test.co`;
   const res = await context.request.post("/api/auth/signup", { data: { email, password: "password123", displayName: name } });
   expect(res.ok()).toBe(true);
-  // New accounts get first-visit tours (feature-tours.spec.ts); their tip cards aren't what these tests are about.
   expect((await context.request.patch("/api/me", { data: { tours: false } })).ok()).toBe(true);
   const page = await context.newPage();
   return { context, page, me: (await (await context.request.get("/api/me")).json()) as Me };
@@ -22,10 +17,6 @@ export async function me(page: Page): Promise<Me> {
   return (await (await page.request.get("/api/me")).json()) as Me;
 }
 
-/**
- * Draws an image in the page and returns its bytes: three vertical stripes, red | green | blue, so a crop can be told
- * apart by which colours end up where.
- */
 export async function stripes(page: Page, width: number, height: number, type = "image/png"): Promise<Buffer> {
   if (page.url() === "about:blank") await page.goto("/settings");
   const dataUrl = await page.evaluate(({ width, height, type }) => {
@@ -44,7 +35,6 @@ export async function stripes(page: Page, width: number, height: number, type = 
 
 const MIME: Record<string, string> = { png: "image/png", jpg: "image/jpeg", webp: "image/webp" };
 
-/** Picks a file in Profile's hidden photo input. */
 export async function pick(page: Page, buffer: Buffer, name: string, mimeType = MIME[name.split(".").pop()!]) {
   await page.getByTestId("photo-input").setInputFiles({ name, mimeType, buffer });
 }
@@ -54,14 +44,12 @@ export const photoSection = (page: Page) => page.getByRole("region", { name: "Pr
 export const profileAvatar = (page: Page) => photoSection(page).getByTestId("avatar");
 export const accountButton = (page: Page) => page.getByRole("banner").getByRole("button", { name: "Account" });
 
-/** Picks an image and saves it through the crop dialog as it opens (centred, zoom 1). */
 export async function uploadPhoto(page: Page, buffer: Buffer, name = "me.png") {
   await pick(page, buffer, name);
   await cropDialog(page).getByRole("button", { name: "Save photo" }).click();
   await expect(cropDialog(page)).toBeHidden();
 }
 
-/** Colour names at points of a served photo, each point given as a fraction of its width and height. */
 export async function coloursAt(page: Page, url: string, points: [number, number][]) {
   return page.evaluate(async ({ url, points }) => {
     const res = await fetch(url);

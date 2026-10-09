@@ -5,10 +5,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** The Anki note type (model) the export uses: its fields, card template and styling. */
 final class AnkiModel {
 
-    /** Field order is fixed: notes store their values in this order. New fields go at the end. */
     static final List<String> FIELDS =
             List.of("Word", "Definition", "Pronunciation", "PartOfSpeech", "Context", "Example", "Language", "Notes");
 

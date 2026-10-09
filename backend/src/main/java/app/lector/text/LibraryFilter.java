@@ -2,7 +2,6 @@ package app.lector.text;
 
 import app.lector.token.Language;
 
-/** The library list filters; a null filter matches everything, except that no language means only offered ones. */
 public final class LibraryFilter {
 
     private LibraryFilter() {}

@@ -7,7 +7,6 @@ import { Button, ErrorNote, PageHeader, Pager, Spinner, inputClass } from "@/com
 import { usersPath, type AdminActionRow, type AdminStats, type AdminUserPage } from "@/lib/admin";
 import { api, errorMessage } from "@/lib/api";
 
-/** Loads a GET endpoint again whenever `key` changes; the last good value stays while reloading. */
 function useAdmin<T>(path: string, key: number): { data: T | null; error: string | null } {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +68,6 @@ function Actions({ rows }: { rows: AdminActionRow[] }) {
   );
 }
 
-/** The team's panel: how the product is doing, and moderation of accounts. Admins only (the API answers 403 otherwise). */
 export default function AdminPage() {
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState({ q: "", page: 0 });

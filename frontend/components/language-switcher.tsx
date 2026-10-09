@@ -7,8 +7,6 @@ import type { LanguageCode, Me } from "@/lib/types";
 import { useMe } from "./me-context";
 import { useDismiss } from "./use-dismiss";
 
-/** The language being studied right now. Library, Explore, Words and Review all show this language only. Plain like
- * the counters beside it: their soft pill shows only on hover or while the menu is open. */
 export function LanguageSwitcher() {
   const { me, setMe } = useMe();
   const [open, setOpen] = useState(false);

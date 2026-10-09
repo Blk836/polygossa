@@ -33,14 +33,9 @@ import { ListenContext, useReadingSession } from "./use-reading-session";
 import { useVocabularyStatus } from "./use-vocabulary-status";
 import { VideoPanel } from "./video-panel";
 
-/**
- * The reader, the same for texts, audio texts and videos: header, paged text with the word popup, and (with audio
- * or video) one bottom player bar. Videos add the player itself, beside the text on wide screens.
- */
 export function Reader({ initial, initialSettings, playlist }: {
   initial: TextDetail;
   initialSettings: ReaderSettings;
-  /** The playlist the text was opened from (`?playlist=`), if any. */
   playlist: ReaderPlaylist | null;
 }) {
   const { me, isPro, refresh } = useMe();
@@ -76,10 +71,8 @@ export function Reader({ initial, initialSettings, playlist }: {
   const { autoSave, recordLookup, pickMeaning, setStatus: setVocabStatus, markRemainingKnown } = vocab;
 
   const sentences = useMemo(() => sentenceTexts(tokens), [tokens]);
-  // Captions put a few words on each line; transcripts flow them into paragraphs instead.
   const paragraphs = useMemo(() => (video ? transcriptParagraphs(tokens) : toParagraphs(tokens)), [tokens, video]);
   const measuring = useMeasuring();
-  // Swapping the video layout can change the room below the text without resizing anything, so it refits too.
   const fitted = useFitPages(paragraphs, measureRef, articleRef, measuring, settings.video);
   const paging = useReaderPages(text.id, tokens, paragraphs, fitted, text.progress?.position ?? null);
   const { page, pages, goTo, goToToken } = paging;
@@ -89,13 +82,11 @@ export function Reader({ initial, initialSettings, playlist }: {
   const stats = useMemo(() => readerStats(tokens, vocab.statuses), [tokens, vocab.statuses]);
   const unseenHere = useMemo(() => unseenOnPage(paging.paragraphs, vocab.statuses), [paging.paragraphs, vocab.statuses]);
 
-  // Paused media waits at the start of the page shown (none on page 1) until first played or seeked.
   const cueToken = page > 1 ? (pageRange(paging.paragraphs)?.from ?? null) : null;
 
   const { reveal, turnPage } = usePageTurns({ page, goTo, goToToken, articleRef, place, close, active });
   const markPageKnown = usePageKnown({ textId: text.id, statuses: vocab.statuses, markRemainingKnown, onSaved, onError: setError });
 
-  /** Pager and ←/→: turning forward first marks the page's new words known, if that setting is on. */
   const changePage = useCallback(
     (n: number) => {
       if (settings.pageKnown && n === page + 1 && n <= paging.count) markPageKnown(paging.paragraphs);
@@ -136,7 +127,6 @@ export function Reader({ initial, initialSettings, playlist }: {
     [target, language, text.id],
   );
 
-  // A popup whose word is on another page (audio turned the page) stays hidden until that page is back.
   const shown = onPage(target, pages, page);
   const input = useReaderInput({
     tokens, sel, setSel: popup.setSel, popup: shown && shown.kind, phraseMode: popup.phraseMode, openWord, openPhrase, setStatus, close,

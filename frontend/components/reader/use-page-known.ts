@@ -8,16 +8,11 @@ import { pageRange, pageTokens, unseenOnPage, type ReaderPage } from "./reader-p
 interface Options {
   textId: number;
   statuses: Record<string, WordStatus>;
-  /** Colours the given tokens' unseen words as known. */
   markRemainingKnown: (tokens: Token[]) => void;
   onSaved: () => void;
   onError: (message: string) => void;
 }
 
-/**
- * "Turning the page marks it known" (as in LingQ): the words on a page that still have no status become known.
- * Colours change once the server has saved them.
- */
 export function usePageKnown({ textId, statuses, markRemainingKnown, onSaved, onError }: Options) {
   return useCallback(
     (page: ReaderPage) => {

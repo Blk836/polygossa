@@ -5,16 +5,12 @@ import type { Token } from "@/lib/types";
 import { fitPages, reservedBelow, splitPages, wordBreaks, type WordBox } from "./reader-fit";
 import { PAGE_WORDS, SINGLE_PAGE_MAX_WORDS, type ReaderPage } from "./reader-pages";
 
-/** Room the finish panel takes below the last page, until it has been measured. */
 const FINISH_ESTIMATE = 96;
-/** Pages never get shorter than this many lines, even if they then scroll (a tiny window; a phone with the video). */
 const MIN_LINES = 3;
-/** Rounding slack, in px. */
 const SLACK = 4;
 
 const px = (value: string) => parseFloat(value) || 0;
 
-/** Every word's line box in the hidden copy of the whole text (see TextMeasure). */
 function wordBoxes(measure: HTMLElement, breaks: ReturnType<typeof wordBreaks>): WordBox[] {
   const origin = measure.getBoundingClientRect().top;
   const lineHeight = px(getComputedStyle(measure).lineHeight);
@@ -23,16 +19,11 @@ function wordBoxes(measure: HTMLElement, breaks: ReturnType<typeof wordBreaks>):
   return breaks.flatMap((b) => {
     const r = rects.get(b.index);
     if (!r) return [];
-    const leading = Math.max(0, (lineHeight - r.height) / 2); // a span covers the glyphs, its line box the leading too
+    const leading = Math.max(0, (lineHeight - r.height) / 2);
     return [{ ...b, top: r.top - origin - leading, bottom: r.bottom - origin + leading }];
   });
 }
 
-/**
- * Room for the text: the window height less everything above the text (nav, header, video on phones) and below it
- * (pager, page padding, the fixed player bar). The finish panel only shows on the last page, so it is left out here
- * and returned separately (null when it isn't the "Finish lesson" prompt).
- */
 function room(text: HTMLElement): { height: number; finish: number | null } {
   const column = text.parentElement!;
   const layout = column.parentElement!;
@@ -42,7 +33,6 @@ function room(text: HTMLElement): { height: number; finish: number | null } {
   const end = column.lastElementChild!.getBoundingClientRect().bottom;
   const padding = px(getComputedStyle(layout).paddingBottom) + px(getComputedStyle(main).paddingBottom);
   const box = text.getBoundingClientRect();
-  // The player bar, and a mini video player when it floats over the text column (on phones it is above the text).
   const docks = [...document.querySelectorAll<HTMLElement>("[data-bottom-bar], [data-floating-player]")]
     .filter((el) => getComputedStyle(el).position === "fixed")
     .map((el) => el.getBoundingClientRect());
@@ -53,18 +43,12 @@ function room(text: HTMLElement): { height: number; finish: number | null } {
 
 const noSubscribe = () => () => {};
 
-/** False on the server and while hydrating, then true: the hidden copy is only rendered in the browser. */
 export function useMeasuring(): boolean {
   return useSyncExternalStore(noSubscribe, () => true, () => false);
 }
 
 const same = (a: number[] | null, b: number[]) => a !== null && a.length === b.length && a.every((x, k) => x === b[k]);
 
-/**
- * Pages cut to fit the screen, measured in the browser and redone when the window, the text size or the text
- * changes. Null until measured (the server renders word-count pages instead). `measuring` says the hidden copy
- * behind `measureRef` is rendered; a change of `layout` refits too.
- */
 export function useFitPages(
   paragraphs: Token[][],
   measureRef: RefObject<HTMLDivElement | null>,
@@ -81,8 +65,6 @@ export function useFitPages(
     const text = textRef.current;
     if (!measure || !text) return;
     const fit = () => {
-      // Leaving the reader detaches it before this effect is cleaned up, and the observer reports the detached
-      // layout shrinking to nothing: there is nothing to measure then.
       if (!text.isConnected || !measure.isConnected) return;
       const space = room(text);
       if (space.finish !== null) finish.current = space.finish;
@@ -95,9 +77,6 @@ export function useFitPages(
       });
       setStarts((prev) => (same(prev, next) ? prev : next));
     };
-    // Size changes of the hidden copy (width, text size, fonts loading) and of the layout (page turns, the player
-    // bar opening) both refit; a refit that changes nothing doesn't re-render. Observers stay silent in a background
-    // tab, so the first fit also runs from a timer.
     const observer = new ResizeObserver(fit);
     observer.observe(measure);
     observer.observe(text.parentElement!.parentElement!);

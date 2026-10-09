@@ -3,10 +3,8 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { TEXT_SIZES, type Follow, type ReaderSettings, type TextWidth } from "./reader-settings";
 
-/** The reader header's tool buttons: round, quiet until hovered. */
 export const toolButton = "flex size-8 items-center justify-center rounded-full text-sm text-muted transition-colors hover:bg-card hover:text-ink";
 
-/** A button that opens a small panel below it; Escape or a click outside closes it. */
 function Menu({ label, button, children }: { label: string; button: ReactNode; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
@@ -65,7 +63,6 @@ const WIDTHS: { value: TextWidth; label: string }[] = [
   { value: "full", label: "Full" },
 ];
 
-/** Standard (a book-like column), Wide or Full: how many words fit on a line on a big screen. */
 function TextWidthPicker({ value, onChange }: { value: TextWidth; onChange: (width: TextWidth) => void }) {
   return (
     <div className="flex items-center justify-between gap-3 py-1.5">

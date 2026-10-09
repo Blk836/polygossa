@@ -13,9 +13,6 @@ import {
   type Created,
 } from "./reader-helpers";
 
-// The wide reader (docs/acceptance/wide-reader.feature): a wider canvas with a text width setting, a slim header,
-// page arrows beside the text, and a video beside the text or in a mini player.
-
 let created: Created | null = null;
 
 test.afterEach(async ({ page }) => {
@@ -27,7 +24,6 @@ const DESKTOP = { width: 1440, height: 900 };
 const LAPTOP = { width: 1280, height: 720 };
 const PHONE = { width: 390, height: 844 };
 
-/** A stand-in for YouTube's player API that counts the players made and keeps the iframe it made. */
 const FAKE_YOUTUBE = `
 window.__players = 0;
 window.YT = { Player: class {
@@ -89,7 +85,6 @@ test.describe("a wider canvas", () => {
     await expect.poll(async () => (await box(article(page))).width).toBeGreaterThan(wide);
     expect((await page.context().cookies()).find((c) => c.name === "lector_reader")?.value).toContain("width");
 
-    // The server renders the next page load at the chosen width: read it before any script runs.
     await page.setViewportSize(DESKTOP);
     const html = await (await page.request.get(`/read/${created.id}`)).text();
     expect(html).toContain('data-text-width="full"');
@@ -135,7 +130,6 @@ test.describe("a slim header", () => {
     const known = page.getByTestId("reader-known");
     await expect(known).toContainText("You know 0% of the words");
     await expect(known).toContainText(/new · 0 learning/);
-    // The title, its tools and the details sit above the text, each on one row.
     const title = await box(page.getByRole("heading", { level: 1 }));
     expect(Math.abs((await box(settingsButton(page))).y + 16 - (title.y + title.height / 2))).toBeLessThanOrEqual(12);
   });
@@ -145,14 +139,13 @@ test.describe("page arrows beside the text", () => {
   test.beforeEach(async ({ page }) => setReaderCookie(page, "known%3D0"));
 
   test("the right arrow turns to the next page and the left one back; none past either end", async ({ page }) => {
-    await page.setViewportSize(TALL); // four 250-word pages
+    await page.setViewportSize(TALL);
     created = await createText(page);
     await openReader(page, `/read/${created.id}`);
     await expect(pager(page)).toContainText("Page 1 of 4");
     await expect(arrow(page, "previous")).toHaveCount(0);
     const next = arrow(page, "next");
     await expect(next).toBeVisible();
-    // Beside the text, not over it, and as tall as it.
     const text = await box(article(page));
     const right = await box(next);
     expect(right.x).toBeGreaterThanOrEqual(text.x + text.width);
@@ -260,7 +253,7 @@ test.describe("video: beside the text, or a mini player", () => {
     await openReader(page, `/read/${created.id}`);
     const mini = await box(dock(page));
     const text = await box(article(page));
-    expect(mini.x).toBeLessThan(text.x + text.width); // overlaps the column at this width
+    expect(mini.x).toBeLessThan(text.x + text.width);
     const count = await pageCount(page);
     for (let n = 1; n <= count; n++) {
       await expect(pager(page)).toContainText(`Page ${n} of ${count}`);

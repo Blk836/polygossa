@@ -11,7 +11,6 @@ import { cognitoConfig } from "@/lib/cognito";
 export const metadata: Metadata = { title: "Create account" };
 
 export default async function SignupPage({ searchParams }: PageProps<"/signup">) {
-  // The splash starts in the language picked on the landing page, if any (auth-splash.feature).
   const { lang } = await searchParams;
   return (
     <AuthShell copy="Every word you learn makes the next page easier." start={typeof lang === "string" ? lang : null}>

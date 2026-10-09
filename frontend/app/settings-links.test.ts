@@ -1,5 +1,3 @@
-// Settings is split into sub-tab pages, so links into it name the page rather than an anchor on the old long page
-// (/settings#plan still redirects, for bookmarks). Checked in the source, like branding.test.ts.
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";

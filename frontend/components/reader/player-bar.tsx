@@ -38,15 +38,10 @@ function Transport({ player, playing, synced }: { player: MediaPlayer; playing: 
   );
 }
 
-/**
- * The player bar every audio text and video shares, fixed to the bottom of the screen: sentence steps, play/pause,
- * loop, seek and speed. `extra` holds panel-specific buttons (audio's Sync).
- */
 export function PlayerBar({ player, playing, duration, onClose, extra, children }: {
   player: MediaPlayer;
   playing: boolean;
   duration: number;
-  /** Null hides the close button (videos). */
   onClose: (() => void) | null;
   extra?: ReactNode;
   children?: ReactNode;

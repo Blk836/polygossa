@@ -15,7 +15,6 @@ import org.springframework.web.client.RestClientException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Minimal client for an OpenAI-compatible chat completions API that returns JSON objects. */
 @Component
 public class AiClient {
 
@@ -44,17 +43,14 @@ public class AiClient {
         return config.enabled();
     }
 
-    /** The model requests go to, recorded with results that depend on it. */
     public String model() {
         return config.model();
     }
 
-    /** Sends a system + user prompt and parses the assistant's reply as a JSON object. */
     public JsonNode completeJson(String system, String user) {
         return completeJson(system, user, DEFAULT_TEMPERATURE);
     }
 
-    /** As {@link #completeJson(String, String)}; temperature 0 asks for the same answer to the same input. */
     public JsonNode completeJson(String system, String user, double temperature) {
         if (!enabled()) {
             throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "ai_disabled",

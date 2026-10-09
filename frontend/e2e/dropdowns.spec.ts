@@ -1,9 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { cleanUp, createText, type Created } from "./reader-helpers";
 
-// Dropdowns share the cards' look: rounded corners, the app's own chevron, and (in browsers with customisable selects,
-// like Chrome) an option list drawn as a rounded card instead of the operating system's plain box.
-
 let created: Created | null = null;
 
 test.afterEach(async ({ page }) => {
@@ -39,7 +36,6 @@ function expectStyled(all: SelectLook[]) {
   for (const s of all) {
     expect(s.appearance, s.label).toBe("base-select");
     expect(s.cursor, s.label).toBe("pointer");
-    // Rounded like the cards: at least 8px, and chips are fully rounded pills.
     expect(s.radius, s.label).toBeGreaterThanOrEqual(Math.min(8, s.height / 2));
   }
 }

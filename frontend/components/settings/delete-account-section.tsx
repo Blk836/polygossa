@@ -4,7 +4,6 @@ import { useState, type FormEvent } from "react";
 import { useMe } from "../me-context";
 import { Button, ErrorNote, Field, inputClass } from "../ui";
 
-/** Settings › Privacy: delete the account and everything in it, confirmed by typing its email (gdpr.feature). */
 export function DeleteAccountSection() {
   const { me } = useMe();
   const [confirm, setConfirm] = useState("");

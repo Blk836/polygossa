@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-/** Explore's personalised shelves, in the order they are shown. */
 public enum ShelfId {
     CONTINUE,
     FOR_YOU,

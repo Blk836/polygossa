@@ -15,12 +15,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** reading-listening-goals.feature: words read, time listened and the daily goal. */
 @ClockApiTest
 class ReadingListeningApiTest {
 
     static final MutableClock CLOCK = TestClock.CLOCK;
-    /** 600 words: word n is token 2n, so a page starting at token 240 has 120 words before it. */
     static final String CONTENT = "hola ".repeat(599) + "hola.";
 
     @Autowired
@@ -53,8 +51,6 @@ class ReadingListeningApiTest {
         return today().get("wordsRead").asLong();
     }
 
-    // --- Words read ---
-
     @Test
     void turningAPageCountsItsWords() throws Exception {
         at(text, 0);
@@ -77,14 +73,14 @@ class ReadingListeningApiTest {
     @Test
     void skippingAheadIsCapped() throws Exception {
         at(text, 0);
-        at(text, 1100); // 550 words
+        at(text, 1100);
         assertThat(wordsToday()).isEqualTo(500);
     }
 
     @Test
     void finishingALessonCountsTheRest() throws Exception {
         at(text, 0);
-        at(text, 800); // 400 words
+        at(text, 800);
         api.post(token, "/api/texts/" + text + "/complete", "", 200);
         assertThat(wordsToday()).isEqualTo(600);
     }
@@ -92,11 +88,11 @@ class ReadingListeningApiTest {
     @Test
     void wordsReadArePerDayInMyTimeZoneAndPerLanguage() throws Exception {
         api.patch(token, "/api/me", "{\"timezone\":\"America/New_York\"}", 200);
-        CLOCK.set(Instant.parse("2026-10-02T03:30:00Z")); // 23:30 on 1 Oct in New York
+        CLOCK.set(Instant.parse("2026-10-02T03:30:00Z"));
         long french = api.createText(token, "fr", "mot ".repeat(299) + "mot.", false);
         at(text, 0);
         at(text, 240);
-        CLOCK.advance(Duration.ofMinutes(40)); // 00:10 on 2 Oct
+        CLOCK.advance(Duration.ofMinutes(40));
         at(french, 0);
         at(french, 100);
         JsonNode dash = api.get(token, "/api/dashboard", 200);
@@ -109,8 +105,6 @@ class ReadingListeningApiTest {
                 .contains("es=120", "fr=50");
         assertThat(dash.get("totalWordsRead").asLong()).isEqualTo(170);
     }
-
-    // --- Time listened ---
 
     private long session() throws Exception {
         return api.post(token, "/api/sessions", "{\"textId\":" + text + "}", 201).get("id").asLong();
@@ -127,10 +121,10 @@ class ReadingListeningApiTest {
         beat(s, "{\"seconds\":40,\"listenedSeconds\":40}");
         assertThat(today().get("listenedSeconds").asLong()).isEqualTo(40);
         CLOCK.advance(Duration.ofSeconds(10));
-        beat(s, "{\"seconds\":10,\"listenedSeconds\":100}"); // 10 s passed (+5 s grace)
+        beat(s, "{\"seconds\":10,\"listenedSeconds\":100}");
         assertThat(today().get("listenedSeconds").asLong()).isEqualTo(55);
         CLOCK.advance(Duration.ofMinutes(20));
-        beat(s, "{\"seconds\":0,\"listenedSeconds\":1200}"); // at most 5 minutes
+        beat(s, "{\"seconds\":0,\"listenedSeconds\":1200}");
         assertThat(today().get("listenedSeconds").asLong()).isEqualTo(355);
         CLOCK.advance(Duration.ofSeconds(30));
         beat(s, "{\"seconds\":0,\"listenedSeconds\":-30}");
@@ -164,8 +158,6 @@ class ReadingListeningApiTest {
         at(text, 20);
         assertThat(today().get("active").asBoolean()).isTrue();
     }
-
-    // --- The daily goal ---
 
     private JsonNode goal() throws Exception {
         return api.get(token, "/api/me", 200).get("dailyGoal");
@@ -221,7 +213,6 @@ class ReadingListeningApiTest {
 
     @Test
     void anOptInStreakOnlyCountsDaysThatReachTheGoal() throws Exception {
-        // A minute of listening is practice (saved words carry the real time, not this test's clock).
         long s = session();
         CLOCK.advance(Duration.ofSeconds(60));
         beat(s, "{\"seconds\":0,\"listenedSeconds\":60}");

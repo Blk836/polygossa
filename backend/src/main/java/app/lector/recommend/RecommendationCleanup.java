@@ -5,7 +5,6 @@ import app.lector.text.TextFeatureRepository;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-/** Removes a deleted text's features, "Not interested" marks and logged events, in the delete's transaction. */
 @Component
 class RecommendationCleanup {
 

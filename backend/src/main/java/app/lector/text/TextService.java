@@ -81,8 +81,6 @@ public class TextService {
         this.events = events;
     }
 
-    // ---- creation ----
-
     @Transactional
     public Text create(User owner, String title, Language language, String content, String sourceUrl,
                        boolean isPublic, List<SubtitleParser.Cue> cues) {
@@ -90,7 +88,6 @@ public class TextService {
         return createUnchecked(owner, title, language, content, sourceUrl, isPublic, cues);
     }
 
-    /** Creates a text without plan checks (used by the sample content seeder). */
     @Transactional
     public Text createUnchecked(User owner, String title, Language language, String content, String sourceUrl,
                                 boolean isPublic, List<SubtitleParser.Cue> cues) {
@@ -117,7 +114,6 @@ public class TextService {
         text.setWordCount(estimate.wordCount());
         text.setUniqueWordCount(estimate.uniqueWordCount());
         if (cues != null && !cues.isEmpty()) {
-            // Subtitle content is stripped of leading whitespace above, so cue offsets still line up.
             text.setCuesJson(json.writeValueAsString(cues));
         }
         return texts.save(text);
@@ -135,8 +131,6 @@ public class TextService {
                 : (file.getOriginalFilename() == null ? "Subtitles" : file.getOriginalFilename().replaceAll("\\.[^.]+$", ""));
         return create(owner, name, language, parsed.content(), null, isPublic, parsed.cues());
     }
-
-    // ---- access ----
 
     public Text load(Long id) {
         return texts.findById(id).orElseThrow(() -> ApiException.notFound("Text"));
@@ -174,8 +168,6 @@ public class TextService {
         return json.readValue(text.getCuesJson(), new TypeReference<List<SubtitleParser.Cue>>() {});
     }
 
-    // ---- views ----
-
     @Transactional(readOnly = true)
     public TextDetail detail(User user, Long id) {
         Text text = loadReadable(user, id);
@@ -195,7 +187,6 @@ public class TextService {
                 statuses.put(t.normalized(), all.get(t.normalized()));
             }
         }
-        // Only phrases that actually occur in this text are relevant to the reader.
         String lowerContent = text.getContent().toLowerCase();
         phrases.removeIf(p -> !lowerContent.contains(p.term()));
         return new TextDetail(summarize(user, text, stats(tokens, all), null, null, null), tokens, statuses, phrases,
@@ -230,7 +221,6 @@ public class TextService {
             }
             return m;
         });
-        // A row without its stored words (from before they were kept) falls back to the tokens (loading the body).
         Set<String> words = text.getWordsJson() == null ? UniqueWordsCache.distinct(tokens(text))
                 : uniqueWords.words(text.getId(), text.getWordsJson(), stored -> KnownWords.readWords(stored, json));
         return KnownWords.stats(words, statuses);
@@ -261,8 +251,6 @@ public class TextService {
         return text.getTimingsJson() == null ? List.of()
                 : json.readValue(text.getTimingsJson(), new TypeReference<List<AudioAligner.WordTiming>>() {});
     }
-
-    // ---- mutations ----
 
     @Transactional
     public Text update(User user, Long id, String title, Boolean isPublic, Category category) {

@@ -35,14 +35,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Shared content library: browse public texts, like and bookmark them. */
 @RestController
 @RequestMapping("/api/library")
 public class LibraryController {
 
     public record LibraryPage(List<TextSummary> items, long total, int page, int size) {}
 
-    /** One Explore shelf: the newest items in a category, and how many there are in all. */
     public record Shelf(Category category, long total, List<TextSummary> items) {}
 
     static final int SHELF_SIZE = 8;
@@ -86,7 +84,6 @@ public class LibraryController {
                 result.getSize());
     }
 
-    /** Explore's front page: a shelf per category that has public content, in category order. */
     @GetMapping("/shelves")
     @Transactional(readOnly = true)
     public List<Shelf> shelves(@AuthenticationPrincipal AuthUser principal,
@@ -95,7 +92,6 @@ public class LibraryController {
                                @RequestParam(required = false) MediaKind kind) {
         User user = currentUser.load(principal);
         String lvl = level(level);
-        // Ids and categories of everything matching, newest first; only the texts that make a shelf are loaded.
         Map<Category, Long> totals = new EnumMap<>(Category.class);
         Map<Category, List<Long>> shelfIds = new EnumMap<>(Category.class);
         for (TextRepository.ShelfEntry entry : texts.findPublicShelfEntries(Language.scope(language), lvl, code(kind))) {
@@ -107,7 +103,6 @@ public class LibraryController {
             }
         }
         List<Text> all = texts.findAllById(shelfIds.values().stream().flatMap(List::stream).toList());
-        // One summaries() call for every shelf, so the viewer's word statuses are loaded once.
         Map<Long, TextSummary> byId = summaries(user, all).stream()
                 .collect(Collectors.toMap(TextSummary::id, s -> s));
         List<Shelf> out = new ArrayList<>();
@@ -167,7 +162,6 @@ public class LibraryController {
         return lvl;
     }
 
-    /** A LIKE pattern for items tagged with this topic; null for no topic filter. */
     private static String topicPattern(String topic) {
         if (topic == null || topic.isBlank()) {
             return null;

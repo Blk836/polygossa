@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
-/** Subscribing, managing the subscription, and Stripe's webhook (stripe-billing.feature). */
 @RestController
 @RequestMapping("/api/billing")
 public class BillingController {
@@ -55,10 +54,6 @@ public class BillingController {
         return Map.of("url", billing.portal(currentUser.load(principal)));
     }
 
-    /**
-     * Stripe's webhook: refused unless Stripe's signature over the exact body checks out. Subscription events update
-     * the plan; any other event is acknowledged and ignored.
-     */
     @PostMapping("/webhook")
     public void webhook(@RequestBody String payload,
                         @RequestHeader(value = "Stripe-Signature", required = false) String signature) {

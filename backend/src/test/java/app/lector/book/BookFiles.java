@@ -19,12 +19,10 @@ import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPa
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 
-/** Builds small EPUB and PDF files for the book-import tests. */
 public final class BookFiles {
 
     private BookFiles() {}
 
-    /** An XHTML chapter with a heading and paragraphs (no heading when {@code heading} is null). */
     public static String chapter(String heading, String... paragraphs) {
         StringBuilder body = new StringBuilder();
         if (heading != null) {
@@ -38,7 +36,6 @@ public final class BookFiles {
                 + "<body>" + body + "</body></html>";
     }
 
-    /** An EPUB whose spine lists {@code chapters} (file name → XHTML) in order, with OPF paths under OEBPS/. */
     public static byte[] epub(String title, Map<String, String> chapters) {
         StringBuilder manifest = new StringBuilder();
         StringBuilder spine = new StringBuilder();
@@ -77,10 +74,6 @@ public final class BookFiles {
         return out.toByteArray();
     }
 
-    /**
-     * A PDF with one page per entry of {@code pages} (each a list of lines), titled {@code title} (none when null),
-     * and top-level outline entries {@code outline} (title → 0-based page), none when empty.
-     */
     public static byte[] pdf(String title, List<List<String>> pages, Map<String, Integer> outline) {
         try (PDDocument doc = new PDDocument()) {
             PDType1Font font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);

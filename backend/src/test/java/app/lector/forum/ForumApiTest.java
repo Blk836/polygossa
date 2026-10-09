@@ -16,10 +16,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Feature: Forum (docs/acceptance/forum.feature). The admin is {@link #ADMIN}, named in the test properties; other
- * forum tests share the database, so assertions look at this test's own threads.
- */
 @ApiTest
 class ForumApiTest {
 
@@ -42,7 +38,6 @@ class ForumApiTest {
         other = api.signup();
     }
 
-    /** Signs the admin up the first time, and in after that. */
     private String admin() throws Exception {
         String body = "{\"email\":\"" + ADMIN + "\",\"password\":\"password123\"}";
         var signup = mvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON).content(body))
@@ -92,8 +87,6 @@ class ForumApiTest {
         }
         return null;
     }
-
-    // ---- Posting ----
 
     @Test
     void startingAThreadShowsMyFirstPost() throws Exception {
@@ -195,8 +188,6 @@ class ForumApiTest {
         assertThat(p0.get("posts").get(1).get("body").asString()).isEqualTo("Post 1");
     }
 
-    // ---- Editing and deleting ----
-
     @Test
     void iCanEditOnlyMyOwnPosts() throws Exception {
         long t = thread(me, "general");
@@ -233,8 +224,6 @@ class ForumApiTest {
         api.delete(other, "/api/forum/posts/" + reply, 404);
         assertThat(ids(api.get(me, "/api/forum/threads?category=general", 200))).doesNotContain(t);
     }
-
-    // ---- Admins ----
 
     @Test
     void onlyAdminsStartAnnouncementsButAnyoneReplies() throws Exception {

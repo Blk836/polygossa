@@ -10,7 +10,6 @@ interface ThemeState {
 
 const ThemeContext = createContext<ThemeState | null>(null);
 
-/** Holds the light/dark preference the server rendered with (from the cookie) and applies changes instantly. */
 export function ThemeProvider({ initial, children }: { initial: ThemePref; children: ReactNode }) {
   const [theme, setThemeState] = useState(initial);
 

@@ -9,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface UserDayRepository extends JpaRepository<UserDay, Long> {
 
-    /** Records the day once; repeats do nothing. */
     @Modifying
     @Query(value = "insert into user_days (user_id, day) values (:userId, :day) on conflict do nothing",
             nativeQuery = true)

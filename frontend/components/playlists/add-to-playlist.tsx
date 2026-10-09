@@ -11,13 +11,8 @@ import { Button, ErrorNote, Spinner, inputClass } from "../ui";
 
 const LIST_BUTTON = "flex items-center rounded-md px-2 py-1 text-xs text-muted hover:bg-paper hover:text-ink";
 
-/**
- * A playlist button for a text or video: a dialog with a tick box per playlist in the text's language (a text can be
- * in any number of them) and a field to start a new one with it.
- */
 export function AddToPlaylist({ text, className = LIST_BUTTON }: {
   text: TextSummary;
-  /** The button's look; cards use the default, the reader its own tool buttons. */
   className?: string;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);

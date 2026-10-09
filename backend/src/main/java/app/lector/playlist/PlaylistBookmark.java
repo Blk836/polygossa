@@ -13,7 +13,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 
-/** A playlist someone saved (from Explore or its page), listed under Library > Saved. */
 @Entity
 @Table(name = "playlist_bookmarks",
         uniqueConstraints = @UniqueConstraint(name = "uk_playlist_bookmark", columnNames = {"user_id", "playlist_id"}))

@@ -37,7 +37,6 @@ public class AccountController {
             DailyGoal dailyGoal,
             Boolean streakNeedsGoal,
             String timezone,
-            /* true starts the first-visit tours over again; false turns them off */
             Boolean tours) {}
 
     public record ChangePlanRequest(@NotNull Tier tier) {}
@@ -104,7 +103,6 @@ public class AccountController {
         return MeDto.of(user, plans, admins);
     }
 
-    /** A first-visit tour was finished or skipped: it isn't shown again. */
     @PostMapping("/me/tours/{name}/seen")
     @Transactional
     public MeDto tourSeen(@AuthenticationPrincipal AuthUser principal, @PathVariable String name) {
@@ -118,10 +116,6 @@ public class AccountController {
         return MeDto.of(user, plans, admins);
     }
 
-    /**
-     * Signs the account out on every device: every login token issued until now is refused. (For a Cognito session
-     * the frontend also ends Cognito's sessions, so no device can renew its token.)
-     */
     @PostMapping("/me/sign-out-everywhere")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Transactional
@@ -129,10 +123,6 @@ public class AccountController {
         currentUser.load(principal).signOutEverywhere(clock.instant());
     }
 
-    /**
-     * Switches the user's plan. This stands in for a payment provider checkout (e.g. Stripe) — in production this
-     * would be driven by the provider's webhook rather than called directly by the client.
-     */
     @PostMapping("/me/plan")
     @Transactional
     public MeDto changePlan(@AuthenticationPrincipal AuthUser principal, @Valid @RequestBody ChangePlanRequest req) {
@@ -151,7 +141,6 @@ public class AccountController {
                 .toList();
     }
 
-    /** The languages definitions can be translated into (the native-language setting). */
     @GetMapping("/languages/native")
     public List<NativeLanguageDto> nativeLanguages() {
         return Arrays.stream(NativeLanguage.values())

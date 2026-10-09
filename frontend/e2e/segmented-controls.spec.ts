@@ -1,6 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
-// A one-line segmented-control button is ~34px tall (text-sm + py-1.5); a wrapped label makes it ~52px.
 const MAX_ONE_LINE_HEIGHT = 40;
 const DESKTOP = { width: 1280, height: 800 };
 const MOBILE = { width: 375, height: 800 };
@@ -20,8 +19,6 @@ async function expectOneLineButtons(group: Locator, labels: string[]) {
   }
 }
 
-// The Library's Mine / Saved moved into the header's sub-tabs and All / Texts / Videos into the Filters panel
-// (library-filters.spec.ts); the same one-line and equal-width checks follow them there.
 const librarySections = (page: Page) => page.getByRole("navigation", { name: "Section" });
 const filtersPanel = (page: Page) => page.getByRole("dialog", { name: "Filters" });
 

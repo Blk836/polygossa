@@ -1,8 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// The landing page showreel (landing-showreel.feature): an animation that plays by itself below the hero. Its root
-// exposes the scene playing (data-scene), whether it is ticking (data-running) and how far into the scene it is
-// (data-progress), so tests can check the timeline without screenshots.
 const reel = (page: Page) => page.getByTestId("showreel");
 const step = (page: Page, caption: string) => reel(page).getByRole("button", { name: caption });
 
@@ -36,7 +33,6 @@ test.describe("landing showreel", () => {
     await expect(reel(page).getByRole("list", { name: "Scenes" }).getByRole("button")).toHaveText(CAPTIONS.map((c, i) => `${i + 1}${c}`));
     await expect(reel(page)).toHaveAttribute("data-scene", "watch");
     await expect(step(page, CAPTIONS[0])).toHaveAttribute("aria-current", "step");
-    // scene 1 lasts 5 s
     await expect(reel(page)).toHaveAttribute("data-scene", "tap", { timeout: 8000 });
     await expect(step(page, CAPTIONS[1])).toHaveAttribute("aria-current", "step");
     await expect(reel(page).getByTestId("showreel-caption")).toHaveText(CAPTIONS[1]);
@@ -138,7 +134,6 @@ test.describe("landing showreel", () => {
     await expect(reel(page)).toHaveAttribute("data-running", "false");
     await expect(reel(page)).toHaveAttribute("data-scene", "watch");
     await step(page, CAPTIONS[1]).click();
-    // fully drawn: the definition card is there at once
     await expect(reel(page).getByTestId("showreel-card")).toContainText("seafood");
     await expect(reel(page)).toHaveAttribute("data-scene", "tap");
   });

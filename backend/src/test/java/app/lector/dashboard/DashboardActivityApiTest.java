@@ -10,7 +10,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** GET /api/dashboard's daily-streak activity, from each kind of practice. Multi-day rules are in ActivityTallyTest. */
 @ApiTest
 class DashboardActivityApiTest {
 

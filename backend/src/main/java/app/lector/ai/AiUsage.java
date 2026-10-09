@@ -9,7 +9,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 
-/** How many successful AI calls a user made on one day (their local day). */
 @Entity
 @Table(name = "ai_usage", uniqueConstraints = @UniqueConstraint(name = "uk_ai_usage", columnNames = {"user_id", "usage_day"}))
 public class AiUsage {

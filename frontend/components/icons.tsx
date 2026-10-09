@@ -1,6 +1,5 @@
 import type { SVGProps } from "react";
 
-// Small stroke icon set (24×24, currentColor).
 function Icon({ children, ...props }: SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -106,11 +105,9 @@ export const ChevronLeftIcon = (p: SVGProps<SVGSVGElement>) => (
 export const ChevronRightIcon = (p: SVGProps<SVGSVGElement>) => (
   <Icon {...p}><path d="m9 5 7 7-7 7" /></Icon>
 );
-/** A small picture in the corner of a bigger one: the mini player. */
 export const MiniPlayerIcon = (p: SVGProps<SVGSVGElement>) => (
   <Icon {...p}><rect x="2.5" y="4.5" width="19" height="15" rx="2.5" /><rect x="12" y="12" width="7" height="5" rx="1" fill="currentColor" /></Icon>
 );
-/** Two panes side by side: the video beside the text. */
 export const SideBySideIcon = (p: SVGProps<SVGSVGElement>) => (
   <Icon {...p}><rect x="2.5" y="4.5" width="19" height="15" rx="2.5" /><path d="M14 4.5v15" /><path d="M5.5 9h5M5.5 12h5M5.5 15h3" /></Icon>
 );

@@ -9,7 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 
-/** With auto-login off (as in the prod profile), the credential-free endpoint must not exist. */
 @SpringBootTest(properties = {
         "test.database=devoff",
         "app.seed-samples=false",

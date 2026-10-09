@@ -7,10 +7,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * What a library item is about. Deliberately a short fixed list (shown as shelves in Explore) rather than free tags;
- * {@code OTHER} holds anything uncategorised. Declaration order is the shelf order.
- */
 public enum Category {
     LEARNERS,
     DAILY_LIFE,
@@ -24,7 +20,6 @@ public enum Category {
     ENTERTAINMENT,
     OTHER;
 
-    /** YouTube's fixed video categories (as shown in English) mapped onto ours; anything else is OTHER. */
     private static final Map<String, Category> YOUTUBE = Map.ofEntries(
             Map.entry("Education", LEARNERS),
             Map.entry("People & Blogs", DAILY_LIFE),

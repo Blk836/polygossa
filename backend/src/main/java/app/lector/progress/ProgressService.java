@@ -17,11 +17,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Saves how far each user has read each text, and adds it to the summaries Library and Explore show. */
 @Service
 public class ProgressService {
 
-    /** The most words one step can credit: a page holds at most ~250, so more means pages were skipped. */
     static final int MAX_WORDS_PER_STEP = 500;
 
     private final ReadingProgressRepository repo;
@@ -37,7 +35,6 @@ public class ProgressService {
         this.clock = clock;
     }
 
-    /** The reader showed the page starting at token {@code position} (cut to the text). */
     @Transactional
     public ProgressDto record(User user, Long textId, int position) {
         Text text = texts.loadReadable(user, textId);
@@ -50,12 +47,11 @@ public class ProgressService {
         return save(p);
     }
 
-    /** "Finish lesson": the text counts as fully read from now on, even if an earlier page is opened again. */
     @Transactional
     public void complete(User user, Long textId) {
         Text text = texts.loadReadable(user, textId);
         ReadingProgress p = loadOrNew(user, text);
-        if (!p.isCompleted()) { // the last page: words from where the reader is to the end
+        if (!p.isCompleted()) {
             credit(user, text, wordsBetween(texts.tokens(text), p.getPosition(), Integer.MAX_VALUE));
         }
         p.setCompleted(true);
@@ -74,7 +70,6 @@ public class ProgressService {
         return summaries.stream().map(s -> s.withProgress(byText.get(s.id()))).toList();
     }
 
-    /** Which of these texts the user has finished. */
     @Transactional(readOnly = true)
     public Set<Long> completedTextIds(User user, Collection<Long> textIds) {
         if (textIds.isEmpty()) {
@@ -91,7 +86,6 @@ public class ProgressService {
                 d.speechLocale());
     }
 
-    /** Whole percent (rounded down) of the text's words that come before token {@code position}. */
     static int percentBefore(List<Token> tokens, int position) {
         int words = 0;
         int before = 0;
@@ -106,7 +100,6 @@ public class ProgressService {
         return words == 0 ? 0 : before * 100 / words;
     }
 
-    /** Words with token index in [from, to); none when going back. */
     static int wordsBetween(List<Token> tokens, int from, int to) {
         int words = 0;
         for (Token t : tokens) {
@@ -117,7 +110,6 @@ public class ProgressService {
         return words;
     }
 
-    /** Adds words read today (in the learner's time zone), at most {@link #MAX_WORDS_PER_STEP} per step. */
     private void credit(User user, Text text, int words) {
         if (words <= 0) {
             return;

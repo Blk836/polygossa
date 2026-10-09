@@ -16,7 +16,6 @@ public interface TextFeatureRepository extends JpaRepository<TextFeature, Long> 
 
     List<TextFeature> findByTextIdIn(Collection<Long> textIds);
 
-    /** A feature row's version, to tell whether a cached copy is current. */
     interface Stamp {
         Long getTextId();
 
@@ -26,12 +25,10 @@ public interface TextFeatureRepository extends JpaRepository<TextFeature, Long> 
     @Query("select f.textId as textId, f.version as version from TextFeature f where f.textId in :textIds")
     List<Stamp> findStamps(@Param("textIds") Collection<Long> textIds);
 
-    /** Public texts never looked at by the feature job, oldest first. */
     @Query("select t.id from Text t where t.isPublic = true "
             + "and not exists (select f from TextFeature f where f.textId = t.id) order by t.id")
     List<Long> findPublicWithoutFeatures(Pageable page);
 
-    /** Public texts whose tags or current-model embedding are missing, and that are due another try. */
     @Query("select f.textId from TextFeature f where exists (select t from Text t where t.id = f.textId "
             + "and t.isPublic = true) and (f.tagModel is null or f.vector is null or f.embeddingModel <> :model) "
             + "and (f.nextAttemptAt is null or f.nextAttemptAt <= :now) order by f.textId")

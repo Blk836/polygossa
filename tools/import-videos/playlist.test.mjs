@@ -2,8 +2,6 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { makePlaylist } from "./playlist.mjs";
 
-// docs/acceptance/copy-playlist.feature: the list's videos, in order, become a library playlist.
-
 const entries = [
   { line: 1, url: "https://youtu.be/CCCCCCCCCCC", language: "fr", category: null },
   { line: 2, url: "nope", error: "not a YouTube video link" },

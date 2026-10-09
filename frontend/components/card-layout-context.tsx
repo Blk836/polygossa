@@ -10,7 +10,6 @@ interface CardLayoutState {
 
 const CardLayoutContext = createContext<CardLayoutState | null>(null);
 
-/** Holds the Library/Explore layout the server rendered with (from the cookie); changes apply instantly everywhere. */
 export function CardLayoutProvider({ initial, children }: { initial: CardLayout; children: ReactNode }) {
   const [layout, setLayoutState] = useState(initial);
 

@@ -143,7 +143,7 @@ public class TextController {
                               @RequestBody UpdateTextRequest req) {
         User user = currentUser.load(principal);
         if (Boolean.TRUE.equals(req.isPublic())) {
-            review.checkSharing(service.loadOwned(user, id)); // before anything changes
+            review.checkSharing(service.loadOwned(user, id));
         }
         return service.statsSummary(user, service.update(user, id, req.title(), req.isPublic(), req.category()));
     }
@@ -162,15 +162,12 @@ public class TextController {
         return new CompleteResponse(marked);
     }
 
-    /** The reader's page turn: the new words in a token range (one page) become known. */
     @PostMapping("/{id}/mark-known")
     public CompleteResponse markKnown(@AuthenticationPrincipal AuthUser principal, @PathVariable Long id,
                                       @Valid @RequestBody MarkKnownRequest req) {
         return new CompleteResponse(vocabulary.markUnseenKnown(currentUser.load(principal), id, req.fromToken(),
                 req.toToken()));
     }
-
-    // ---- audio sync ----
 
     @PostMapping(value = "/{id}/audio", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
@@ -196,10 +193,6 @@ public class TextController {
         audio.remove(currentUser.load(principal), id);
     }
 
-    /**
-     * Streams uploaded audio. HTTP Range requests (seeking) are answered by S3 for files kept there, and by Spring for
-     * local files.
-     */
     @GetMapping("/{id}/audio")
     @Transactional(readOnly = true)
     public ResponseEntity<Resource> audio(@AuthenticationPrincipal AuthUser principal, @PathVariable Long id,

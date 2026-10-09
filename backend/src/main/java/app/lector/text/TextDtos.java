@@ -19,7 +19,6 @@ public final class TextDtos {
         }
     }
 
-    /** How much of a text's vocabulary the viewer already knows. */
     public record KnownStats(int uniqueWords, int known, int learning, int ignored, int unseen, double knownPercent) {}
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -45,24 +44,17 @@ public final class TextDtos {
             Category category,
             ProgressDto progress) {
 
-        /** This summary with the viewer's reading progress (null: not started). */
         public TextSummary withProgress(ProgressDto p) {
             return new TextSummary(id, title, language, cefrLevel, wordCount, uniqueWordCount, isPublic, sourceUrl,
                     createdAt, owner, mine, hasAudio, likes, liked, bookmarked, stats, kind, video, category, p);
         }
     }
 
-    /**
-     * How far the viewer has read: {@code position} is the token to resume at, {@code percent} the share of words
-     * before the furthest point reached (100 once finished).
-     */
     public record ProgressDto(int position, int percent, boolean completed) {}
 
-    /** Card-level video facts; null for texts. */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record VideoInfo(String videoId, String thumbnailUrl, Integer durationSeconds) {}
 
-    /** What the reader needs to play a video in sync with its transcript. */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record VideoDto(String videoId, Integer durationSeconds, List<AudioAligner.WordTiming> timings,
                            boolean hasCues) {}
@@ -74,7 +66,6 @@ public final class TextDtos {
     public record TextDetail(
             TextSummary text,
             List<Token> tokens,
-            /* normalized term → status, for words in this text the user has an entry for */
             Map<String, WordStatus> statuses,
             List<PhraseStatus> phrases,
             AudioDto audio,

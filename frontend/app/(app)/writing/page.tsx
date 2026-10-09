@@ -39,7 +39,6 @@ function Writing({ language }: { language: string }) {
   const [view, setView] = useState<View>({ kind: "start" });
   const [error, setError] = useState<string | null>(null);
 
-  // Load past tests; a test still running (e.g. after a reload) is resumed with the time it has left.
   useEffect(() => {
     let cancelled = false;
     api<WritingTest[]>(`writing/tests?language=${language}`)

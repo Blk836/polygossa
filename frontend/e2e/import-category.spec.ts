@@ -1,7 +1,5 @@
 import { expect, test } from "@playwright/test";
 
-// The import form doesn't ask for a category: the server files imports with AI (docs/acceptance/auto-category.feature).
-
 const MODES = ["Paste text", "From a URL", "Subtitles", "YouTube video"];
 
 test("the import form has no Category field in any mode", async ({ page }) => {
@@ -15,7 +13,6 @@ test("the import form has no Category field in any mode", async ({ page }) => {
 
 test("importing a pasted text sends no category", async ({ page }) => {
   let sent: Record<string, unknown> | null = null;
-  // Answer the import here, so nothing is created; the reader it then opens is not under test.
   await page.route("**/api/texts", async (route) => {
     if (route.request().method() !== "POST") return route.continue();
     sent = route.request().postDataJSON();

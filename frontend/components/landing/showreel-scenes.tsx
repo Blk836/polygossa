@@ -2,9 +2,6 @@ import type { ReactNode } from "react";
 import { countUp, knownPercent, phase, spokenIndex } from "@/lib/showreel";
 import { FollowLine } from "./follow-line";
 
-// The showreel's five scenes (showreel.tsx plays them). Each draws itself from `p`, its progress from 0 to 1, so the
-// same frame always looks the same: pausing, jumping and reduced motion (drawn at p = 1) need nothing extra.
-
 type Word = [text: string, status: "new" | "known"];
 
 const SUBTITLE: Word[] = [
@@ -16,10 +13,6 @@ const TARGET = 6;
 const shown = (visible: boolean) => (visible ? "opacity-100 translate-y-0 scale-100" : "pointer-events-none opacity-0 translate-y-2 scale-95");
 const FADE = "transition duration-500 ease-out";
 
-/**
- * One subtitle line; `status` picks each word's colour, `speaking` the word being said (the line is then tinted and the
- * word marked, as in the reader), `pointer` sits on the target.
- */
 function Subtitle({ status, speaking, pointer }: { status: (i: number) => string; speaking?: number; pointer?: ReactNode }) {
   const tint = speaking !== undefined ? "s-spoken" : "";
   return (
@@ -43,7 +36,6 @@ function Subtitle({ status, speaking, pointer }: { status: (i: number) => string
   );
 }
 
-/** A stylised video: a dish that bobs while it plays, a sound meter and the timeline. Shorter once paused. */
 function VideoFrame({ p, playing }: { p: number; playing: boolean }) {
   return (
     <div
@@ -76,7 +68,6 @@ export function WatchScene({ p }: { p: number }) {
   );
 }
 
-/** The animated pointer: glides in from the lower right, then taps (a ring pulses out). */
 function Pointer({ p }: { p: number }) {
   const move = phase(p, 0, 0.3);
   const tapped = p >= 0.32;
@@ -165,8 +156,6 @@ export function AgainScene({ p }: { p: number }) {
   );
 }
 
-// The payoff paragraph: the same text on day 1 and day 60, with the words still new on each day. The meters show
-// exactly the share of this paragraph's words that are known.
 const PARAGRAPH = ("El sábado fuimos al mercado del puerto. Los pescadores vendían mariscos frescos y mi abuela regateaba con " +
   "todos. Al final también compramos gambas, pan y un poco de queso para la cena.").split(" ");
 const NEW_DAY1 = new Set([1, 6, 8, 9, 10, 15, 21, 22, 28]);

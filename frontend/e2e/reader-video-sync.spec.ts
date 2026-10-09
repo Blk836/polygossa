@@ -1,10 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { article, cleanUp, createVideo, openReader, player, type Created } from "./reader-helpers";
 
-// YouTube's player reports its time only a few times a second. Between reports the reader runs its own clock, so the
-// highlight moves on at each word's start instead of in steps. Here a stand-in player never reports past 0:00 after
-// Play (the worst case): the highlight still moves on, but stops a second past the last report, as for a stall.
-
 let created: Created | null = null;
 
 test.afterEach(async ({ page }) => {
@@ -41,7 +37,7 @@ test("the highlight moves word by word between the player's time reports, up to 
   await page.route("https://www.youtube.com/iframe_api", (route) => route.fulfill({ contentType: "text/javascript", body: FROZEN_YOUTUBE }));
   created = await createVideo(page);
   await openReader(page, `/read/${created.id}`);
-  await expect(player(page)).toContainText("60:00"); // the player is ready
+  await expect(player(page)).toContainText("60:00");
   await page.evaluate(() => {
     const seen: number[] = ((window as unknown as { __spoken: number[] }).__spoken = []);
     new MutationObserver(() => {
@@ -59,7 +55,7 @@ test("the highlight moves word by word between the player's time reports, up to 
   await player(page).getByRole("button", { name: "Play", exact: true }).click();
   const spoken = () => page.evaluate(() => (window as unknown as { __spoken: number[] }).__spoken);
   await expect.poll(async () => (await spoken()).some((i) => between.includes(i)), { timeout: 3000 }).toBe(true);
-  await page.waitForTimeout(1000); // well past the one-second limit
+  await page.waitForTimeout(1000);
   expect((await spoken()).filter((i) => beyond.includes(i))).toEqual([]);
   await expect(article(page).locator(".w-speaking")).toHaveCount(1);
 });

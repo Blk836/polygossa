@@ -17,7 +17,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 
-/** A mined sentence (phrase, idiom, grammar pattern) in the review queue. */
 @Entity
 @Table(name = "sentence_cards")
 public class SentenceCard {

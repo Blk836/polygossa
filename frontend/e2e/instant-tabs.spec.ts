@@ -1,8 +1,5 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 
-// docs/acceptance/instant-tabs.feature: a tab click switches at once, and a tab already seen shows its last content
-// while it refreshes.
-
 let ownText: { id: number; title: string } | null = null;
 
 async function createText(page: Page) {
@@ -21,7 +18,6 @@ test.afterEach(async ({ page }) => {
   ownText = null;
 });
 
-/** Holds the matching requests until `release()` is called, so the test can look at the page in between. */
 async function hold(page: Page, matches: (url: URL, route: Route) => boolean) {
   let release!: () => void;
   const released = new Promise<void>((resolve) => (release = resolve));
@@ -49,7 +45,7 @@ async function goToExplore(page: Page) {
 test("a click switches to the new tab at once, with an outline until the page arrives", async ({ page }) => {
   await page.goto("/community");
   await expect(page.getByRole("heading", { name: "Explore" })).toBeVisible();
-  await page.waitForLoadState("networkidle"); // the tabs' outlines are prefetched by now
+  await page.waitForLoadState("networkidle");
   const release = await hold(page, (url, route) => url.pathname === "/library" && !!route.request().headers()["rsc"]);
 
   await tab(page, "My library").click();

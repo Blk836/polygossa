@@ -1,10 +1,6 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 import type { WordImportJob } from "../lib/word-import";
 
-// Importing words from LingQ and Readlang on the Words page: docs/acceptance/word-import.feature. Readlang runs for
-// real (an uploaded file, imported on the server); LingQ is stubbed in the browser so tests never call lingq.com.
-// Words imported here are deleted afterwards.
-
 const job = (over: Partial<WordImportJob>): WordImportJob => ({
   id: 9_000_001, source: "lingq", language: "fr", state: "running", found: 0, added: 0, updated: 0, unchanged: 0,
   overLimit: 0, error: null, createdAt: new Date().toISOString(), finishedAt: null, ...over,
@@ -17,7 +13,6 @@ async function openImport(page: Page) {
   await page.getByRole("button", { name: "Import words" }).click();
 }
 
-/** Serves the recent-imports list from `lists`, one per request, repeating the last. */
 async function stubList(page: Page, lists: WordImportJob[][]) {
   await page.route("**/api/word-imports", (route: Route) =>
     route.request().method() === "GET" ? route.fulfill({ json: lists.length > 1 ? lists.shift() : lists[0] }) : route.fallback());
@@ -37,7 +32,6 @@ test("a Readlang export is imported in the background and its result shown", asy
     });
     await panel(page).getByLabel("Language").selectOption("fr");
     await panel(page).getByRole("button", { name: "Import from Readlang" }).click();
-    // Earlier runs left their own "Done" rows: wait for this import to finish before reading the newest row.
     await expect.poll(async () => {
       const [newest] = (await (await page.request.get("/api/word-imports")).json()) as WordImportJob[];
       return newest && newest.id > lastId ? newest.state : "not started";
@@ -59,7 +53,6 @@ test("a LingQ import sends the key once, clears it, and shows progress until don
     sent = route.request().postDataJSON();
     await route.fulfill({ status: 202, json: job({ state: "queued" }) });
   });
-  // Nothing before the start; running on the first look after it, then done on the next poll.
   await page.route("**/api/word-imports", (route) => {
     if (route.request().method() !== "GET") return route.fallback();
     if (sent === null) return route.fulfill({ json: [] });
@@ -107,7 +100,6 @@ test("a failed import says why, and words over the plan limit link to the plans"
     job({ id: 2, state: "failed", error: "LingQ didn't accept this API key. Copy it again from lingq.com/accounts/apikey." }),
     job({ id: 1, source: "readlang", state: "done", found: 30, added: 10, overLimit: 20 }),
   ]]);
-  // The history follows the form's source and language.
   await openImport(page);
   await panel(page).getByLabel("Language").selectOption("fr");
   const rows = panel(page).getByTestId("word-import");

@@ -13,7 +13,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 
-/** Each app booted in a test gets an empty database of its own, as H2's in-memory databases did. */
 class TestDatabasesTest {
 
     private final TestDatabases databases = new TestDatabases();

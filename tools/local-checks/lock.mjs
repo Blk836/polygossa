@@ -1,16 +1,6 @@
-// One heavy run on the PC at a time, across every session and worktree (docs/acceptance/local-checks.feature).
-// The lock is a file created exclusively ("wx"), so of several runs trying at once exactly one gets it. It records
-// who holds it, so a waiting run can say whom it waits for, and a lock whose process has died can be taken over.
 import { closeSync, openSync, readFileSync, unlinkSync, writeSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 
-/**
- * Waits for the lock, then holds it.
- * @param {string} path the lock file
- * @param {{pid: number}} holder who is taking it (pid, branch, folder, started)
- * @param {{isAlive(pid: number): boolean, sleep(): Promise<void>, onWait(holder): void, onTakeover(holder): void}} opts
- * @returns {Promise<() => void>} releases the lock
- */
 export async function acquire(path, holder, { isAlive, sleep, onWait, onTakeover }) {
   const token = randomUUID();
   let waitingFor = null;
@@ -46,7 +36,6 @@ function tryCreate(path, content) {
   return true;
 }
 
-/** The lock's contents, or null when it is gone or not readable yet (being written). */
 function read(path) {
   try {
     const lock = JSON.parse(readFileSync(path, "utf8"));
@@ -56,10 +45,6 @@ function read(path) {
   }
 }
 
-/**
- * Removes a dead holder's lock, under a second lock so two runs finding the same dead lock can't remove a lock the
- * other has just taken. True when this run removed it.
- */
 function takeOver(path, dead, isAlive) {
   const guard = `${path}.takeover`;
   if (!tryCreate(guard, JSON.stringify({ token: randomUUID(), holder: { pid: process.pid } }))) {

@@ -74,7 +74,6 @@ describe("fitTags", () => {
   });
 
   it("drops the smaller country's count when moving isn't enough, then its whole tag", () => {
-    // Boxed in between two bigger tags: only its name fits in the gap.
     const between = fitTags([big, spot("top", 0, -80, 50, "Home"), spot("small", 0, -40, 10, "Society & News", "0 / 1")]);
     expect(between.get("big")!.show).toBe("full");
     expect(between.get("top")!.show).toBe("full");
@@ -83,7 +82,6 @@ describe("fitTags", () => {
   });
 
   it("places a squeezed country's tag first when that lets every tag show", () => {
-    // The bigger one has room elsewhere; the smaller one has only the place they would both take.
     const roomy = spot("roomy", 0, 0, 50, "Society & News", "0 / 1", [{ x: 0, y: -60 }]);
     const squeezed = spot("squeezed", 0, 5, 40, "Communication", "0 / 20");
     const fits = fitTags([roomy, squeezed]);

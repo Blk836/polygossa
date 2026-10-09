@@ -4,7 +4,6 @@ import Link from "next/link";
 import { FlameIcon } from "./icons";
 import { flame, knownWords, type HeaderStats as Stats } from "@/lib/header-stats";
 
-/** The smallest the flame shrinks to before it goes out, as a share of its full size. */
 const MIN_SCALE = 0.45;
 
 function flameClass(state: "lit" | "fading" | "out", fuel: number): string {
@@ -13,8 +12,6 @@ function flameClass(state: "lit" | "fading" | "out", fuel: number): string {
   return state === "fading" ? "text-rubric streak-flicker" : "text-rubric";
 }
 
-/** Known words (LingQ-style, "1,234 known") and the streak flame, which burns down inside its own outline towards midnight while the
- * streak is at risk. */
 export function HeaderStats({ stats }: { stats: Stats }) {
   const f = flame(stats);
   const known = knownWords(stats.knownWords);

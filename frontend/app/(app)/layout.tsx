@@ -9,7 +9,6 @@ import type { Me } from "@/lib/types";
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const me = await backendJson<Me>("/api/me");
   if (!me) {
-    // Expired or invalid session: clear the cookie, then go to login.
     redirect("/api/auth/logout");
   }
   return (

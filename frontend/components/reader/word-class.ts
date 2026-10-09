@@ -1,6 +1,3 @@
-// The classes on a reader word: its status (LingQ-style colours in globals.css: new blue, learning yellow, known and
-// ignored plain), the selection, the word being spoken, the tint of the sentence being spoken, and an underline when
-// it's part of a phrase being learned.
 import type { Token, WordStatus } from "@/lib/types";
 import type { Range } from "./reader-text";
 
@@ -8,7 +5,6 @@ export interface WordMarks {
   statuses: Record<string, WordStatus>;
   sel: Range | null;
   active: number | null;
-  /** The sentence being spoken. */
   sentence: number | null;
   phrases: Map<number, WordStatus>;
 }

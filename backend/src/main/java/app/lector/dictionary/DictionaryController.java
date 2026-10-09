@@ -44,11 +44,6 @@ public class DictionaryController {
         this.currentUser = currentUser;
     }
 
-    /**
-     * Looks up a word or phrase: its meanings in the learner's own language, from other learners' saved meanings, else
-     * a machine translation (lingq-style-lookup.feature). Never calls the AI. {@code before} and {@code after} are the
-     * text around the word in its sentence, for a word Amazon gives back unchanged (translation-in-context.feature).
-     */
     @GetMapping
     public WordLookup lookup(@AuthenticationPrincipal AuthUser principal,
                              @RequestParam Language language,
@@ -61,7 +56,6 @@ public class DictionaryController {
                 surface, InContext.of(before, surface, after));
     }
 
-    /** The AI's explanation of a word, in the learner's language, when they ask for it (Pro). */
     @GetMapping("/explain")
     public DictionaryResult explain(@AuthenticationPrincipal AuthUser principal,
                                     @RequestParam Language language,
@@ -81,7 +75,6 @@ public class DictionaryController {
         return surface;
     }
 
-    /** AI-generated example sentence (Pro). */
     @GetMapping("/example")
     public AiTutor.Example example(@AuthenticationPrincipal AuthUser principal,
                                    @RequestParam Language language,
@@ -92,7 +85,6 @@ public class DictionaryController {
         return allowance.call(user, () -> ai.example(language, user.getNativeLanguage(), term, definition));
     }
 
-    /** AI translation of a phrase or mined sentence (Pro). */
     @PostMapping("/translate")
     public TranslateResponse translate(@AuthenticationPrincipal AuthUser principal,
                                        @Valid @RequestBody TranslateRequest req) {

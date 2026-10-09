@@ -1,4 +1,3 @@
-// The admin panel (docs/acceptance/admin-panel.feature): response types for /api/admin and pure helpers, unit-tested.
 import type { Tier } from "./types";
 
 export interface DayValue {
@@ -71,14 +70,12 @@ export interface AdminActionRow {
   detail: string | null;
 }
 
-/** GET path for a page of the user search. */
 export function usersPath(q: string, page: number): string {
   const params = new URLSearchParams({ page: String(page) });
   if (q.trim()) params.set("q", q.trim());
   return `admin/users?${params}`;
 }
 
-/** Users per plan with each plan's share (whole percent). */
 export function planCounts(perPlan: AdminStats["users"]["perPlan"]): { label: string; count: number; percent: number }[] {
   const total = perPlan.free + perPlan.pro + perPlan.classroom;
   const share = (n: number) => (total === 0 ? 0 : Math.round((n / total) * 100));
@@ -91,7 +88,6 @@ export function planCounts(perPlan: AdminStats["users"]["perPlan"]): { label: st
 
 export type ActionKey = "suspend" | "unsuspend" | "posts" | "playlists" | "texts" | "unshare";
 
-/** Each action: its button, the request it makes and the question asked before it runs. */
 export const ACTIONS: Record<ActionKey, { label: string; method: "POST" | "DELETE"; path: (id: number) => string; confirm: (email: string) => string; yes: string; danger: boolean }> = {
   suspend: { label: "Suspend", method: "POST", path: (id) => `admin/users/${id}/suspend`, confirm: (e) => `Suspend ${e}?`, yes: "Yes, suspend", danger: true },
   unsuspend: { label: "Lift suspension", method: "POST", path: (id) => `admin/users/${id}/unsuspend`, confirm: (e) => `Lift the suspension of ${e}?`, yes: "Yes, lift suspension", danger: false },
@@ -103,7 +99,6 @@ export const ACTIONS: Record<ActionKey, { label: string; method: "POST" | "DELET
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
-/** What an action did, from its response. */
 export function actionSummary(action: ActionKey, result: Record<string, number>): string {
   switch (action) {
     case "posts":

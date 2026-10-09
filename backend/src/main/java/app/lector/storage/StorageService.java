@@ -10,7 +10,6 @@ import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-/** Checks and names uploaded files (audio, profile photos) and keeps them in the {@link FileStore}. */
 @Service
 public class StorageService {
 
@@ -25,7 +24,6 @@ public class StorageService {
         this.store = store;
     }
 
-    /** Saves an audio upload and returns its stored name. */
     public String saveAudio(MultipartFile file) {
         String contentType = file.getContentType();
         if (contentType == null || !(contentType.startsWith("audio/") || contentType.equals("video/mp4")
@@ -47,10 +45,6 @@ public class StorageService {
         return name;
     }
 
-    /**
-     * Saves a profile photo and returns its stored name. The type comes from the file's first bytes, never from its
-     * name or declared type, so only real PNGs and JPEGs are stored.
-     */
     public String savePhoto(MultipartFile file) {
         if (file.isEmpty() || file.getSize() > MAX_PHOTO_BYTES) {
             throw ApiException.badRequest("Please upload a JPEG or PNG image of at most 1 MB");
@@ -70,10 +64,6 @@ public class StorageService {
         return name;
     }
 
-    /**
-     * The stored file, or the part an HTTP Range header asks for ({@code range} may be null); "{what} not found"
-     * when it no longer exists.
-     */
     public FileStore.Opened open(String name, String range, String what) {
         FileStore.Opened opened = SAFE_NAME.matcher(name).matches() ? store.open(name, range) : null;
         if (opened == null) {

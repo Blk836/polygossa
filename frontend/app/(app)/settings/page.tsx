@@ -16,7 +16,6 @@ import { LEARNING_LANGUAGES } from "@/lib/languages";
 import { settingsHashRedirect } from "@/lib/nav";
 import type { Me } from "@/lib/types";
 
-/** Settings' Profile tab: photo, name, languages, daily goal and time zone. */
 export default function ProfilePage() {
   const { me, setMe } = useMe();
   const router = useRouter();
@@ -28,7 +27,6 @@ export default function ProfilePage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Bookmarks to the old single page's sections (/settings#plan) open the tab that now holds them.
   useEffect(() => {
     const moved = settingsHashRedirect(window.location.hash);
     if (moved) router.replace(moved);

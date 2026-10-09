@@ -12,7 +12,6 @@ public interface WordsReadRepository extends JpaRepository<WordsRead, Long> {
 
     Optional<WordsRead> findByUserIdAndLanguageAndDay(Long userId, Language language, LocalDate day);
 
-    /** Words read per day (all languages) from {@code first} on. */
     interface DayWords {
         LocalDate getDay();
         long getWords();

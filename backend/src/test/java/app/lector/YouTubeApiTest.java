@@ -16,12 +16,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistrar;
 
-/**
- * Like {@link ApiTest}, but the outside services are fakes: YouTube is {@link #STUB} and LingQ is {@link #LINGQ}, one
- * server each per test JVM that every class with this setup shares, along with one app on its own database. Tests
- * {@code reset()} the YouTube stub before adding the videos they need (LingQ accounts are per API key, so tests just
- * use their own key), and must not close either.
- */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
@@ -29,7 +23,6 @@ import org.springframework.test.context.DynamicPropertyRegistrar;
         "test.database=apiyoutube",
         "app.seed-samples=false",
         "spring.jpa.properties.hibernate.generate_statistics=true",
-        // Switches on the curator endpoints (bulk video import); nothing else here calls them.
         "app.curator-token=" + YouTubeApiTest.CURATOR_TOKEN
 })
 @AutoConfigureMockMvc

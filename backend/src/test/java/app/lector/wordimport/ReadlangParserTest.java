@@ -9,7 +9,6 @@ import app.lector.vocab.WordStatus;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-/** Feature: Import my words from LingQ and Readlang, reading Readlang's export (docs/acceptance/word-import.feature). */
 class ReadlangParserTest {
 
     private static ImportedWord learning(String term, String definition, String context) {

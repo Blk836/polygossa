@@ -6,11 +6,6 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-/**
- * Languages a learner can read definitions in (their native language): every learnable language and more. Codes are
- * the ones English Wiktionary's translation tables use. Each knows its script, so a translation listed under the
- * language but written in another script (Dungan Cyrillic under Chinese) can be dropped.
- */
 public enum NativeLanguage {
     EN("en", "English", "English", Script.LATIN),
     ES("es", "Spanish", "Español", Script.LATIN),
@@ -32,7 +27,6 @@ public enum NativeLanguage {
     ZH("zh", "Chinese", "中文", Script.HAN),
     KO("ko", "Korean", "한국어", Script.HANGUL);
 
-    /** Letters every word must be made of (marks, spaces, hyphens and apostrophes are allowed between them). */
     private enum Script {
         LATIN("\\p{IsLatin}"),
         CYRILLIC("\\p{IsCyrillic}"),
@@ -74,7 +68,6 @@ public enum NativeLanguage {
         return nativeName;
     }
 
-    /** True when the word is written in this language's script. */
     public boolean writes(String word) {
         return script.word.matcher(word).matches();
     }
@@ -90,7 +83,6 @@ public enum NativeLanguage {
                 .orElseThrow(() -> new IllegalArgumentException("Unsupported native language: " + code));
     }
 
-    /** A browser language tag ("pt-BR", "zh_Hant_TW") mapped to the language we offer, or English. */
     public static NativeLanguage fromBrowser(String tag) {
         if (tag == null || tag.isBlank()) {
             return EN;

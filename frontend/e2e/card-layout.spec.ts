@@ -16,11 +16,10 @@ async function box(locator: Locator) {
 const columns = (locator: Locator) =>
   locator.evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(" ").filter((c) => c !== "none").length);
 
-/** A text of the signed-in user's own (public, so Explore has something to show), deleted after each test. */
 let ownText: { id: number; title: string } | null = null;
 
 async function createOwnText(page: Page) {
-  await page.goto("/library"); // signs in (auto-login) and sets the session cookie used by page.request
+  await page.goto("/library");
   const me = await (await page.request.get("/api/me")).json();
   const title = `Layout check ${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
   const res = await page.request.post("/api/texts", {
@@ -100,7 +99,6 @@ test.describe("Library, desktop", () => {
     await expect(option(page, "List")).toHaveAttribute("aria-checked", "true");
 
     await option(page, "Cards").click();
-    // The page clears the cookie after the click is handled, so wait for it rather than reading it at once.
     await expect.poll(async () => (await context.cookies()).find((c) => c.name === "lector_card_layout")).toBeUndefined();
     await page.reload();
     await expect(option(page, "Cards")).toHaveAttribute("aria-checked", "true");

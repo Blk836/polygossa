@@ -33,14 +33,12 @@ public class AuthController {
             @NotBlank @Email String email,
             @NotBlank @Size(min = 8, max = 200) String password,
             @Size(max = 80) String displayName,
-            /* the browser's language tag; becomes the native language when it is one we offer, else English */
             @Size(max = 35) String nativeLanguage) {}
 
     public record LoginRequest(@NotBlank String email, @NotBlank String password) {}
 
     public record AuthResponse(String token, MeDto user) {}
 
-    /** The ID token from the same sign-in, and the browser's language tag (the native language of a new account). */
     public record CognitoSessionRequest(@NotBlank String idToken, @Size(max = 35) String nativeLanguage) {}
 
     private final UserRepository users;
@@ -65,7 +63,6 @@ public class AuthController {
         this.props = props;
     }
 
-    /** After a sign-in through Cognito: the account for its tokens (the access token signs the request). */
     @PostMapping("/cognito")
     @Transactional
     public MeDto cognito(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization,
@@ -107,10 +104,6 @@ public class AuthController {
         return respond(user);
     }
 
-    /**
-     * Development auto-login: signs in to (creating if needed) a test account with every feature unlocked.
-     * Returns 404 unless {@code app.dev-auto-login} is enabled, which the prod profile never does.
-     */
     @PostMapping("/dev-login")
     public AuthResponse devLogin() {
         if (!props.devAutoLogin()) {
@@ -121,12 +114,7 @@ public class AuthController {
         return respond(user);
     }
 
-    /**
-     * Creates the test account (each save is its own transaction). Several first visits can arrive at once on a fresh
-     * database: the one that loses the race to insert it reads the winner's account instead of failing.
-     */
     private User createDevAccount() {
-        // Random password: nobody logs into this account with credentials.
         User u = new User(DEV_EMAIL, passwordEncoder.encode(UUID.randomUUID().toString()), "Test User");
         u.setTier(Tier.CLASSROOM);
         try {
@@ -136,7 +124,6 @@ public class AuthController {
         }
     }
 
-    /** The app's own accounts are off in production, where everyone signs in through Cognito. */
     private void requireLocalAccounts() {
         if (!login.localAccounts()) {
             throw ApiException.notFound("Endpoint");

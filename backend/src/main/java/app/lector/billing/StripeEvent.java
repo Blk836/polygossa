@@ -5,7 +5,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 
-/** A Stripe webhook event already handled: Stripe may send one more than once, and it applies once. */
 @Entity
 @Table(name = "stripe_events")
 public class StripeEvent {

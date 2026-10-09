@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import org.junit.jupiter.api.Test;
 
-/** reading-listening-goals.feature: words read and listening in the tally, and the opt-in goal-only streak. */
 class ActivityTallyGoalTest {
 
     static final ZoneId UTC = ZoneId.of("UTC");

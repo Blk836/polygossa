@@ -7,7 +7,6 @@ import app.lector.common.ApiException;
 import org.jsoup.Jsoup;
 import org.junit.jupiter.api.Test;
 
-/** Characterization tests for subtitle and article parsing edge cases. */
 class ImportParsingTest {
 
     @Test

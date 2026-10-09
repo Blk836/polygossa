@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
-/** recommendation-learning.feature: which weights ranking uses. */
 class ActiveWeightsTest {
 
     static final Weights CONFIGURED = WeightLearnerTest.CONFIGURED;

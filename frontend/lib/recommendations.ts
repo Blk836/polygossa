@@ -1,4 +1,3 @@
-// Explore's personalised shelves (GET /api/recommendations): types, headings, card reasons and the events logged.
 import { categoryLabel } from "./categories";
 import type { Category, TextSummary } from "./types";
 
@@ -7,7 +6,6 @@ export type ShelfId = "continue" | "for-you" | "because" | "topic" | "just-right
 export type ReasonKind =
   | "progress" | "known" | "because" | "topic" | "category" | "level" | "popular" | "new" | "similar" | "explore";
 
-/** Why a card is on its shelf; which fields are set depends on the kind. */
 export interface Reason {
   kind: ReasonKind;
   percent?: number;
@@ -19,7 +17,6 @@ export interface Reason {
   likes?: number;
 }
 
-/** A ranked card's unweighted score parts, logged back with its impression so weights can be learned. */
 export interface ScoreParts {
   interest: number;
   topic: number;
@@ -33,16 +30,13 @@ export interface ScoreParts {
 export interface RecommendedItem {
   text: TextSummary;
   reason: Reason;
-  /** Absent on Continue reading, which isn't ranked. */
   parts?: ScoreParts;
 }
 
 export interface RecommendedShelf {
   id: ShelfId;
-  /** "More about" shelves: a topic tag, or a category when no tag fits. */
   topic?: string;
   category?: Category;
-  /** "Because you read" shelves: the text read or liked. */
   anchor?: { id: number; title: string; liked: boolean };
   items: RecommendedItem[];
 }
@@ -52,14 +46,12 @@ export interface Recommendations {
   shelves: RecommendedShelf[];
 }
 
-/** A batch of shown or opened cards, as POST recommendations/events takes it. */
 export interface RecommendationEvent {
   type: "impression" | "open";
   shelf: ShelfId;
   items: { textId: number; position: number; parts?: ScoreParts }[];
 }
 
-/** Interests asked for during onboarding before they can be saved. */
 export const INTEREST_MINIMUM = 3;
 
 export function recommendationsPath(language: string): string {
@@ -103,12 +95,10 @@ const REASONS: Record<ReasonKind, (r: Reason) => string> = {
   explore: () => "Something different",
 };
 
-/** The short line under a recommended card ("" for a kind this version doesn't know). */
 export function reasonLabel(r: Reason): string {
   return REASONS[r.kind]?.(r) ?? "";
 }
 
-/** One impression batch per shelf with cards, each card at its position. */
 export function impressionBatches(shelves: RecommendedShelf[]): RecommendationEvent[] {
   return shelves
     .filter((s) => s.items.length > 0)
@@ -123,7 +113,6 @@ export function openEvent(shelf: ShelfId, textId: number, position: number): Rec
   return { type: "open", shelf, items: [{ textId, position }] };
 }
 
-/** The shelves without this item ("Not interested"); shelves left empty go too. */
 export function withoutItem(shelves: RecommendedShelf[], textId: number): RecommendedShelf[] {
   return shelves
     .map((s) => ({ ...s, items: s.items.filter((it) => it.text.id !== textId) }))

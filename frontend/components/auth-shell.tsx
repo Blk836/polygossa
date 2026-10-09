@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { AuthSplash } from "@/components/auth-splash";
 
-/** The sign-in and sign-up pages: the splash beside the form on wide screens, a band above it on phones. */
 export function AuthShell({ copy, start, children }: { copy: string; start?: string | null; children: ReactNode }) {
   return (
     <div className="flex flex-1 flex-col lg:flex-row">

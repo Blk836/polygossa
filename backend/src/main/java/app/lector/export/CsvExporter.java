@@ -4,7 +4,6 @@ import app.lector.vocab.VocabularyEntry;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-/** RFC 4180 CSV export of a vocabulary list. */
 public final class CsvExporter {
 
     private static final String[] HEADER = {"term", "display", "language", "kind", "status", "definition",
@@ -13,7 +12,7 @@ public final class CsvExporter {
     private CsvExporter() {}
 
     public static byte[] export(List<VocabularyEntry> entries) {
-        StringBuilder sb = new StringBuilder("﻿"); // BOM so spreadsheet apps detect UTF-8
+        StringBuilder sb = new StringBuilder("﻿");
         row(sb, HEADER);
         for (VocabularyEntry e : entries) {
             row(sb, e.getTerm(), e.getDisplayTerm(), e.getLanguage().code(), e.getKind().json(), e.getStatus().json(),
@@ -39,7 +38,6 @@ public final class CsvExporter {
             return "";
         }
         String v = value;
-        // Neutralize spreadsheet formula injection.
         if (!v.isEmpty() && "=+-@\t\r".indexOf(v.charAt(0)) >= 0) {
             v = "'" + v;
         }

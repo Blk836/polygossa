@@ -13,11 +13,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 
-/**
- * Amazon Translate's answer for one word and language pair, kept for everyone so each is paid for once. A null
- * translation means the answer was of no use (the word itself), which is remembered too; such a word is asked once more
- * inside a sentence (translation-in-context.feature), and {@code triedInContext} remembers that this gave nothing.
- */
 @Entity
 @Table(name = "machine_translations", uniqueConstraints = @UniqueConstraint(name = "uk_machine_translation",
         columnNames = {"source_language", "target_language", "term"}))
@@ -35,7 +30,6 @@ public class MachineTranslation {
     @Column(nullable = false)
     private NativeLanguage targetLanguage;
 
-    /** The word's normalized key, as vocabulary entries keep it. */
     @Column(nullable = false, length = 200)
     private String term;
 

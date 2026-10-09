@@ -15,7 +15,6 @@ import org.springframework.web.client.RestClient;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
-/** Word timings from YouTube's per-word caption marks (srv3 {@code <s t>}), used instead of spreading a line. */
 class AudioAlignerWordMarkTest {
 
     private static List<Token> tokens(String text) {
@@ -44,7 +43,6 @@ class AudioAlignerWordMarkTest {
 
     @Test
     void marksBeatAnEvenSpreadOfUnevenSpeech() {
-        // Spread by length, "deux" would start at 1000; the mark says the speaker paused first.
         var timings = align(cue(0, 3000, "un deux trois",
                 new WordMark(0, 0), new WordMark(3, 2000), new WordMark(8, 2400)));
         assertThat(spans(timings)).containsExactly(new long[] {0, 2000}, new long[] {2000, 2400}, new long[] {2400, 3000});
@@ -83,7 +81,6 @@ class AudioAlignerWordMarkTest {
 
     @Test
     void aMarkOnNonWordTextLeavesAGapAfterThePreviousWord() {
-        // The "," mark covers no word: "un" ends there, and "deux" starts at its own mark.
         var timings = align(cue(0, 3000, "un , deux",
                 new WordMark(0, 0), new WordMark(3, 800), new WordMark(5, 2000)));
         assertThat(timings.getFirst().e()).isEqualTo(800);

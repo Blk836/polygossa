@@ -7,7 +7,6 @@ import { RATING_KEYS, query, type Rating } from "./review-query";
 
 export type { Rating } from "./review-query";
 
-/** Loads the review queue and stats, and records ratings. Forgotten cards come back at the end of the session. */
 export function useReviewSession(language: string, ahead: boolean) {
   const [queue, setQueue] = useState<ReviewCard[] | null>(null);
   const [stats, setStats] = useState<ReviewStats | null>(null);

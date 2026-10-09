@@ -1,8 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { accountButton, cropDialog, me, photoSection, pick, profileAvatar, signUp, stripes, uploadPhoto, type Person } from "./photo-helpers";
 
-// Feature: Profile photo (docs/acceptance/profile-photo.feature): failure paths, phone width and dark mode.
-
 let ana: Person;
 
 test.afterEach(async () => {
@@ -116,7 +114,6 @@ test("at phone width the photo controls and the crop dialog fit, and a finger ca
   const image = page.getByTestId("crop-image");
   const before = (await image.boundingBox())!.x;
   const box = (await frame.boundingBox())!;
-  // A real touch drag, through Chrome's DevTools protocol (Playwright's touchscreen only taps).
   const cdp = await page.context().newCDPSession(page);
   const touch = (type: "touchStart" | "touchMove" | "touchEnd", dx: number) => cdp.send("Input.dispatchTouchEvent", {
     type, touchPoints: type === "touchEnd" ? [] : [{ x: box.x + box.width / 2 + dx, y: box.y + box.height / 2 }],

@@ -12,7 +12,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 
-/** Words a learner read on one day (in their time zone) in one language, credited as pages are turned. */
 @Entity
 @Table(name = "words_read", uniqueConstraints = @UniqueConstraint(name = "uk_words_read_user_language_day",
         columnNames = {"user_id", "language", "day"}))

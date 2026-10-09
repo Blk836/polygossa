@@ -10,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface PlaylistItemRepository extends JpaRepository<PlaylistItem, Long> {
 
-    /** The items of these playlists with their texts (and the texts' owners), in playlist order. */
     @Query("""
             select i from PlaylistItem i join fetch i.text t join fetch t.owner
             where i.playlist.id in :playlistIds order by i.position, i.id

@@ -16,7 +16,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 
-/** A like or bookmark on community content. */
 @Entity
 @Table(name = "text_reactions",
         uniqueConstraints = @UniqueConstraint(name = "uk_reaction", columnNames = {"user_id", "text_id", "type"}))

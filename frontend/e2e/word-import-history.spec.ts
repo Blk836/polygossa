@@ -1,9 +1,6 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 import type { WordImportJob } from "../lib/word-import";
 
-// Which import history the Words page shows: docs/acceptance/word-import.feature, "What the Words page shows". The
-// import list is stubbed in the browser, so nothing here reaches lingq.com or saves words.
-
 const job = (over: Partial<WordImportJob>): WordImportJob => ({
   id: 9_000_201, source: "lingq", language: "fr", state: "done", found: 10, added: 10, updated: 0, unchanged: 0,
   overLimit: 0, error: null, createdAt: new Date().toISOString(), finishedAt: new Date().toISOString(), ...over,
@@ -36,15 +33,12 @@ test("the history follows the form's source and language", async ({ page }) => {
   await language.selectOption("de");
   await expect(rows(page)).toHaveCount(1);
   await expect(rows(page)).toContainText("LingQ · German · Done");
-  // Japanese, Chinese and Korean are paused for learning: not offered.
   expect(await language.locator("option").evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value)))
     .not.toEqual(expect.arrayContaining(["ja"]));
-  // Nothing imported yet for this choice: no rows at all.
   await language.selectOption("it");
   await expect(rows(page)).toHaveCount(0);
   await language.selectOption("");
   await expect(rows(page)).toHaveCount(0);
-  // Switching source with French picked.
   await language.selectOption("fr");
   await panel(page).getByRole("button", { name: "Readlang" }).click();
   await expect(rows(page)).toHaveCount(1);

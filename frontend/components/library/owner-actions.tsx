@@ -5,7 +5,6 @@ import { chipSelectClass } from "@/components/ui";
 import { CATEGORIES } from "@/lib/categories";
 import type { Category, TextSummary } from "@/lib/types";
 
-/** On your own items: file it under a category, share or unshare it, delete it. */
 export function OwnerActions({ text, onChanged, onDeleted, onError }: {
   text: TextSummary;
   onChanged: (t: TextSummary) => void;

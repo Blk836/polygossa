@@ -1,13 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
-// Shared helpers for the vocabulary map's browser tests (vocab-map.spec.ts, vocab-map-camera.spec.ts). The map on
-// Progress (docs/acceptance/vocabulary-map.feature) is a hex continent with a country per region, a province per area
-// and a tile per word. The shared test user has no target language, so each test picks French in the
-// top bar with the switch answered in the browser (never saved), and saves the map words it needs through the API,
-// deleting them afterwards. Tests run in parallel on that one user, so each test saves different words and deletes only
-// its own.
-
-/** The French words this test saved, from the map or the API: deleted after it. */
 export const touched: string[] = [];
 
 export async function clearWords(page: Page) {
@@ -16,7 +8,6 @@ export async function clearWords(page: Page) {
   }
 }
 
-/** Opens Progress with French picked in the top bar, answered in the browser so the test user keeps no language. */
 export async function openInFrench(page: Page, path = "/dashboard") {
   await page.goto(path);
   const me = await (await page.request.get("/api/me")).json();
@@ -45,7 +36,6 @@ export const wordText = (page: Page, term: string) => map(page).locator("text.ma
 export const zoom = async (page: Page) => Number(await world(page).getAttribute("data-zoom"));
 export const bandButton = (page: Page, band: string) => map(page).getByRole("group", { name: "Bands counted" }).getByRole("button", { name: `Up to ${band}` });
 
-/** How many tiles of a kind (known, learning, new, ignored, next, later) the map draws: one shape each in that kind's path. */
 export async function tileCount(page: Page, kind?: string): Promise<number> {
   const selector = kind ? `[data-testid="map-tiles"] path[data-kind="${kind}"]` : '[data-testid="map-tiles"] path';
   return map(page).locator(selector).evaluateAll((paths) => paths.reduce((n, p) => n + (p.getAttribute("d")!.match(/M/g) ?? []).length, 0));
@@ -57,7 +47,6 @@ export async function save(page: Page, term: string, status: string) {
   expect(res.ok(), await res.text()).toBe(true);
 }
 
-/** Waits until the camera has come to rest (it reports its zoom when it stops) and returns that zoom. */
 export async function restingZoom(page: Page): Promise<number> {
   let last = -1;
   await expect.poll(async () => {
@@ -69,7 +58,6 @@ export async function restingZoom(page: Page): Promise<number> {
   return last;
 }
 
-/** How many times the world's transform changes while {@code action} runs: one for a jump, many for a glide. */
 export async function transformChanges(page: Page, action: () => Promise<void>, settle: Locator): Promise<number> {
   await page.evaluate(() => {
     const g = document.querySelector('[data-testid="hex-map"] > g')!;
@@ -85,10 +73,9 @@ export async function transformChanges(page: Page, action: () => Promise<void>, 
   return page.evaluate(() => (window as unknown as { __changes: number }).__changes);
 }
 
-/** Signs in before each test, and deletes the words it saved and the band it picked after it. */
 export function cleanUpAfterEach() {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/library"); // signs in (auto-login) for page.request
+    await page.goto("/library");
   });
 
   test.afterEach(async ({ page }) => {
@@ -96,7 +83,6 @@ export function cleanUpAfterEach() {
     try {
       await page.evaluate(() => window.localStorage.removeItem("lector_map_band"));
     } catch {
-      // The page may already be gone.
     }
   });
 }

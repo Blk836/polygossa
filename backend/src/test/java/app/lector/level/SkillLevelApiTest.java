@@ -32,7 +32,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Feature: Reading, Listening and Writing levels on the Progress tab, from the learner's own evidence. */
 @ApiTest
 class SkillLevelApiTest {
 
@@ -124,8 +123,6 @@ class SkillLevelApiTest {
         writingTests.save(t);
     }
 
-    // ---- Reading ----
-
     @Test
     void readingFromKnownWordsRaisedByFinishedTexts() throws Exception {
         know(user, Language.ES, 1300);
@@ -170,8 +167,6 @@ class SkillLevelApiTest {
         assertThat(levels("es").get("knownWords").asLong()).isEqualTo(60);
     }
 
-    // ---- Listening ----
-
     @Test
     void videosAndAudioCountForListeningNotReading() throws Exception {
         know(user, Language.ES, 3000);
@@ -203,8 +198,6 @@ class SkillLevelApiTest {
         assertThat(level(l.get("listening"))).isNull();
     }
 
-    // ---- Writing ----
-
     @Test
     void writingFromTheLastFiveGradedTestsNewestFirst() throws Exception {
         Instant t0 = Instant.parse("2026-09-01T10:00:00Z");
@@ -233,19 +226,17 @@ class SkillLevelApiTest {
             ungraded.gradingFailed("AI down");
             writingTests.save(ungraded);
         }
-        writingTests.save(writingTest(user, Language.ES, t0)); // never handed in: expired
+        writingTests.save(writingTest(user, Language.ES, t0));
         JsonNode w = levels("es").get("writing");
         assertThat(level(w)).isEqualTo("B1");
         assertThat(w.get("evidence").asInt()).isEqualTo(2);
         assertThat(w.get("confidence").asString()).isEqualTo("low");
     }
 
-    // ---- Overall, empty states, access ----
-
     @Test
     void overallIsTheAverageOfSkillsWithData() throws Exception {
-        know(user, Language.ES, 5000); // B2
-        finish(Language.ES, "B1", "video", 3); // B1
+        know(user, Language.ES, 5000);
+        finish(Language.ES, "B1", "video", 3);
         graded(Language.ES, "A2", Instant.parse("2026-09-01T10:00:00Z"));
         JsonNode o = levels("es").get("overall");
         assertThat(o.get("level").asString()).isEqualTo("B1");

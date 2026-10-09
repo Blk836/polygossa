@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
-/** translation-in-context.feature: marking the clicked word in its sentence, and reading the meaning back. */
 class InContextTest {
 
     @Test

@@ -35,10 +35,6 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Explore's personalised shelves for one learner: Continue reading, For you, Because you read X, More about a topic,
- * Just right and Stretch. Ranking is deterministic code over stored signals and features; no AI is called.
- */
 @Service
 public class RecommendationService {
 
@@ -72,13 +68,12 @@ public class RecommendationService {
         this.props = active.ranking();
     }
 
-    /** What the ranking is computed from, gathered once per request. */
     private record Context(User user, Instant now, Snapshot snapshot, Map<Long, Text> engagedTexts,
                            Map<Long, Features> features, TasteProfile profile) {}
 
     @Transactional(readOnly = true)
     public Recommendations recommend(User user, Language language) {
-        RecommendProperties ranking = active.ranking(); // configured weights, or learned ones when switched on
+        RecommendProperties ranking = active.ranking();
         Instant now = clock.instant();
         Snapshot s = signals.load(user);
         List<Text> pool = texts.findPublicCandidates(Language.scope(language), user.getId()).stream()
@@ -137,7 +132,6 @@ public class RecommendationService {
         }
     }
 
-    /** A placeholder candidate for Continue reading, which isn't ranked. */
     private static Candidate stub(long id) {
         return new Candidate(id, null, null, null, 0, 0, List.of(), null, null, 0, 0, false);
     }
@@ -170,7 +164,6 @@ public class RecommendationService {
                 ctx.snapshot().tallies().get(t.getId()))).toList();
     }
 
-    /** Started, not finished, not abandoned, still readable, in the language: most recently read first. */
     private List<ReadingProgress> continuing(Context ctx, Language language) {
         return ctx.snapshot().progress().values().stream()
                 .filter(p -> !p.isCompleted() && !Signals.abandoned(p.getPercent(), false, p.getUpdatedAt(), ctx.now()))
@@ -181,7 +174,6 @@ public class RecommendationService {
                 .limit(props.shelfSize()).toList();
     }
 
-    /** The most recent text the learner finished or liked that has a current embedding. */
     private Anchor anchor(Context ctx) {
         Anchor best = null;
         Instant bestAt = null;

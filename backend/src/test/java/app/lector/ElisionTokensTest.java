@@ -19,7 +19,6 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Words joined by an apostrophe are one word, in new imports and, after the startup backfill, old ones. */
 @ApiTest
 class ElisionTokensTest {
 
@@ -40,7 +39,6 @@ class ElisionTokensTest {
     @Autowired
     ElisionBackfill backfill;
 
-    /** A text's body loads lazily, so changes made here to a stored text need a transaction. */
     @Autowired
     TransactionTemplate tx;
 
@@ -61,7 +59,6 @@ class ElisionTokensTest {
         return detail.get("tokens").valueStream().filter(t -> t.get("word").asBoolean()).map(t -> t.get("text").asString()).toList();
     }
 
-    /** Stores the tokens, counts and audio timings a text imported while elisions were split would have. */
     private void makeLegacy(long id) {
         String[] parts = {"C'", "est", " ", "l'", "homme", " ", "qu'", "il", " ", "aime", "."};
         List<Token> legacy = new ArrayList<>();
@@ -106,7 +103,7 @@ class ElisionTokensTest {
         long id = api.createText(token, "fr", CONTENT, false);
         String level = detail(id).get("text").get("cefrLevel").asString();
         makeLegacy(id);
-        api.post(token, "/api/texts/" + id + "/progress", "{\"position\":9}", 200); // at "aime"
+        api.post(token, "/api/texts/" + id + "/progress", "{\"position\":9}", 200);
         assertThat(words(detail(id))).contains("C'", "est");
 
         backfill.run(null);
@@ -117,16 +114,11 @@ class ElisionTokensTest {
         assertThat(d.get("text").get("wordCount").asInt()).isEqualTo(4);
         assertThat(d.get("text").get("uniqueWordCount").asInt()).isEqualTo(4);
         assertThat(d.get("text").get("cefrLevel").asString()).isEqualTo(level);
-        // Each joined word spans the timings of its two halves, so the highlight follows the same words.
         assertThat(timings(id)).containsExactly(new WordTiming(0, 0, 200), new WordTiming(2, 300, 500),
                 new WordTiming(4, 600, 800), new WordTiming(6, 900, 1000));
-        assertThat(position(id)).isEqualTo(6); // still at "aime"
+        assertThat(position(id)).isEqualTo(6);
     }
 
-    /**
-     * Production ran out of memory loading every matching text (long video transcripts) in one transaction: each text
-     * is now fixed in a transaction of its own, so a text that can't be fixed leaves the others fixed.
-     */
     @Test
     void theBackfillFixesEachTextOnItsOwn() throws Exception {
         long broken = api.createText(token, "fr", CONTENT, false);
@@ -134,7 +126,7 @@ class ElisionTokensTest {
         makeLegacy(fine);
         tx.executeWithoutResult(status -> {
             Text text = texts.findById(broken).orElseThrow();
-            text.setTokensJson("[{\"index\":0,\"text\":\"l'\",\"word\":true,\"normalized\":\"l'\",\"sentence\":0},"); // cut off
+            text.setTokensJson("[{\"index\":0,\"text\":\"l'\",\"word\":true,\"normalized\":\"l'\",\"sentence\":0},");
             texts.save(text);
         });
         try {
@@ -151,7 +143,7 @@ class ElisionTokensTest {
         long id = api.createText(token, "fr", CONTENT, false);
         tx.executeWithoutResult(status -> {
             Text before = texts.findById(id).orElseThrow();
-            before.setWordCount(99); // a stale count proves the text was not rewritten
+            before.setWordCount(99);
             texts.save(before);
         });
 

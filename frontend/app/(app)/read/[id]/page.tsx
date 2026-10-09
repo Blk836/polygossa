@@ -13,7 +13,6 @@ async function load(id: string) {
   return backendJson<TextDetail>(`/api/texts/${id}`);
 }
 
-/** The playlist the text was opened from (`?playlist=3`); none if it is missing, private or doesn't hold the text. */
 async function loadPlaylist(id: number | null, textId: number) {
   if (id === null) return null;
   return readerPlaylist(await backendJson<PlaylistDetail>(`/api/playlists/${id}`), textId);
@@ -24,7 +23,6 @@ export async function generateMetadata({ params }: PageProps<"/read/[id]">): Pro
   return { title: detail?.text.title ?? "Reader" };
 }
 
-/** Server-rendered so the article text arrives with the page; interactivity hydrates on the client. */
 export default async function ReadPage({ params, searchParams }: PageProps<"/read/[id]">) {
   const detail = await load((await params).id);
   if (!detail) notFound();

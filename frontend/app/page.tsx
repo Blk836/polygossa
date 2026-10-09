@@ -8,7 +8,6 @@ import { Logo } from "@/components/ui";
 import { BRAND } from "@/lib/brand";
 import { signupHref } from "@/lib/landing";
 
-/** The public home page: sells the product to new visitors and leads every path to sign-up. */
 export default async function Landing() {
   const signedIn = (await cookies()).has("lector_token");
   return (

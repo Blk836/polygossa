@@ -8,10 +8,8 @@ import { firstWordOfSentence } from "./audio-sync";
 
 type Audio = TextDetail["audio"];
 
-/** What the sync tools need from the audio player (owned by AudioPanel). */
 export interface PlayerControls {
   currentMs: () => number;
-  /** 0 until the audio's metadata has loaded. */
   durationMs: () => number;
   restart: () => void;
   pause: () => void;
@@ -65,7 +63,6 @@ function AttachAudio({ textId, hasAudio, busy, run, onAudioChanged }: {
   );
 }
 
-/** Tap-to-sync: the user taps (or presses Space) as each sentence starts while the audio plays. */
 function useTapSync(tokens: Token[], player: PlayerControls, onJumpToToken: (i: number) => void) {
   const [marks, setMarks] = useState<{ sentence: number; startMs: number }[] | null>(null);
   const firstWords = useMemo(() => firstWordOfSentence(tokens), [tokens]);
@@ -75,7 +72,6 @@ function useTapSync(tokens: Token[], player: PlayerControls, onJumpToToken: (i: 
     const now = Math.round(player.currentMs());
     setMarks((m) => {
       if (!m || m.length >= sentenceCount) return m;
-      // Point the reader at the sentence whose start the user should tap next.
       const upcoming = firstWords.get(m.length + 1);
       if (upcoming !== undefined) onJumpToToken(upcoming);
       return [...m, { sentence: m.length, startMs: now }];
@@ -90,7 +86,6 @@ function useTapSync(tokens: Token[], player: PlayerControls, onJumpToToken: (i: 
       e.preventDefault();
       tap();
     };
-    // Capture phase, so this runs before (and, by preventing the default, instead of) the play/pause shortcut.
     window.addEventListener("keydown", onKey, { capture: true });
     return () => window.removeEventListener("keydown", onKey, { capture: true });
   }, [tapping, tap]);
@@ -137,7 +132,6 @@ function SyncActions({ hasCues, busy, tapSync, onAutoSync, onSaveTaps, onRemove 
   );
 }
 
-/** Owner tools: attach audio (upload or link), align it (auto or tap-to-sync by sentence), or remove it. */
 export function AudioSyncTools({ textId, audio, tokens, isPro, player, onJumpToToken, onAudioChanged }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<ApiError | string | null>(null);

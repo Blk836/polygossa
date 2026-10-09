@@ -8,7 +8,6 @@ import { languageName } from "@/lib/languages";
 import { confidenceText, emptyHint, evidenceText, isEstimate, levelText, overallText, SKILLS, SKILL_NAMES } from "@/lib/skill-levels";
 import type { LanguageCode, SkillKey, SkillLevels } from "@/lib/types";
 
-/** Reading, Listening and Writing levels in one language. Key it by language so a switch starts afresh. */
 export function SkillLevelsCard({ language }: { language: LanguageCode }) {
   const { data: levels, error } = useRemembered(`levels:${language}`, () => api<SkillLevels>(`levels?language=${language}`));
 

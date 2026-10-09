@@ -9,7 +9,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
 
-/** Picks where uploads live: the S3 bucket when {@code app.storage.s3-bucket} is set (production), else the folder. */
 @Configuration
 public class StorageConfig {
 
@@ -19,7 +18,6 @@ public class StorageConfig {
         if (storage.s3Bucket().isBlank()) {
             return new LocalFileStore(Path.of(storage.dir()));
         }
-        // Credentials come from the SDK's default chain: the task's role on AWS.
         S3ClientBuilder client = S3Client.builder().region(Region.of(storage.s3Region()));
         if (!storage.s3Endpoint().isBlank()) {
             client.endpointOverride(URI.create(storage.s3Endpoint())).forcePathStyle(true);

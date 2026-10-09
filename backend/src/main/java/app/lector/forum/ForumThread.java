@@ -15,7 +15,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 
-/** A forum thread: its category, title and state. Its posts, the first of which opens it, are {@link ForumPost}s. */
 @Entity
 @Table(name = "forum_threads", indexes = @Index(name = "idx_forum_threads_order", columnList = "pinned,last_post_at"))
 public class ForumThread {

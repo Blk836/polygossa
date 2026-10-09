@@ -13,12 +13,10 @@ import {
 } from "@/lib/recommendations";
 import type { TextSummary } from "@/lib/types";
 
-/** Logged without waiting: a lost event must never get in the learner's way. */
 function log(body: object) {
   void api("recommendations/events", { body: { ...body } }).catch(() => {});
 }
 
-/** The shelves, logging the cards shown as impressions; none when they can't load (they are extra). */
 function loadShelves(language: string): Promise<RecommendedShelf[]> {
   return api<Recommendations>(recommendationsPath(language))
     .then((r) => {
@@ -28,15 +26,9 @@ function loadShelves(language: string): Promise<RecommendedShelf[]> {
     .catch(() => []);
 }
 
-/**
- * Explore's personalised shelves for a language, with "Not interested" and open logging. Remembered like the page's
- * other rows, so a return visit shows them at once while they refresh. They are extra: if they can't load, Explore
- * just shows its category shelves. `shelves` is null until the first answer.
- */
 export function useRecommendations(language: string, onError: (message: string) => void) {
   const { data: shelves, setData: setShelves } = useRemembered(`recommendations:${language}`, () => loadShelves(language));
 
-  /** Applies a change to every recommended card (e.g. a like toggled elsewhere on the page). */
   const mapTexts = (change: (t: TextSummary) => TextSummary) => {
     setShelves((s) => s?.map((shelf) => ({ ...shelf, items: shelf.items.map((it) => ({ ...it, text: change(it.text) })) })) ?? null);
   };

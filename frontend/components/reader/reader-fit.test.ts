@@ -2,10 +2,9 @@ import { describe, expect, it } from "vitest";
 import type { Token } from "@/lib/types";
 import { fitPages, reservedBelow, splitPages, wordBreaks, type FitOptions, type WordBox } from "./reader-fit";
 
-const H = 38; // line height
-const L = 10; // words per line
+const H = 38;
+const L = 10;
 
-/** `n` words laid out `L` to a line, from `offset` px; word k has token index 2k (separators in between). */
 function boxes(n: number, marks: { paragraphEnd?: number[]; sentenceEnd?: number[] } = {}, offset = 0): WordBox[] {
   return Array.from({ length: n }, (_, k) => ({
     index: 2 * k,
@@ -17,7 +16,6 @@ function boxes(n: number, marks: { paragraphEnd?: number[]; sentenceEnd?: number
 }
 
 const opts = (o: Partial<FitOptions> = {}): FitOptions => ({ height: 100 * H, maxWords: 250, singlePageMaxWords: 300, lastExtra: 0, ...o });
-/** Page starts as word positions (k), for readability. */
 const fit = (b: WordBox[], o: Partial<FitOptions> = {}) => fitPages(b, opts(o)).map((i) => i / 2);
 
 describe("fitPages", () => {
@@ -27,7 +25,7 @@ describe("fitPages", () => {
 
   it("keeps a text that fits the screen on one page", () => {
     expect(fit(boxes(300), { height: 30 * H })).toEqual([0]);
-    expect(fit(boxes(300, {}, 500), { height: 30 * H })).toEqual([0]); // measured from the first line, wherever it is
+    expect(fit(boxes(300, {}, 500), { height: 30 * H })).toEqual([0]);
     expect(fit(boxes(300, {}, 500), { height: 30 * H - 1 })).toEqual([0, 250]);
   });
 
@@ -38,7 +36,7 @@ describe("fitPages", () => {
 
   it("fills each page to the screen height, measured from the line its first word is on", () => {
     expect(fit(boxes(120), { height: 5 * H })).toEqual([0, 50, 100]);
-    expect(fit(boxes(120), { height: 5 * H + H / 2 })).toEqual([0, 50, 100]); // half a line doesn't fit a line
+    expect(fit(boxes(120), { height: 5 * H + H / 2 })).toEqual([0, 50, 100]);
   });
 
   it("ends a page at a paragraph end in its last quarter", () => {
@@ -46,7 +44,6 @@ describe("fitPages", () => {
   });
 
   it("counts the last quarter exactly, on every page", () => {
-    // A 50-word page's last quarter starts at its 38th word (k = 37); the second page starts at k = 50.
     expect(fit(boxes(120, { paragraphEnd: [37] }), { height: 5 * H })).toEqual([0, 38, 80]);
     expect(fit(boxes(120, { paragraphEnd: [36] }), { height: 5 * H })).toEqual([0, 50, 100]);
     expect(fit(boxes(150, { sentenceEnd: [87] }), { height: 5 * H })).toEqual([0, 50, 88, 130]);
@@ -80,7 +77,6 @@ describe("fitPages", () => {
   });
 });
 
-/** Tokens: words and separators alternating, as the backend makes them. */
 function tokens(...parts: string[]): Token[] {
   return parts.map((text, index) => {
     const word = /\p{L}/u.test(text);

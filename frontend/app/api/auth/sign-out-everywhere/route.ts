@@ -4,10 +4,6 @@ import { globalSignOut } from "@/lib/cognito-api";
 import { BACKEND_URL } from "@/lib/server-api";
 import { clearSession, currentAccess } from "@/lib/session";
 
-/**
- * Signs the account out on every device: the backend refuses every login token issued until now and, for a Cognito
- * session, Cognito ends all its sessions so no device can renew. This device then signs out like a normal sign-out.
- */
 export async function POST() {
   const jar = await cookies();
   const access = await currentAccess(cognitoConfig(), jar);

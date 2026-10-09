@@ -4,7 +4,6 @@ import type { Reaction } from "@/lib/media";
 import type { TextSummary } from "@/lib/types";
 import { BookmarkIcon, HeartIcon } from "../icons";
 
-/** Like and save buttons for a shared item. */
 export function ReactionButtons({ text, onToggle }: { text: TextSummary; onToggle: (reaction: Reaction) => void }) {
   return (
     <>

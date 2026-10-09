@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The reader reports the first token of each page it shows; POST so it can go as a beacon when the page closes. */
 @RestController
 public class ProgressController {
 

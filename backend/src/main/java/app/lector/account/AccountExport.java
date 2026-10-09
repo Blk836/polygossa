@@ -9,11 +9,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Download my data (docs/acceptance/gdpr.feature): everything stored about the account as one machine-readable
- * file, one section per kind of record with the database's own field names. Leaves out the password's hash, and
- * other people's data (their replies in this account's threads, the team's moderation notes).
- */
 @Service
 public class AccountExport {
 

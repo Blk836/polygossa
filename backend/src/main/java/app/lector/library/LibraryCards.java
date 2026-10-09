@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
-/** Community cards: summaries with like counts, the viewer's likes and bookmarks, known words and reading progress. */
 @Service
 public class LibraryCards {
 
@@ -28,10 +27,6 @@ public class LibraryCards {
         this.progress = progress;
     }
 
-    /**
-     * Cards for these texts, in order. {@code statusCache} holds the viewer's word statuses per language, so callers
-     * that already loaded them (or will again) share one query per language.
-     */
     public List<TextSummary> summaries(User user, List<Text> page, Map<Language, Map<String, WordStatus>> statusCache) {
         if (page.isEmpty()) {
             return List.of();

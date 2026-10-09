@@ -8,13 +8,6 @@ type Fetched<T> = { key: string | null; data: T | null };
 
 const recall = <T>(key: string | null) => (key === null ? undefined : pageCache.recall<T>(key));
 
-/**
- * A page's data, loaded by `load` and remembered under `key` (which must name everything the data depends on, such
- * as the language and filters; null loads nothing). A page seen before shows its last data at once while it
- * refreshes; until the first answer for a new key, the previous key's data stays (or null when there is none).
- * Changes made through `setData` are remembered too, so the next visit doesn't bring back what the learner just
- * removed. Lives in this browser tab's memory only (docs/acceptance/instant-tabs.feature).
- */
 export function useRemembered<T>(key: string | null, load: () => Promise<T>) {
   const [fetched, setFetched] = useState<Fetched<T>>(() => ({ key, data: recall<T>(key) ?? null }));
   const [error, setError] = useState<string | null>(null);

@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
-/** Feature: A fast e2e suite, deleting many words at once (docs/acceptance/e2e-speed.feature). */
 @ApiTest
 class VocabularyBulkDeleteTest {
 

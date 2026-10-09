@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-/** Feature: A fast e2e suite, reusing outside answers for a while (docs/acceptance/e2e-speed.feature). */
 class RecentAnswersTest {
 
     private final MutableClock clock = new MutableClock();
@@ -25,8 +24,8 @@ class RecentAnswersTest {
         for (int i = 0; i < RecentAnswers.MAX; i++) {
             answers.get("k" + i, this::ask);
         }
-        answers.get("k0", this::ask); // k0 is now the most recently used; k1 the least
-        answers.get("new", this::ask); // one too many: k1 goes
+        answers.get("k0", this::ask);
+        answers.get("new", this::ask);
         asked.clear();
         answers.get("k0", this::ask);
         answers.get("k2", this::ask);

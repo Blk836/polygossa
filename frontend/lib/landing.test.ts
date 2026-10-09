@@ -10,7 +10,6 @@ describe("parseLanguage", () => {
     expect(parseLanguage(code)).toBe(code);
   });
 
-  // Japanese, Chinese and Korean are paused for learning (learning-languages.feature).
   it.each([null, undefined, "", "xx", "ES", " es", "english", "ja", "zh", "ko"])("rejects %j", (value) => {
     expect(parseLanguage(value)).toBeNull();
   });
@@ -32,7 +31,6 @@ describe("sign-up and onboarding links", () => {
   });
 });
 
-// "Hola" is new, ", " is punctuation, "amigo" is known.
 const TOKENS: DemoToken[] = [
   { text: "Hola", word: { meaning: "hello", pos: "interjection" } },
   { text: ", " },

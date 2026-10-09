@@ -1,9 +1,4 @@
 #!/usr/bin/env node
-// Runs the gauntlet's suites on this PC, one run at a time across every session and worktree, and marks the commit on
-// GitHub with the result (docs/acceptance/local-checks.feature, tools/README.md).
-//   node tools/local-checks.mjs           the suites this branch's changes need (compared with main)
-//   node tools/local-checks.mjs --all     every suite
-//   node tools/local-checks.mjs --run -- <command>   one heavy command, in its turn
 import { execFileSync, spawn } from "node:child_process";
 import { existsSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
@@ -35,13 +30,11 @@ const repo = {
   hasMain: () => succeeds(() => git("merge-base", "--is-ancestor", "origin/main", "HEAD")),
 };
 
-/** Whether a folder's packages are missing or older than its lock file. */
 function needsInstall(dir) {
   const installed = join(root, dir, "node_modules", ".package-lock.json");
   return !existsSync(installed) || statSync(installed).mtimeMs < statSync(join(root, dir, "package-lock.json")).mtimeMs;
 }
 
-/** The AWS account CI synthesizes for (the repository variable), so cdk.context.json's lookups apply. */
 function cdkAccount() {
   if (process.env.CDK_DEFAULT_ACCOUNT) return process.env.CDK_DEFAULT_ACCOUNT;
   try {
@@ -81,7 +74,6 @@ function postStatus(sha, state, description) {
   }
 }
 
-// Ctrl+C: give the turn back before exiting (the commands it started get the Ctrl+C too).
 let releaseOnExit = () => {};
 process.on("SIGINT", () => {
   releaseOnExit();

@@ -1,5 +1,3 @@
-// docs/acceptance/production-database.feature: the safe database settings production switches to before the beta,
-// synthesized without AWS access.
 import { before, describe, it } from "node:test";
 import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";

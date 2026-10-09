@@ -22,12 +22,9 @@ test("only the picked suites run", () => {
 
 test("the backend runs the gauntlet's Gradle tasks, through the wrapper for the platform", () => {
   const [linux] = suitesFor({ ...none, backend: true }, installed);
-  // 2 test JVMs, not CI's 4: the PC also runs IntelliJ, the dev servers and other sessions, and 4 ran it out of memory.
   const tasks = ":backend:compileJava :backend:checkstyleMain :backend:test -Ptest.forks=2";
   assert.deepEqual(commands(linux), [`./gradlew ${tasks}`]);
   const [windows] = suitesFor({ ...none, backend: true }, { ...installed, win: true });
-  // A path, not a bare name: cmd.exe may be told not to look in the current folder
-  // (NoDefaultCurrentDirectoryInExePath, which Claude Code sets).
   assert.deepEqual(commands(windows), [`.\\gradlew.bat ${tasks}`]);
   assert.equal(linux.steps[0].cwd, ".");
 });

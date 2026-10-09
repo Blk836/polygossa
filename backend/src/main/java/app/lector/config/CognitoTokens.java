@@ -14,15 +14,9 @@ import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
 
-/**
- * Checks tokens from our Cognito user pool: signed with a key the pool publishes, from its issuer, unexpired, and
- * meant for our app client. Access tokens sign API requests; an ID token (which carries the email) is checked only
- * when a session starts.
- */
 @Component
 public class CognitoTokens {
 
-    /** A checked Cognito identity: its stable id ("sub") and, from an ID token, its email. */
     public record Identity(String sub, String email, boolean emailVerified, Instant issuedAt) {}
 
     private final NimbusJwtDecoder access;
@@ -46,12 +40,10 @@ public class CognitoTokens {
         return access != null;
     }
 
-    /** The identity an access token speaks for, or empty when it isn't a valid one of ours. */
     public Optional<Identity> access(String token) {
         return decode(access, token).map(jwt -> new Identity(jwt.getSubject(), null, false, jwt.getIssuedAt()));
     }
 
-    /** The identity and email in an ID token, or empty when it isn't a valid one of ours. */
     public Optional<Identity> id(String token) {
         return decode(id, token).map(jwt -> new Identity(jwt.getSubject(), jwt.getClaimAsString("email"),
                 Boolean.TRUE.equals(jwt.getClaimAsBoolean("email_verified")), jwt.getIssuedAt()));

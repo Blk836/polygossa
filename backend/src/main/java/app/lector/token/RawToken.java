@@ -1,6 +1,5 @@
 package app.lector.token;
 
-/** A token before indexes and sentence numbers are assigned. */
 record RawToken(String text, boolean word, String lemma, String reading) {
 
     static RawToken word(String text) {

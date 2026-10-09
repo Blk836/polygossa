@@ -5,17 +5,10 @@ import { api, beacon } from "@/lib/api";
 import { ListenClock } from "./listen-clock";
 
 const HEARTBEAT_MS = 15_000;
-/** Time without any interaction after which the reader is considered idle and stops accruing reading time. */
 const IDLE_MS = 2 * 60_000;
 
-/** The open text's listening clock: the media player reports playing and pausing to it. */
 export const ListenContext = createContext<ListenClock | null>(null);
 
-/**
- * Records a reading session for the open text: active, visible time and time the audio or video played are sent to
- * the backend in heartbeats so Progress can show time spent reading and listening. Listening keeps counting while the
- * learner doesn't touch the page; reading time stops after two idle minutes.
- */
 export function useReadingSession(textId: number) {
   const sessionId = useRef<number | null>(null);
   const lastBeat = useRef(0);

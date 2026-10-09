@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Teacher/classroom mode: classes, join codes, assigned texts and student progress. */
 @RestController
 @RequestMapping("/api/classes")
 public class ClassroomController {

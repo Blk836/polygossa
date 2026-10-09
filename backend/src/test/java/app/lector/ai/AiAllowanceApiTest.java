@@ -24,7 +24,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Feature: a daily allowance of AI calls per user, so one learner can't drain the AI budget. */
 @SpringBootTest(properties = {
         "test.database=aiallowance",
         "app.seed-samples=false",
@@ -76,7 +75,7 @@ class AiAllowanceApiTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        CLOCK.set(Instant.parse("2026-10-05T09:00:00Z")); // a Monday
+        CLOCK.set(Instant.parse("2026-10-05T09:00:00Z"));
         AI.reset();
         AI.reply("{\"translation\": \"hello\", \"sentence\": \"Hola.\", \"senses\": [{\"definition\": \"hi\"}]}");
         api = new TestApi(mvc, json);
@@ -117,8 +116,6 @@ class AiAllowanceApiTest {
         api.post(user, "/api/writing", "{\"language\":\"es\",\"content\":\"Hola amigo\"}", 201);
         translate(user, 429);
     }
-
-    // lingq-style-lookup.feature, "Pro asks the AI for an explanation on demand".
 
     @Test
     void aLookupNeverCallsTheAiButExplainDoesInTheLearnersLanguage() throws Exception {
@@ -170,11 +167,11 @@ class AiAllowanceApiTest {
     @Test
     void theAllowanceResetsAtMidnightInTheUsersTimezone() throws Exception {
         api.patch(user, "/api/me", "{\"timezone\":\"Asia/Tokyo\"}", 200);
-        CLOCK.set(Instant.parse("2026-10-05T14:00:00Z")); // 23:00 Monday in Tokyo
+        CLOCK.set(Instant.parse("2026-10-05T14:00:00Z"));
         useAllowance(user);
         translate(user, 429);
 
-        CLOCK.set(Instant.parse("2026-10-05T15:01:00Z")); // 00:01 Tuesday in Tokyo, still Monday in UTC
+        CLOCK.set(Instant.parse("2026-10-05T15:01:00Z"));
         translate(user, 200);
     }
 

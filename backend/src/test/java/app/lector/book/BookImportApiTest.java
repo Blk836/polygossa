@@ -17,7 +17,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** book-import.feature: POST /api/texts/import-book makes a private text per chapter, gathered in a playlist. */
 @ApiTest
 class BookImportApiTest {
 

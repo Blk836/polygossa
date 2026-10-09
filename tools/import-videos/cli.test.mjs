@@ -6,7 +6,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { main } from "./cli.mjs";
 
-/** A stand-in for the backend's curator endpoints: records requests, answers from `videos` (URL → [status, body]). */
 let server;
 let backend;
 let requests;
@@ -176,6 +175,6 @@ test("a token rejected partway stops the run, keeps what was done and marks the 
 
 test("an unexpected error isn't hidden behind an exit code", async () => {
   const file = listFile("https://youtu.be/AAAAAAAAAAA fr\n");
-  mkdirSync(file.replace(/\.txt$/, ".results.txt")); // can't be written as a file
+  mkdirSync(file.replace(/\.txt$/, ".results.txt"));
   await assert.rejects(cli([file]), { code: "EISDIR" });
 });

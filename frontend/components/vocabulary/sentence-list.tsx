@@ -6,7 +6,6 @@ import { api } from "@/lib/api";
 import type { SentenceCard } from "@/lib/types";
 import { Empty, Spinner } from "../ui";
 
-/** Mined sentences (saved from the reader for review). */
 export function SentenceList({ language }: { language: string }) {
   const [items, setItems] = useState<SentenceCard[] | null>(null);
   useEffect(() => {

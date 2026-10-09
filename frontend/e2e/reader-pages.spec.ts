@@ -14,9 +14,6 @@ import {
   type Created,
 } from "./reader-helpers";
 
-// Paging on its own: a 1,000-word text in one paragraph (like a transcript) of 10-word sentences, four pages of 250.
-// "Turning the page marks new words known" is switched off here; reader-experience.spec.ts covers it. The window is
-// tall enough for 250-word pages; reader-fit.spec.ts covers pages cut to fit shorter windows.
 const WORDS = 1000;
 
 test.use({ viewport: TALL });
@@ -42,7 +39,6 @@ test.afterEach(async ({ page }) => {
 const article = (page: Page) => page.locator("article");
 const finish = (page: Page) => page.getByRole("button", { name: "Finish lesson" });
 
-/** Clicking a word saves it as "learning" (afterEach removes it). */
 async function clickWord(page: Page, n: number) {
   await wordAt(page, n).click();
 }
@@ -128,7 +124,7 @@ test("arrow keys move from the last word of a page to the first word of the next
   await page.keyboard.press("ArrowRight");
   await expect(pager(page)).toContainText("Page 2 of 4");
   await expect(wordAt(page, PAGE)).toHaveClass(/w-selected/);
-  await expect(page.getByRole("button", { name: "Close", exact: true })).toBeVisible(); // the popup is open
+  await expect(page.getByRole("button", { name: "Close", exact: true })).toBeVisible();
   await page.keyboard.press("ArrowLeft");
   await expect(pager(page)).toContainText("Page 1 of 4");
   await expect(wordAt(page, PAGE - 1)).toHaveClass(/w-selected/);
@@ -195,7 +191,7 @@ test("without browser storage the reader starts on page 1", async ({ page }) => 
 test("stats in the header count the whole text, not just the page", async ({ page }) => {
   const id = await createText(page);
   await openReader(page, `/read/${id}`);
-  const unique = WORDS - WORDS / PER_SENTENCE + 1; // every word is distinct except the repeated one
+  const unique = WORDS - WORDS / PER_SENTENCE + 1;
   await expect(page.getByText(`${unique} new · 0 learning`)).toBeVisible();
   await pager(page).getByRole("button", { name: "Next page" }).click();
   await expect(page.getByText(`${unique} new · 0 learning`)).toBeVisible();
@@ -204,7 +200,7 @@ test("stats in the header count the whole text, not just the page", async ({ pag
 test("a word's status shows on every page", async ({ page }) => {
   const id = await createText(page);
   await openReader(page, `/read/${id}`);
-  await clickWord(page, 0); // the repeated word
+  await clickWord(page, 0);
   await page.keyboard.press("k");
   await expect(wordAt(page, 0)).toHaveClass(/w-known/);
   await page.keyboard.press("Escape");
@@ -214,10 +210,9 @@ test("a word's status shows on every page", async ({ page }) => {
 
 test("stepping to the next sentence turns to the page holding it", async ({ page }) => {
   const id = await createText(page);
-  // Stepping plays on from the sentence: a second a word keeps the first word of page 2 spoken while it's checked.
   await addSyncedAudio(page, id, WORDS);
   await openReader(page, `/read/${id}`);
-  for (let n = 0; n < PAGE / PER_SENTENCE; n++) await page.keyboard.press("]"); // past the last sentence of page 1
+  for (let n = 0; n < PAGE / PER_SENTENCE; n++) await page.keyboard.press("]");
   await expect(pager(page)).toContainText("Page 2 of 4");
   await expect(wordAt(page, PAGE)).toHaveClass(/w-speaking/);
 });

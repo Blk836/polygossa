@@ -22,30 +22,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Imports a YouTube video as a library item: the transcript becomes the text (tokenized, levelled and shared like any
- * text) and its caption timings drive word highlighting while the embedded video plays.
- */
 @Service
 public class VideoImportService {
 
-    /**
-     * The import form. {@code file} (subtitles) wins over {@code transcript}, which wins over fetched captions; with no
-     * {@code category}, AI picks one from the transcript, else YouTube's own category decides.
-     */
     public record VideoImport(String url, Language language, String title, boolean isPublic, MultipartFile file,
                               String transcript, Category category) {}
 
-    /**
-     * A video imported on another backend and copied here: its finished transcript and captions, so YouTube isn't
-     * asked. With no {@code category}, AI picks one, else {@link Category#OTHER}.
-     */
     public record VideoCopy(String videoId, Language language, String title, Category category,
                             Integer durationSeconds, String content, List<Cue> cues) {}
 
     private record Transcript(String content, List<Cue> cues) {}
 
-    /** {@link TextService#create} or {@link TextService#createUnchecked}. */
     private interface Creator {
         Text create(User owner, String title, Language language, String content, String sourceUrl, boolean isPublic,
                     List<Cue> cues);
@@ -66,14 +53,12 @@ public class VideoImportService {
         this.review = review;
     }
 
-    /** Must run inside a transaction so the video fields set after creation are saved. */
     public Text importVideo(User owner, VideoImport req) {
         String videoId = YouTubeUrls.videoId(req.url());
-        plans.checkCanImportText(owner); // before any calls to YouTube
+        plans.checkCanImportText(owner);
         return save(owner, videoId, req, texts::create);
     }
 
-    /** For the community library account (curated videos): as {@link #importVideo}, without plan limits. */
     public Text importForLibrary(User library, VideoImport req) {
         return save(library, YouTubeUrls.videoId(req.url()), req, texts::createUnchecked);
     }
@@ -92,7 +77,6 @@ public class VideoImportService {
         return finish(text, videoId, duration, transcript.cues(), req.category(), fromYouTube);
     }
 
-    /** For the community library account: saves a copy publicly, without plan limits and without asking YouTube. */
     public Text copyForLibrary(User library, VideoCopy copy) {
         String videoId = YouTubeUrls.videoId("https://youtu.be/" + copy.videoId());
         String content = copy.content() == null ? "" : copy.content().strip();
@@ -138,7 +122,6 @@ public class VideoImportService {
         return new Transcript(joined.content(), joined.cues());
     }
 
-    /** Word timings from the captions, else spread evenly over the video's length, else none. */
     static List<AudioAligner.WordTiming> timings(List<Token> tokens, List<Cue> cues, Integer durationSeconds) {
         if (!cues.isEmpty()) {
             return AudioAligner.fromCues(tokens, cues);

@@ -18,7 +18,6 @@ function AssignForm({ detail, onAssigned }: { detail: ClassDetail; onAssigned: (
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Teachers can assign their own texts or anything in the community library.
     Promise.all([
       api<TextSummary[]>("texts"),
       api<{ items: TextSummary[] }>(`library?language=${detail.info.language}&size=50`),

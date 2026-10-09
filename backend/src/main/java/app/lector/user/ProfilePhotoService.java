@@ -7,11 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-/** Profile photos: one per user, replaced or removed by its owner, visible to everyone signed in. */
 @Service
 public class ProfilePhotoService {
 
-    /** A stored photo and the name it was stored under. */
     public record Photo(String name, Resource file) {}
 
     private final UserRepository users;
@@ -22,7 +20,6 @@ public class ProfilePhotoService {
         this.storage = storage;
     }
 
-    /** Stores a new photo and deletes the one it replaces. */
     @Transactional
     public void upload(User user, MultipartFile file) {
         String old = user.getPhotoFile();

@@ -1,8 +1,5 @@
 import { expect, test } from "@playwright/test";
 
-// Login with Cognito (cognito-login.feature): the browser tests have no user pool, so they check what holds without
-// one: a forged or stray sign-in return never creates a session, and the forms and auto-login still work. The
-// Cognito half of the flow is unit-tested in lib/cognito.test.ts and was checked by hand against the QA pool.
 test.describe("sign-in return", () => {
   for (const query of ["", "?code=abc", "?code=abc&state=forged", "?error=access_denied"]) {
     test(`a return without a pending sign-in (${query || "nothing"}) creates no session`, async ({ request }) => {

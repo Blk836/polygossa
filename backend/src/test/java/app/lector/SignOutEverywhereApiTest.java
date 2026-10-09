@@ -9,10 +9,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * cognito-login.feature, "Signing out everywhere", with the app's own accounts (local runs and tests): every token
- * issued before is refused, and signing in again works.
- */
 @ApiTest
 class SignOutEverywhereApiTest {
 
@@ -39,7 +35,7 @@ class SignOutEverywhereApiTest {
 
         api.get(first, "/api/me", 401);
         api.get(second, "/api/me", 401);
-        Thread.sleep(1100); // tokens carry their issue time in whole seconds
+        Thread.sleep(1100);
         api.get(login(email), "/api/me", 200);
     }
 

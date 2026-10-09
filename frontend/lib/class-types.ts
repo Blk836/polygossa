@@ -1,4 +1,3 @@
-// Response types for /api/classes (Classes), kept in sync with ClassroomService.
 import type { CefrLevel, LanguageCode, Person } from "./types";
 
 export interface ClassSummary {

@@ -15,16 +15,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Fits score weights to the logged impressions ({@link WeightLearner}) on request, and, when learning is switched on,
- * at start-up and then daily, handing the result to {@link ActiveWeights} for ranking.
- */
 @Service
 public class WeightLearningJob {
 
     private static final Logger log = LoggerFactory.getLogger(WeightLearningJob.class);
 
-    /** The fit, as GET /api/recommendations/weights reports it; learned is null without enough data. */
     public record Fit(int days, String outcome, int examples, long positives, Weights configured, Weights learned,
                       String using) {}
 
@@ -51,7 +46,6 @@ public class WeightLearningJob {
         }
     }
 
-    /** Fits with the configured window and outcome and updates the weights ranking uses. */
     @Transactional(readOnly = true)
     public Optional<Weights> runOnce() {
         Fit fit = fit(props.learn().days(), props.learn().outcome());

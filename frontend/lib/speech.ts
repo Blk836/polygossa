@@ -1,5 +1,3 @@
-// Pronunciation audio via the browser's built-in speech synthesis (no API cost, works offline on most devices).
-
 export function canSpeak(): boolean {
   return typeof window !== "undefined" && "speechSynthesis" in window;
 }

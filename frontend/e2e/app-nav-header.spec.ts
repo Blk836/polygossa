@@ -1,9 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// The header's numbers: known words (LingQ-style) and the streak flame, lit once today is done, burning down towards
-// midnight while a streak is at risk, out with no streak. GET /api/dashboard/header is stubbed so each state is exact;
-// the "real" tests use the backend.
-
 const HOUR = 3600;
 const flame = (page: Page) => page.getByRole("banner").getByTestId("streak-flame");
 

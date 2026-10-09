@@ -8,11 +8,6 @@ import app.lector.vocab.VocabularyRepository;
 import app.lector.vocab.WordStatus;
 import org.springframework.stereotype.Service;
 
-/**
- * Applies the pricing table: Free users get 5 imported texts and 500 saved (learning) words with the basic
- * dictionary; SRS review, audio sync and AI features need Pro. Students in a class taught by a Classroom-plan
- * teacher are treated as Pro.
- */
 @Service
 public class PlanService {
 
@@ -80,7 +75,6 @@ public class PlanService {
         }
     }
 
-    /** A book becomes several texts at once: all of them must fit the free plan's allowance. */
     public void checkCanImportTexts(User user, int count) {
         if (!isLimited(user)) {
             return;
@@ -92,7 +86,6 @@ public class PlanService {
         }
     }
 
-    /** Saved words are those in "learning" status; known and ignored words are unlimited. */
     public void checkCanSaveWord(User user) {
         if (isLimited(user) && vocabulary.countByUserIdAndStatus(user.getId(), WordStatus.LEARNING) >= billing.freeWordLimit()) {
             throw ApiException.upgradeRequired("The free plan includes " + billing.freeWordLimit()
@@ -100,7 +93,6 @@ public class PlanService {
         }
     }
 
-    /** How many more words this learner can put in "learning" (Long.MAX_VALUE when unlimited). */
     public long savedWordsLeft(User user) {
         if (!isLimited(user)) {
             return Long.MAX_VALUE;

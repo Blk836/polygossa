@@ -9,7 +9,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 
-/** "Not interested": the learner doesn't want this item recommended again. */
 @Entity
 @Table(name = "text_dismissals", uniqueConstraints = @UniqueConstraint(name = "uk_dismissal",
         columnNames = {"user_id", "text_id"}))

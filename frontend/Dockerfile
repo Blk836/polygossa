@@ -3,7 +3,6 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-# The app name (lib/brand.ts) is inlined at build time.
 ARG BRAND_NAME=
 RUN npm run build
 

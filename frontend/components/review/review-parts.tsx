@@ -47,7 +47,6 @@ export function GoalBar({ stats }: { stats: ReviewStats }) {
   );
 }
 
-/** What the card means: pronunciation, definition and translation. */
 function Meaning({ card }: { card: ReviewCard }) {
   const missingTranslation = card.type === "sentence" && !card.translation;
   return (
@@ -65,7 +64,6 @@ function Meaning({ card }: { card: ReviewCard }) {
   );
 }
 
-/** Where the card came from: the sentence it was met in, an example, notes and the source text. */
 function Usage({ card }: { card: ReviewCard }) {
   const showExample = card.example && card.example !== card.context;
   return (
@@ -82,7 +80,6 @@ function Usage({ card }: { card: ReviewCard }) {
   );
 }
 
-/** The back of a card: everything known about the word or sentence. */
 function Answer({ card }: { card: ReviewCard }) {
   return (
     <div className="mt-6 space-y-3 text-left">

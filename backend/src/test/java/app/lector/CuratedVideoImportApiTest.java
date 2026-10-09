@@ -20,10 +20,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Feature: bulk-importing curated YouTube videos (docs/acceptance/bulk-video-import.feature), the backend side: the
- * curator endpoint the tools/ importer calls. No AI here, so videos are filed by YouTube's own category.
- */
 @YouTubeApiTest
 class CuratedVideoImportApiTest {
 
@@ -31,7 +27,6 @@ class CuratedVideoImportApiTest {
     static final String HEADER = "X-Curator-Token";
     private static final String FR = "AAAAAAAAAAA";
     private static final String ES = "BBBBBBBBBBB";
-    /** The free plan's import limit (the default; plan limits are on in tests). */
     private static final int FREE_LIMIT = 5;
     private static final YouTubeStub YOUTUBE = YouTubeApiTest.STUB;
 
@@ -89,15 +84,13 @@ class CuratedVideoImportApiTest {
         return YOUTUBE.requests().size();
     }
 
-    // ---- importing ----
-
     @Test
     void aVideoIsImportedPubliclyIntoTheCommunityLibrary() throws Exception {
         JsonNode r = curate("https://www.youtube.com/watch?v=" + FR, "fr", null, 201);
         assertThat(r.get("outcome").asString()).isEqualTo("imported");
         assertThat(r.get("videoId").asString()).isEqualTo(FR);
         assertThat(r.get("title").asString()).isEqualTo("Le marché");
-        assertThat(r.get("category").asString()).isEqualTo("learners"); // YouTube's "Education", no AI here
+        assertThat(r.get("category").asString()).isEqualTo("learners");
         assertThat(r.get("id").asLong()).isPositive();
 
         List<Text> saved = libraryVideos();
@@ -131,8 +124,6 @@ class CuratedVideoImportApiTest {
         }
     }
 
-    // ---- duplicates ----
-
     @Test
     void aVideoAlreadyInTheLibraryIsNotImportedAgainOrFetched() throws Exception {
         curate("https://youtu.be/" + FR, "fr", null, 201);
@@ -154,8 +145,6 @@ class CuratedVideoImportApiTest {
         assertThat(mine).hasSize(1);
         assertThat(mine.get(0).get("isPublic").asBoolean()).isFalse();
     }
-
-    // ---- videos that can't be imported ----
 
     @Test
     void aVideoWithoutCaptionsInItsLanguageIsSkippedAndNothingSaved() throws Exception {
@@ -180,8 +169,6 @@ class CuratedVideoImportApiTest {
         assertThat(libraryVideos()).isEmpty();
     }
 
-    // ---- limits and dry runs ----
-
     @Test
     void planLimitsDoNotApplyToTheLibraryAccount() throws Exception {
         List<String> ids = moreFrenchVideos(FREE_LIMIT + 1);
@@ -202,8 +189,6 @@ class CuratedVideoImportApiTest {
         assertThat(libraryVideos()).hasSize(1);
         assertThat(youtubeCalls()).isEqualTo(calls);
     }
-
-    // ---- access ----
 
     @Test
     void theOptionsListLanguagesAndCategories() throws Exception {
@@ -233,11 +218,9 @@ class CuratedVideoImportApiTest {
         assertThat(libraryVideos()).isEmpty();
     }
 
-    // ---- the normal import is unchanged ----
-
     @Test
     void theNormalLibraryImportIsStillPrivateAndLimited() throws Exception {
-        String learner = api.signup(); // free plan
+        String learner = api.signup();
         List<String> ids = moreFrenchVideos(FREE_LIMIT + 1);
         for (String id : ids.subList(0, FREE_LIMIT)) {
             JsonNode imported = learnerImport(learner, id, 201);
@@ -253,7 +236,6 @@ class CuratedVideoImportApiTest {
                 .param("language", "fr"), learner, status);
     }
 
-    /** Registers {@code count} more French videos with captions and returns their ids. */
     private static List<String> moreFrenchVideos(int count) {
         List<String> ids = new ArrayList<>();
         for (int i = 0; i < count; i++) {

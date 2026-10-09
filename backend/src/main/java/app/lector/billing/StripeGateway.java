@@ -14,16 +14,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-/**
- * The only door to Stripe (stripe-billing.feature): every call the app makes, on the official client. Without a
- * secret key there is no client and billing is off. Stripe failing becomes a 503 the learner can retry.
- */
 @Component
 public class StripeGateway {
 
     private static final Logger log = LoggerFactory.getLogger(StripeGateway.class);
 
-    /** One checkout's line: the price (by lookup key) and how many. */
     public record Line(String lookupKey, long quantity) {}
 
     private final StripeClient client;
@@ -70,7 +65,6 @@ public class StripeGateway {
                 .setEmail(email).setName(name).putMetadata("userId", Long.toString(userId)).build())).getId();
     }
 
-    /** A Checkout page for a subscription to {@code line}, returning to Settings › Subscription. */
     public String checkout(long userId, String customer, Line line) {
         String price = call("price lookup", () -> client.v1().prices().list(
                 PriceListParams.builder().addLookupKey(line.lookupKey()).setActive(true).build()))
@@ -103,7 +97,6 @@ public class StripeGateway {
         return call("subscription", () -> client.v1().subscriptions().retrieve(id));
     }
 
-    /** Bills {@code quantity} seats from now on; Stripe prorates the difference. */
     public void setQuantity(String itemId, long quantity) {
         call("seat count", () -> client.v1().subscriptionItems().update(itemId, SubscriptionItemUpdateParams.builder()
                 .setQuantity(quantity)
@@ -111,7 +104,6 @@ public class StripeGateway {
                 .build()));
     }
 
-    /** Cancels at once: no further charges. */
     public void cancel(String subscriptionId) {
         call("cancel", () -> client.v1().subscriptions().cancel(subscriptionId));
     }

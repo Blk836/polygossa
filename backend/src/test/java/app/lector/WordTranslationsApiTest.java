@@ -30,12 +30,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * lingq-style-lookup.feature (and word-translations.feature's storing, cap and failures): a lookup gives the word's
- * meanings in the learner's own language, from other learners' saved meanings, else a machine translation, the same
- * for every native language. Its own setup: machine translation on against {@link TranslateStub}, and a movable clock
- * for the monthly cap.
- */
 @SpringBootTest(properties = {
         "test.database=translations",
         "app.seed-samples=false",
@@ -58,7 +52,6 @@ class WordTranslationsApiTest {
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-        // The SDK's default credential chain reads these; the stub doesn't check signatures.
         System.setProperty("aws.accessKeyId", "test");
         System.setProperty("aws.secretAccessKey", "test");
     }
@@ -94,7 +87,6 @@ class WordTranslationsApiTest {
         usage.deleteAll();
     }
 
-    /** A made-up word nobody has looked up yet (stored translations are shared). */
     private static String fresh() {
         StringBuilder s = new StringBuilder("w");
         for (int i = 0; i < 9; i++) {
@@ -125,8 +117,6 @@ class WordTranslationsApiTest {
     private static List<String> meanings(JsonNode result) {
         return result.path("meanings").valueStream().map(JsonNode::asString).toList();
     }
-
-    // --- The meaning line, the same for everyone ---
 
     @Test
     void anEnglishSpeakerGetsAMachineTranslation() throws Exception {
@@ -213,8 +203,6 @@ class WordTranslationsApiTest {
         assertThat(TRANSLATE.requests()).isEmpty();
     }
 
-    // --- Stored answers ---
-
     @Test
     void laterLookupsReuseTheStoredAnswer() throws Exception {
         String word = fresh();
@@ -270,8 +258,6 @@ class WordTranslationsApiTest {
         assertThat(stored.countBySourceLanguageAndTargetLanguageAndTerm(Language.FR, NativeLanguage.EN, word))
                 .isEqualTo(1);
     }
-
-    // --- Failures and limits ---
 
     @Test
     void whenAmazonFailsNothingIsStoredAndTheNextLookupTriesAgain() throws Exception {

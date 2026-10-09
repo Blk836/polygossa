@@ -8,21 +8,18 @@ import { Button } from "../ui";
 import { WritingTutor } from "./writing-tutor";
 
 interface Props {
-  /** False renders nothing (the panel shows on the last page). */
   visible: boolean;
   textId: number;
   language: LanguageCode;
   isPro: boolean;
   unseen: number;
   learning: number;
-  /** Words marked known when the lesson was finished, or null if it isn't finished yet. */
   finished: number | null;
   finishing: boolean;
   onFinish: () => void;
   playlist: ReaderPlaylist | null;
 }
 
-/** "Finish lesson" (marks the remaining new words known), then a summary and the writing tutor. */
 export function FinishPanel({ visible, textId, language, isPro, unseen, learning, finished, finishing, onFinish, playlist }: Props) {
   if (!visible) return null;
   if (finished === null) {

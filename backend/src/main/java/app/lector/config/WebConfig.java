@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/** Lets query parameters use the same lower-case codes as JSON ({@code ?language=es&status=learning}). */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 

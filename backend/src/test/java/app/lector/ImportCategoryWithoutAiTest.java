@@ -13,10 +13,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Without OPENAI_API_KEY, imports keep the old default category, sharing is not checked, and no AI request is
- * attempted.
- */
 @SpringBootTest(properties = {
         "test.database=importcategorynoai",
         "app.seed-samples=false",

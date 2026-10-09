@@ -12,13 +12,8 @@ import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocume
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import org.apache.pdfbox.text.PDFTextStripper;
 
-/**
- * Reads a PDF's text layer. Its outline's top-level entries (bookmarks) become chapters; without one, the text is cut
- * into parts. Hard-wrapped lines are joined back into paragraphs, and words hyphenated across lines are rejoined.
- */
 final class PdfReader {
 
-    /** Parts of a PDF without an outline: big enough to read for a while, small enough to load quickly. */
     static final int PART_CHARS = 20_000;
     private static final String PARAGRAPH = " ";
 
@@ -40,7 +35,6 @@ final class PdfReader {
         }
     }
 
-    /** First page (0-based) of each top-level outline entry, with its title; the first title wins a shared page. */
     private static TreeMap<Integer, String> outline(PDDocument doc) throws IOException {
         TreeMap<Integer, String> starts = new TreeMap<>();
         PDDocumentOutline outline = doc.getDocumentCatalog().getDocumentOutline();
@@ -86,7 +80,6 @@ final class PdfReader {
         return out;
     }
 
-    /** Pages {@code first} to {@code last} (1-based, inclusive) as paragraphs separated by blank lines. */
     private static String text(PDDocument doc, int first, int last) throws IOException {
         PDFTextStripper stripper = new PDFTextStripper();
         stripper.setSortByPosition(true);

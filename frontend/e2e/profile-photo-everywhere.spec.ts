@@ -1,10 +1,6 @@
 import { expect, test, type APIRequestContext, type Locator, type Page } from "@playwright/test";
 import { accountButton, cropDialog, me, pick, signUp, stripes, uploadPhoto, type Person } from "./photo-helpers";
 
-// Feature: Profile photo, "Photos next to people's names" (docs/acceptance/profile-photo.feature). Ana has a photo
-// and Ben has none; a teacher looks at their forum posts, shared texts, playlist and class. Everything made here is
-// deleted afterwards.
-
 test.describe.configure({ mode: "serial" });
 
 const tag = `${Date.now()}${Math.floor(Math.random() * 1000)}`;
@@ -26,7 +22,6 @@ async function sharedText(person: Person, title: string): Promise<number> {
   return id;
 }
 
-/** Within `scope`, Ana's name has her photo beside it and Ben's has the initial "B". */
 async function expectPhotos(scope: Locator, { ana = true, ben = true } = {}) {
   if (ana) {
     const named = scope.locator("span", { hasText: ANA }).filter({ has: scope.page().getByTestId("avatar") }).last();
@@ -90,7 +85,7 @@ test("Explore cards and the reader show the sharer's photo", async () => {
   const { page } = teacher;
   await page.goto("/community");
   await page.getByRole("searchbox", { name: "Search titles" }).fill(`Photo text ${tag}`);
-  await expect(page.getByRole("link", { name: anaTitle }).first()).toBeVisible(); // a card can show on a shelf and in the results
+  await expect(page.getByRole("link", { name: anaTitle }).first()).toBeVisible();
   await expectPhotos(page.getByRole("main"));
 
   await page.goto(`/read/${anaText}`);

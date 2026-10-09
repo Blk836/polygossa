@@ -13,11 +13,6 @@ import type { TextSummary } from "@/lib/types";
 import { CheckIcon, CloseIcon, PlaylistIcon } from "../icons";
 import { ErrorNote, LinkButton, Spinner } from "../ui";
 
-/**
- * A popup for one playlist, a bottom sheet on phones and centred from the sm breakpoint up: its title and progress,
- * Start / Continue, and a scrollable list of every episode, each opening the reader as part of the playlist. Escape,
- * the close button or a click outside closes it.
- */
 export function PlaylistPane({ playlist, onClose }: { playlist: PlaylistSummary; onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [detail, setDetail] = useState<PlaylistDetail | null>(null);
@@ -76,7 +71,6 @@ function Actions({ detail, playlistId }: { detail: PlaylistDetail | null; playli
   );
 }
 
-/** "Finished", or how far along an opened episode is. */
 function ProgressNote({ text }: { text: TextSummary }) {
   const p = readingProgress(text.progress);
   if (!p) return null;
@@ -84,7 +78,6 @@ function ProgressNote({ text }: { text: TextSummary }) {
   return <span>· {p.label}</span>;
 }
 
-/** One row: number, a small thumbnail, the title, and length plus how far the viewer has read. */
 function Episode({ text, index, playlistId }: { text: TextSummary; index: number; playlistId: number }) {
   const p = readingProgress(text.progress);
   const length = text.kind === "video" ? formatVideoLength(text.video?.durationSeconds) : `${text.wordCount.toLocaleString()} words`;

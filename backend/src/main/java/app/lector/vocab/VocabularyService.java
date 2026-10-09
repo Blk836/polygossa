@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class VocabularyService {
 
-    /** Fields a client may set when saving or editing an entry; null means "leave unchanged". */
     public record EntryFields(
             WordStatus status,
             String definition,
@@ -32,7 +31,6 @@ public class VocabularyService {
             String contextSentence,
             String note,
             List<String> tags,
-            /* the word in the learner's own language; "" clears it */
             String meaning) {
 
         public EntryFields(WordStatus status, String definition, String partOfSpeech, String pronunciation,
@@ -40,7 +38,6 @@ public class VocabularyService {
             this(status, definition, partOfSpeech, pronunciation, example, contextSentence, null, null, null);
         }
 
-        /** The same fields with tags normalized (a 400 for invalid ones, before anything changes). */
         EntryFields checked() {
             return tags == null ? this : new EntryFields(status, definition, partOfSpeech, pronunciation, example,
                     contextSentence, note, Tags.normalize(tags), meaning);
@@ -57,10 +54,6 @@ public class VocabularyService {
         this.texts = texts;
     }
 
-    /**
-     * Creates or updates the user's entry for a term. Clicking a word in the reader calls this with status
-     * "learning"; the popup's buttons call it with "known" or "ignored".
-     */
     @Transactional
     public VocabularyEntry save(User user, Language language, String term, String displayTerm, EntryKind kind,
                                 EntryFields unchecked, Long textId) {
@@ -83,7 +76,6 @@ public class VocabularyService {
             plans.checkCanSaveWord(user);
         }
         EntryKind k = kind != null ? kind : (key.contains(" ") ? EntryKind.PHRASE : EntryKind.WORD);
-        // New entries start as LEARNING; save() then applies any other requested status.
         VocabularyEntry entry = new VocabularyEntry(user, language, key, display, k);
         if (textId != null) {
             Text text = texts.load(textId);
@@ -99,7 +91,6 @@ public class VocabularyService {
         return display.substring(0, Math.min(display.length(), 500));
     }
 
-    /** Moving a word (back) into "learning" counts against the free-tier saved-word limit. */
     private void changeStatus(User user, VocabularyEntry entry, WordStatus status) {
         if (status == null || status == entry.getStatus()) {
             return;
@@ -110,19 +101,11 @@ public class VocabularyService {
         entry.changeStatus(status);
     }
 
-    /**
-     * "Finish lesson": every word in the text the user never clicked is marked known (as in LingQ), so the
-     * known-word count grows as the user reads. Returns how many words were marked.
-     */
     @Transactional
     public int markUnseenKnown(User user, Long id) {
         return markUnseenKnown(user, id, 0, Integer.MAX_VALUE);
     }
 
-    /**
-     * "Turning the page": like {@link #markUnseenKnown(User, Long)} for the tokens from {@code fromToken} to
-     * {@code toToken} (inclusive; a range past the end stops at the end).
-     */
     @Transactional
     public int markUnseenKnown(User user, Long id, int fromToken, int toToken) {
         if (fromToken < 0 || toToken < fromToken) {
@@ -165,7 +148,6 @@ public class VocabularyService {
 
     static final int MAX_BULK_DELETE = 1000;
 
-    /** Deletes those of {@code ids} that are this learner's entries; others' and unknown ids are ignored. */
     @Transactional
     public int deleteAll(User user, List<Long> ids) {
         if (ids == null || ids.isEmpty() || ids.size() > MAX_BULK_DELETE || ids.contains(null)) {
@@ -197,7 +179,6 @@ public class VocabularyService {
         return repo.search(user.getId(), language, status, kind, pattern, tagPattern, pageable).map(VocabularyDto::of);
     }
 
-    /** The learner's tags in a language (all languages when null), with how many entries carry each. */
     @Transactional(readOnly = true)
     public List<Tags.TagCount> tags(User user, Language language) {
         return Tags.count(repo.findTagColumns(user.getId(), language));
@@ -229,7 +210,6 @@ public class VocabularyService {
             entry.setExample(trim(f.example(), 2000));
             changed = true;
         }
-        // The context sentence records where the word was *first* met, so it is only filled in once.
         if (f.contextSentence() != null && (entry.getContextSentence() == null || entry.getContextSentence().isBlank())) {
             entry.setContextSentence(trim(f.contextSentence(), 2000));
             changed = true;
@@ -239,10 +219,6 @@ public class VocabularyService {
         }
     }
 
-    /**
-     * The learner's own note ("" clears it), tags (null leaves them, [] clears them) and meaning ("" clears it; a new
-     * one is in the learner's native language as it is now).
-     */
     private static boolean applyPersonal(VocabularyEntry entry, EntryFields f, User user) {
         if (f.note() != null) {
             entry.setNote(f.note().isBlank() ? null : trim(f.note(), 2000));

@@ -1,9 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { article, cleanUp, createVideo, openReader, pager, player, TALL, wordAt, type Created } from "./reader-helpers";
 
-// Video lessons use the same reader as texts: header, settings, pager, word card and player bar; only the player
-// itself is added (beside the text on wide screens, above it on narrow ones).
-
 let created: Created | null = null;
 
 test.afterEach(async ({ page }) => {
@@ -22,7 +19,7 @@ async function box(locator: Locator) {
 
 test.describe("video lessons use the same reader", () => {
   test("wide screens put the video beside the text, with the same header, pager and player bar", async ({ page }) => {
-    await page.setViewportSize(TALL); // 250-word pages
+    await page.setViewportSize(TALL);
     created = await createVideo(page);
     await openReader(page, `/read/${created.id}`);
     const dock = page.getByTestId("video-dock");
@@ -33,7 +30,6 @@ test.describe("video lessons use the same reader", () => {
     await page.getByRole("button", { name: "Keyboard shortcuts" }).click();
     await expect(shortcutsMenu(page)).toContainText("Play / pause");
     await page.keyboard.press("Escape");
-    // The YouTube embed may be unreachable; the transcript and its explanation stay usable either way.
     const failed = page.getByText("The video can't be played here");
     await expect(player(page).or(failed)).toBeVisible();
     if (await player(page).isVisible()) {
@@ -56,7 +52,7 @@ test.describe("video lessons use the same reader", () => {
   test("the video's player bar and word lookups work like an audio text's", async ({ page }) => {
     created = await createVideo(page);
     await openReader(page, `/read/${created.id}`);
-    await expect(player(page).getByRole("button", { name: "Next sentence" })).toBeEnabled(); // captions are synced
+    await expect(player(page).getByRole("button", { name: "Next sentence" })).toBeEnabled();
     await expect(player(page).getByRole("group", { name: "Sentence timeline" })).toHaveCount(0);
     await wordAt(page, 3).click();
     await expect(page.getByRole("button", { name: "Close", exact: true })).toBeVisible();

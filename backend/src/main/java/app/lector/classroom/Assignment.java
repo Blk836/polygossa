@@ -13,7 +13,6 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDate;
 
-/** A text assigned to every student in a class. */
 @Entity
 @Table(name = "assignments")
 public class Assignment {

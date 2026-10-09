@@ -1,4 +1,3 @@
-// docs/acceptance/production-ai.feature: production's AI features use the OpenAI key kept in Secrets Manager.
 import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
 import * as cdk from "aws-cdk-lib";

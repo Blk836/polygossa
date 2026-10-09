@@ -3,7 +3,6 @@ package app.lector.text;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Locale;
 
-/** What a library item is: a text to read, or a YouTube video with its transcript. */
 public enum MediaKind {
     TEXT,
     VIDEO;

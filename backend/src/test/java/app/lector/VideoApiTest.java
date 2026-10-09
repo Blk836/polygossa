@@ -21,7 +21,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Scenarios for importing YouTube videos and browsing texts and videos together. */
 @YouTubeApiTest
 class VideoApiTest {
 
@@ -78,8 +77,6 @@ class VideoApiTest {
         return out;
     }
 
-    // ---- Feature: Import a YouTube video ----
-
     @Test
     void importsAVideoWithCaptionsInTheChosenLanguage() throws Exception {
         JsonNode summary = importVideo(user, importReq(URL, "es"), 201);
@@ -103,7 +100,6 @@ class VideoApiTest {
         assertThat(video.get("hasCues").asBoolean()).isTrue();
         JsonNode timings = video.get("timings");
         assertThat(timings.size()).isEqualTo(7);
-        // The first cue's words fall within 1.0–3.0 s, the second's within 4.0–7.0 s.
         assertThat(timings.get(0).get("s").asLong()).isEqualTo(1000);
         assertThat(timings.get(1).get("e").asLong()).isLessThanOrEqualTo(3000);
         assertThat(timings.get(2).get("s").asLong()).isEqualTo(4000);
@@ -243,8 +239,6 @@ class VideoApiTest {
 
     @Test
     void japaneseVideosAreRefused() throws Exception {
-        // Japanese, Chinese and Korean are paused for learning (learning-languages.feature); their segmentation
-        // stays covered by TokenizationTest.
         STUB.add(ID, YouTubeStub.Video.withCaptions("日本", 30, "ja", YouTubeStub.srv3("0|3000|今日は天気がいいです。")));
         JsonNode error = importVideo(user, importReq(URL, "ja"), 400);
         assertThat(error.get("code").asString()).isEqualTo("language_not_offered");
@@ -261,9 +255,6 @@ class VideoApiTest {
         assertThat(api.get(user, "/api/texts/" + id, 200).get("video").get("timings").size()).isEqualTo(7);
     }
 
-    // ---- Feature: Word highlighting follows the transcript with overlapping captions ----
-
-    /** Timings in start-time order must visit words in transcript order, or the highlight jumps back a line. */
     private static void assertTranscriptOrderByStart(JsonNode timings) {
         List<long[]> list = new ArrayList<>();
         timings.forEach(t -> list.add(new long[] {t.get("s").asLong(), t.get("i").asLong()}));
@@ -289,7 +280,6 @@ class VideoApiTest {
         STUB.add(ID, YouTubeStub.Video.withCaptions("Rolling", 60, "es",
                 YouTubeStub.srv3("1000|4000|uno dos tres cuatro", "3000|4000|cinco seis siete")));
         long id = importOk(user, false);
-        // What the old aligner stored: line 1's tail words start after line 2's first words.
         storeTimings(id, "[{\"i\":0,\"s\":1000,\"e\":2000},{\"i\":2,\"s\":2000,\"e\":3000},"
                 + "{\"i\":4,\"s\":3000,\"e\":4000},{\"i\":6,\"s\":4000,\"e\":5000},"
                 + "{\"i\":8,\"s\":3000,\"e\":4500},{\"i\":10,\"s\":4500,\"e\":6000},{\"i\":12,\"s\":6000,\"e\":7000}]");
@@ -308,7 +298,6 @@ class VideoApiTest {
         assertThat(timings).isEqualTo(json.readTree(stored));
     }
 
-    /** A text's body loads lazily, so changing a stored text's timings needs a transaction. */
     private void storeTimings(long id, String timingsJson) {
         tx.executeWithoutResult(status -> {
             var text = texts.findById(id).orElseThrow();
@@ -316,8 +305,6 @@ class VideoApiTest {
             texts.save(text);
         });
     }
-
-    // ---- Feature: Library and Explore cover texts and videos ----
 
     @Test
     void myLibraryListsBothKindsNewestFirstAndFiltersByKind() throws Exception {
@@ -350,7 +337,7 @@ class VideoApiTest {
         api.post(owner, "/api/texts", "{\"title\":\"Texto público\",\"language\":\"es\",\"content\":\"Hola amigos.\","
                 + "\"isPublic\":true}", 201);
         String viewer = api.signup();
-        String q = "&q=" + java.util.UUID.randomUUID(); // never matches: isolates from other tests' public items
+        String q = "&q=" + java.util.UUID.randomUUID();
         assertThat(api.get(viewer, "/api/library?language=es&kind=video&size=50", 200).toString()).doesNotContain(
                 "\"id\":" + video + ",");
 
@@ -379,7 +366,6 @@ class VideoApiTest {
         assertThat(api.get(viewer, "/api/library/bookmarks?kind=text", 200).size()).isZero();
         assertThat(api.get(viewer, "/api/library/bookmarks?kind=video", 200).size()).isEqualTo(1);
 
-        // Owner unshares: it leaves Explore and the viewer's bookmarks.
         api.send(patch("/api/texts/" + video).contentType(MediaType.APPLICATION_JSON).content("{\"isPublic\":false}"),
                 owner, 200);
         assertThat(api.get(viewer, "/api/library/bookmarks", 200).size()).isZero();

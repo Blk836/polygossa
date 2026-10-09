@@ -20,7 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** A learner's own playlists: creating them, adding, ordering and removing items. Sharing is in PlaylistSharingApiTest. */
 @ApiTest
 class PlaylistApiTest {
 
@@ -48,7 +47,7 @@ class PlaylistApiTest {
     @BeforeEach
     void setUp() throws Exception {
         api = new TestApi(mvc, json);
-        me = api.signupPro(); // past the free plan's five-text limit
+        me = api.signupPro();
     }
 
     static long create(TestApi api, String token, String title, String language) throws Exception {

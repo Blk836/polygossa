@@ -1,4 +1,3 @@
-# Production: PostgreSQL primary datastore.
 spring:
   datasource:
     url: ${DATABASE_URL}
@@ -20,12 +19,8 @@ management:
 app:
   jwt:
     secret: ${JWT_SECRET}
-  # Forum admins must be named explicitly in production.
   forum:
     admins: ${FORUM_ADMINS:}
-  # Never allow credential-free login in production.
   dev-auto-login: false
-  # Everyone signs in through Cognito: the app's own accounts and tokens are off (docker-compose.yml, which has no
-  # Cognito, turns them back on).
   login:
     local-accounts: ${LOCAL_ACCOUNTS:false}

@@ -5,13 +5,6 @@ import java.time.Duration;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.TransportConfig;
 
-/**
- * Finds Docker Desktop's named pipe on Windows even while it is busy (docs/acceptance/postgres.feature).
- * Testcontainers' own strategies check once that the pipe exists, and on Windows that check fails right after
- * anyone else used the pipe (another test JVM starting, Testcontainers' cleanup container, the Docker CLI); a JVM
- * that loses that race then fails every test it runs. This one checks again for a few seconds. Testcontainers tries
- * it after its own (registered in META-INF/services), so it only matters when they failed.
- */
 public class WindowsDockerPipe extends DockerClientProviderStrategy {
 
     static final String DOCKER_PIPE = "//./pipe/docker_engine";
@@ -56,7 +49,6 @@ public class WindowsDockerPipe extends DockerClientProviderStrategy {
         return System.getProperty("os.name").startsWith("Windows");
     }
 
-    /** Never written to ~/.testcontainers.properties: every project shares that file, and this class is ours. */
     @Override
     protected boolean isPersistable() {
         return false;

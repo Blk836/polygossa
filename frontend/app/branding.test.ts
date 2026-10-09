@@ -1,7 +1,3 @@
-// The app's name comes from one setting (lib/brand.ts, BRAND_NAME). The signed-out pages (/, /login, /signup) can't be
-// opened in e2e while auto-login redirects them to the library, so this checks the source instead: no old "Lector"
-// brand and no hard-coded copy of the current one. Lower-case internals (the lector_token cookie, test@lector.local)
-// are deliberately kept.
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";

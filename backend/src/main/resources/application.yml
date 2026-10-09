@@ -1,5 +1,3 @@
-# Development defaults: PostgreSQL in Docker (compose.dev.yml, started by bootRun) and in-memory caching.
-# See application-prod.yml for production (PostgreSQL + Redis).
 spring:
   application:
     name: lector
@@ -7,27 +5,20 @@ spring:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/lector}
     username: ${DATABASE_USER:lector}
     password: ${DATABASE_PASSWORD:lector}
-  # bootRun starts the dev database (spring-boot-docker-compose is a development-only dependency, so the packaged
-  # app never does) and leaves it running when the backend stops. DEV_COMPOSE=false skips it, e.g. for another
-  # DATABASE_URL.
   docker:
     compose:
       enabled: ${DEV_COMPOSE:true}
       file: ${DEV_COMPOSE_FILE:../compose.dev.yml}
       lifecycle-management: start-only
-  # The schema comes only from the numbered migrations in db/migration, applied once each, in order, at startup.
-  # A database Hibernate built before migrations existed is adopted as already at V1 (baseline) instead of rebuilt.
   flyway:
     baseline-on-migrate: true
     baseline-version: 1
   jpa:
     open-in-view: false
     hibernate:
-      # Hibernate never changes the schema: it refuses to start if the tables don't match the entities.
       ddl-auto: validate
   jackson:
     deserialization:
-      # Jackson 3 rejects absent primitive fields by default; treat them as false/0 instead.
       fail-on-null-for-primitives: false
   cache:
     type: simple
@@ -62,7 +53,6 @@ app:
     url: ${TOKENIZER_URL:}
   storage:
     dir: ${STORAGE_DIR:./data/uploads}
-    # Production keeps uploads in this S3 bucket instead of the folder; blank (local runs, tests) uses the folder.
     s3-bucket: ${STORAGE_S3_BUCKET:}
     s3-region: ${STORAGE_S3_REGION:eu-west-1}
   openai:
@@ -71,34 +61,25 @@ app:
     model: ${OPENAI_MODEL:gpt-4o-mini}
     daily-limit: ${AI_DAILY_LIMIT:30}
     embedding-model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
-  # Machine translation of single words (word-translations.feature): Amazon Translate when enabled (production);
-  # the cap is characters a month ($15 a million, so 1333333 is $20).
   translation:
     enabled: ${TRANSLATION_ENABLED:false}
     region: ${TRANSLATION_REGION:eu-west-1}
     monthly-character-cap: ${TRANSLATION_MONTHLY_CHARACTER_CAP:1333333}
-  # Explore recommendations: score weights and the background job that tags and embeds public texts.
   recommend:
     feature-job: ${RECOMMEND_FEATURE_JOB:true}
   billing:
     enforce-limits: ${ENFORCE_PLAN_LIMITS:true}
-  # Real billing (stripe-billing.feature): a secret key turns it on; blank keeps the plan switch (local runs, tests).
   stripe:
     secret-key: ${STRIPE_SECRET_KEY:}
     webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
     site-url: ${APP_URL:http://localhost:3000}
   cors-origins: ${CORS_ORIGINS:http://localhost:3000}
   seed-samples: ${SEED_SAMPLES:true}
-  # Sign-in (cognito-login.feature): Cognito when its user pool (issuer) and app client are set; the app's own
-  # email-and-password accounts while local-accounts is on (local runs and tests; off in production).
   login:
     local-accounts: ${LOCAL_ACCOUNTS:true}
     cognito-issuer: ${COGNITO_ISSUER:}
     cognito-client-id: ${COGNITO_CLIENT_ID:}
-  # Auto-login to a test account (development only; see application-prod.yml).
   dev-auto-login: ${DEV_AUTO_LOGIN:true}
-  # The forum team: emails (comma-separated) that post announcements and moderate. Dev: the shared test account.
   forum:
     admins: ${FORUM_ADMINS:test@lector.local}
-  # Shared secret for the bulk video importer (tools/import-videos.mjs); blank turns its endpoints off.
   curator-token: ${CURATOR_TOKEN:}

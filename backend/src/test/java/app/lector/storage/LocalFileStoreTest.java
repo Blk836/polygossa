@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.http.HttpStatus;
 
-/** Local runs and tests keep uploads in a folder (docs/acceptance/s3-uploads.feature). */
 class LocalFileStoreTest {
 
     private static final String NAME = "0b4f3b2e-6f2a-4a8e-9a4b-1f2e3d4c5b6a.mp3";

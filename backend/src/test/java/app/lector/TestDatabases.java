@@ -15,14 +15,6 @@ import org.springframework.core.env.MapPropertySource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
-/**
- * Points every app booted from the test classpath (backend tests, and the e2e backend, {@link E2eApplication}) at a
- * new, empty database in a PostgreSQL container that Testcontainers starts once per JVM and removes when it exits.
- * Never the dev database: whatever URL the app was configured with is overridden. The database is named after the
- * {@code test.database} property (a setup's name, e.g. "api") plus a boot counter, so an app Spring boots again
- * starts empty, as it did on H2's in-memory databases. A test that prepares a database first ({@link #newDatabase})
- * boots the app on it with {@code test.database.existing=<its name>}. Registered in META-INF/spring.factories.
- */
 public class TestDatabases implements EnvironmentPostProcessor {
 
     private static final AtomicInteger BOOTS = new AtomicInteger();
@@ -37,12 +29,10 @@ public class TestDatabases implements EnvironmentPostProcessor {
                 "spring.datasource.url", url(name),
                 "spring.datasource.username", pg.getUsername(),
                 "spring.datasource.password", pg.getPassword(),
-                // A JVM caches many booted apps; idle connections for each would exhaust the server.
                 "spring.datasource.hikari.minimum-idle", "1",
                 "spring.docker.compose.enabled", "false")));
     }
 
-    /** Creates a new, empty database named after {@code setup} plus a counter, and returns its name. */
     public static String newDatabase(String setup) {
         String name = setup.toLowerCase(Locale.ROOT).replaceAll("\\W", "_") + "_" + BOOTS.incrementAndGet();
         execute(container(), "create database " + name);
@@ -65,7 +55,6 @@ public class TestDatabases implements EnvironmentPostProcessor {
         return new DriverManagerDataSource(url(database), pg.getUsername(), pg.getPassword());
     }
 
-    /** Durability is switched off: the container is thrown away, and tests write a lot. */
     private static synchronized PostgreSQLContainer container() {
         if (container == null) {
             container = new PostgreSQLContainer("postgres:17")

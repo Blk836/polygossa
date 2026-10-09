@@ -14,20 +14,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 
-/**
- * Looks at content with AI, in one request: files a new import under one of the fixed categories when the importer
- * didn't choose one, and checks that content about to be shared is appropriate for everyone. Only shared content is
- * checked. Categorising never fails an import (the caller's fallback applies), but sharing is refused when the check
- * can't run; without AI configured nothing is asked. Neither counts against the user's daily AI allowance.
- */
 @Service
 public class ContentReview {
 
     private static final Logger log = LoggerFactory.getLogger(ContentReview.class);
 
-    /** How much of the content the AI sees when only picking a category. */
     static final int CATEGORY_EXCERPT = 2_000;
-    /** How much of the content the AI sees when checking it may be shared. */
     static final int MODERATION_EXCERPT = 8_000;
 
     static final String AFTER_IMPORT_REFUSED = "Import it without sharing to read it yourself.";
@@ -60,11 +52,6 @@ public class ContentReview {
         this.ai = ai;
     }
 
-    /**
-     * Reviews a new import: if it is shared, refuses it unless the AI finds it appropriate; returns the category to
-     * file it under (the one chosen, else the AI's pick, else {@code fallback}). Must run in the import's
-     * transaction, so a refusal saves nothing.
-     */
     public Category reviewImport(Category chosen, Text text, Category fallback) {
         boolean categorise = chosen == null;
         boolean moderate = text.isPublic();
@@ -78,7 +65,6 @@ public class ContentReview {
         return categorise ? answer.flatMap(ContentReview::category).orElse(fallback) : chosen;
     }
 
-    /** Before a private text is shared: refuses it unless the AI finds it appropriate. Public texts pass. */
     public void checkSharing(Text text) {
         if (text.isPublic() || !ai.enabled()) {
             return;

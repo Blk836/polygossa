@@ -8,7 +8,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 
-/** One thing an admin did to an account, kept as the panel's record (emails copied, so it survives renames). */
 @Entity
 @Table(name = "admin_actions")
 public class AdminAction {

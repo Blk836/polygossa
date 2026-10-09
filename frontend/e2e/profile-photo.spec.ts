@@ -3,9 +3,6 @@ import {
   accountButton, coloursAt, cropDialog, me, pick, profileAvatar, signUp, stripes, uploadPhoto, type Person,
 } from "./photo-helpers";
 
-// Feature: Profile photo (docs/acceptance/profile-photo.feature): uploading, cropping, removing and the failure paths
-// on Settings › Profile. Every test signs up its own user (see photo-helpers.ts).
-
 let ana: Person;
 
 test.beforeEach(async ({ browser }) => {
@@ -32,7 +29,7 @@ test("uploading a photo shows it on Profile and in the account menu, and it stay
   const { page } = ana;
   await pick(page, await stripes(page, 600, 600, "image/jpeg"), "me.jpg");
   await expect(cropDialog(page)).toBeVisible();
-  expect((await me(page)).photoUrl).toBeNull(); // nothing uploaded until Save
+  expect((await me(page)).photoUrl).toBeNull();
   await save(page).click();
   await expect(cropDialog(page)).toBeHidden();
 
@@ -76,7 +73,6 @@ test("dragging moves the image, stopping at its edge, and the saved photo is wha
   await page.mouse.move(box.x + box.width / 2 + 200, box.y + box.height / 2 + 200, { steps: 5 });
   await page.mouse.up();
 
-  // The image still covers the whole frame.
   const image = (await page.getByTestId("crop-image").boundingBox())!;
   expect(image.x).toBeLessThanOrEqual(box.x + 0.5);
   expect(image.y).toBeLessThanOrEqual(box.y + 0.5);
@@ -120,7 +116,6 @@ for (const how of ["Cancel", "Escape"]) {
     const { page } = ana;
     const file = await stripes(page, 300, 300);
     await pick(page, file, "me.png");
-    // The dialog opens once the image has loaded; Escape pressed before that reaches nothing.
     await expect(cropDialog(page)).toBeVisible();
     if (how === "Escape") await page.keyboard.press("Escape");
     else await cropDialog(page).getByRole("button", { name: "Cancel" }).click();
@@ -135,7 +130,6 @@ for (const how of ["Cancel", "Escape"]) {
 test("location data in a photo is not kept", async () => {
   const { page } = ana;
   const jpeg = await stripes(page, 300, 300, "image/jpeg");
-  // An EXIF block naming GPS coordinates, right after the JPEG's start marker.
   const payload = Buffer.from("Exif\0\0MM\0*\0\0\0\x08GPSLatitude 51.5074 N GPSLongitude 0.1278 W", "latin1");
   const app1 = Buffer.concat([Buffer.from([0xff, 0xe1, 0, payload.length + 2]), payload]);
   const tagged = Buffer.concat([jpeg.subarray(0, 2), app1, jpeg.subarray(2)]);
@@ -158,8 +152,8 @@ test("changing the photo replaces it everywhere", async () => {
   const second = (await me(page)).photoUrl!;
   expect(second).not.toBe(first);
   await expect(accountButton(page).locator("img")).toHaveAttribute("src", second);
-  expect((await page.request.get(first)).status()).toBe(200); // the URL now serves the new photo...
-  expect((await coloursAt(page, first, [[0.5, 0.5]])).type).toBe("image/jpeg"); // ...not the old PNG
+  expect((await page.request.get(first)).status()).toBe(200);
+  expect((await coloursAt(page, first, [[0.5, 0.5]])).type).toBe("image/jpeg");
 });
 
 test("removing the photo brings the initial back, also after reloading", async () => {

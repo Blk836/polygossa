@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Playlists of texts and videos: your own (a text can be in any number of them), and those others have shared. */
 @RestController
 @RequestMapping("/api/playlists")
 public class PlaylistController {
@@ -41,7 +40,6 @@ public class PlaylistController {
         this.currentUser = currentUser;
     }
 
-    /** Your playlists; with {@code textId}, each says whether it holds that text (for "Add to playlist"). */
     @GetMapping
     public List<PlaylistSummary> mine(@AuthenticationPrincipal AuthUser principal,
                                       @RequestParam(required = false) Language language,
@@ -56,7 +54,6 @@ public class PlaylistController {
         return service.shared(currentUser.load(principal), language, q);
     }
 
-    /** Playlists you saved (yours or shared ones) that you can still see, newest save first. */
     @GetMapping("/saved")
     public List<PlaylistSummary> saved(@AuthenticationPrincipal AuthUser principal,
                                        @RequestParam(required = false) Language language) {

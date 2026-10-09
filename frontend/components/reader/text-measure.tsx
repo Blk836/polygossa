@@ -3,10 +3,6 @@
 import { memo, type Ref } from "react";
 import type { Token } from "@/lib/types";
 
-/**
- * A hidden copy of the whole text, laid out like the article, so useFitPages can see where every word lands.
- * Its zero-height, clipped box keeps it from adding to the page's height or scroll.
- */
 export const TextMeasure = memo(function TextMeasure({ paragraphs, className, ref }: {
   paragraphs: Token[][];
   className: string;

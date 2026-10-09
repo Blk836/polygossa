@@ -1,11 +1,8 @@
-// Importing words from LingQ or Readlang (/api/word-imports): the job type, mirroring the backend's WordImportDto,
-// and how the Words page describes a job.
 import { languageName } from "./languages";
 
 export interface WordImportJob {
   id: number;
   source: "lingq" | "readlang";
-  /** Null: every language. */
   language: string | null;
   state: "queued" | "running" | "done" | "failed";
   found: number;
@@ -18,7 +15,6 @@ export interface WordImportJob {
   finishedAt: string | null;
 }
 
-/** How often the Words page refreshes an import's progress. */
 export const POLL_MS = 2000;
 
 const SOURCES: Record<WordImportJob["source"], string> = { lingq: "LingQ", readlang: "Readlang" };
@@ -32,31 +28,21 @@ export function anyActive(jobs: WordImportJob[]): boolean {
   return jobs.some(isActive);
 }
 
-/** What the import form is set to: a source, and a language code ("" = all languages). */
 export interface ImportChoice {
   open: boolean;
   source: WordImportJob["source"];
   language: string;
 }
 
-/**
- * The rows the Words page shows: a running import always, so it can be followed; with the form open, also the
- * history for the form's source and language (the server keeps the last success and latest failure for each).
- */
 export function visibleImports(jobs: WordImportJob[], { open, source, language }: ImportChoice): WordImportJob[] {
   return jobs.filter((job) => isActive(job) || (open && job.source === source && job.language === (language || null)));
 }
 
-/** "LingQ · French · Done". */
 export function importHeadline(job: WordImportJob): string {
   const language = job.language ? languageName(job.language) : "All languages";
   return `${SOURCES[job.source]} · ${language} · ${STATES[job.state]}`;
 }
 
-/**
- * "254 found · 250 added · 3 updated · 1 unchanged", plus any words over the Free plan's limit. Until the first
- * words arrive, a running import says it is fetching them instead of showing a row of zeros.
- */
 export function importCounts(job: WordImportJob): string {
   if (isActive(job) && job.found === 0) return `Fetching your words from ${SOURCES[job.source]}…`;
   const parts = [`${job.found} found`, `${job.added} added`, `${job.updated} updated`, `${job.unchanged} unchanged`];
@@ -64,7 +50,6 @@ export function importCounts(job: WordImportJob): string {
   return parts.join(" · ");
 }
 
-/** The Import button: idle, sending the start, or waiting for a running import. */
 export type ImportPhase = "idle" | "starting" | "busy";
 
 export function importButtonLabel(source: WordImportJob["source"], phase: ImportPhase): string {

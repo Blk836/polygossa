@@ -5,7 +5,6 @@ build/
 !**/src/test/**/build/
 .kotlin
 
-### IntelliJ IDEA ###
 .idea/modules.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
@@ -17,7 +16,6 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
-### Eclipse ###
 .apt_generated
 .classpath
 .factorypath
@@ -26,24 +24,19 @@ out/
 .springBeans
 .sts4-cache
 bin/
-# ...but infra/bin is the CDK app's entry point, not build output.
 !infra/bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 
-### NetBeans ###
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
 
-### VS Code ###
 .vscode/
 
-### Mac OS ###
 .DS_Store
-### Lector ###
 .env
 /data/
 backend/data/
@@ -53,5 +46,4 @@ __pycache__/
 /frontend/test-results/
 /frontend/playwright-report/
 
-# Claude Code session worktrees (CLAUDE.md: one worktree per session)
 .claude/worktrees/

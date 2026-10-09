@@ -12,7 +12,6 @@ import {
 
 const custom: ReaderSettings = { size: 3, quiet: true, pauseOnLookup: false, pageKnown: false, follow: "sentence", width: "full", video: "mini" };
 
-/** The cookie value a `document.cookie` assignment would store. */
 const valueOf = (assignment: string) => assignment.slice(READER_SETTINGS_COOKIE.length + 1, assignment.indexOf(";"));
 
 describe("parseReaderSettings", () => {
@@ -64,7 +63,7 @@ describe("parseReaderSettings", () => {
 describe("readerSettingsCookie", () => {
   it("stores the settings for a year on every path", () => {
     const c = readerSettingsCookie(custom);
-    expect(READER_SETTINGS_COOKIE).toBe("lector_reader"); // the server reads this name
+    expect(READER_SETTINGS_COOKIE).toBe("lector_reader");
     expect(c.startsWith("lector_reader=")).toBe(true);
     expect(c).toContain("Path=/");
     expect(c).toContain(`Max-Age=${365 * 24 * 60 * 60}`);

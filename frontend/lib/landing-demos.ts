@@ -1,5 +1,3 @@
-// Sample sentences for the landing page's try-it-now reader, one per language. Words carry a short gloss; `k` marks
-// words a beginner would already know (shown without a highlight), the rest start as new (blue).
 import { demoSentence as sentence, type DemoToken } from "./landing";
 import type { LanguageCode } from "./types";
 

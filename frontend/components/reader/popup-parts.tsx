@@ -43,10 +43,6 @@ export function PopupHeader({ target, speechLocale, onClose }: {
   );
 }
 
-/**
- * The word in the learner's own language (nothing when they are reading it). The saved word keeps the first meaning;
- * clicking another keeps that one instead.
- */
 export function Meanings({ lookup, error, onPick }: {
   lookup: WordLookup | null;
   error: string | null;
@@ -84,7 +80,6 @@ export function Meanings({ lookup, error, onPick }: {
   );
 }
 
-/** Full dictionaries on their own websites, in a new tab. */
 export function DictionaryLinks({ language, nativeLanguage, term }: { language: string; nativeLanguage: string; term: string }) {
   return (
     <p data-testid="dictionary-links" className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
@@ -95,7 +90,6 @@ export function DictionaryLinks({ language, nativeLanguage, term }: { language: 
   );
 }
 
-/** The AI's explanation (Pro, on demand): definitions in the learner's language, with an example. */
 export function AiExplanation({ result }: { result: DictionaryResult }) {
   if (!result.found) return <p data-testid="ai-explanation" className="text-muted">The AI couldn&apos;t explain this one.</p>;
   const example = result.senses.flatMap((s) => s.examples).find(Boolean);
@@ -150,7 +144,6 @@ const SENTENCE_LABELS: Record<SentenceState, string> = {
   saved: "✓ Sentence saved",
 };
 
-/** Sentence mining, AI helpers (Pro) and "play from here" (when the text has synced audio). */
 export function ExtraActions({ sentenceState, onSaveSentence, isPro, aiBusy, onExplain, onTranslate, onExample, onPlay }: {
   sentenceState: SentenceState;
   onSaveSentence: () => void;
@@ -159,7 +152,6 @@ export function ExtraActions({ sentenceState, onSaveSentence, isPro, aiBusy, onE
   onExplain: () => void;
   onTranslate: () => void;
   onExample: () => void;
-  /** Null when there is no synced audio. */
   onPlay: (() => void) | null;
 }) {
   return (

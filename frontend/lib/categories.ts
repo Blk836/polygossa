@@ -1,4 +1,3 @@
-// Library categories (a short fixed list, mirroring the backend's Category enum) and Explore's query building.
 import type { KindFilter } from "./media";
 import type { Category, TextSummary } from "./types";
 
@@ -34,7 +33,6 @@ export function isCategory(value: string | null | undefined): value is Category 
   return categoryInfo(value) !== undefined;
 }
 
-/** The categories that occur in a list of items, in the fixed order. */
 export function categoriesIn(items: TextSummary[]): Category[] {
   const present = new Set(items.map((t) => t.category));
   return CATEGORIES.map((c) => c.code).filter((c) => present.has(c));
@@ -48,14 +46,11 @@ export interface ExploreFilters {
   sort: "new" | "popular";
   query: string;
   page: number;
-  /** An AI topic tag to filter by (from a "More about" shelf); grid only. */
   topic?: string | null;
 }
 
-/** Filters the shelves ignore: they show every category, and have no search or topic. */
 const GRID_ONLY = new Set(["category", "q", "topic"]);
 
-/** The API path for Explore: shelves (front page, no paging/search) or one page of the filtered grid. */
 export function exploreQuery(f: ExploreFilters, pageSize: number, shelves = false): string {
   const params = shelves ? new URLSearchParams() : new URLSearchParams({ sort: f.sort, page: String(f.page), size: String(pageSize) });
   const optional: [string, string | null | undefined][] = [
@@ -71,7 +66,6 @@ export function exploreQuery(f: ExploreFilters, pageSize: number, shelves = fals
   return (shelves ? "library/shelves" : "library") + (qs ? `?${qs}` : "");
 }
 
-/** Title and subtitle above Explore's grid: the search, else the topic, else the chosen category. */
 export function gridHeading(query: string, category: Category | null, total: number | null, topic?: string | null): { title: string; subtitle: string } {
   const info = categoryInfo(category);
   if (!query) return topic ? topicHeading(topic, total) : { title: info?.label ?? "All", subtitle: info?.blurb ?? "" };

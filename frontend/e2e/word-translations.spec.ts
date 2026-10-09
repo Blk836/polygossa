@@ -1,17 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 import { article, cleanUp, createTextWith, openReader, type Created } from "./reader-helpers";
 
-// docs/acceptance/lingq-style-lookup.feature and word-translations.feature: the word popup's meaning line, dictionary
-// links and AI explanation, and the own-language meaning a saved word keeps. Lookups are answered in the browser: the
-// e2e backend has no machine translation. The shared test account's native language is English (every feature on).
-
 function lookupAnswer(page: Page, created: Created, extra: Record<string, unknown>) {
   return page.route("**/api/dictionary?*", (route) =>
     route.fulfill({ json: { term: created.word(1), language: created.language, meaningLanguage: "en", ...extra } }),
   );
 }
 
-/** The bodies of every vocabulary write the page sends. */
 function vocabularyWrites(page: Page): Record<string, unknown>[] {
   const sent: Record<string, unknown>[] = [];
   page.on("request", (r) => {
@@ -80,7 +75,6 @@ test.describe("the word popup", () => {
     await expect(page.getByTestId("dictionary-links").getByRole("link")).toHaveCount(3);
   });
 
-  // translation-in-context.feature: the lookup carries the text around the copy clicked, for an echoed word.
   test("sends the text around the clicked copy of the word with its lookup", async ({ page }) => {
     created = await createTextWith(page, (w) => `${w(2)} ${w(1)} ${w(3)} ${w(1)} ${w(4)}.`);
     const asked: URLSearchParams[] = [];
@@ -123,7 +117,7 @@ test.describe("the word popup", () => {
 });
 
 test("the Words page edits and clears a word's own-language meaning", async ({ page }) => {
-  await page.goto("/library"); // signs in
+  await page.goto("/library");
   const term = `zqmeaning${Date.now().toString(36)}`;
   const res = await page.request.post("/api/vocabulary", { data: { language: "es", term, status: "learning", definition: "dog", meaning: "perro" } });
   expect(res.ok()).toBe(true);

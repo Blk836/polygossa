@@ -14,12 +14,6 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Merges words from another app into a learner's vocabulary. An import never lowers what they know (known stays
- * known, ignored stays ignored), can raise a word to known, and only fills in empty definitions and context
- * sentences. Known words count as known since the learner joined, so they raise totals and levels but not this
- * week's growth. New learning words stop at the Free plan's saved-word limit.
- */
 @Service
 public class VocabularyImporter {
 
@@ -35,7 +29,6 @@ public class VocabularyImporter {
         this.plans = plans;
     }
 
-    /** One batch, in one transaction; words without a usable term are left out of every count. */
     @Transactional
     public ImportCounts importWords(Long userId, Language language, List<ImportedWord> words) {
         User user = users.findById(userId).orElseThrow();
@@ -57,7 +50,6 @@ public class VocabularyImporter {
         return w.term() == null ? "" : TokenizationService.normalize(w.term(), language);
     }
 
-    /** One batch's running state: the entries it has seen and what it did. */
     private final class Batch {
         private final User user;
         private final Language language;
@@ -105,7 +97,6 @@ public class VocabularyImporter {
             return repo.save(entry);
         }
 
-        /** Whether the import changed the entry. */
         private boolean merge(VocabularyEntry e, ImportedWord w) {
             boolean changed = false;
             if (w.status() == WordStatus.KNOWN && e.getStatus() == WordStatus.LEARNING) {

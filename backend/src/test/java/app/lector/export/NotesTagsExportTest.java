@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-/** word-notes-tags.feature: notes and tags travel to CSV and Anki. */
 class NotesTagsExportTest {
 
     private static VocabularyEntry perro() {

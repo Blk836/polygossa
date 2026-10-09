@@ -15,13 +15,11 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-/** UrlImporter.fetch against a local stub server (private-host blocking switched off for the stub only). */
 class UrlFetchTest {
 
     private static final String ARTICLE = "<html><head><meta property=\"og:title\" content=\"Noticia\"></head><body>"
             + "<article><p>" + "Texto del artículo. ".repeat(20) + "</p></article></body></html>";
 
-    /** path → {status, content type, body}. */
     private static final java.util.Map<String, String[]> FIXED = java.util.Map.of(
             "/article", new String[] {"200", "text/html; charset=utf-8", ARTICLE},
             "/xhtml", new String[] {"200", "application/xhtml+xml", ARTICLE},
@@ -49,7 +47,6 @@ class UrlFetchTest {
         server.stop(0);
     }
 
-    /** /r/N redirects N more times before landing on the article; other paths are fixed responses. */
     private static void handle(HttpExchange ex) throws IOException {
         String path = ex.getRequestURI().getPath();
         if (path.startsWith("/r/")) {

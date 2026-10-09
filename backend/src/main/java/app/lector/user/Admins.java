@@ -4,10 +4,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-/**
- * The team: the emails named in {@code app.forum.admins} (FORUM_ADMINS). They moderate the forum and use the admin
- * panel; there are no other roles.
- */
 @Component
 public class Admins {
 

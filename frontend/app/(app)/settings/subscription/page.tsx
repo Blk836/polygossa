@@ -13,11 +13,9 @@ const PLANS: { tier: Tier; name: string; price: string; items: string[] }[] = [
   { tier: "CLASSROOM", name: "Classroom", price: "€4/student/mo", items: ["All Pro features", "Create classes & assign texts", "Student progress", "Pro access for your students"] },
 ];
 
-/** How often, and for how long, the page checks whether Stripe's webhook has confirmed a payment. */
 const CONFIRM_EVERY_MS = 2000;
 const CONFIRM_FOR_MS = 30000;
 
-/** Without Stripe (local runs, tests): plans switch at once, as a demo. */
 function DemoPlans() {
   const { me, setMe } = useMe();
   const [error, setError] = useState<string | null>(null);
@@ -72,7 +70,6 @@ export default function SubscriptionPage() {
     const back = new URLSearchParams(window.location.search).get("checkout") === "success";
     const started = Date.now();
     let timer: ReturnType<typeof setTimeout> | undefined;
-    // After paying, Stripe's webhook sets the plan within moments: check until it has, then show the new plan.
     const check = () => {
       api<Billing>("billing").then((b) => {
         if (cancelled) return;
@@ -86,7 +83,6 @@ export default function SubscriptionPage() {
         setConfirming(Date.now() - started > CONFIRM_FOR_MS ? "slow" : "waiting");
         timer = setTimeout(check, CONFIRM_EVERY_MS);
       }).catch(() => {
-        // Without an answer, show the plans as they are; choosing one then says what went wrong.
         if (!cancelled) setBilling({ enabled: false, testMode: false, plan: null, interval: null, status: null,
           periodEnd: null, cancelAtPeriodEnd: false, paymentProblem: false });
       });

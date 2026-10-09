@@ -9,11 +9,6 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
-/**
- * A word's meanings in the learner's own language (lingq-style-lookup.feature): what other learners saved, else a
- * stored or new machine translation. The same for every native language; only a learner reading their own language
- * gets none.
- */
 @Component
 public class OwnLanguageMeanings {
 
@@ -25,10 +20,6 @@ public class OwnLanguageMeanings {
         this.machine = machine;
     }
 
-    /**
-     * The meanings of {@code key} (the word's normalized key); {@code surface} is the form looked up, and
-     * {@code context} the word inside its sentence, if known.
-     */
     public WordLookup lookup(Language language, NativeLanguage nativeLanguage, String key, String surface,
                              Optional<InContext> context) {
         if (nativeLanguage.code().equals(language.code())) {

@@ -15,7 +15,6 @@ public record VocabularyDto(
         EntryKind kind,
         WordStatus status,
         String definition,
-        /* the word in the learner's own language, and that language's code */
         String meaning,
         String meaningLanguage,
         String partOfSpeech,

@@ -4,7 +4,6 @@ import { HOME } from "@/lib/nav";
 import { streakMessage, weekStrip } from "@/lib/progress";
 import type { ActivityDay, Streak } from "@/lib/types";
 
-/** The daily streak front and centre: the count, what to do next, the last seven days and the best run. */
 export function StreakCard({ streak, days }: { streak: Streak; days: ActivityDay[] }) {
   const lit = streak.current > 0;
   return (

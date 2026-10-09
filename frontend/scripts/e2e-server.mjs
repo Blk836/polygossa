@@ -1,8 +1,3 @@
-// The server the e2e suite runs against: a production build (`next build` + `next start`) on its own port
-// (E2E_PORT, default 3210), next to any `next dev` on :3000 (Next 16 builds into a separate folder from dev).
-// Production pages are rendered once instead of compiled per request, and serve many test workers without the dev
-// server's on-demand compiling, which made the suite about twice as slow. The build is skipped when nothing it
-// depends on changed since the last one.
 import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -12,7 +7,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const port = process.env.E2E_PORT ?? "3210";
 const next = path.join(root, "node_modules", "next", "dist", "bin", "next");
 
-/** What the build reads: app code, styles, public files and config. Unit tests and e2e specs aren't in it. */
 const INPUTS = ["app", "components", "lib", "public", "proxy.ts", "next.config.ts", "postcss.config.mjs", "tsconfig.json", "package.json", "package-lock.json"];
 const isTest = (file) => /\.test\.tsx?$/.test(file);
 
@@ -24,7 +18,6 @@ function newest(entry) {
   return fs.readdirSync(full).reduce((max, name) => Math.max(max, newest(path.join(entry, name))), 0);
 }
 
-/** True when there is no build, or a build input is newer than it (or the brand name it inlined changed). */
 export function stale() {
   const buildId = path.join(root, ".next", "BUILD_ID");
   const stamp = path.join(root, ".next", "e2e-build-env");

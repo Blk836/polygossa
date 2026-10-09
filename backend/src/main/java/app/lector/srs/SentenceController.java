@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Sentence mining: whole sentences saved to the review queue. */
 @RestController
 @RequestMapping("/api/sentences")
 public class SentenceController {

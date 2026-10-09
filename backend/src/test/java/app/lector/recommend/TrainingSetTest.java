@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-/** recommendation-learning.feature: one training example per learner and item. */
 class TrainingSetTest {
 
     static final Instant T0 = Instant.parse("2026-10-01T00:00:00Z");
@@ -26,7 +25,7 @@ class TrainingSetTest {
         List<TrainingSet.Event> events = List.of(
                 impression(1, 10, 3, 0, 0.1), impression(1, 10, 2, 5, 0.2), open(1, 10, 6), impression(1, 10, 1, 9, 0.3),
                 impression(1, 20, 4, 0, 0.4), impression(1, 20, 5, 7, 0.5),
-                new TrainingSet.Event(1, 30, false, 0, null, T0)); // no parts: not used
+                new TrainingSet.Event(1, 30, false, 0, null, T0));
         List<WeightLearner.Example> examples = TrainingSet.examples(events, TrainingSet.Outcome.OPEN, Map.of());
         assertThat(examples).hasSize(2);
         WeightLearner.Example a = examples.stream().filter(WeightLearner.Example::opened).findFirst().orElseThrow();

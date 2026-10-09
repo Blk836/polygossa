@@ -60,7 +60,6 @@ class SrsTest {
         perDay.put(today.minusDays(2), 25L);
         perDay.put(today.minusDays(3), 5L);
         perDay.put(today.minusDays(4), 30L);
-        // today's goal not met yet: streak still counts through yesterday
         assertThat(ReviewService.streak(perDay, today, 20)).isEqualTo(2);
         perDay.put(today, 20L);
         assertThat(ReviewService.streak(perDay, today, 20)).isEqualTo(3);

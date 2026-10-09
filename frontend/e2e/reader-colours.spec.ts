@@ -17,9 +17,6 @@ import {
   type Created,
 } from "./reader-helpers";
 
-// LingQ-style word colours: new words blue, learning yellow, known and ignored not highlighted. Checked on the
-// rendered colour, not just the class, since the stylesheet decides what each status looks like.
-
 let created: Created | null = null;
 
 test.afterEach(async ({ page }) => {
@@ -29,7 +26,6 @@ test.afterEach(async ({ page }) => {
 
 const NONE = "rgba(0, 0, 0, 0)";
 
-/** The computed colour of a theme token (e.g. "--w-new"), resolved the same way the reader's spans are. */
 async function tokenColour(page: Page, name: string): Promise<string> {
   return page.evaluate((v) => {
     const probe = document.createElement("span");
@@ -41,16 +37,11 @@ async function tokenColour(page: Page, name: string): Promise<string> {
   }, name);
 }
 
-/** Waits for the word's background to settle on a token's colour, or on none (colour changes are animated). */
 async function expectBackground(page: Page, word: Locator, token: string | null) {
   const want = token ? await tokenColour(page, token) : NONE;
   await expect.poll(() => word.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(want);
 }
 
-/**
- * Waits for playback to show where it is: the follow-along marker, and the spoken sentence's tint (read on a gap
- * between its words, which has no word colour of its own to cover the tint).
- */
 async function expectSpeakingShown(page: Page) {
   await expect(page.getByTestId("follow-marker")).toBeVisible();
   const want = await tokenColour(page, "--w-sentence");
@@ -83,7 +74,7 @@ test.describe("word colours", () => {
   test("clicking a new word makes every occurrence yellow; Known clears it; Unsave makes it blue again", async ({ page }) => {
     created = await createText(page, 120);
     await openReader(page, `/read/${created.id}`);
-    const repeated = [0, PER_SENTENCE, 2 * PER_SENTENCE]; // every sentence starts with the same word
+    const repeated = [0, PER_SENTENCE, 2 * PER_SENTENCE];
     await expectBackground(page, wordAt(page, PER_SENTENCE), "--w-new");
 
     const saved = vocabularyWrite(page);
@@ -187,7 +178,6 @@ test.describe("quiet colours", () => {
     created = await createText(page, 120);
     await addSyncedAudio(page, created.id);
     for (const quiet of [false, true]) {
-      // With the sentence tint on (it is off by default), so both follow-along marks are checked.
       await setReaderCookie(page, quiet ? "quiet%3D1%26follow%3Dboth" : "follow%3Dboth");
       await openReader(page, `/read/${created.id}`);
       await page.keyboard.press("]");
@@ -198,7 +188,7 @@ test.describe("quiet colours", () => {
 });
 
 test.describe("page turns and phrases", () => {
-  test.use({ viewport: TALL }); // 250-word pages
+  test.use({ viewport: TALL });
 
   test("turning the page clears the blue on the page left; yellow words stay yellow", async ({ page }) => {
     created = await createText(page);

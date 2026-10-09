@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 import java.util.Locale;
 
-/** What a learner's daily goal measures, and the targets allowed for it. */
 public enum GoalKind {
     REVIEWS(1, 500),
     WORDS_READ(50, 50_000),

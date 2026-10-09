@@ -13,10 +13,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-/**
- * Each user's daily allowance of AI calls, counted per day in their own timezone. Only calls that succeed are
- * counted, and calls over the allowance never reach the AI service.
- */
 @Service
 public class AiAllowance {
 
@@ -32,7 +28,6 @@ public class AiAllowance {
         this.dailyLimit = props.openai().dailyLimit();
     }
 
-    /** Runs an AI call for the user if they have allowance left, and counts it once it has succeeded. */
     public <T> T call(User user, Supplier<T> aiCall) {
         LocalDate day = today(user);
         int used = usage.findByUserIdAndDay(user.getId(), day).map(AiUsage::getCalls).orElse(0);
@@ -51,7 +46,7 @@ public class AiAllowance {
         try {
             usage.saveAndFlush(new AiUsage(userId, day, 1));
         } catch (DataIntegrityViolationException e) {
-            usage.increment(userId, day); // another request created the day's row first
+            usage.increment(userId, day);
         }
     }
 

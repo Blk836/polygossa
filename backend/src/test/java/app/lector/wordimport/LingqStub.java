@@ -17,24 +17,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * A local stand-in for lingq.com's API: paged LingQs ({@code /api/v3/<lang>/cards/}) and known words
- * ({@code /api/v2/<lang>/known-words/}), behind "Authorization: Token <key>". Each API key is its own account, so
- * tests sharing the stub never see each other's data; an unknown key gets 401, like LingQ.
- */
 public final class LingqStub implements AutoCloseable {
 
     private static final Pattern PATH = Pattern.compile("/api/v[23]/([a-z]{2})/(cards|known-words)/");
     private static final Pattern TOKEN = Pattern.compile("Token (\\S+)");
 
-    /** One LingQ account: raw JSON items per language and list ("cards" or "known-words"), and scripted failures. */
     public static final class Account {
         final Map<String, List<String>> items = new ConcurrentHashMap<>();
-        /** "list:page" (e.g. "cards:3") → the status that page answers with, every time. */
         final Map<String, Integer> failures = new ConcurrentHashMap<>();
-        /** Answer 429 to this many requests first. */
         volatile int rateLimited;
-        /** While set, requests wait (up to 10 s) until it is released, keeping an import running. */
         volatile CountDownLatch hold;
         final List<String> requests = Collections.synchronizedList(new ArrayList<>());
 
@@ -43,7 +34,6 @@ public final class LingqStub implements AutoCloseable {
             return this;
         }
 
-        /** A LingQ with a term, status, extended status, hint and fragment (null leaves the field out). */
         public Account card(String lang, String term, int status, int extended, String hint, String fragment) {
             StringBuilder json = new StringBuilder("{\"pk\":1,\"term\":").append(quote(term))
                     .append(",\"status\":").append(status).append(",\"extended_status\":").append(extended);
@@ -70,7 +60,6 @@ public final class LingqStub implements AutoCloseable {
             return this;
         }
 
-        /** Holds every request until {@link #release()}. */
         public Account hold() {
             hold = new CountDownLatch(1);
             return this;
@@ -88,7 +77,6 @@ public final class LingqStub implements AutoCloseable {
             return this;
         }
 
-        /** Requests received for this key, e.g. "/api/v3/fr/cards/?page_size=200&page=1". */
         public List<String> requests() {
             synchronized (requests) {
                 return List.copyOf(requests);
@@ -98,7 +86,6 @@ public final class LingqStub implements AutoCloseable {
 
     private final HttpServer server;
     private final Map<String, Account> accounts = new ConcurrentHashMap<>();
-    /** Every Authorization header received, for checking that nothing else is sent. */
     private final List<String> authorizations = Collections.synchronizedList(new ArrayList<>());
 
     public LingqStub() throws IOException {
@@ -111,7 +98,6 @@ public final class LingqStub implements AutoCloseable {
         return "http://127.0.0.1:" + server.getAddress().getPort();
     }
 
-    /** The account behind an API key, created empty on first use. */
     public Account account(String apiKey) {
         return accounts.computeIfAbsent(apiKey, k -> new Account());
     }

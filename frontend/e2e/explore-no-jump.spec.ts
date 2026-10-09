@@ -1,8 +1,5 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 
-// docs/acceptance/explore-no-jump.feature: Explore's rows (picked for you, playlists, categories) appear together, in
-// their final order.
-
 let textId: number | null = null;
 
 test.afterEach(async ({ page }) => {
@@ -10,7 +7,6 @@ test.afterEach(async ({ page }) => {
   textId = null;
 });
 
-/** A text of mine, as the cards list it, to stand in a "Continue reading" row. */
 async function myText(page: Page) {
   await page.goto("/library");
   const title = `No jump ${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
@@ -29,7 +25,6 @@ const playlist = {
   updatedAt: "2026-01-01T00:00:00Z", bookmarked: false,
 };
 
-/** Shared playlists answer at once; the rows picked for me wait until `release()`. */
 async function stub(page: Page, text: unknown) {
   await page.route(/\/api\/playlists\/shared(\?.*)?$/, (route) => route.fulfill({ json: [playlist] }));
   let release!: () => void;
@@ -59,7 +54,7 @@ test("nothing shows in the wrong place while the rows picked for me load", async
 
   await page.goto("/community");
   await expect(page.getByTestId("section-loading")).toBeVisible();
-  await page.waitForTimeout(500); // playlists and category rows have answered by now
+  await page.waitForTimeout(500);
   await expect(heading(page, "Playlists")).toHaveCount(0);
   await expect(page.locator("main section[aria-labelledby^='shelf-']")).toHaveCount(0);
 

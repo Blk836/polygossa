@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
-/** native-language.feature: the languages people can read definitions in, and the scripts they are written in. */
 class NativeLanguageTest {
 
     @Test

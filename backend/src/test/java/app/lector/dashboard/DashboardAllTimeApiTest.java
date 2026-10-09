@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
-/** "All time" on the Progress page runs from the day the learner signed up, as days pass after it. */
 @ClockApiTest
 class DashboardAllTimeApiTest {
 
@@ -25,10 +24,9 @@ class DashboardAllTimeApiTest {
     @Autowired
     ObjectMapper json;
 
-    /** Days in "all time" for a learner who signed up just now, seen {@code later} afterwards. */
     private int allTimeDays(Duration later) throws Exception {
         TestApi api = new TestApi(mvc, json);
-        String token = api.signup(); // accounts are stamped with the real time
+        String token = api.signup();
         CLOCK.set(Instant.now().plus(later));
         return api.get(token, "/api/dashboard?period=all", 200).get("period").get("days").asInt();
     }

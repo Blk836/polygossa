@@ -11,12 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Brings texts imported before caption annotations ("[musique]") were recognised up to date: their bracketed words
- * become non-words and the word counts and level are recalculated. The stored tokens are rewritten in place rather
- * than tokenized again, so token indexes (and the audio/video timings keyed by them) stay the same. Runs on every
- * startup; texts that are already right are left untouched.
- */
 @Component
 public class AnnotationBackfill implements ApplicationRunner {
 

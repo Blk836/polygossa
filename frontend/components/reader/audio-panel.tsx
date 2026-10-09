@@ -17,12 +17,10 @@ interface Props {
   onSpoken: (spoken: Spoken) => void;
   onJumpToToken: (tokenIndex: number) => void;
   onAudioChanged: (audio: TextDetail["audio"]) => void;
-  /** Where to cue the paused audio: see `useMediaPlayer`. */
   cueToken: number | null;
   onClose: () => void;
 }
 
-/** Owner with no audio yet: the upload/link tools in the same bottom dock. */
 function AddAudio({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   return (
     <div data-bottom-bar className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/95 backdrop-blur">
@@ -37,7 +35,6 @@ function AddAudio({ children, onClose }: { children: React.ReactNode; onClose: (
   );
 }
 
-/** A text's audio: the shared player bar plus, for the owner, tools to attach and sync audio. */
 export const AudioPanel = forwardRef<MediaHandle, Props>(function AudioPanel(props, ref) {
   const { audio, tokens, onSpoken, onJumpToToken, cueToken } = props;
   const el = useRef<HTMLAudioElement>(null);
@@ -61,7 +58,6 @@ export const AudioPanel = forwardRef<MediaHandle, Props>(function AudioPanel(pro
   const timings = useMemo(() => [...(audio?.timings ?? [])].sort((a, b) => a.s - b.s), [audio]);
   const player = useMediaPlayer({ media, timings, tokens, duration, playing, onSpoken, onJumpToToken, cueToken });
 
-  // The server-rendered <audio> may load its metadata before hydration attaches onLoadedMetadata.
   useEffect(() => {
     const a = el.current;
     if (a && a.readyState >= HTMLMediaElement.HAVE_METADATA) setDuration(a.duration * 1000);

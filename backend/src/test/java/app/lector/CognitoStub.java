@@ -19,17 +19,12 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-/**
- * A fake Cognito user pool on localhost for backend tests: it publishes its signing keys at
- * {@code <issuer>/.well-known/jwks.json}, as Cognito does, and mints access and ID tokens like Cognito's.
- */
 public final class CognitoStub implements AutoCloseable {
 
     public static final String CLIENT_ID = "test-client";
 
     private final HttpServer server;
     private final RSAKey key;
-    /** A key the pool never published: tokens signed with it are forged. */
     private final RSAKey stranger;
 
     public CognitoStub() throws IOException, JOSEException {
@@ -55,7 +50,6 @@ public final class CognitoStub implements AutoCloseable {
         return UUID.randomUUID().toString();
     }
 
-    /** An access token for {@code sub}, as Cognito issues one to our app client; {@code change} can alter it. */
     public String access(String sub, Consumer<JWTClaimsSet.Builder> change) {
         JWTClaimsSet.Builder claims = base(sub).claim("token_use", "access").claim("client_id", CLIENT_ID)
                 .claim("scope", "openid email").claim("username", sub);
@@ -67,7 +61,6 @@ public final class CognitoStub implements AutoCloseable {
         return access(sub, c -> {});
     }
 
-    /** An ID token for {@code sub} with {@code email}, verified unless {@code change} says otherwise. */
     public String id(String sub, String email, Consumer<JWTClaimsSet.Builder> change) {
         JWTClaimsSet.Builder claims = base(sub).claim("token_use", "id").audience(CLIENT_ID).claim("email", email)
                 .claim("email_verified", true);
@@ -79,7 +72,6 @@ public final class CognitoStub implements AutoCloseable {
         return id(sub, email, c -> {});
     }
 
-    /** A token signed with a key the pool never published. */
     public String forged(String sub) {
         return sign(base(sub).claim("token_use", "access").claim("client_id", CLIENT_ID).build(), stranger);
     }

@@ -17,13 +17,11 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** What learners tell recommendations directly: "Not interested", their interests, and what they saw and opened. */
 @Service
 public class RecommendationFeedback {
 
     static final int MAX_EVENT_ITEMS = 100;
 
-    /** One shown or opened card, with the score parts that ranked it (impressions on ranked shelves only). */
     public record EventItem(Long textId, Integer position, ScoreParts parts) {}
 
     private final TextDismissalRepository dismissals;
@@ -57,7 +55,6 @@ public class RecommendationFeedback {
         dismissals.findByUserIdAndTextId(user.getId(), textId).ifPresent(dismissals::delete);
     }
 
-    /** The learner's interests, in shelf order. */
     @Transactional(readOnly = true)
     public List<Category> interests(User user) {
         Set<Category> set = EnumSet.noneOf(Category.class);
@@ -78,7 +75,6 @@ public class RecommendationFeedback {
         return List.copyOf(set);
     }
 
-    /** Logs cards shown or opened on a shelf; items the learner can't read are skipped. */
     @Transactional
     public void log(User user, String type, String shelf, List<EventItem> items) {
         RecommendationEvent.Type kind = type(type);
@@ -103,7 +99,6 @@ public class RecommendationFeedback {
         }
     }
 
-    /** The whole batch is refused (nothing stored) when any card is invalid. */
     private static void check(List<EventItem> items) {
         if (items == null || items.isEmpty() || items.size() > MAX_EVENT_ITEMS) {
             throw ApiException.badRequest("items must hold 1 to " + MAX_EVENT_ITEMS + " cards");

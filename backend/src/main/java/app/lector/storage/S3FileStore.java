@@ -16,10 +16,6 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
-/**
- * Uploads in a private S3 bucket (production). Ranges are passed to S3, which answers just that part, so seeking in
- * audio downloads only what is played.
- */
 public class S3FileStore implements FileStore {
 
     private static final Logger log = LoggerFactory.getLogger(S3FileStore.class);
@@ -76,7 +72,6 @@ public class S3FileStore implements FileStore {
         try {
             s3.deleteObject(b -> b.bucket(bucket).key(name));
         } catch (SdkException e) {
-            // An orphaned object is harmless; the text or profile no longer points to it.
             log.warn("Could not delete {} from S3: {}", name, e.getMessage());
         }
     }

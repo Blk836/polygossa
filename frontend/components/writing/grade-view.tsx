@@ -13,7 +13,6 @@ const CRITERIA: Record<string, string> = {
   coherence: "Coherence",
 };
 
-/** The result of a handed-in test: the grade, or a way to grade it when grading failed. */
 export function GradeView({ test, onChanged, onNew }: {
   test: WritingTest;
   onChanged: (t: WritingTest) => void;

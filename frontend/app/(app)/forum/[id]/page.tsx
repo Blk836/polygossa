@@ -8,7 +8,6 @@ import { Badge, Button, Empty, ErrorNote, LinkButton, Pager, Spinner, inputClass
 import { ApiError, api, errorMessage } from "@/lib/api";
 import { forumCategoryLabel, forumPageHref, pageCount, threadPath, type ForumPost, type ThreadPage, type ThreadSummary } from "@/lib/forum";
 
-/** One forum thread: its posts, oldest first, 50 a page, a reply box unless locked, and admins' pin and lock. */
 export default function ThreadView() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -43,7 +42,6 @@ export default function ThreadView() {
   if (!data) return error ? <ErrorNote message={error} /> : <Spinner />;
   const { thread } = data;
 
-  /** One change at a time, so a slower reply can never undo a newer change on screen. */
   async function moderate(change: Partial<Pick<ThreadSummary, "pinned" | "locked">>) {
     setError(null);
     setModerating(true);

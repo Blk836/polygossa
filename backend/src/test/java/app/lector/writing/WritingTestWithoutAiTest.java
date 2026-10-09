@@ -11,7 +11,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** With no AI configured, tests still run and the writing is kept; it is graded once AI is set up. */
 @SpringBootTest(properties = {
         "test.database=writingnoai",
         "app.seed-samples=false",

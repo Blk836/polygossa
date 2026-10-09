@@ -1,8 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// cognito-login.feature, "Turning on two-step sign-in": Settings › Profile. The browser tests have no user pool, so
-// a Cognito session's /api/auth/mfa is stubbed in the browser (its Cognito calls are unit-tested in lib/cognito.test.ts).
-
 const section = (page: Page) => page.getByRole("group", { name: "Two-step sign-in" });
 
 test("accounts that don't sign in through Cognito see no two-step section", async ({ page }) => {

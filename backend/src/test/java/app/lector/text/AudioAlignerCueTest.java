@@ -12,7 +12,6 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestClient;
 
-/** Word timings built from subtitle/caption cues, including YouTube's overlapping (rolling) captions. */
 class AudioAlignerCueTest {
 
     private record Line(long start, long end, String text) {}
@@ -22,7 +21,6 @@ class AudioAlignerCueTest {
         return new TokenizationService(props, RestClient.builder()).tokenize(Language.FR, text);
     }
 
-    /** Joins the lines in the given (transcript) order and aligns the transcript's words to them. */
     private static List<AudioAligner.WordTiming> align(Line... lines) {
         List<SubtitleParser.Cue> raw = new ArrayList<>();
         for (Line l : lines) {
@@ -56,7 +54,6 @@ class AudioAlignerCueTest {
 
     @Test
     void rollingCaptionsLikeE188StayInTranscriptOrder() {
-        // Shape of innerFrench E188: each line stays up until well after the next one starts.
         var timings = align(
                 new Line(14_000, 17_920, "à toutes et à tous Je suis"),
                 new Line(15_799, 19_765, "ravi de vous retrouver pour ce"),
@@ -93,7 +90,6 @@ class AudioAlignerCueTest {
 
     @Test
     void cuesListedOutOfStartOrderAreClampedByTheNextCueInTime() {
-        // Transcript order B, A; time order A (0–3000), B (2000–4000): A is clamped at 2000, B keeps its end.
         var timings = align(new Line(2000, 4000, "quatre cinq"), new Line(0, 3000, "un deux trois"));
         assertThat(timings).hasSize(5);
         assertThat(timings.get(1).e()).isEqualTo(4000);
@@ -119,7 +115,6 @@ class AudioAlignerCueTest {
 
     @Test
     void aLongTranscriptTimesEveryWordOnceInsideItsOwnCue() {
-        // 300 three-second cues of four words: each word lands in its cue's three seconds, in transcript order.
         Line[] lines = new Line[300];
         for (int c = 0; c < lines.length; c++) {
             String w = letters(c);
@@ -136,7 +131,6 @@ class AudioAlignerCueTest {
         assertTranscriptOrderByStart(timings);
     }
 
-    /** A letters-only name for n (the tokenizer would split digits off a word). */
     private static String letters(int n) {
         return "m" + (char) ('a' + n / 26 / 26 % 26) + (char) ('a' + n / 26 % 26) + (char) ('a' + n % 26);
     }

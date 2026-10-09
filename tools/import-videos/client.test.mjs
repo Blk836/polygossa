@@ -4,7 +4,6 @@ import { Fatal, makeClient } from "./client.mjs";
 
 const entry = { line: 3, url: "https://youtu.be/AAAAAAAAAAA", language: "fr", category: null };
 
-/** A fetch that records its calls and answers with the given status and JSON body. */
 function fakeFetch(status, body) {
   const calls = [];
   const fetch = async (url, init) => {
@@ -94,8 +93,6 @@ test("options from a failed request stop the run even if they look usable", asyn
   await assert.rejects(client(fakeFetch(500, { languages: ["fr"], categories: ["news"] }).fetch).options(),
     new Fatal("could not read the backend's options (HTTP 500)"));
 });
-
-// ---- copying between backends (docs/acceptance/copy-videos.feature) ----
 
 const exported = { videoId: "AAAAAAAAAAA", language: "fr", title: "Le marché", category: "learners", durationSeconds: 60,
   content: "Bonjour.", cues: [] };

@@ -16,7 +16,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Sharing playlists: who can see them, which of their items others see, and who can change them. */
 @ClockApiTest
 class PlaylistSharingApiTest {
 
@@ -47,7 +46,6 @@ class PlaylistSharingApiTest {
         api.patch(owner, "/api/playlists/" + playlist, "{\"isPublic\":true}", 200);
     }
 
-    /** A uniquely titled public playlist with one public text, so shared lists can be searched for it. */
     private long sharedPlaylist(String title) throws Exception {
         long p = create(api, owner, title, "fr");
         add(owner, p, api.createText(owner, "fr", "Un.", true), 204);
@@ -187,7 +185,6 @@ class PlaylistSharingApiTest {
         assertThat(theirs.get("items").get(0).has("progress")).isFalse();
     }
 
-    /** Shared playlists among {@code ids}, in the order the shared list gives them. */
     private List<Long> sharedOrder(long... ids) throws Exception {
         List<Long> order = new ArrayList<>();
         for (JsonNode p : api.get(other, "/api/playlists/shared?language=fr", 200)) {

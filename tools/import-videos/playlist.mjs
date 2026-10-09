@@ -1,11 +1,7 @@
-// --playlist: the list's videos, already in the community library, become a public library playlist in list order
-// (docs/acceptance/copy-playlist.feature). Nothing is imported.
-
 import { videoId } from "./list.mjs";
 
 const SAID = { created: "created", updated: "updated", would_create: "would create", would_update: "would update" };
 
-/** Sends the list's videos as one playlist; returns the exit code. */
 export async function makePlaylist(entries, { client, title, description, dryRun, print }) {
   entries.filter((e) => e.error).forEach((e) => print(`line ${e.line}: invalid — ${e.error} ${e.url}`));
   const usable = entries.filter((e) => !e.error);

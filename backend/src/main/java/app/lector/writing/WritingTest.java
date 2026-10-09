@@ -15,7 +15,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 
-/** One timed writing test: the situation set, what the learner handed in, and the AI's grade. */
 @Entity
 @Table(name = "writing_tests")
 public class WritingTest {
@@ -56,14 +55,11 @@ public class WritingTest {
 
     private Instant submittedAt;
 
-    /** The grade as JSON (see WritingGrader.Grade); null until graded. */
     @Column(columnDefinition = "text")
     private String gradeJson;
 
-    /** Why the last grading attempt failed, while ungraded. */
     private String gradeError;
 
-    /** The model and grading-prompt version that produced {@link #gradeJson}. */
     private String gradeModel;
 
     private String gradePromptVersion;

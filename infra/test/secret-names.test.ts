@@ -1,8 +1,3 @@
-// Regression: production's deploy failed because the backend couldn't read polygossa/stripe-webhook-secret. A secret
-// name ending in a hyphen and six characters ("-secret") looks like a complete ARN with Secrets Manager's random
-// suffix, so ECS asked for ".../stripe-webhook-secret" as a full ARN while the role was granted
-// ".../stripe-webhook-secret-??????" (the by-name grant), and the tasks never started. Such a secret must be
-// referenced by its complete ARN, and granted exactly that.
 import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
 import * as cdk from "aws-cdk-lib";
@@ -22,7 +17,6 @@ before(() => {
 
 const AMBIGUOUS = /-[A-Za-z0-9]{6}$/;
 
-/** Secret names the stack's roles are granted by name (CDK's "-??????" pattern for a suffix it doesn't know). */
 function grantedByName(): string[] {
   const text = JSON.stringify(template.findResources("AWS::IAM::Policy"));
   return [...text.matchAll(/secret:([A-Za-z0-9/_+=.@-]+?)-\?\?\?\?\?\?/g)].map((m) => m[1]);

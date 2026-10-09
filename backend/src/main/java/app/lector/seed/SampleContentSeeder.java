@@ -23,10 +23,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Seeds one short beginner text per language into the community library, owned by a system account, so a new
- * user can start reading within seconds of signing up (onboarding picks from these).
- */
 @Component
 public class SampleContentSeeder implements ApplicationRunner {
 
@@ -60,7 +56,7 @@ public class SampleContentSeeder implements ApplicationRunner {
         }
         Optional<User> existing = account.find();
         if (existing.isPresent()) {
-            existing.get().setDisplayName(brand.libraryName()); // follows a brand rename
+            existing.get().setDisplayName(brand.libraryName());
             refile(existing.get());
             addMissing(existing.get());
             return;
@@ -75,7 +71,6 @@ public class SampleContentSeeder implements ApplicationRunner {
         texts.createUnchecked(library, s.title(), s.language(), s.body(), null, true, null).setCategory(s.category());
     }
 
-    /** Libraries seeded before a language was added (English) gain its starter, once. */
     private void addMissing(User library) throws IOException {
         for (Starter s : starters()) {
             if (repository.findByOwnerIdAndLanguageAndTitle(library.getId(), s.language(), s.title()).isEmpty()) {
@@ -85,7 +80,6 @@ public class SampleContentSeeder implements ApplicationRunner {
         }
     }
 
-    /** Databases seeded before categories existed: file the starter texts that are still uncategorised. */
     private void refile(User library) throws IOException {
         for (Starter s : starters()) {
             for (Text t : repository.findByOwnerIdAndLanguageAndTitle(library.getId(), s.language(), s.title())) {
@@ -96,7 +90,6 @@ public class SampleContentSeeder implements ApplicationRunner {
         }
     }
 
-    /** {@code samples/<code>.txt}: the title, a {@code category: <code>} line, then the text. */
     private static List<Starter> starters() throws IOException {
         List<Starter> out = new ArrayList<>();
         for (Language language : Language.offered()) {

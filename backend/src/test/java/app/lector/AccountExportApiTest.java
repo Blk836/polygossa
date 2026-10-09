@@ -11,7 +11,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Feature: Download my data (docs/acceptance/gdpr.feature): everything about the account, as one JSON file. */
 @ApiTest
 class AccountExportApiTest {
 

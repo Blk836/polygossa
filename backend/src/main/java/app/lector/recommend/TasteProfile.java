@@ -9,22 +9,15 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
-/**
- * What a learner likes, from the texts they engaged with (any language) and the categories they picked as interests:
- * a taste vector for embedding similarity, weights per topic tag and category, and the formats they enjoy.
- */
 public final class TasteProfile {
 
-    /** A text the learner did something with, and its signal weight (negative: disliked). */
     public record Engaged(double weight, float[] vector, List<String> topics, Category category, boolean video,
                           int wordCount) {}
 
-    /** Each picked interest counts like this much engagement with its category. */
     static final double INTEREST = 2;
     private static final String CATEGORY = "category:";
 
     private final float[] taste;
-    /** Topic tags and "category:<code>" keys, sorted so ties resolve the same way every time. */
     private final Map<String, Double> weights = new TreeMap<>();
     private final double maxAbs;
     private final double[] kind = new double[2];
@@ -59,7 +52,6 @@ public final class TasteProfile {
         return new TasteProfile(engaged, interests, interestVectors);
     }
 
-    /** The taste vector, or null when there is nothing to base it on. */
     public float[] taste() {
         return taste;
     }
@@ -68,7 +60,6 @@ public final class TasteProfile {
         return maxAbs > 0;
     }
 
-    /** Mean normalised weight (-1…1) of the item's tags and category; 0 without any topic history. */
     public double affinity(Collection<String> tags, Category category) {
         if (!hasTopics()) {
             return 0;
@@ -80,7 +71,6 @@ public final class TasteProfile {
         return sum / maxAbs / (tags.size() + 1);
     }
 
-    /** Whether the item is in the learner's usual topics (positive affinity). */
     public boolean inTopics(Collection<String> tags, Category category) {
         return affinity(tags, category) > 0;
     }
@@ -93,18 +83,15 @@ public final class TasteProfile {
         return categoriesByStrength().stream().findFirst();
     }
 
-    /** Tags with a positive weight, strongest first (alphabetical on a tie). */
     public List<String> topicsByStrength() {
         return byStrength(false, Map.Entry.comparingByKey());
     }
 
-    /** Categories with a positive weight, strongest first (shelf order on a tie). */
     public List<Category> categoriesByStrength() {
         return byStrength(true, Comparator.comparing((Map.Entry<String, Double> e) -> category(e.getKey())))
                 .stream().map(TasteProfile::category).toList();
     }
 
-    /** Of these tags, the one the learner likes most, if they like any. */
     public Optional<String> favouriteTag(Collection<String> tags) {
         return topicsByStrength().stream().filter(tags::contains).findFirst();
     }
@@ -120,7 +107,6 @@ public final class TasteProfile {
         return Category.parse(key.substring(CATEGORY.length()));
     }
 
-    /** -1…1: how much more the learner enjoyed this kind (video or text) and length than the others. */
     public double formatAffinity(boolean video, int wordCount) {
         if (positive <= 0) {
             return 0;
@@ -143,7 +129,6 @@ public final class TasteProfile {
 
     private record Weighted(float[] vector, double weight) {}
 
-    /** Weighted average of the vectors the same size as the first; null when there are none. */
     private static float[] average(List<Weighted> items) {
         if (items.isEmpty()) {
             return null;

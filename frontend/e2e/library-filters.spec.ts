@@ -1,11 +1,6 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 import { cleanUp, createText, type Created } from "./reader-helpers";
 
-// My library (docs/acceptance/library-two-tabs.feature): imports and saved items in one list. Its filters are
-// Airbnb-style: category chips in one bar right above the cards, and everything else (texts or videos, imported or
-// saved) behind a single "Filters" button with a count badge. Both list APIs are stubbed with the test's own text, so
-// counts and empty states are exact.
-
 let created: Created | null = null;
 
 test.afterEach(async ({ page }) => {
@@ -19,10 +14,6 @@ const panel = (page: Page) => page.getByRole("dialog", { name: "Filters" });
 const cards = (page: Page) => page.getByTestId("card-grid").getByRole("article");
 const chips = (page: Page) => bar(page).getByRole("group", { name: "Category" });
 
-/**
- * Stubs GET /api/texts (two of my texts, news and stories) and GET /api/library/bookmarks (`saved`, none by default),
- * each empty for "video". Returns the kinds asked for.
- */
 async function stubLibrary(page: Page, { saved = 0 }: { saved?: number } = {}) {
   created = await createText(page, 30);
   const template = (await (await page.request.get(`/api/texts/${created.id}`)).json()).text;
@@ -172,8 +163,6 @@ test.describe("My library", () => {
   });
 
   test("the free plan's count names imports only", async ({ page }) => {
-    // The account arrives with the page (server-side), so the free plan is stubbed on the refresh that follows an
-    // Unsave; the test account itself stays on its Classroom plan for the other tests.
     const { bookmarks } = await stubLibrary(page, { saved: 1 });
     await page.route(`**/api/library/${bookmarks[0].id}/bookmark`, (route) => route.fulfill({ status: 204 }));
     await page.route("**/api/me", async (route) => {
@@ -190,9 +179,9 @@ test.describe("the filter bar", () => {
   test("holds the category chips and one Filters button, right above the cards", async ({ page }) => {
     await stubLibrary(page);
     await page.goto("/library");
-    await expect(chips(page).getByRole("button")).toHaveText(["All", "Stories", "News & society"]); // the shelf order
+    await expect(chips(page).getByRole("button")).toHaveText(["All", "Stories", "News & society"]);
     await expect(filtersButton(page)).toHaveAccessibleName("Filters");
-    await expect(page.getByRole("group", { name: "Show" })).toHaveCount(0); // texts/videos live in the panel
+    await expect(page.getByRole("group", { name: "Show" })).toHaveCount(0);
     const barBox = (await bar(page).boundingBox())!;
     const gridBox = (await page.getByTestId("card-grid").boundingBox())!;
     expect(gridBox.y).toBeGreaterThan(barBox.y + barBox.height - 1);

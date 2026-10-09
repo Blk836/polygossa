@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Editing, deleting and searching vocabulary entries. */
 @SpringBootTest(properties = {
         "test.database=vocabcrud",
         "app.seed-samples=false",

@@ -7,9 +7,6 @@ import { SCENES, advance, frameAt, sceneStart } from "@/lib/showreel";
 import { AgainScene, PayoffScene, ReviewScene, TapScene, WatchScene } from "./showreel-scenes";
 import { SectionHeading } from "./features";
 
-// The landing page showreel (landing-showreel.feature): plays the product's loop by itself — watch, tap a word,
-// review it, meet it again, understand more — while it is on screen. The timeline is lib/showreel.ts.
-
 const DRAW: Record<string, ComponentType<{ p: number }>> = {
   watch: WatchScene,
   tap: TapScene,
@@ -39,7 +36,6 @@ function subscribeVisibility(onChange: () => void) {
 }
 const pageVisible = () => document.visibilityState === "visible";
 
-/** Whether the element is (at least partly) on screen. */
 function useInView(ref: React.RefObject<HTMLElement | null>) {
   const [inView, setInView] = useState(false);
   useEffect(() => {
@@ -50,7 +46,6 @@ function useInView(ref: React.RefObject<HTMLElement | null>) {
   return inView;
 }
 
-/** Advances the timeline once per animation frame while `running`. */
 function useTimeline(running: boolean) {
   const [elapsed, setElapsed] = useState(0);
   useEffect(() => {

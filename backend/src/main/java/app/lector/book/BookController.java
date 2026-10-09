@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-/** Import › Book: an EPUB or PDF becomes a private playlist of chapter texts. */
 @RestController
 public class BookController {
 

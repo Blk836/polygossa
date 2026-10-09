@@ -1,4 +1,3 @@
-// docs/acceptance/staging-becomes-production.feature: the app's stacks, as the deploy synthesizes them.
 import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
 import * as cdk from "aws-cdk-lib";
@@ -25,7 +24,6 @@ describe("the app", () => {
     assert.match(template.toJSON().Description, /^Production/);
   });
 
-  // Stack tags aren't in the template: CloudFormation puts them on every resource of the stack at deploy.
   it("tags production's resources as production", () => {
     assert.deepEqual(production.tags.tagValues(), { project: "polygossa", environment: "production" });
   });

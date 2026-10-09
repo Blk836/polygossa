@@ -1,8 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
-// docs/acceptance/learning-languages.feature: Japanese, Chinese and Korean are paused for learning, so every
-// language picker offers the same six languages, English first. (The landing page and word import are checked in
-// landing.spec.ts and word-import-history.spec.ts.)
 const SIX = ["English", "Spanish", "French", "German", "Italian", "Portuguese"];
 const SIX_NATIVE = ["English", "Español", "Français", "Deutsch", "Italiano", "Português"];
 

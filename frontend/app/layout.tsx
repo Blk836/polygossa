@@ -17,8 +17,6 @@ const SHARE_TITLE = `${BRAND}: learn a language from things you actually want to
 const DESCRIPTION =
   "Read stories, articles and YouTube videos in the language you're learning. Tap any word for its meaning, keep it, and watch the words you know add up. Free to start.";
 
-// A function, not a constant, so the share-preview links (og:image) use the live site's address from APP_URL at
-// request time rather than whatever the build machine had.
 export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(appUrl(process.env)),
@@ -51,10 +49,6 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${instrumentSans.variable} ${fraunces.variable} ${literata.variable} h-full antialiased`}
     >
       <head>
-        {/* With translate="no" above: browser translation rewrites text React rendered and crashes the page (and
-            translating a lesson defeats the point). Chrome otherwise offers it whenever a lesson makes the page read as
-            another language. Written here, not in the metadata: pages with a loading outline stream their metadata
-            into the body once it resolves, and this tag must be in the head from the first byte. */}
         <meta name="google" content="notranslate" />
       </head>
       <body className="min-h-full flex flex-col font-sans">

@@ -13,9 +13,7 @@ interface Options {
   textId: number;
   initialStatuses: Record<string, WordStatus>;
   initialPhrases: Phrase[];
-  /** Called after any successful write (plan usage counters may have changed). */
   onSaved: () => void;
-  /** Plan-limit message to show in the popup, or null to clear it. */
   onNotice: (message: string | null) => void;
   onError: (message: string) => void;
 }
@@ -27,16 +25,11 @@ function withStatus(map: Record<string, WordStatus>, term: string, status: WordS
   return copy;
 }
 
-/** A saved word keeps the first meaning shown, as its meaning and its definition (none when there was none). */
 function meaningFields(lookup: WordLookup | null): { meaning?: string; definition?: string } {
   const meaning = savedMeaning(lookup);
   return meaning ? { meaning, definition: meaning } : {};
 }
 
-/**
- * Word and phrase statuses for the reader, with optimistic updates. Writes for the same term are serialized so a
- * details update never races the create that precedes it.
- */
 export function useVocabularyStatus(opts: Options) {
   const { language, textId, onSaved, onNotice, onError } = opts;
   const [statuses, setStatuses] = useState(opts.initialStatuses);
@@ -68,7 +61,6 @@ export function useVocabularyStatus(opts: Options) {
     [onNotice, onError],
   );
 
-  /** Looking up an unseen word saves it as "learning" (the plan's auto-save behaviour). */
   const autoSave = useCallback(
     (token: Token, sentence: string) => {
       const term = token.normalized!;
@@ -86,7 +78,6 @@ export function useVocabularyStatus(opts: Options) {
     [save, onSaved, reportFailure],
   );
 
-  /** Stores the meaning shown on a word that was auto-saved by this lookup. */
   const recordLookup = useCallback(
     (target: PopupTarget, lookup: WordLookup) => {
       lastLookup.current = lookup;
@@ -137,7 +128,6 @@ export function useVocabularyStatus(opts: Options) {
     [language, save],
   );
 
-  /** Keeps another own-language meaning with the word in the popup, saving the word (as learning) if it isn't yet. */
   const pickMeaning = useCallback(
     async (target: PopupTarget, meaning: string) => {
       onNotice(null);
@@ -156,7 +146,6 @@ export function useVocabularyStatus(opts: Options) {
     [onNotice, statusOf, apply, save, onSaved, reportFailure],
   );
 
-  /** Sets (or with null, removes) the status of the word or phrase in the popup. */
   const setStatus = useCallback(
     async (target: PopupTarget, status: WordStatus | null) => {
       onNotice(null);
@@ -173,7 +162,6 @@ export function useVocabularyStatus(opts: Options) {
     [onNotice, statusOf, apply, write, onSaved, reportFailure],
   );
 
-  /** After "finish lesson": every word without a status becomes known. */
   const markRemainingKnown = useCallback((tokens: Token[]) => {
     setStatuses((prev) => {
       const next = { ...prev };

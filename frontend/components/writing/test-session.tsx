@@ -7,10 +7,6 @@ import { languageInfo } from "@/lib/languages";
 import type { WritingTest } from "@/lib/types";
 import { canHandIn, countWriting, formatClock, secondsLeft } from "@/lib/writing";
 
-/**
- * The test itself: the situation, a countdown, and the answer box. Pasting is off; hand-in unlocks at the minimum;
- * at 0:00 the answer is handed in automatically, whatever its length.
- */
 export function TestSession({ test, onDone }: { test: WritingTest; onDone: (t: WritingTest) => void }) {
   const [text, setText] = useState("");
   const [remaining, setRemaining] = useState(test.timeLimitSeconds);
@@ -31,7 +27,6 @@ export function TestSession({ test, onDone }: { test: WritingTest; onDone: (t: W
     }
   }
 
-  // The countdown follows the server's deadline (so reloading doesn't buy time) and hands in at zero.
   const onTimeUp = useEffectEvent(() => void handIn());
   useEffect(() => {
     let done = false;

@@ -21,11 +21,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Feature: Profile photo (docs/acceptance/profile-photo.feature): the API side. */
 @ApiTest
 class ProfilePhotoApiTest {
 
-    /** Matches {@code app.storage.dir} in {@link ApiTest}. */
     private static final Path STORAGE = Path.of("build/test-uploads");
 
     @Autowired
@@ -70,7 +68,6 @@ class ProfilePhotoApiTest {
         return mvc.perform(request).andReturn().getResponse();
     }
 
-    /** The stored file a photo URL points at ({@code ?v=} carries the stored name). */
     private static Path stored(String photoUrl) {
         return STORAGE.resolve(photoUrl.substring(photoUrl.indexOf("?v=") + 3));
     }
@@ -78,8 +75,6 @@ class ProfilePhotoApiTest {
     private long myId() throws Exception {
         return api.get(me, "/api/me", 200).get("id").asLong();
     }
-
-    // --- Uploading, changing and removing ---
 
     @Test
     void aNewUserHasNoPhoto() throws Exception {
@@ -142,8 +137,6 @@ class ProfilePhotoApiTest {
         assertThat(api.delete(me, "/api/me/photo", 200).get("photoUrl").isNull()).isTrue();
     }
 
-    // --- The server's own checks ---
-
     @Test
     void contentThatIsNotAPngOrJpegIsRejected() throws Exception {
         String url = uploadPng(me).get("photoUrl").asString();
@@ -174,8 +167,6 @@ class ProfilePhotoApiTest {
         upload(me, file("e.png", "image/png", new byte[0]), 400);
         assertThat(api.get(me, "/api/me", 200).get("photoUrl").isNull()).isTrue();
     }
-
-    // --- Access ---
 
     @Test
     void photosNeedASignedInUser() throws Exception {

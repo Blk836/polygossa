@@ -1,11 +1,5 @@
-// Imports list entries one at a time, pausing between videos, and carries on past videos that fail.
-
 import { Fatal } from "./client.mjs";
 
-/**
- * Returns one result {entry, outcome, reason, title} per entry, in order. A Fatal error stops the run: the entries
- * left are marked "not run" and the array's `fatal` holds the reason.
- */
 export async function run(entries, { client, delayMs, dryRun, sleep, print }) {
   const results = [];
   let asked = 0;

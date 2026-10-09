@@ -4,11 +4,6 @@ import { cognitoConfig } from "@/lib/cognito";
 import { backendFetch } from "@/lib/server-api";
 import { clearSession, keepSessionFresh, writeSession } from "@/lib/session";
 
-// Backend-for-frontend proxy: forwards /api/* to the Spring Boot API with the JWT from the httpOnly cookie, so the
-// token is never exposed to browser JavaScript.
-
-// stripe-signature: Stripe's webhook (/api/billing/webhook) is checked against it, over the body as sent.
-// x-curator-token: the import tool's secret for /api/curator/* (production's backend has no address of its own).
 const FORWARD_REQUEST_HEADERS = ["content-type", "range", "accept", "stripe-signature", "x-curator-token"];
 const FORWARD_RESPONSE_HEADERS = [
   "content-type",
@@ -21,10 +16,6 @@ const FORWARD_RESPONSE_HEADERS = [
   "etag",
 ];
 
-/**
- * Renews a Cognito session about to expire before the request goes on, returning the new access token; a session
- * that has ended is cleared (the request then goes on signed out and gets 401).
- */
 async function renewSession(): Promise<string | undefined> {
   const jar = await cookies();
   const session = await keepSessionFresh(cognitoConfig(), jar);

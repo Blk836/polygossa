@@ -18,7 +18,6 @@ import { languageName } from "@/lib/languages";
 import { listeningLabel, periodLabel, type StatsPeriodKey } from "@/lib/progress";
 import type { Dashboard, LanguageCode } from "@/lib/types";
 
-/** Known words and the growth curve for the language picked in the top bar (else the first with any progress). */
 function languageFigures(data: Dashboard, picked: LanguageCode | null) {
   const language = picked ?? data.languages[0]?.language ?? null;
   return {
@@ -28,16 +27,13 @@ function languageFigures(data: Dashboard, picked: LanguageCode | null) {
   };
 }
 
-// The Progress page exists to keep learners coming back: the daily streak leads, then how close the next known-word
-// milestone is and how the chosen period (last week by default) compares, with the long view (calendar, growth curve)
-// underneath.
 export default function DashboardPage() {
   const { me } = useMe();
   const [period, setPeriod] = useState<StatsPeriodKey>("week");
   const { data, error } = useDashboard(period);
 
   if (!data) return error ? <ErrorNote message={error} /> : <ProgressSkeleton />;
-  const label = periodLabel(data.period.period); // the figures shown, which lag the picker while loading
+  const label = periodLabel(data.period.period);
 
   const { language, known, growth } = languageFigures(data, me.targetLanguage);
   const knownEverywhere = data.languages.reduce((s, l) => s + l.known, 0);

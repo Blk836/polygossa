@@ -1,10 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import type { Me } from "../lib/types";
 
-// stripe-billing.feature: Settings › Subscription with Stripe on. The browser tests have no Stripe keys, so the
-// billing API is stubbed in the browser (the backend's half is tested against a fake Stripe); Stripe's own pages are
-// stubbed too. Nothing here changes the shared test account.
-
 interface Billing {
   enabled: boolean;
   testMode: boolean;
@@ -21,7 +17,6 @@ const off: Billing = {
   cancelAtPeriodEnd: false, paymentProblem: false,
 };
 
-/** Stubs /api/billing (and /api/me's plan, to match) with what `state()` returns at each call. */
 async function stubBilling(page: Page, state: () => Billing) {
   await page.route("**/api/billing", (route) => route.fulfill({ json: state() }));
   await page.route("**/api/me", async (route) => {
@@ -35,7 +30,6 @@ async function stubBilling(page: Page, state: () => Billing) {
 
 const section = (page: Page) => page.getByRole("region", { name: "Plan" });
 
-// The page keeps polling while it confirms a payment: drop stubs still in flight when a test ends.
 test.afterEach(async ({ page }) => {
   await page.unrouteAll({ behavior: "ignoreErrors" });
 });

@@ -8,21 +8,17 @@ import java.util.Locale;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 
-/** AI marking of a timed writing test against its situation, on a fixed four-part rubric. */
 @Service
 public class WritingGrader {
 
     public static final List<String> CRITERIA = List.of("task", "grammar", "vocabulary", "coherence");
 
-    /** Stored with each grade; change it whenever the prompt changes, so old and new grades can be told apart. */
     public static final String PROMPT_VERSION = "2026-10-05";
 
-    /** One rubric line, scored 1–5. */
     public record RubricScore(String criterion, int score, String comment) {}
 
     public record Correction(String original, String corrected, String explanation) {}
 
-    /** Overall score 0–100, an estimated CEFR level, the rubric, corrections and a corrected version. */
     public record Grade(int score, String level, List<RubricScore> rubric, List<Correction> corrections,
                         String correctedText, String summary) {
 
@@ -31,7 +27,6 @@ public class WritingGrader {
         }
     }
 
-    /** What the learner was asked and what they wrote. */
     public record Submission(Language language, String level, String situation, int minimum, String unit, int count,
                              String content) {}
 
@@ -41,7 +36,6 @@ public class WritingGrader {
         this.ai = ai;
     }
 
-    /** The model that grades, stored with each grade. */
     public String model() {
         return ai.model();
     }
@@ -66,7 +60,6 @@ public class WritingGrader {
         return parse(r, s.content());
     }
 
-    /** Reads the model's verdict defensively: scores clamped, every rubric line present. */
     static Grade parse(JsonNode r, String original) {
         List<RubricScore> rubric = new ArrayList<>();
         int sum = 0;
@@ -87,7 +80,6 @@ public class WritingGrader {
                 r.path("correctedText").asString(original), r.path("summary").asString(""));
     }
 
-    /** One of A1–C2, or null for anything else the model might say. */
     private static String level(JsonNode node) {
         String level = node.isString() ? node.asString().strip().toUpperCase(Locale.ROOT) : "";
         return DifficultyEstimator.LEVELS.contains(level) ? level : null;

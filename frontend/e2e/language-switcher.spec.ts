@@ -1,8 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
-// docs/acceptance/language-switcher.feature: the top bar's language switcher is a plain control like the counters
-// beside it (no box), with their soft pill only on hover or while its menu is open.
-
 const banner = (page: Page) => page.getByRole("banner");
 const switcher = (page: Page) => banner(page).getByRole("button", { name: /Change language/ });
 const known = (page: Page) => banner(page).getByTestId("known-words");
@@ -13,7 +10,6 @@ const style = (el: Locator) =>
   });
 const TRANSPARENT = "rgba(0, 0, 0, 0)";
 
-/** Answers language switches in the browser, so the shared test user's language is never changed. */
 async function answerSwitches(page: Page) {
   const me = await (await page.request.get("/api/me")).json();
   await page.route("**/api/me", (route) => {
@@ -75,7 +71,6 @@ test.describe("on a desktop", () => {
   });
 
   test("with no language chosen it asks for one", async ({ page }) => {
-    // The shared test account never has a target language (see CLAUDE.md).
     await expect(switcher(page)).toHaveText("?Choose language");
   });
 });
@@ -88,7 +83,6 @@ test.describe("on a phone", () => {
     await answerSwitches(page);
     await pick(page, "Deutsch");
     await expect(switcher(page).getByText("Deutsch")).toBeHidden();
-    // The badge's text is lower case, shown in capitals by CSS.
     await expect(switcher(page).getByText("de", { exact: true })).toBeVisible();
     await expect(switcher(page).locator("svg")).toBeVisible();
     await page.mouse.move(0, 700);

@@ -9,14 +9,9 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Public playlists the team curates for the community library (tools/import-videos.mjs --playlist): one per title
- * and language, so running the tool again updates it, and people who saved it keep it.
- */
 @Service
 public class LibraryPlaylists {
 
-    /** What a curated playlist will be: its title and description, checked like any playlist's. */
     public record Draft(String title, String description, Language language) {}
 
     private final PlaylistRepository playlists;
@@ -29,7 +24,6 @@ public class LibraryPlaylists {
         this.clock = clock;
     }
 
-    /** Checks the title and description as the Library's playlist form does (trimmed; 400 when over the limits). */
     public Draft draft(String title, String description, Language language) {
         return new Draft(PlaylistService.title(title), PlaylistService.description(description), language);
     }
@@ -39,7 +33,6 @@ public class LibraryPlaylists {
                 .findFirst();
     }
 
-    /** Creates the playlist, or makes the existing one match: its description and items, in the given order. */
     @Transactional
     public Playlist save(User owner, Draft draft, List<Text> texts) {
         Playlist playlist = find(owner, draft).orElseGet(() -> new Playlist(owner, draft.title(), draft.language(),

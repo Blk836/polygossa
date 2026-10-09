@@ -5,7 +5,6 @@ import { BRAND } from "@/lib/brand";
 
 export const metadata: Metadata = { title: "Privacy policy" };
 
-/** The privacy policy (draft, gdpr.feature): what is collected, why, who processes it and where, and your rights. */
 export default function PrivacyPolicyPage() {
   return (
     <LegalPage title="Privacy policy" updated="October 2026">

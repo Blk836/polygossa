@@ -1,9 +1,7 @@
-// docs/acceptance/stripe-billing.feature: the one-time Stripe setup (prices and the webhook), against a fake Stripe.
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { PRICES, setUp } from "./setup.mjs";
 
-/** A fake Stripe: remembers prices and webhook endpoints, records every call. */
 function fakeStripe({ prices = [], endpoints = [] } = {}) {
   const calls = [];
   const routes = {

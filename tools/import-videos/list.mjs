@@ -1,6 +1,3 @@
-// The list file: one video per line, "<YouTube URL> [language] [category]". "#" starts a comment (a whole line, or
-// after whitespace at the end of one), so a results file can be fed back in as a list.
-
 const ID = "[A-Za-z0-9_-]{11}";
 const FORMS = [
   new RegExp(`^(?:https?://)?(?:www\\.|m\\.)?youtube\\.com/watch\\?(?:.*&)?v=(${ID})(?:[&#]|$)`),
@@ -8,7 +5,6 @@ const FORMS = [
   new RegExp(`^(?:https?://)?youtu\\.be/(${ID})(?:[/?#]|$)`),
 ];
 
-/** The video id in any YouTube video URL form, or null. */
 export function videoId(url) {
   for (const form of FORMS) {
     const match = form.exec(url);
@@ -19,10 +15,6 @@ export function videoId(url) {
   return null;
 }
 
-/**
- * Parses a list file into entries {line, url, language, category}, or {line, url, error} for a line that can't be
- * imported. `languages` and `categories` are the codes the backend accepts.
- */
 export function parseList(text, { languages, categories, defaultLanguage = null }) {
   const entries = [];
   text.split(/\r?\n/).forEach((raw, index) => {

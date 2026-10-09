@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
-/** A small fixed set of library categories, so browsing stays simple. */
 class CategoryTest {
 
     @Test

@@ -6,7 +6,6 @@ import { Button, ErrorNote, Field, PageHeader, Spinner, inputClass, selectClass 
 import { api, errorMessage } from "@/lib/api";
 import { categoryFromParam, forumListPath, postableCategories, type ForumCategory, type ThreadList, type ThreadSummary } from "@/lib/forum";
 
-/** Starting a thread: a category, a title and the first message. */
 export default function NewThreadPage() {
   return (
     <Suspense fallback={<Spinner />}>
@@ -25,7 +24,6 @@ function NewThreadForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Whether announcements can be offered comes with any thread list.
   useEffect(() => {
     let cancelled = false;
     api<ThreadList>(forumListPath("announcements", 0))

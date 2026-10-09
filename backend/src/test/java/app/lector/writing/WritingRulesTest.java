@@ -10,7 +10,6 @@ import java.util.Random;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
-/** The fixed rules of a writing test: how long, how much, and how writing is counted. */
 class WritingRulesTest {
 
     @Test

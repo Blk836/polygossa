@@ -11,7 +11,6 @@ import type { Size } from "@/lib/map-camera";
 import { regionWords, tileStats, type BandView, type MapPlace } from "@/lib/vocab-map";
 import type { VocabMap, VocabMapArea, VocabMapWord } from "@/lib/types";
 
-/** The map's size on screen, followed as the card resizes. */
 function useViewport(ref: RefObject<HTMLDivElement | null>): Size {
   const [size, setSize] = useState<Size>({ width: 800, height: 500 });
   useEffect(() => {
@@ -27,7 +26,6 @@ function useViewport(ref: RefObject<HTMLDivElement | null>): Size {
   return size;
 }
 
-/** Enter and Space press a map button, as they do a real one. */
 function keyActivate(action: () => void) {
   return (e: React.KeyboardEvent) => {
     if (e.key !== "Enter" && e.key !== " ") return;
@@ -36,11 +34,8 @@ function keyActivate(action: () => void) {
   };
 }
 
-/** Narrower maps (phones) write country names small, on two lines, without their progress bars. */
 const COMPACT_BELOW_PX = 560;
-/** How far a press of a zoom button zooms. */
 const ZOOM_STEP = 1.6;
-/** The continent's shadow: a copy of its ground, this far down (in world units). */
 const SHADOW = TILE * 0.7;
 
 const TILE_FILL: Record<TileKind, string> = {
@@ -57,11 +52,6 @@ function areaShape(world: HexWorld, regionId: string | null, areaId: string | nu
   return world.countries.find((c) => c.regionId === regionId)?.areas.find((a) => a.areaId === areaId);
 }
 
-/**
- * The vocabulary map as a hex continent (vocabulary-map.feature): a country per region, a province per area and a
- * tile per word. Tapping glides in a level; the wheel, drags, pinches and the zoom buttons zoom and pan freely between.
- * The controls float over the map, and so does the tapped word's panel ({@code panel}).
- */
 export function HexMap({ map, view, top, onTop, place, selected, go, onSelect, panel }: {
   map: VocabMap;
   view: BandView;
@@ -134,7 +124,6 @@ export function HexMap({ map, view, top, onTop, place, selected, go, onSelect, p
   );
 }
 
-/** The continent's ground: its shadow on the sea (an offset copy, cheaper than a blur while moving), then the grout. */
 const Ground = memo(function Ground({ world }: { world: HexWorld }) {
   return (
     <g pointerEvents="none">
@@ -144,7 +133,6 @@ const Ground = memo(function Ground({ world }: { world: HexWorld }) {
   );
 });
 
-/** Every tile, one path per colour. */
 const Tiles = memo(function Tiles({ layers }: { layers: Record<TileKind, string> }) {
   return (
     <g pointerEvents="none" data-testid="map-tiles">
@@ -153,7 +141,6 @@ const Tiles = memo(function Tiles({ layers }: { layers: Record<TileKind, string>
   );
 });
 
-/** Thin lines between provinces, strong ones between countries and along the coast. */
 const Borders = memo(function Borders({ world }: { world: HexWorld }) {
   const line = { fill: "none", stroke: "var(--ink)", vectorEffect: "non-scaling-stroke", strokeLinecap: "round" } as const;
   return (
@@ -165,7 +152,6 @@ const Borders = memo(function Borders({ world }: { world: HexWorld }) {
   );
 });
 
-/** Up close, each tile has its word written in it. */
 function WordText({ world, map, areas, view }: { world: HexWorld; map: VocabMap; areas: Set<string>; view: BandView }) {
   const words = new Map(map.regions.flatMap((r) => r.areas.map((a) => [a.id, a.words] as const)));
   return (
@@ -183,7 +169,6 @@ function WordText({ world, map, areas, view }: { world: HexWorld; map: VocabMap;
 
 const statusOf = (w: VocabMapWord) => w.status ?? "new";
 
-/** A country, province or word as a button: its whole ground to tap, and its outline as the focus ring. */
 function HitArea({ ground, outline }: { ground: string; outline: string }) {
   return (
     <>
@@ -193,7 +178,6 @@ function HitArea({ ground, outline }: { ground: string; outline: string }) {
   );
 }
 
-/** Every country is a button into it; pointing at one (or focusing it) shows more on its tag. */
 const Countries = memo(function Countries({ world, map, view, go, onPoint }: {
   world: HexWorld;
   map: VocabMap;
@@ -221,7 +205,6 @@ const Countries = memo(function Countries({ world, map, view, go, onPoint }: {
   );
 });
 
-/** The open country's provinces, each a button into it. */
 function Provinces({ world, regionId, areas, view, go }: { world: HexWorld; regionId: string; areas: VocabMapArea[]; view: BandView; go: Go }) {
   const country = world.countries.find((c) => c.regionId === regionId);
   return (
@@ -241,7 +224,6 @@ function Provinces({ world, regionId, areas, view, go }: { world: HexWorld; regi
   );
 }
 
-/** The open province's words, each a button that opens its panel. */
 function WordButtons({ shape, words, portrait, view, selected, onSelect }: {
   shape: AreaShape;
   words: VocabMapWord[];

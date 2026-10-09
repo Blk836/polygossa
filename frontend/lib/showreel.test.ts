@@ -96,7 +96,6 @@ describe("countUp", () => {
     expect(countUp(1240, 1284, -1)).toBe(1240);
     expect(countUp(1240, 1284, 2)).toBe(1284);
     const mid = countUp(1240, 1284, 0.5);
-    // ease-out: past halfway at half time
     expect(mid).toBeGreaterThan(1262);
     expect(mid).toBeLessThan(1284);
   });

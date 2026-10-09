@@ -24,7 +24,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Feature: Explore recommendations, the shelves (docs/acceptance/explore-recommendations.feature). No AI here. */
 @SpringBootTest(properties = {
         "test.database=recshelves",
         "app.seed-samples=false"
@@ -69,7 +68,7 @@ class RecommendationShelvesApiTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS); // what the database stores
+        now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
         CLOCK.set(now);
         api = new TestApi(mvc, json);
         fx = new RecommendFixture(api);
@@ -83,8 +82,6 @@ class RecommendationShelvesApiTest {
         return api.post(learner, "/api/texts/" + text + "/progress", "{\"position\":" + position + "}", 200)
                 .get("percent").asInt();
     }
-
-    // ---- Continue reading ----
 
     @Test
     void continueReadingListsStartedTextsMostRecentFirst() throws Exception {
@@ -128,8 +125,6 @@ class RecommendationShelvesApiTest {
         }
     }
 
-    // ---- candidates ----
-
     @Test
     void onlyUnstartedPublicItemsInMyLanguageByOthersAreRecommended() throws Exception {
         long fresh = fx.publicText(author, "Fresh", "food");
@@ -151,16 +146,14 @@ class RecommendationShelvesApiTest {
         assertThat(ids(shelf(recs, "for-you"))).contains(french, spanish);
     }
 
-    // ---- shelves ----
-
     @Test
     void shelvesComeInOrderAndOnlyWithItems() throws Exception {
         long liked = fx.publicText(author, "Liked", "food");
         api.put(learner, "/api/library/" + liked + "/like", "", 204);
         long started = fx.publicText(author, "Started", "news");
         progress(started, 20);
-        fx.text(author, "Easy food", "food", 24, 1, true);    // 96%: just right
-        fx.text(author, "Harder food", "food", 22, 3, true);  // 88%: stretch
+        fx.text(author, "Easy food", "food", 24, 1, true);
+        fx.text(author, "Harder food", "food", 22, 3, true);
         JsonNode recs = fx.recommendations(learner);
         assertThat(shelfIds(recs)).containsExactly("continue", "for-you", "topic", "just-right", "stretch");
     }
