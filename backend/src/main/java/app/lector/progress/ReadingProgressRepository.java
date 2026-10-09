@@ -39,6 +39,10 @@ public interface ReadingProgressRepository extends JpaRepository<ReadingProgress
     @Query("select p from ReadingProgress p where p.user.id = :userId and p.text.id in :textIds")
     List<ReadingProgress> findForTexts(@Param("userId") Long userId, @Param("textIds") Collection<Long> textIds);
 
+    /** Everyone's progress on one text. */
+    @Query("select p from ReadingProgress p where p.text.id = :textId")
+    List<ReadingProgress> findForText(@Param("textId") Long textId);
+
     @Modifying
     @Query("delete from ReadingProgress p where p.text.id = :textId")
     void deleteByTextId(@Param("textId") Long textId);
