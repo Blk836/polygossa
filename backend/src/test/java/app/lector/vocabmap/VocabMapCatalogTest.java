@@ -81,16 +81,16 @@ class VocabMapCatalogTest {
     @Test
     void everyKindOfMistakeInAListIsReported() {
         List<String> problems = fixture("bad").problems();
-        assertThat(problems).anySatisfy(p -> assertThat(p).contains("bad.tsv:3").contains("\"pomme\" appears twice"));
-        assertThat(problems).anySatisfy(p -> assertThat(p).contains("bad.tsv:4").contains("unknown area \"nowhere\""));
-        assertThat(problems).anySatisfy(p -> assertThat(p).contains("bad.tsv:5").contains("unknown band \"Z9\""));
-        assertThat(problems).anySatisfy(p -> assertThat(p).contains("bad.tsv:6").contains("copies the word"));
-        assertThat(problems).anySatisfy(p -> assertThat(p).contains("bad.tsv:8").contains("no en meaning"));
-        assertThat(problems).anySatisfy(p -> assertThat(p).contains("bad.tsv:9")
+        assertThat(problems).anySatisfy(p -> assertThat(p).contains("bad.words:3").contains("\"pomme\" appears twice"));
+        assertThat(problems).anySatisfy(p -> assertThat(p).contains("bad.words:4").contains("unknown area \"nowhere\""));
+        assertThat(problems).anySatisfy(p -> assertThat(p).contains("bad.words:5").contains("unknown band \"Z9\""));
+        assertThat(problems).anySatisfy(p -> assertThat(p).contains("bad.words:6").contains("copies the word"));
+        assertThat(problems).anySatisfy(p -> assertThat(p).contains("bad.words:8").contains("no en meaning"));
+        assertThat(problems).anySatisfy(p -> assertThat(p).contains("bad.words:9")
                 .contains("\"pommes\" already belongs to \"pomme\""));
-        assertThat(problems).anySatisfy(p -> assertThat(p).contains("bad.tsv:10").contains("\"la_porte\" is not one word"));
-        assertThat(problems).anySatisfy(p -> assertThat(p).contains("bad.tsv:11").contains("expected 5 columns"));
-        assertThat(problems).noneSatisfy(p -> assertThat(p).contains("bad.tsv:7"));
+        assertThat(problems).anySatisfy(p -> assertThat(p).contains("bad.words:10").contains("\"la_porte\" is not one word"));
+        assertThat(problems).anySatisfy(p -> assertThat(p).contains("bad.words:11").contains("expected 5 columns"));
+        assertThat(problems).noneSatisfy(p -> assertThat(p).contains("bad.words:7"));
         assertThat(problems).hasSize(8);
     }
 
@@ -135,6 +135,6 @@ class VocabMapCatalogTest {
     }
 
     private static VocabMapCatalog fixture(String name) {
-        return new VocabMapCatalog(VocabMapCatalog.BLUEPRINT, "classpath*:vocabmap-test/" + name + "/*/*.tsv");
+        return new VocabMapCatalog(VocabMapCatalog.BLUEPRINT, "classpath*:vocabmap-test/" + name + "/*/*.words");
     }
 }
