@@ -3,30 +3,26 @@
 A web app for learning languages by reading authentic content: import texts, click words for definitions, build a
 personal vocabulary, review it with spaced repetition, and watch your known-word count grow.
 
-Docs:
-- [Architecture](docs/architecture/README.md): **read this first in a new session.** The high-level map: what each
-  product area does for learners and roughly how it is built, plus the product decisions taken.
-- [Product plan](docs/plan.md): the original vision. [Roadmap](docs/roadmap.md): designed but not built yet.
-- [Product gaps](docs/product-gaps.md): what is missing (product review); ideas not yet designed.
-- [Technical gaps](docs/technical-gaps.md): where development and tests differ from production, and what only works
-  with one backend server.
-- [Production plan](docs/production.md): going live on AWS (EU): S3, Cognito login, monitoring, GDPR and Stripe
-  (test mode) are built; hardening and launch are next.
-- [Marketing plan](docs/marketing.md): finding the first learners on about $100 a month; the founding-100 offer.
-- [Acceptance scenarios](docs/acceptance/): the agreed Gherkin scenarios per feature.
-
-**Keeping the docs true is part of every change.** `docs/architecture/` must always describe the product as it is:
-when a change alters what the product does or how the pieces fit together, update the relevant page in the same
-commit (and move shipped items out of `docs/roadmap.md`). Keep it high level (product behaviour first, then the tech
-in a few lines); never copy code-level detail such as endpoint lists, class inventories or constants into docs. The
-code is the source of truth for details, so there is never a second, stale copy.
+## Where the truth lives
+- **The code is the only description of what the product does and how it is built.** Read it, not prose about it.
+- **Commit messages carry the why.** Write each one to explain the reason for the change; `git log -S`/`git blame`
+  find it later.
+- **`docs/acceptance/*.feature`** are the scenarios agreed for each piece of work: a record of what was asked for at
+  the time, like history. The tests are what keep them true; a later change may supersede an old scenario.
+- **The backlog is GitHub issues** (labels `launch`, `roadmap`, `product-gap`, `tech-gap`): `gh issue list`. Close an
+  issue when its work ships; open one for anything designed or found but not built.
+- **No code comments**, and no docs that restate what the code does: both are second copies that go stale. Put the
+  why in the commit message, and guard a trap with a test or lint rule rather than a warning. Tool directives that
+  must be comments (`eslint-disable`, `@ts-expect-error`, `CHECKSTYLE`, shebangs) stay; `tools/no-comments.test.mjs`
+  enforces the rest.
+- What remains in `docs/`: the marketing plan (business, not code) and the database restore runbook (an emergency
+  procedure).
 
 ```
 backend/    Spring Boot 4.1 (Java 21) — REST API; Gradle module :backend, package app.lector
 frontend/   Next.js 16 + React 19 + Tailwind 4 — UI and backend-for-frontend (BFF) API routes
-tools/      team command-line tools (plain Node, no packages): import-videos.mjs bulk-imports curated YouTube videos,
-            local-checks.mjs runs the suites on this PC, local-deploy.mjs deploys main to production from it (on request)
-infra/      AWS CDK (TypeScript, run directly by Node): production (stack PolygossaStaging) and GitHub's deploy role
+tools/      team command-line tools (plain Node, no packages); see tools/README.md
+infra/      AWS CDK (TypeScript): production (stack PolygossaStaging), QA user pool, GitHub's deploy role
 ```
 
 ## How to work here: "gauntlet" verification
@@ -44,38 +40,20 @@ so the checks must prove it is correct.
 3. Never delete, skip, or weaken an existing test or assertion to make
    something pass. If a test seems wrong, stop and tell me why.
 4. **The full suites run on this PC, one run at a time, through `node tools/local-checks.mjs`** ("cheap mode":
-   GitHub's minutes cost about $10 on a busy day and are nearly used up, so GitHub runs nothing by default, and a merge
-   isn't deployed to production unless the user asks (step 7); `docs/acceptance/local-checks.feature`).
-   Before opening or merging a pull request, commit, push, and run it from your worktree: it picks the suites your
-   branch's changes need (same rules as CI; `--all` runs everything), waits its turn if another session's run is
-   going (it says whose; a crashed session's turn is taken over), and puts a green or red **"local checks"** mark on
-   the commit on GitHub. Its green mark is the proof. Never start a suite (full `./gradlew :backend:test`,
-   `npm run e2e`, `npm test`, PIT, Stryker) directly: two at once overload the machine and the end-to-end suite's
-   fixed ports collide. For TDD's red and green, run only the individual tests you are writing or changing; a heavy
-   one (a backend test class, a Playwright spec, mutation testing) takes its turn with
+   GitHub runs nothing by default, to save Actions minutes). Before opening or merging a pull request, commit, push,
+   and run it from your worktree: it picks the suites your branch's changes need (`--all` runs everything), waits its
+   turn if another session's run is going, and puts a green or red **"local checks"** mark on the commit on GitHub.
+   Its green mark is the proof. Never start a whole suite directly: two at once overload the machine and the
+   end-to-end suite's fixed ports collide. For TDD's red and green, run only the individual tests you are writing or
+   changing; a heavy one (a backend test class, a Playwright spec, mutation testing) takes its turn with
    `node tools/local-checks.mjs --run -- <command>`. Backend and end-to-end runs need `JAVA_HOME` (see Running it).
-   Mutation testing (PIT, Stryker) isn't run unless the user asks, so say so in the report. **Checks on GitHub are
-   paused, not gone:** label a pull request `ci` (or start the workflow by hand) to run them there once, or set the
-   repository variable `CHECKS_ON_GITHUB` to `true` to run them on every pull request again; while it is `true`,
-   follow the GitHub wording in steps 6 and 7 instead of the local one. The checks, for reference:
-   - tests: `./gradlew :backend:test` (backend); `cd frontend && npm test` (Vitest, pure modules only);
-     `cd frontend && npm run e2e` (Playwright, `e2e/*.spec.ts`, real Chromium against a production build — any UI change
-     needs a scenario here, since there are no component tests);
-     `node --test "tools/**/*.test.mjs"` (tools); `cd infra && npm test && npm run typecheck` (CDK stacks, synthesized
-     without AWS access).
-   - mutation testing on changed files (only when the user asks, in its turn with `--run`, see above): `./gradlew :backend:pitest -Ppitest.since=<commit>` (PIT on just the main
-     classes changed since that commit, e.g. the one before the task's first commit; `-Ppitest.targets=app.lector.text.*`
-     names them directly, and no property mutates everything), `cd frontend && npm run mutate` (Stryker; the modules it
-     covers are listed in `stryker.config.mjs`; incremental: it reuses the last run's results for unchanged code and
-     tests and still reports the whole score; `npm run mutate -- --force` re-runs everything, and resets a score that
-     looks too low: a reused result can go stale after a test file broke and was fixed, which only lowers the score), `frontend/node_modules/.bin/stryker run tools/stryker.config.mjs` from the repo root
-     (tools/). In Git Bash, append `/c/Windows/System32` to `PATH`
-     (`PATH="$PATH:/c/Windows/System32"`; prepending makes `bash` resolve to WSL) before `npm run mutate`, or Stryker crashes at exit looking for `taskkill` and leaves `.stryker-tmp` behind.
-   - lint + type check + build: `cd frontend && npx tsc --noEmit && npx eslint . && npx next build`; for Java, `./gradlew :backend:compileJava`
-     (javac is the type check).
-   - complexity check: no function over cyclomatic complexity 10, no file over 300 lines. Enforced by
-     `./gradlew :backend:checkstyleMain` (backend), ESLint `complexity`/`max-lines` (frontend; for tools/, from the repo root:
-     `frontend/node_modules/.bin/eslint --no-config-lookup --rule '{"complexity":["error",10],"max-lines":["error",300]}' "tools/**/*.mjs"`).
+   Mutation testing (PIT `./gradlew :backend:pitest -Ppitest.since=<commit>`, Stryker `cd frontend && npm run mutate`)
+   isn't run unless the user asks, so say so in the report; in Git Bash append `/c/Windows/System32` to `PATH` before
+   Stryker. **Checks on GitHub are paused, not gone:** label a pull request `ci` to run them there once, or set the
+   repository variable `CHECKS_ON_GITHUB` to `true`; while it is `true`, follow the GitHub wording in steps 6 and 7.
+   What each suite runs is in `tools/local-checks/` and `.github/workflows/ci.yml`. Any UI change needs a Playwright
+   scenario (`frontend/e2e/`), since there are no component tests. Complexity limits (cyclomatic 10, 300 lines a
+   file) are enforced by Checkstyle and ESLint.
 5. Respect module boundaries (see below). Do not add new dependencies without asking.
 6. End with a short report: what changed, the local checks' summary (each suite passed or failed, and the commit it
    marked; with GitHub checks on, the CI run's result and link instead), the individual tests you ran, and anything
@@ -84,47 +62,34 @@ so the checks must prove it is correct.
    focused commit per step with a message saying what changed and why. Work on a feature branch, never on main:
    push it, open a pull request (`gh pr create`), run the local checks on its latest commit (step 4), and merge it
    yourself (`gh pr merge --merge --delete-branch`, keeping the commits) only when that commit has a green "local
-   checks" mark (`gh pr checks` shows it; with GitHub checks on, wait for them with `gh pr checks --watch` instead).
-   If main moved since the checks ran, merge main into the branch, push, and run the checks again first: the local
-   checks test the branch as it is, so it must already contain the latest main. Keep few branches finishing at the
-   same time, since each merge sends the others round again and the PC runs one at a time. **Merging is the end: don't
-   deploy to production unless the user asks** ("cheap" mode, to save AWS and build costs; changes are tried on the
-   local app, so production runs behind main until a deploy). When asked, deploy with `node tools/local-deploy.mjs`
-   (from your worktree; `docs/acceptance/local-deploy.feature`). It deploys
-   the latest main to production from the PC's own copy of main, in the PC's turn, without re-running the checks;
-   skips a main that is already live (`--again` forces it); checks the site answers; and marks main's commit
-   "deploy production" on GitHub. It needs Docker Desktop running and the `polygossa` AWS sign-in (if it says the
-   sign-in expired, ask the user to run `aws login --profile polygossa`). A failed deploy is fixed forward on a new
-   branch. GitHub deploys only when asked: a hand-started `deploy_only` run, or every merge while the repository
-   variable `DEPLOY_ON_GITHUB` is `true`. If a check fails, fix it on the branch; never merge red. (`gh pr merge` can't merge a change to a workflow file without the CLI's `workflow` scope; merge locally with
-   `git merge --no-ff` and push instead, and GitHub marks the pull request merged.) "Green before merging" is our rule, not GitHub's: enforcing it (branch
-   protection) needs GitHub Pro or a public repository. Small commits make it easy to diff changes
-   over time and bisect to the commit that broke something. Don't batch unrelated work into one commit, and list the
-   commits in the final report.
+   checks" mark (`gh pr checks`). If main moved since the checks ran, merge main into the branch, push, and run the
+   checks again first. Keep few branches finishing at the same time, since each merge sends the others round again.
+   If a check fails, fix it on the branch; never merge red. (`gh pr merge` can't merge a change to a workflow file
+   without the CLI's `workflow` scope; merge locally with `git merge --no-ff` and push instead.) "Green before
+   merging" is our rule, not GitHub's (branch protection needs GitHub Pro). Don't batch unrelated work into one
+   commit, and list the commits in the final report.
+   **Merging is the end: don't deploy to production unless the user asks.** When asked, deploy with
+   `node tools/local-deploy.mjs` from your worktree: it deploys the latest main from the PC's copy, skips a main that
+   is already live (`--again` forces it), checks the site answers, and marks main's commit "deploy production". It
+   needs Docker Desktop running and the `polygossa` AWS sign-in. A failed deploy is fixed forward on a new branch.
+   GitHub deploys only when asked (a hand-started `deploy_only` run, or `DEPLOY_ON_GITHUB=true`).
 
 ### One worktree per session
 Several Claude sessions often work on this repository at once, and in one shared folder they switch branches under
-each other: commits land on the wrong branch and edits vanish. So **every session that changes files starts by moving
-into its own worktree** (the `EnterWorktree` tool; it makes `.claude/worktrees/<name>` on a new branch from
-`origin/main`) and works, commits and pushes only there. Never run `git switch`/`checkout`, `reset`, `rebase` or bare
-`git stash` in the main folder: it belongs to the user and the IntelliJ dev servers. **Always work from the latest
-main, including when only answering questions.** The main folder is often on an old branch, and its CLAUDE.md can be
-stale too. So a session's first step is a worktree, which starts from `origin/main`. Without one, run `git fetch` and
-read `origin/main` (`git show origin/main:<path>`, `git grep … origin/main`).
-**Delete your worktree when you are done:** as soon as its pull request is merged, or when the work is abandoned,
-remove it (`ExitWorktree` with remove, or `git worktree remove .claude/worktrees/<name>` from the main folder; never
-`--force` one that has uncommitted changes). Every leftover worktree keeps its own `node_modules`, build output and
-`.next`, which IntelliJ indexes: a dozen of them held gigabytes of RAM and kept the CPU busy. When tidying up others'
-worktrees, remove only those whose branch is merged into `origin/main` and whose session has ended (its lock names
-the session's pid); never one another live session is using.
+each other. So **every session that changes files starts by moving into its own worktree** (the `EnterWorktree`
+tool; it makes `.claude/worktrees/<name>` on a new branch from `origin/main`) and works, commits and pushes only
+there. Never run `git switch`/`checkout`, `reset`, `rebase` or bare `git stash` in the main folder: it belongs to the
+user and the IntelliJ dev servers. **Always work from the latest main, including when only answering questions**:
+without a worktree, `git fetch` and read `origin/main` (`git show origin/main:<path>`).
+**Delete your worktree when you are done** (merged or abandoned): `ExitWorktree` with remove, or
+`git worktree remove .claude/worktrees/<name>` from the main folder; never `--force` one with uncommitted changes.
+Leftover worktrees each keep `node_modules`, build output and `.next`, which IntelliJ indexes. When tidying up
+others' worktrees, remove only those whose branch is merged into `origin/main` and whose session has ended.
 - A new worktree has no `node_modules`: run `npm ci` in `frontend/` (and `infra/`) before using them there.
-- The dev OpenAI key file (`.idea/runConfigurations/Backend.xml`, see below) exists only in the main folder.
-- Worktrees don't share a build folder, but they share the machine: the heavy-run rule below still applies. A single
-  e2e spec starts the e2e servers on fixed ports (:3210 and :8210); if another session's are already there, set
-  `E2E_PORT`/`E2E_BACKEND_PORT` to other ports rather than reusing servers built from someone else's code.
-
-If a required check has no tooling (marked above), say so in the report. Adding that tooling is a new dependency, so
-ask first.
+- The dev OpenAI key file (`.idea/runConfigurations/Backend.xml`) exists only in the main folder; git is told to
+  ignore its changes (`--skip-worktree`): never stage it.
+- A single e2e spec starts servers on fixed ports (:3210 and :8210); if another session's are already there, set
+  `E2E_PORT`/`E2E_BACKEND_PORT` to other ports.
 
 ### Bug reports: reproduce in the browser first
 When I report a bug, reproduce it in a real browser before reading code for a fix: watch the behaviour yourself
@@ -132,261 +97,134 @@ When I report a bug, reproduce it in a real browser before reading code for a fi
 If it can't be reproduced, say so and ask instead of guessing. Pick the browser by what the bug depends on:
 - **Playwright driving installed Chrome** (default for playback, timing and interaction bugs): a Node script with
   `chromium.launch({ channel: "chrome", headless: false, args: ["--autoplay-policy=no-user-gesture-required"] })`
-  (require `playwright` from `frontend/node_modules`). Its tab is always visible, input is exact (hold a click for N ms,
-  repeat a run 20 times), and the repro turns straight into an e2e test. It signs in as `test@lector.local`, so
-  recreate the situation (import the video, open `?page=N` to resume partway) and delete what you create. Playwright's
-  bundled Chromium never plays YouTube; in installed Chrome, YouTube's own play button works but our Play button may
-  not start an unstarted video (autoplay policy for a fresh profile).
+  (require `playwright` from `frontend/node_modules`). Input is exact and the repro turns straight into an e2e test.
+  It signs in as `test@lector.local`, so recreate the situation and delete what you create. Playwright's bundled
+  Chromium never plays YouTube.
 - **Claude in Chrome extension** (my own browser): when the bug may depend on my account, data, extensions or Chrome
-  settings (e.g. Chrome's page translation breaking React), or when I want to watch. Its tab is hidden unless it's the
-  selected tab in a visible window (`document.visibilityState`), and Chrome won't start media in a hidden tab
-  (YouTube goes unstarted → buffering → unstarted, black frame). Raising the window from Windows doesn't help, since it
-  can't select the tab: ask me to click the tab.
+  settings, or when I want to watch. Chrome won't start media in a hidden tab, and only I can select the tab: ask me
+  to click it.
 
 ### Module boundaries
 - `frontend` ↔ `backend` only over HTTP. Browser code calls the backend only through `lib/api.ts` (the BFF);
   server-only code uses `lib/server-api.ts`. Never call the backend URL from the browser or expose the JWT to it.
-- Text is split into words only through `TokenizationService` (built-in for every language; it can call an external
-  CJK tokenizer service at `TOKENIZER_URL`, which the project no longer has, and must keep working when that is down).
-- Backend layering: controllers → services → repositories/entities. Controllers don't load texts from repositories
-  directly (use `TextService.loadReadable`/`loadOwned`); no package depends on a controller.
+- Text is split into words only through `TokenizationService`.
+- Backend layering: controllers → services → repositories/entities. Controllers load texts through
+  `TextService.loadReadable`/`loadOwned`, never a repository; no package depends on a controller.
 - External services (OpenAI, YouTube, Amazon Translate) only through `AiClient`, `YouTubeClient` and
-  `TranslationClient`.
+  `TranslationClient`, and every feature using one keeps working without it.
 
 ### AWS, GitHub and production
-**Production:** https://d3pd9mue4v7won.cloudfront.net (the `SiteUrl` output of the `PolygossaStaging` stack: it was
-built as staging and became production in October 2026; the stack keeps its name, since renaming a CloudFormation
-stack rebuilds everything). No real users yet. Sign-in through its Cognito user pool, no auto-login. Test accounts made there use
-`@example.com` addresses. **QA** is the local app; it signs in through a QA Cognito user pool (stack `PolygossaQa`) in the same
-AWS account, while its database stays in Docker. There is no cloud staging: treat main as releasable, since the next
-deploy (on request) ships everything merged so far.
+**Production:** https://d3pd9mue4v7won.cloudfront.net (the `SiteUrl` output of the `PolygossaStaging` stack; it was
+built as staging, and renaming a stack rebuilds everything). No real users yet. Test accounts made there use
+`@example.com` addresses. **QA** is the local app, signing in through the QA Cognito user pool (stack `PolygossaQa`).
+There is no cloud staging: treat main as releasable. What is live is the latest "deploy production" mark on main's
+commits.
 
-Setup and decisions: [production plan](docs/production.md). AWS is our own AWS Organization: a management account
-(`322126339607`; administration and billing, owned by the user) and a member account for the app, named
-**"dream it ship it"** (`788826923437`; production and the QA resources). Claude works only in the app account, so organization-level changes (the region policy, which allows
-`eu-west-1` plus the US regions AWS needs for global services and sign-in; new accounts; budgets) are the user's, in the
-management account (the app account's own monthly budget is in CDK). The user still has to turn on root MFA.
+AWS is our own Organization: a management account (`322126339607`, the user's: region policy, new accounts,
+organization budgets) and the app account **"dream it ship it"** (`788826923437`), the only one Claude works in.
 
-Tools on the dev machine (none of these are on PATH in every shell, so use the full paths):
-- **AWS CLI** `C:\Program Files\Amazon\AWSCLIV2\aws.exe`, profile `polygossa` (the app account "dream it ship it",
-  `788826923437`, default region `eu-west-1`). Sessions last 12 hours; when one expires, the user runs
-  `& "C:\Program Files\Amazon\AWSCLIV2\aws.exe" login --profile polygossa` in PowerShell (the `&` is needed) and signs
-  in through the browser, which uses whichever account the browser is in: pick **"dream it ship it"** there. If the CLI
-  asks to overwrite the profile with any other account ID (e.g. the management account `322126339607`), the answer
-  is **n**. Check with `aws sts get-caller-identity --profile polygossa` (should print `788826923437`). The **AWS Agent Toolkit** gives Claude the MCP server `aws-mcp` (started with `uvx`, from **uv**
-  in `~/.local/bin`) and AWS skills.
-- **GitHub CLI** `C:\Program Files\GitHub CLI\gh.exe`, signed in as the repository owner (`Blk836/polygossa`, private).
-  Read a failed CI run with `gh run view <id> --log-failed`; a job's log appears only once the job ends.
-- **AWS CDK** comes with `infra/` (`npx cdk diff|deploy`); deploying needs Docker running (it builds the images).
+Tools on the dev machine (not on PATH in every shell, so use the full paths):
+- **AWS CLI** `C:\Program Files\Amazon\AWSCLIV2\aws.exe`, profile `polygossa` (`788826923437`, `eu-west-1`).
+  Sessions last 12 hours; when one expires, the user runs
+  `& "C:\Program Files\Amazon\AWSCLIV2\aws.exe" login --profile polygossa` in PowerShell and picks
+  **"dream it ship it"** in the browser. If the CLI asks to overwrite the profile with any other account ID, the
+  answer is **n**. Check with `aws sts get-caller-identity --profile polygossa`. The **AWS Agent Toolkit** gives
+  Claude the MCP server `aws-mcp` (via `uvx` in `~/.local/bin`) and AWS skills.
+- **GitHub CLI** `C:\Program Files\GitHub CLI\gh.exe`, signed in as the owner (`Blk836/polygossa`, private).
+- **AWS CDK** comes with `infra/` (`npx cdk diff|deploy`); deploying needs Docker running.
 
-When production misbehaves: the services' logs are in CloudWatch (log groups for the backend and frontend, kept a
-month), the last deploy is the latest "deploy production" mark on main's commits on GitHub (or the `deploy production`
-job in GitHub Actions, when GitHub deployed), and the
-stack's state is in CloudFormation. Production is deliberately small until the beta: uploads live in an S3 bucket
-(`STORAGE_S3_BUCKET`; local runs and tests use the folder), AI is on (the OpenAI key is the Secrets Manager entry `polygossa/openai-api-key`), no Redis, a single-zone database.
-- Infrastructure is changed only through CDK (`infra/`), never by CLI or console commands. The CLI and MCP server are
-  for reading, investigating and previewing (`cdk diff`).
-- Production is deployed from the PC only when the user asks, by `node tools/local-deploy.mjs` (step 7; it deploys
-  the latest main, whose pull requests each had a green "local checks" mark), signed in with the `polygossa` profile.
-  What is live is the latest "deploy production" mark on main's commits, which may be behind main. GitHub's `deploy
-  production` job does the same when asked (a hand-started `deploy_only` run, or `DEPLOY_ON_GITHUB=true`),
-  signed in through GitHub's OIDC as the `polygossa-github-deploy` role (its ARN is the repository variable
-  `AWS_DEPLOY_ROLE_ARN`; `AWS_ACCOUNT_ID` lets CI's `cdk synth` run without AWS access). GitHub's OIDC subject names
-  the repository with immutable IDs (`repo:Blk836@15254657/polygossa@1405831822`, set in `infra/cdk.json`): the role
-  must trust that form, not `repo:Blk836/polygossa`. Run `cdk deploy` by hand only to bootstrap or to change the
-  deploy role itself (`PolygossaGitHubDeploy`), and always `cdk diff` first. `infra/cdk.context.json` caches lookups so synth needs no AWS
-  access: commit it.
-- Before AWS work, check for a relevant AWS skill and prefer it over general knowledge; verify AWS details (limits,
-  permissions, API parameters) against documentation instead of guessing.
-- Everything holding user data lives in `eu-west-1`. `us-east-1` is only for global services (CloudFront and its
-  certificates, WAF).
+Rules:
+- Infrastructure changes only through CDK (`infra/`), never by CLI or console. The CLI and MCP server are for
+  reading, investigating and previewing (`cdk diff`). Run `cdk deploy` by hand only to bootstrap or to change the
+  deploy role (`PolygossaGitHubDeploy`), always `cdk diff` first. Commit `infra/cdk.context.json`.
+- GitHub's OIDC subject names the repository with immutable IDs (set in `infra/cdk.json`): the deploy role must
+  trust that form, not `repo:Blk836/polygossa`.
+- Everything holding user data lives in `eu-west-1`; `us-east-1` only for global services (CloudFront, WAF).
+- Before AWS work, check for a relevant AWS skill; verify AWS details against documentation instead of guessing.
 - Never read secret values into the conversation: reference Secrets Manager entries by name.
+- When production misbehaves: CloudWatch logs (backend and frontend log groups), the last "deploy production" mark,
+  and the stack's state in CloudFormation.
 
 ## Running it
 
-The database is PostgreSQL in Docker everywhere, so **Docker Desktop must be running** (its CLI is in
-`~/AppData/Local/Programs/DockerDesktop/resources/bin`, which a shell opened before it was installed lacks on PATH).
-`bootRun` starts the dev database from `compose.dev.yml` (container `polygossa-dev-db` on :5432, data in the
-`polygossa-dev-db` volume) and leaves it running; `docker compose -f compose.dev.yml up -d` starts it by hand.
-Caching is in-memory.
+**Docker Desktop must be running** (PostgreSQL is in Docker everywhere; its CLI is in
+`~/AppData/Local/Programs/DockerDesktop/resources/bin`). `bootRun` starts the dev database from `compose.dev.yml`.
 
-In IntelliJ, run the shared **App** configuration (`.idea/runConfigurations/`): a compound of **Backend**
-(Gradle `:backend:bootRun`) and **Frontend** (`npm run dev` in `frontend/`), each in its own Run tab; stop them there.
-It also runs **Open browser** (`scripts/open-when-ready.ps1`), which opens http://localhost:3000 once both servers answer.
-Or from a terminal:
+In IntelliJ, run the shared **App** configuration (`.idea/runConfigurations/`): Backend (`:backend:bootRun`, :8080)
+and Frontend (`npm run dev`, :3000), each in its own Run tab, plus a browser opener. Or from a terminal:
 
 ```bash
-./gradlew :backend:bootRun                 # API on :8080 (needs JDK 21+)
+./gradlew :backend:bootRun                 # API on :8080
 cd frontend && npm install && npm run dev  # web app on :3000
 ```
 
-Gradle needs JDK 21+. The IntelliJ project SDK and Gradle JVM are the `openjdk-26` SDK (`~/.jdks/openjdk-26.0.1`).
-`java` isn't on PATH on the dev machine, so from a terminal set `JAVA_HOME` to that JDK first.
+`java` isn't on PATH: set `JAVA_HOME` to `~/.jdks/openjdk-26.0.1` (the IntelliJ SDK) first.
 
 **Claude managing the servers:** check what's listening before starting anything
 (`Get-NetTCPConnection -State Listen -LocalPort 8080,3000`). If the servers are already up (e.g. the user's IntelliJ
-run), reuse them. Otherwise start them with the commands above as background tasks, and stop them when done:
-stopping the task leaves the Java/Node processes it launched running, so stop those too and check the ports are free.
-Don't kill servers you didn't start without asking: they may be the user's IntelliJ run.
-**Exception: duplicates.** If you see more than one frontend (`next dev`/`next start`) or more than one backend
-(`bootRun`/the backend jar) running for this project, stop the extras: they overload the machine. Keep the one in use
-(the IntelliJ run on :3000/:8080, if there is one) and stop the others, e.g. a leftover `next start` on another port.
-The e2e suite's own servers (frontend on :3210, backend on :8210) are not duplicates while a Playwright run is using
-them.
+run), reuse them. Otherwise start them as background tasks, and stop them when done: stopping the task leaves the
+Java/Node processes running, so stop those too and check the ports are free. Don't kill servers you didn't start
+without asking. **Exception: duplicates.** More than one frontend or backend for this project overloads the machine:
+keep the one in use (the IntelliJ run, if there is one) and stop the others. The e2e servers (:3210, :8210) are not
+duplicates while a Playwright run uses them.
 
-**Heavy runs:** the machine has 16 GB, and IntelliJ, the dev servers and other Claude sessions take a good share.
-Whole suites (the backend suite's 4 JVMs, PIT, Stryker, the e2e suite) overloaded it and got killed when several ran
-at once, so they run only through `tools/local-checks.mjs` (step 4), which lets one run at a time across all sessions.
-Even a single backend test class shouldn't run while another Gradle test run uses this checkout: they share
-`backend/build/`, and result files vanish mid-run, failing tests that pass alone.
+**Heavy runs:** the machine has 16 GB, shared with IntelliJ, the dev servers and other sessions. Whole suites run
+only through `tools/local-checks.mjs`. Even a single backend test class shouldn't run while another Gradle test run
+uses the same checkout: they share `backend/build/`.
 
-**Login.** Local runs sign in through the **QA user pool** (stack `PolygossaQa`, separate from production's): its
-settings are the defaults of `next dev` (`frontend/.env.development`) and Gradle's `bootRun` (`backend/build.gradle.kts`),
-so the developer signs up there once with a real email. Setting `COGNITO_DOMAIN=` (frontend) and `COGNITO_ISSUER=`
-(backend) to empty goes back to the old **test-account auto-login**: with no session, `frontend/proxy.ts` calls
-`POST /api/auth/dev-login` and signs in as `test@lector.local` (Classroom plan, every feature unlocked) on every app
-page; `/`, `/login` and `/signup` still show to signed-out visitors. Backend tests and the browser tests never use a
-pool: they keep the app's own accounts and the auto-login (`AUTO_LOGIN=false`/`DEV_AUTO_LOGIN=false` turn it off).
-Production signs in only through Cognito (its own pool; the `prod` profile turns the app's own accounts and the
-auto-login endpoint off with `app.login.local-accounts` and `app.dev-auto-login` — keep it that way). Test accounts
-for checking production or QA by hand can be made with Cognito's admin API (`@example.com`, email marked verified,
-deleted afterwards).
-
-Six starter texts (one per language you can learn; Japanese, Chinese and Korean are paused) are seeded into the community library for onboarding (`SEED_SAMPLES=false`
-turns that off). No videos are seeded: videos come only from what is in the database.
+**Login.** Local runs sign in through the QA user pool; the developer signs up there once with a real email. Setting
+`COGNITO_DOMAIN=` (frontend) and `COGNITO_ISSUER=` (backend) to empty goes back to auto-login as
+`test@lector.local`. Backend and browser tests never use a pool. Production signs in only through Cognito: keep the
+`prod` profile turning off the app's own accounts and the auto-login. Test accounts for checking production or QA by
+hand are made with Cognito's admin API (`@example.com`, deleted afterwards).
 
 **Filling Explore with videos (`tools/import-videos.mjs`):** when asked to find content, search YouTube for videos
-actually *spoken* in the target language with captions in it (translated subtitles import fine but are the wrong
-language), write them to a list file (`<url> [language] [category]` per line), and run the tool against a backend
-started with `CURATOR_TOKEN` set. Use `--dry-run` first. Videos go into the community library: public, owned by the
-library account, one copy each, same AI review as the Library form. Re-running a list is safe; feed
-`<list>.retry.txt` back in for failures. Don't restart the user's IntelliJ backend to add the token, and never start a second
-backend for it: ask the user to restart theirs with the token. Details: [tools/README.md](tools/README.md).
-`ENFORCE_PLAN_LIMITS=false` turns off free-tier limits; plans can also be switched in **Settings**.
+actually *spoken* in the target language with captions in it (translated subtitles are the wrong language), write
+them to a list file, `--dry-run` first, then run against a backend started with `CURATOR_TOKEN` set. Don't restart
+the user's IntelliJ backend to add the token, and never start a second backend for it: ask the user to restart theirs.
+Details: [tools/README.md](tools/README.md).
 
-**Brand name:** the name people see (wordmark, page titles, starter-library owner, Anki exports, launcher windows) is
-`BRAND_NAME`, default Polygossa, read by the backend (`config/Brand`), frontend (`lib/brand.ts`, inlined at build time
-via `next.config.ts` — restart `npm run dev` after changing it). Never hard-code it: `app/branding.test.ts`
-fails on any copy outside `lib/brand.ts`. Internal identifiers (package `app.lector`, `lector_*` cookies, the `lector`
-database, `@lector.local` accounts, the Anki `lector` tag) are deliberately not tied to it.
-
-Optional:
-- **AI features** — set `OPENAI_API_KEY` (any OpenAI-compatible endpoint via `OPENAI_BASE_URL` / `OPENAI_MODEL`,
-  embeddings via `OPENAI_EMBEDDING_MODEL`). With a key, a background job tags and embeds public texts for Explore's
-  recommendations (`RECOMMEND_FEATURE_JOB=false` turns it off).
-- **Forum admins** — `FORUM_ADMINS` (comma-separated emails) post announcements and moderate; in development the
-  default is `test@lector.local`, in production nobody unless set.
-- **Bulk video import** — set `CURATOR_TOKEN` to switch on the curator endpoints used by `tools/import-videos.mjs`
-  (off when blank).
-- **Docker** (PostgreSQL + Redis + everything): `cp .env.example .env` (set `JWT_SECRET`), then
-  `docker compose up --build`. Uses the `prod` profile, so auto-login is off there.
+**Brand name:** never hard-code it; it is `BRAND_NAME` (`lib/brand.ts`, `config/Brand`), and `app/branding.test.ts`
+enforces that. Internal identifiers (`app.lector`, `lector_*` cookies, `@lector.local`) are deliberately not tied to it.
 
 ## Tests
 
-These are the whole suites `node tools/local-checks.mjs` runs (and CI, when asked). Never start them directly (step
-4); while working, run one test class or file at a time, e.g. `./gradlew :backend:test --tests app.lector.ToursApiTest`
-or `npx playwright test e2e/feature-tours.spec.ts` (each through `node tools/local-checks.mjs --run -- <command>`),
-or `npx vitest run lib/tours.test.ts`.
-
-```bash
-./gradlew :backend:test                                           # unit + MockMvc integration tests (Docker needed)
-cd frontend && npm test && npx tsc --noEmit && npx eslint . && npx next build
-cd frontend && npm run e2e   # Playwright (first time: npx playwright install chromium); ~4.5 min. Runs against a production build on :3210
-                             # (scripts/e2e-server.mjs: rebuilt only when sources change; a next dev on :3000 keeps running),
-                             # starts its own backend on :8210 (JAVA_HOME needed) with no OpenAI key, so tests never call
-                             # OpenAI, and its own PostgreSQL (bootTestRun: E2eApplication, a Testcontainers container
-                             # removed when it stops); the IntelliJ run on :8080 and the dev database are untouched.
-                             # E2E_BASE_URL=http://localhost:3000 points it at the dev server instead, for debugging.
-                             # On CI it runs in 2 shards (--shard=N/2) on the runner's preinstalled Chrome (channel "chrome"
-                             # when CI is set): installing Playwright's Chromium ran apt, whose mirror hung jobs.
-node --test "tools/**/*.test.mjs"                                  # tools/
-```
-
-Backend tests don't hit the network. Word lookups use Amazon Translate only in production (off everywhere else; tests
-use `TranslateStub`).
+While working, run one test class or file at a time through `node tools/local-checks.mjs --run -- <command>`, e.g.
+`./gradlew :backend:test --tests app.lector.ToursApiTest` or `npx playwright test e2e/feature-tours.spec.ts`;
+`npx vitest run lib/tours.test.ts` and `node --test tools/<file>.test.mjs` are light enough to run directly. Tests
+never hit the network or call OpenAI (stubs: `OpenAiStub`, `YouTubeStub`, `TranslateStub`).
 
 ## Backend conventions and gotchas (Spring Boot 4 / Jackson 3)
 - Jackson 3: `tools.jackson.databind.*` (`JsonNode.asString()`, not `asText()`), exceptions are unchecked.
   Annotations stay in `com.fasterxml.jackson.annotation`.
-- Absent primitive JSON fields would fail under Jackson 3; `application.yml` sets `fail-on-null-for-primitives: false`.
 - Starters are modular: `spring-boot-starter-webmvc`, and `spring-boot-starter-restclient` is needed for
   `RestClient.Builder`. Test annotations live in e.g. `org.springframework.boot.webmvc.test.autoconfigure`.
 - `AppProperties` nested records need `@DefaultValue` or they bind as null when absent from YAML.
-- Enums are lower-case in JSON (`@JsonValue`/`@JsonCreator`) and in query params (converters in `WebConfig`).
-- Errors: throw `ApiException` (`notFound`, `badRequest`, `upgradeRequired` → 402, …); `GlobalExceptionHandler`
-  maps them to `{code, message}`.
-- Library items have one `Category` (fixed list; `other` also covers rows from before categories existed).
+- Errors: throw `ApiException`; `GlobalExceptionHandler` maps them to `{code, message}`.
 - Deadlines use the injected `Clock` bean, never `Instant.now()`, so tests can move time.
-- Booting the app is most of a backend test run's cost, and Spring only reuses a booted app between classes with an
-  identical setup. So API tests use a shared setup: `@ApiTest`, `@ClockApiTest` (movable `TestClock`, reset before
-  each test) or `@YouTubeApiTest` (shared `YouTubeStub`; `reset()` it, never close it). Give a class its own
-  `@SpringBootTest`, `@DynamicPropertySource`, `@MockitoBean` or `@TestConfiguration` only when it needs settings or
-  beans the shared ones can't have, or when its results depend on everything in the database (the recommendation
-  tests rank every public text, so other classes' texts on a shared database break them). Test classes run in
-  parallel JVMs, so don't rely on run order.
-- Tests run on PostgreSQL: `TestDatabases` (test classpath, `META-INF/spring.factories`) starts one Testcontainers
-  PostgreSQL per test JVM and gives every booted app a new, empty database, overriding any configured URL. A class with
-  its own `@SpringBootTest` names its database with `test.database=<name>` (that also keeps its setup distinct).
-- AI: tests never call OpenAI; `OpenAiStub` (`writing/` test package) answers chat and `/embeddings` requests, including
-  slow, failing and malformed replies. The recommendation feature job never runs on its schedule in tests
-  (`src/test/resources/application.properties`); tests call `TextFeatureJob.runOnce()`. The dev OpenAI key lives only in
-  the working copy of `.idea/runConfigurations/Backend.xml`, which git is told to ignore
-  (`git update-index --skip-worktree`): never stage it.
-- Plan gating goes through `PlanService` (`require(user, Feature)`, `checkCanImportText`, `checkCanSaveWord`).
-- Text access: load via `TextService.loadReadable` / `loadOwned`, never the repository directly from controllers
-  (owner, public, or assigned-to-a-class rules).
-- **Every schema change is a Flyway migration**: a new `V<n>__<what it does>.sql` in
-  `backend/src/main/resources/db/migration`, applied once per database at startup. Hibernate only validates
-  (`ddl-auto: validate`), so an entity change without its migration fails startup and every backend test. Never edit
-  a migration that has run anywhere (Flyway refuses the changed checksum): fix forward with a new one. A new value in
-  an enum stored as text needs a migration updating that column's check constraint (`EnumColumnsMigratedTest`).
-  Name constraints the way PostgreSQL does (`<table>_<column>_key`/`_check`); V2 made every database agree.
-  `SchemaMigrationTest` boots the app on databases prepared in each state (`TestDatabases.newDatabase`).
-- A text's content, tokens, timings and cues live in `TextBody` (`text_bodies`), loaded lazily through `Text`'s getters;
-  `open-in-view` is off, so read or change them inside a transaction. Lists of cards (Library, Explore, playlists) must
-  never touch the body — card stats come from `Text.wordsJson` via `UniqueWordsCache`; `CardListsTest` enforces it.
-  Long transcripts made every list request read hundreds of MB before.
+- Plan gating goes through `PlanService`.
+- API tests share a booted app: use `@ApiTest`, `@ClockApiTest` or `@YouTubeApiTest`. Give a class its own
+  `@SpringBootTest`, `@DynamicPropertySource`, `@MockitoBean` or `@TestConfiguration` only when it needs settings the
+  shared ones can't have, or its results depend on everything in the database. Test classes run in parallel JVMs.
+- Every booted test app gets a new, empty PostgreSQL database (`TestDatabases`); a class with its own
+  `@SpringBootTest` names its database with `test.database=<name>`.
+- **Every schema change is a new Flyway migration** in `backend/src/main/resources/db/migration`. Hibernate only
+  validates, so an entity change without its migration fails every backend test. Never edit a migration that has
+  run anywhere: fix forward. A new value in an enum stored as text needs a migration updating its check constraint.
+- A text's body (`TextBody`) loads lazily and `open-in-view` is off: read or change it inside a transaction. Lists of
+  cards must never touch the body (`CardListsTest`).
 
 ## Frontend conventions
-- `frontend/` has its own `CLAUDE.md`/`AGENTS.md` (regenerated by `next dev`): **read the bundled docs in
-  `frontend/node_modules/next/dist/docs/` before using Next APIs** — `proxy.ts` replaces middleware, `params` and
-  `cookies()` are async, `PageProps<"/route">` / `RouteContext` are global types.
-- Browser code calls the BFF with `api()` from `lib/api.ts` (paths without the `/api/` prefix). The JWT lives in the
-  httpOnly `lector_token` cookie; `app/api/[...path]/route.ts` forwards to the backend. Server components use
-  `backendJson()` from `lib/server-api.ts`.
-- API response types are in `lib/types.ts`; keep them in sync with backend DTOs.
-- Theme colours are CSS variables in `app/globals.css`, each `light-dark(light, dark)` (`bg-paper`, `text-muted`,
-  `bg-accent` for actions, `text-rubric` for small brand highlights, `good`/`warn`/`bad` tones, word-status classes
-  `.w-new/.w-learning/.w-known/.w-ignored` (LingQ-style: new blue, learning yellow, known/ignored plain), `.cover-<category>` text covers). Dark mode follows the OS unless Settings sets
-  `<html data-theme>` (cookie `lector_theme`). Never use Tailwind's `dark:` variant or raw palette colours — a test
-  (`app/theme-palette.test.ts`) enforces that and WCAG AA contrast for every text/background token pair.
-- Lists follow the language picked in the top bar (`me.targetLanguage`): pass it with `withLanguage()` and key the page
-  body by it so filters reset when it changes.
-- Library and Explore share a card layout (cards / compact / list) from `useCardLayout()`, kept in the
-  `lector_card_layout` cookie like the theme; lay item grids out with `cardGridClass(layout)` and pass `layout` to
-  `TextCard` (`lib/card-layout.ts`).
-- E2E tests run as `test@lector.local` (auto-login) against the e2e backend's own database, which starts with only the
-  seeded starter texts: create any data a test needs through `page.request` and delete it afterwards, never rely on
-  what is already there. Other tests' data in that database shows up too (they run in parallel),
-  so scroll an element into view before measuring it rather than assuming where it sits. Never hard-code the port:
-  use `test.info().project.use.baseURL` for cookies and extra browser contexts. The suite runs on Playwright's default
-  3 workers: it is CPU-bound on the 6-core dev machine (IntelliJ alone was using about 2 cores), and 4–5 workers were no
-  faster and made timing-sensitive tests flaky. It went from 12 to 4.5 minutes by testing a production build instead
-  of next dev, and by fixing what the backend profile (JFR) showed: per-row projection proxies, a per-cue transcript
-  scan, and YouTube downloads repeated for every video import.
-- That test account normally has **no target language** and no interests. Never change them in a test: `PATCH /api/me`
-  can't clear the language again (null means no change) and other specs rely on it being unset. Stub those requests
-  in the browser instead (`page.route`, as in `e2e/progress-levels.spec.ts`).
+- **Read the bundled docs in `frontend/node_modules/next/dist/docs/` before using Next APIs** (`proxy.ts` replaces
+  middleware, `params` and `cookies()` are async).
+- Browser code calls the BFF with `api()` from `lib/api.ts`; server components use `backendJson()` from
+  `lib/server-api.ts`. API response types in `lib/types.ts` stay in sync with backend DTOs.
+- Colours only through the theme tokens in `app/globals.css`; never Tailwind's `dark:` variant or raw palette colours
+  (`app/theme-palette.test.ts`).
+- Lists follow the language picked in the top bar: pass it with `withLanguage()` and key the page body by it.
+- E2E tests run as `test@lector.local` against the e2e backend's own database, shared by parallel tests: create the
+  data a test needs through `page.request` and delete it afterwards, scroll an element into view before measuring it,
+  and use `test.info().project.use.baseURL` rather than a hard-coded port. Never change the test account's target
+  language or interests (they can't be cleared again): stub those requests with `page.route`.
 - The React lint rules forbid setting state synchronously in effects and calling `Date.now()` during render: fetch
-  inside the effect with `.then` and a `cancelled` flag, as in the existing pages.
-
-## Known limitations
-- Hosting is AWS, not the plan's original targets (Vercel, Railway/Render, Supabase): production is live,
-  sized small, with no real users yet (see "AWS, GitHub and production" and the [production plan](docs/production.md)).
-  `docker-compose.yml` still runs everything locally.
-- Japanese, Chinese and Korean are split by simple built-in rules (Chinese per character), with no readings or
-  dictionary forms: the Python tokenizer sidecar was removed unused.
-- YouTube captions come from YouTube's unofficial innertube player endpoint (there is no keyless official API), so
-  automatic caption import can break when YouTube changes it; imports then return 422 and ask for a subtitle file or
-  pasted transcript. Backend tests use a local stub (`YouTubeStub`), never the real site.
-- Billing: production uses Stripe (test mode until the beta; keys in Secrets Manager, prices and webhook from `tools/stripe-setup.mjs`). Local runs and tests have no Stripe keys, so `POST /api/me/plan` still switches plans directly there.
+  inside the effect with `.then` and a `cancelled` flag.
