@@ -26,6 +26,12 @@ Feature: Each page loads with its own outline
       | Classes     | Classes       | a list of classes                                                                            |
       | Import      | Import        | the import form                                                                              |
 
+  Scenario: While a page's own data loads, it keeps the outline instead of a spinner
+    Given the page has arrived but its content is still loading (cards, figures, threads, words, past tests, flashcard)
+    Then the outline's grey shapes stay where that content will appear
+    And no spinner replaces them
+    And on a reload, with nothing remembered, the same shapes show until the content arrives
+
   Scenario: Card outlines follow my chosen card layout
     Given I picked the "List" card layout
     When I open My library or Explore
