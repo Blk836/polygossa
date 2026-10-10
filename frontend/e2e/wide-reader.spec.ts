@@ -235,6 +235,19 @@ test.describe("video: beside the text, or a mini player", () => {
     expect((await box(dock(page))).x).toBeGreaterThanOrEqual(text.x + text.width);
   });
 
+  test("the mini player is 200 × 200 px, YouTube's minimum, and the video player fills it", async ({ page }) => {
+    await page.setViewportSize(DESKTOP);
+    created = await createVideo(page);
+    await openReader(page, `/read/${created.id}`);
+    await player(page).getByRole("button", { name: "Mini player" }).click();
+    await expect.poll(async () => (await box(dock(page))).width).toBe(200);
+    const mini = await box(dock(page));
+    expect(mini.height).toBe(200);
+    const frame = await box(dock(page).locator("iframe"));
+    expect({ width: frame.width, height: frame.height }).toEqual({ width: 200, height: 200 });
+    expect(await page.evaluate(() => (window as unknown as { __players: number }).__players)).toBe(1);
+  });
+
   test("the mini player is remembered, from the first paint of the next load", async ({ page }) => {
     await page.setViewportSize(DESKTOP);
     created = await createVideo(page);
