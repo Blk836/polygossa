@@ -42,7 +42,20 @@ public class SentenceMeaning {
     @Column(nullable = false)
     private Instant createdAt;
 
+    @Column(length = 20)
+    private String partOfSpeech;
+
+    @Column(length = 40)
+    private String form;
+
+    @Column(length = 40)
+    private String lemma;
+
     protected SentenceMeaning() {}
 
     public String getMeaning() { return meaning; }
+
+    public WordType getWordType() {
+        return partOfSpeech == null ? null : new WordType(partOfSpeech, form, lemma);
+    }
 }

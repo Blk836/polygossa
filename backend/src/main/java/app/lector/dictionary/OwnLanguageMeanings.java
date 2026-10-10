@@ -35,10 +35,11 @@ public class OwnLanguageMeanings {
     private WordLookup shared(Language language, NativeLanguage nativeLanguage, String key, String surface,
                               Optional<InContext> context) {
         List<String> shared = community.top(language, key, nativeLanguage);
-        Optional<String> inSentence = context.flatMap(c -> sentences.meaning(language, nativeLanguage, key, c));
+        Optional<SentenceMeanings.Found> inSentence =
+                context.flatMap(c -> sentences.meaning(language, nativeLanguage, key, c));
         if (inSentence.isPresent()) {
-            return new WordLookup(key, language.code(), firstThen(inSentence.get(), shared), nativeLanguage.code(),
-                    WordLookup.SENTENCE);
+            return new WordLookup(key, language.code(), firstThen(inSentence.get().meaning(), shared),
+                    nativeLanguage.code(), WordLookup.SENTENCE, inSentence.get().wordType());
         }
         if (!shared.isEmpty()) {
             return new WordLookup(key, language.code(), shared, nativeLanguage.code(), WordLookup.COMMUNITY);
@@ -51,7 +52,7 @@ public class OwnLanguageMeanings {
 
     private static WordLookup leadingWith(WordLookup found, String mine) {
         return new WordLookup(found.term(), found.language(), firstThen(mine, found.meanings()),
-                found.meaningLanguage(), found.source());
+                found.meaningLanguage(), found.source(), found.wordType());
     }
 
     private static List<String> firstThen(String first, List<String> others) {

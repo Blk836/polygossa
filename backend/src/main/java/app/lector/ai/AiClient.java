@@ -54,25 +54,29 @@ public class AiClient {
         return config.model();
     }
 
+    public String meaningModel() {
+        return config.meaningModel();
+    }
+
     public JsonNode completeJson(String system, String user) {
         return completeJson(system, user, DEFAULT_TEMPERATURE);
     }
 
     public JsonNode completeJson(String system, String user, double temperature) {
-        return complete(http, system, user, temperature);
+        return complete(http, config.model(), system, user, temperature);
     }
 
     public JsonNode quickJson(String system, String user) {
-        return complete(quick, system, user, 0);
+        return complete(quick, config.meaningModel(), system, user, 0);
     }
 
-    private JsonNode complete(RestClient client, String system, String user, double temperature) {
+    private JsonNode complete(RestClient client, String model, String system, String user, double temperature) {
         if (!enabled()) {
             throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "ai_disabled",
                     "AI features are not configured on this server (set OPENAI_API_KEY)");
         }
         Map<String, Object> request = Map.of(
-                "model", config.model(),
+                "model", model,
                 "temperature", temperature,
                 "response_format", Map.of("type", "json_object"),
                 "messages", List.of(
@@ -87,7 +91,7 @@ public class AiClient {
                     .body(JsonNode.class);
             String content = response == null ? null
                     : response.path("choices").path(0).path("message").path("content").asString(null);
-            log.info("AI call to {} used {} tokens", config.model(),
+            log.info("AI call to {} used {} tokens", model,
                     response == null ? "?" : response.path("usage").path("total_tokens").asString("?"));
             if (content == null) {
                 throw new ApiException(HttpStatus.BAD_GATEWAY, "ai_error", "The AI service returned no answer");

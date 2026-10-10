@@ -343,7 +343,8 @@ class SentenceMeaningApiTest {
     void aMeaningStoredUnderTheOldInstructionsIsAskedAgain() throws Exception {
         String word = fresh();
         String marked = "On dit tirer le <b>" + word + "</b> sous les pieds.";
-        sentenceMeanings.insertIfAbsent("FR", "EN", word, sha256(marked), "pull the rug", Instant.now());
+        sentenceMeanings.insertIfAbsent("FR", "EN", word, sha256(marked), "pull the rug", Instant.now(), null, null,
+                null);
         AI.reply(meaning("rug"));
         assertThat(meanings(lookup(word, "On dit tirer le ", " sous les pieds."))).containsExactly("rug");
         assertThat(AI.requests()).hasSize(1);
@@ -421,8 +422,8 @@ class SentenceMeaningApiTest {
         String word = fresh();
         AI.reply(meaning("rug"));
         lookup(word, "On dit tirer le ", ".");
-        assertThat(AI.requests().getFirst()).contains("\"partOfSpeech\"").contains("\"form\"").contains("\"lemma\"")
-                .contains("gpt-4.1-mini");
+        assertThat(AI.requests().getFirst()).contains("\\\"partOfSpeech\\\"").contains("\\\"form\\\"")
+                .contains("\\\"lemma\\\"").contains("\"model\":\"gpt-4.1-mini\"");
     }
 
     @Test
