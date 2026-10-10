@@ -17,6 +17,8 @@ Feature: Anki decks with many note types, and cloze cards
   Scenario Outline: A sensible word field is picked for each note type
     Given a note type with the fields <fields>
     Then its word field starts as <picked>
+    And a field named Word, Target Word, Target, Vocab, Vocabulary, Term, Expression or Front wins, in that order,
+      whatever its capitals; otherwise the first field
 
     Examples:
       | fields                              | picked                  |
@@ -27,8 +29,6 @@ Feature: Anki decks with many note types, and cloze cards
       | Picture, Vocab, Notes               | Vocab                   |
       | Text, Back Extra (a cloze type)     | Text, read as cloze     |
       | Image, Sound                        | Image (the first field) |
-    And a field named Word, Target Word, Target, Vocab, Vocabulary, Term, Expression or Front wins, in that order,
-      whatever its capitals; otherwise the first field
 
   Scenario: Skipping a note type
     When I choose "Skip these cards" as a note type's word field
