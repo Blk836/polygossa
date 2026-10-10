@@ -41,6 +41,7 @@ export interface Me {
   photoUrl: string | null;
   admin: boolean;
   tours: Tours;
+  ankiConnected: boolean;
 }
 
 export type Person = { id: number; displayName: string; photoUrl: string | null };

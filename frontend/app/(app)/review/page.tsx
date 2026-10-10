@@ -25,6 +25,17 @@ function CaughtUp({ ahead, onPractiseAhead }: { ahead: boolean; onPractiseAhead:
   );
 }
 
+function WordsInAnki({ count }: { count: number }) {
+  if (count <= 0) return null;
+  const one = count === 1;
+  return (
+    <p className="mb-4 text-sm text-muted" data-testid="words-in-anki">
+      {count} of your {one ? "words is" : "words are"} reviewed in Anki, so {one ? "it isn't" : "they aren't"} shown here.{" "}
+      <Link href="/settings/anki" className="underline">Anki settings</Link>
+    </p>
+  );
+}
+
 function ReviewSession() {
   const { me } = useMe();
   const language = me.targetLanguage ?? "";
@@ -39,7 +50,7 @@ function ReviewSession() {
         title="Review"
         subtitle={language ? `${languageName(language)} words due today` : "Words due today in all your languages"}
       />
-      {session.stats && <GoalBar stats={session.stats} />}
+      {session.stats && <><GoalBar stats={session.stats} /><WordsInAnki count={session.stats.wordsInAnki} /></>}
       <FailureNote error={session.error} />
       {loading && <SectionLoading label="cards">{!session.stats && <GoalBarBone />}<FlashcardBone /></SectionLoading>}
       {queue && !card && <CaughtUp ahead={ahead} onPractiseAhead={() => setAhead(true)} />}

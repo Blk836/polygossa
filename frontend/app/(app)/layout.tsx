@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
+import { AnkiAutoSync } from "@/components/anki-auto-sync";
 import { AppNav } from "@/components/app-nav";
 import { FeatureTour } from "@/components/feature-tour";
 import { MeProvider } from "@/components/me-context";
@@ -16,6 +17,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       <AppNav />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-6 md:pb-10">{children}</main>
       <FeatureTour />
+      <AnkiAutoSync />
     </MeProvider>
   );
 }

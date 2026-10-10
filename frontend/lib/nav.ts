@@ -69,6 +69,7 @@ export const SETTINGS_SECTIONS: NavSection[] = [
   { href: "/settings", label: "Profile" },
   { href: "/settings/appearance", label: "Appearance" },
   { href: "/settings/subscription", label: "Subscription" },
+  { href: "/settings/anki", label: "Anki" },
   { href: "/settings/privacy", label: "Privacy" },
 ];
 
