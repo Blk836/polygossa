@@ -12,7 +12,6 @@ import type { TextSummary } from "@/lib/types";
 import { CheckIcon, HeadphonesIcon, VideoIcon } from "./icons";
 import { LevelBadge } from "./ui";
 
-/** Per-layout sizes: the cover's first-letter glyph, its image `sizes` hint, and the card's title. */
 const COVER_LETTER: Record<CardLayout, string> = { cards: "text-6xl", compact: "text-4xl", list: "text-3xl" };
 const COVER_SIZES: Record<CardLayout, string> = {
   cards: "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw",
@@ -25,7 +24,6 @@ const TITLE: Record<CardLayout, string> = {
   list: "line-clamp-1 text-[15px]",
 };
 
-/** Video thumbnail, or for texts a ruled "page" in the category's tint with the title's first letter; reading progress along its bottom edge. */
 function Cover({ text, layout, href, onOpen, className = "" }: { text: TextSummary; layout: CardLayout; href: string; onOpen?: () => void; className?: string }) {
   const length = formatVideoLength(text.video?.durationSeconds);
   return (
@@ -50,10 +48,6 @@ function Cover({ text, layout, href, onOpen, className = "" }: { text: TextSumma
   );
 }
 
-/**
- * How far the viewer has read, like a video site's watched bar: a thin line along the cover's bottom edge (a sliver
- * once opened), or a "Finished" tag once the lesson was finished. Nothing for an item never opened.
- */
 function Progress({ text, layout }: { text: TextSummary; layout: CardLayout }) {
   const p = readingProgress(text.progress);
   if (!p) return null;
@@ -80,7 +74,6 @@ const BAND_TONES: Record<DifficultyBand, string> = {
   hard: "bg-bad-soft text-bad",
 };
 
-/** "7% new words · Stretch": the share in the reader's new-word blue, the band in its tone; counts on hover. */
 function DifficultyChip({ text }: { text: TextSummary }) {
   const d = difficulty(text.stats);
   if (!d) return null;
@@ -92,7 +85,6 @@ function DifficultyChip({ text }: { text: TextSummary }) {
   );
 }
 
-/** Category · length · audio, plus a "Shared" tag on the owner's public items. */
 function Meta({ text }: { text: TextSummary }) {
   return (
     <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide whitespace-nowrap text-muted uppercase">
@@ -115,7 +107,6 @@ function Title({ text, layout, href, onOpen }: { text: TextSummary; layout: Card
 
 const Owner = ({ text }: { text: TextSummary }) => <p className="-mt-1 truncate text-xs text-muted">by <Named name={text.owner.displayName} photoUrl={text.owner.photoUrl} /></p>;
 
-/** Why a recommended card is on its shelf ("96% known words"). */
 const ReasonLine = ({ reason }: { reason?: string }) =>
   reason ? <p data-testid="reason" className="truncate text-xs font-medium text-accent">{reason}</p> : null;
 
@@ -123,14 +114,10 @@ interface CardProps {
   text: TextSummary;
   actions?: ReactNode;
   showOwner?: boolean;
-  /** "cards" (default) and "compact" are tiles; "list" is a full-width row with a small thumbnail. */
   layout?: CardLayout;
   className?: string;
-  /** Where the cover and title lead; the reader by default. */
   href?: string;
-  /** A short line saying why the card is recommended. */
   reason?: string;
-  /** Called when the cover or title is followed (recommendation logging). */
   onOpen?: () => void;
 }
 
@@ -154,7 +141,6 @@ export function TextCard({ text, actions, showOwner, layout = "cards", className
   );
 }
 
-/** List layout: thumbnail, then title and progress; actions sit on the right, or wrap underneath on phones. */
 function TextRow({ text, actions, showOwner, className, href, reason, onOpen }: Omit<CardProps, "layout" | "href"> & { href: string }) {
   return (
     <article className={`group flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-line bg-card p-2 transition hover:border-accent/40 hover:shadow-sm sm:flex-nowrap sm:pr-3 ${className}`}>

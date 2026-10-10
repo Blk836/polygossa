@@ -6,7 +6,6 @@ import { Button, ErrorNote } from "../ui";
 import { api, errorMessage } from "@/lib/api";
 import type { Me } from "@/lib/types";
 
-/** Settings › Profile: replay the first-visit tours (lib/tours.ts), or turn them off. */
 export function ToursSection() {
   const { me, setMe } = useMe();
   const [replayed, setReplayed] = useState(false);

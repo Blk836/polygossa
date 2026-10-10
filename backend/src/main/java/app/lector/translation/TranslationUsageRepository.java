@@ -8,10 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface TranslationUsageRepository extends JpaRepository<TranslationUsage, String> {
 
-    /**
-     * Adds {@code characters} to the month's count if that keeps it within {@code cap}, in one statement so lookups at
-     * the same moment can't overshoot together. Returns 1 when added, 0 when the cap would be passed.
-     */
     @Modifying
     @Transactional
     @Query(value = """

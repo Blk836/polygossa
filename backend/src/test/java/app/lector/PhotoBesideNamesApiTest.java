@@ -13,10 +13,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Feature: Profile photo, "Photos next to people's names": every place the API names a person carries their photo
- * URL, or null when they have none.
- */
 @ApiTest
 class PhotoBesideNamesApiTest {
 
@@ -27,7 +23,6 @@ class PhotoBesideNamesApiTest {
     ObjectMapper json;
 
     TestApi api;
-    /** Ana has a photo, Ben has none. */
     String ana;
     String ben;
     String anaPhoto;

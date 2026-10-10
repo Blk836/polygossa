@@ -14,7 +14,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Characterization of the audio-sync endpoints on /api/texts/{id}. */
 @ApiTest
 class AudioSyncApiTest {
 

@@ -12,7 +12,6 @@ public interface AiUsageRepository extends JpaRepository<AiUsage, Long> {
 
     Optional<AiUsage> findByUserIdAndDay(Long userId, LocalDate day);
 
-    /** Adds one call to an existing row; returns how many rows changed (0 when the day has no row yet). */
     @Modifying
     @Transactional
     @Query("update AiUsage u set u.calls = u.calls + 1 where u.userId = :userId and u.day = :day")

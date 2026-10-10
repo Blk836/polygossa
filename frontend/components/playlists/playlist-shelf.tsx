@@ -15,7 +15,6 @@ const SOURCES = {
   shared: { title: "Playlists", blurb: "Collections other learners put together and shared." },
 } as const;
 
-/** Yours: the ones you made, then the ones you saved (each once); shared: everyone's, or those matching a search. */
 export function loadPlaylists(source: keyof typeof SOURCES, language: string, query = ""): Promise<PlaylistSummary[]> {
   if (source === "yours") {
     return Promise.all([api<PlaylistSummary[]>(withLanguage("playlists", language)), api<PlaylistSummary[]>(withLanguage("playlists/saved", language))])
@@ -24,32 +23,22 @@ export function loadPlaylists(source: keyof typeof SOURCES, language: string, qu
   return api<PlaylistSummary[]>(withLanguage(query ? `playlists/shared?q=${encodeURIComponent(query)}` : "playlists/shared", language));
 }
 
-/** Among yours, Save shows on playlists someone else made, and on your own that you saved (so they can be unsaved). */
 export function saveable(p: PlaylistSummary): boolean {
   return !p.mine || p.bookmarked;
 }
 
 type ShelfSource = keyof typeof SOURCES;
 
-/**
- * A playlist shelf's playlists (those with items), remembered per source, language and search. `ready` once they
- * answered or failed: the shelf is extra, so a failure just leaves it out.
- */
 export function useShelfPlaylists(source: ShelfSource, language: string, query = "") {
   const { data, error } = useRemembered(`playlists:${source}:${language}:${query}`, () => loadPlaylists(source, language, query));
   return { lists: (data ?? []).filter((p) => p.itemCount > 0), ready: data !== null || error !== null };
 }
 
-/**
- * A sideways-scrolling row of playlist cards (yours, or shared ones, optionally matching a search) in the top bar's
- * language, sized like the text cards around it. Hidden while loading and when there are none.
- */
 export function PlaylistShelf({ source, language, query = "" }: { source: ShelfSource; language: string; query?: string }) {
   const { lists } = useShelfPlaylists(source, language, query);
   return <PlaylistShelfRow source={source} query={query} lists={lists} />;
 }
 
-/** The shelf for playlists already loaded (see useShelfPlaylists); nothing when there are none. */
 export function PlaylistShelfRow({ source, query = "", lists }: { source: ShelfSource; query?: string; lists: PlaylistSummary[] }) {
   const { layout } = useCardLayout();
   const { blurb } = SOURCES[source];

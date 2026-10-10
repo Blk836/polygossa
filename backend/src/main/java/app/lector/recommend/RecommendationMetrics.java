@@ -19,19 +19,12 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Whether recommendations work, across all learners: per shelf, how often shown items are opened and how far opened
- * items are read; and how fast learners who use Explore's recommendations a lot learn words, against the rest.
- * Only aggregates, and a group's growth is left out below {@link #MIN_GROUP} learners.
- */
 @Service
 public class RecommendationMetrics {
 
     static final int MIN_GROUP = 5;
-    /** Opens in the window that make a learner a heavy user of recommendations. */
     static final int HEAVY_OPENS = 5;
 
-    /** readHalf and finished are shares of the distinct items opened (null when none were). */
     @JsonInclude(JsonInclude.Include.ALWAYS)
     public record ShelfMetrics(ShelfId shelf, long impressions, long opens, double clickThrough, long opened,
                                Double readHalf, Double finished) {}
@@ -86,7 +79,6 @@ public class RecommendationMetrics {
         return out;
     }
 
-    /** Progress of each (learner, text) opened, keyed "user:text". */
     private Map<String, ReadingProgress> reached(List<Opened> opened) {
         if (opened.isEmpty()) {
             return Map.of();
@@ -111,7 +103,6 @@ public class RecommendationMetrics {
         return whole == 0 ? null : (double) part / whole;
     }
 
-    /** Known words gained per week by active learners, split by how much they open recommendations. */
     private Growth growth(Instant since, int days) {
         Map<Long, Long> opens = events.opensByUser(since).stream()
                 .collect(Collectors.toMap(RecommendationEventRepository.UserCount::getUserId,

@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-/** Recognising profile photos by their first bytes. */
 class PhotoTypeTest {
 
     @Test

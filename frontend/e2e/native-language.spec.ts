@@ -1,12 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-// docs/acceptance/native-language.feature: the setting. Meanings in it in the word popup: word-translations.spec.ts.
-
 test("Settings › Profile picks a native language, saved with the profile", async ({ page }) => {
-  await page.goto("/library"); // signs in (a first visit lands on the library)
+  await page.goto("/library");
   const me = await (await page.request.get("/api/me")).json();
   let sent: Record<string, unknown> | null = null;
-  // Answered in the browser: the shared test account's settings must not change under other specs.
   await page.route("**/api/me", (route) => {
     if (route.request().method() !== "PATCH") return route.continue();
     sent = route.request().postDataJSON();

@@ -32,7 +32,6 @@ const ICONS: Record<NavGroup["key"], ComponentType<SVGProps<SVGSVGElement>>> = {
   forum: ChatIcon,
 };
 
-/** A tab's label, plus the due-cards badge on Practice (the link's aria-label, from tabName, reads the count out). */
 function TabLabel({ group, due }: { group: NavGroup; due: number | null }) {
   const badge = group.key === "practice" && due !== null ? dueBadge(due) : null;
   return (
@@ -47,7 +46,6 @@ function TabLabel({ group, due }: { group: NavGroup; due: number | null }) {
   );
 }
 
-/** A strip of sub-tabs under the header, the current one underlined. */
 function SubTabs({ label, sections, current }: { label: string; sections: NavSection[]; current: NavSection }) {
   return (
     <nav aria-label={label} className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4">
@@ -71,10 +69,6 @@ function SubTabs({ label, sections, current }: { label: string; sections: NavSec
   );
 }
 
-/**
- * Sub-tabs for the current page: the tab's pages (Library: Explore, My library; Practice: Review, Words,
- * Write), or Settings' (Profile, Appearance, Subscription).
- */
 function SectionTabs({ pathname }: { pathname: string }) {
   const section = activeSection(pathname);
   const group = activeGroup(pathname);
@@ -88,8 +82,6 @@ export function AppNav() {
   const pathname = usePathname();
   const { me } = useMe();
   const language = me.targetLanguage ?? "";
-  // Fetched again on every page change, and whenever the account is refreshed (after saving a word, turning a page
-  // that marks words known, finishing a lesson), so the counts follow reading without leaving the page.
   const due = useDueCount(language, pathname, me);
   const stats = useHeaderStats(language, pathname, me);
   const active = activeGroup(pathname);
@@ -123,7 +115,6 @@ export function AppNav() {
         <SectionTabs pathname={pathname} />
       </header>
 
-      {/* Phone tab bar */}
       <nav
         className="safe-bottom fixed inset-x-0 bottom-0 z-30 flex border-t border-line bg-paper/95 pt-1.5 backdrop-blur md:hidden"
         aria-label="Main"

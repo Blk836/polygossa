@@ -6,7 +6,6 @@ import { makeCopier } from "./copy.mjs";
 const entry = { line: 1, url: "https://youtu.be/AAAAAAAAAAA", language: "fr", category: null };
 const video = { videoId: "AAAAAAAAAAA", language: "fr", title: "Le marché", content: "Bonjour." };
 
-/** Source and target stand-ins recording what they were asked. */
 function world({ exported = { video }, copied = { outcome: "imported", reason: "learners", title: "Le marché" } } = {}) {
   const calls = [];
   const source = { exportVideo: async (e) => { calls.push(["export", e.url]); return exported; } };

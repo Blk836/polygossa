@@ -21,7 +21,6 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** A learner's vocabulary map: the blueprint filled with one language's list and the learner's status for each word. */
 @Service
 public class VocabMapService {
 
@@ -31,10 +30,6 @@ public class VocabMapService {
 
     public record RegionDto(String id, String name, List<AreaDto> areas) {}
 
-    /**
-     * {@code available} is false for a language with no list yet (then nothing else is filled in). Meanings are in
-     * {@code meaningLanguage}, the learner's native language; a word has none when the list doesn't cover it.
-     */
     public record VocabMap(Language language, boolean available, String readingLevel, List<String> bands,
                            NativeLanguage meaningLanguage, int beyondCore, List<RegionDto> regions) {}
 
@@ -88,7 +83,6 @@ public class VocabMapService {
                 .map(w -> word(w, entries, nativeLanguage)).toList());
     }
 
-    /** The word's best status over its forms (known, then learning, then ignored) and the meaning to show. */
     private static WordDto word(MapWord word, Map<String, TermEntry> entries, NativeLanguage nativeLanguage) {
         WordStatus best = null;
         String own = null;

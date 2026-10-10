@@ -1,4 +1,3 @@
-// docs/acceptance/staging.feature, "Only main can deploy": the deploy role's trust, synthesized without AWS access.
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import * as cdk from "aws-cdk-lib";
@@ -21,7 +20,6 @@ describe("GitHub deploy role", () => {
     assert.deepEqual(statement.Condition, {
       StringEquals: {
         "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-        // GitHub's subject names the owner and repository with their immutable IDs (owner@id/name@id).
         "token.actions.githubusercontent.com:sub": "repo:Owner@1/repo@2:ref:refs/heads/main",
       },
     });

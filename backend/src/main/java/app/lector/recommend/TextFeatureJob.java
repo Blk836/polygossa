@@ -17,11 +17,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/**
- * Tags and embeds public texts in the background, once each: new imports and the backlog alike, a batch per run.
- * Only public texts are sent. A failure is counted and retried after 2, 4, 8 … minutes (at most a day); a text
- * embedded with another model is embedded again. Uses no one's daily AI allowance, and does nothing without a key.
- */
 @Component
 public class TextFeatureJob {
 
@@ -57,7 +52,6 @@ public class TextFeatureJob {
         }
     }
 
-    /** Processes one batch; returns how many texts it looked at. */
     public int runOnce() {
         if (!ai.enabled()) {
             return 0;
@@ -116,7 +110,6 @@ public class TextFeatureJob {
         }
     }
 
-    /** 2^attempts minutes, at most a day. */
     static Duration backoff(int attempts) {
         return Duration.ofMinutes(Math.min(1L << Math.min(attempts, 20), MAX_BACKOFF_MINUTES));
     }

@@ -16,9 +16,6 @@ import {
   type Created,
 } from "./reader-helpers";
 
-// The reader's controls, the same for texts, audio texts and videos: settings, shortcuts, the shared player bar and
-// "turning the page marks new words known". Videos: reader-video.spec.ts.
-
 let created: Created | null = null;
 
 test.afterEach(async ({ page }) => {
@@ -101,24 +98,24 @@ test.describe("reader settings", () => {
 });
 
 test.describe("turning the page marks new words known", () => {
-  test.use({ viewport: TALL }); // 250-word pages
+  test.use({ viewport: TALL });
   const markKnown = (page: Page) =>
     page.waitForResponse((r) => r.url().includes("/mark-known") && r.request().method() === "POST");
 
   test("the page's new words become known; words with a status and other pages are untouched", async ({ page }) => {
     created = await createText(page);
     await openReader(page, `/read/${created.id}`);
-    await wordAt(page, 5).click(); // saved as learning
+    await wordAt(page, 5).click();
     await page.keyboard.press("Escape");
     await expect(wordAt(page, 5)).toHaveClass(/w-learning/);
-    const distinct = PAGE - PAGE / PER_SENTENCE + 1; // 226 distinct words on page 1
+    const distinct = PAGE - PAGE / PER_SENTENCE + 1;
     await expect(bottomPager(page)).toContainText(`Turning the page marks the ${distinct - 1} new words on this page as known.`);
 
     const saved = markKnown(page);
     await bottomPager(page).getByRole("button", { name: "Next page" }).click();
     expect((await saved).ok()).toBe(true);
     await expect(pager(page)).toContainText("Page 2 of 4");
-    await expect(wordAt(page, PAGE)).toHaveClass(/w-known/); // the repeated word was on page 1 too
+    await expect(wordAt(page, PAGE)).toHaveClass(/w-known/);
     await expect(wordAt(page, PAGE + 1)).not.toHaveClass(/w-known/);
     const unique = 1000 - 1000 / PER_SENTENCE + 1;
     await expect(page.getByText(`${unique - 1 - (distinct - 1)} new · 1 learning`)).toBeVisible();
@@ -194,7 +191,7 @@ test.describe("the shared player bar", () => {
     created = await createText(page, words);
     await addSyncedAudio(page, created.id);
     await openReader(page, `/read/${created.id}`);
-    await expect(player(page)).toContainText("1:00"); // metadata loaded
+    await expect(player(page)).toContainText("1:00");
   }
 
   test("audio texts get the full set of controls", async ({ page }) => {
@@ -208,7 +205,6 @@ test.describe("the shared player bar", () => {
   });
 
   test("[ ] and R step between sentences and replay", async ({ page }) => {
-    // Stepping plays on from the sentence: 40 words over the minute keep each word spoken for 1.5s while it's checked.
     await openWithAudio(page, 40);
     await page.keyboard.press("]");
     await expect(wordAt(page, PER_SENTENCE)).toHaveClass(/w-speaking/);

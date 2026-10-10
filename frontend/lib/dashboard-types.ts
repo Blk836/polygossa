@@ -1,4 +1,3 @@
-// Response types for GET /api/dashboard (the Progress page), kept in sync with DashboardController and ActivityTally.
 import type { StatsPeriodKey } from "./progress";
 import type { LanguageCode, ReviewStats } from "./types";
 
@@ -26,10 +25,8 @@ export interface Dashboard {
   goal: GoalToday;
 }
 
-/** What a daily goal measures. */
 export type GoalKind = "reviews" | "words_read" | "minutes_read" | "minutes_listened";
 
-/** Today's daily goal (also in GET /api/dashboard/header). */
 export interface GoalToday {
   kind: GoalKind;
   target: number;
@@ -37,7 +34,6 @@ export interface GoalToday {
   met: boolean;
 }
 
-/** Totals for the chosen window (GET /api/dashboard?period=…) and the same length of time before it (none for all time). */
 export interface PeriodStats {
   period: StatsPeriodKey;
   days: number;
@@ -45,7 +41,6 @@ export interface PeriodStats {
   previous: ActivityPeriod | null;
 }
 
-/** One day of practice (in the user's time zone). A day is active with a minute of reading or any word, review or test. */
 export interface ActivityDay {
   day: string;
   readingSeconds: number;
@@ -56,7 +51,6 @@ export interface ActivityDay {
   wordsRead: number;
   listenedSeconds: number;
   active: boolean;
-  /** Whether the day reached the daily goal (as the goal is now). */
   goalMet: boolean;
 }
 
@@ -76,7 +70,6 @@ export interface ActivityPeriod {
   activeDays: number;
 }
 
-/** The daily streak, the last 84 days (oldest first) and this week (last 7 days) against the 7 before. */
 export interface Activity {
   streak: Streak;
   days: ActivityDay[];

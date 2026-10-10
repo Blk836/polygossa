@@ -19,11 +19,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Feature: putting curated videos into a community-library playlist (docs/acceptance/copy-playlist.feature), the
- * backend side. Library videos come in through the copy endpoint, so YouTube isn't involved. Each test uses its own
- * videos and playlist title, since other classes on this shared app use the library account too.
- */
 @YouTubeApiTest
 class CuratedPlaylistApiTest {
 
@@ -58,10 +53,6 @@ class CuratedPlaylistApiTest {
         api = new TestApi(mvc, json);
     }
 
-    /**
-     * Other classes on this shared app delete the library's videos before each test, which a playlist still holding
-     * them would block: leave no library playlist behind.
-     */
     @AfterEach
     void removeLibraryPlaylists() {
         library.find().ifPresent(owner -> tx.executeWithoutResult(s -> {
@@ -75,7 +66,6 @@ class CuratedPlaylistApiTest {
         }));
     }
 
-    /** Puts a French video into the library (through the copy endpoint) and returns its text id. */
     private long libraryVideo(String id, String title) throws Exception {
         String body = "{\"videoId\":\"" + id + "\",\"language\":\"fr\",\"title\":\"" + title + "\",\"category\":\"learners\","
                 + "\"durationSeconds\":30,\"content\":\"Bonjour à tous.\"}";
@@ -100,7 +90,6 @@ class CuratedPlaylistApiTest {
                 + ",\"videoIds\":[" + ids + "],\"dryRun\":" + dryRun + "}";
     }
 
-    /** The playlist as a learner sees it. */
     private JsonNode detail(long id) throws Exception {
         return api.get(api.signup(), "/api/playlists/" + id, 200);
     }
@@ -108,8 +97,6 @@ class CuratedPlaylistApiTest {
     private static List<Long> itemIds(JsonNode detail) {
         return detail.get("items").valueStream().map(i -> i.get("id").asLong()).toList();
     }
-
-    // ---- making the playlist ----
 
     @Test
     void aListBecomesAPublicLibraryPlaylistInListOrder() throws Exception {
@@ -158,8 +145,6 @@ class CuratedPlaylistApiTest {
         assertThat(r.get("code").asString()).isEqualTo("no_videos");
     }
 
-    // ---- running it again ----
-
     @Test
     void runningItAgainUpdatesTheSamePlaylistAndKeepsItsSaves() throws Exception {
         long a = libraryVideo("PLAGAINAAAA", "A");
@@ -193,8 +178,6 @@ class CuratedPlaylistApiTest {
         assertThat(playlist(TOKEN, dry, 200).get("outcome").asString()).isEqualTo("would_update");
     }
 
-    // ---- refused ----
-
     @Test
     void noVideosInTheLibraryMeansNoPlaylist() throws Exception {
         JsonNode r = playlist(TOKEN, body("Empty series", null, "fr", List.of("PLNONEAAAAA"), false), 422);
@@ -212,7 +195,6 @@ class CuratedPlaylistApiTest {
         playlist(TOKEN, body("Bad series", "D".repeat(2001), "fr", videos, false), 400);
         playlist(TOKEN, body("Bad series", null, "xx", videos, false), 400);
         playlist(TOKEN, body("Bad series", null, null, videos, false), 400);
-        // Nothing was made: the first real request creates it.
         assertThat(playlist(TOKEN, body("Bad series", null, "fr", videos, false), 201).get("outcome").asString())
                 .isEqualTo("created");
     }

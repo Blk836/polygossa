@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import tools.jackson.databind.json.JsonMapper;
 
-/** native-language.feature: AI definitions, examples and translations answer in the learner's native language. */
 class AiTutorLanguageTest {
 
     private final AiClient ai = mock(AiClient.class);

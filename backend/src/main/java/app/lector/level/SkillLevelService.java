@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Gathers a learner's evidence in one language and applies {@link SkillLevels} to it. */
 @Service
 public class SkillLevelService {
 

@@ -4,7 +4,6 @@ import app.lector.common.ApiException;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Locale;
 
-/** The forum's fixed categories. Only admins start announcements. */
 public enum ForumCategory {
     ANNOUNCEMENTS, BUGS, IDEAS, GENERAL;
 
@@ -13,7 +12,6 @@ public enum ForumCategory {
         return name().toLowerCase(Locale.ROOT);
     }
 
-    /** A category from its code; 400 for anything else. */
     public static ForumCategory parse(String code) {
         for (ForumCategory c : values()) {
             if (c.code().equals(code)) {

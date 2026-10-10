@@ -1,15 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// Playlist cards: one card-sized tile drawn as a fanned deck of its first episodes and labelled "Playlist"; clicking
-// it opens a side pane with a scrollable list of every episode. Data is created through the API and deleted after.
-
 let textIds: number[] = [];
 let playlistIds: number[] = [];
 let tag = "";
 let language = "es";
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("/library"); // signs in (auto-login) and sets the session cookie used by page.request
+  await page.goto("/library");
   language = (await (await page.request.get("/api/me")).json()).targetLanguage ?? "es";
   tag = `pc${Math.floor(Math.random() * 1e9).toString(36)}`;
 });
@@ -31,7 +28,6 @@ async function createText(page: Page, name: string): Promise<number> {
   return id;
 }
 
-/** A playlist of `count` episodes ("Episode 1" … ), optionally shared. */
 async function createPlaylist(page: Page, count: number, isPublic = false): Promise<{ id: number; items: number[] }> {
   const res = await page.request.post("/api/playlists", { data: { title: `Podcast ${tag}`, language } });
   const id = (await res.json()).id as number;
@@ -57,7 +53,6 @@ test("a playlist card is labelled as a playlist and shows its first episodes as 
   await expect(card).toContainText("4 items");
   const covers = card.getByTestId("deck-card");
   await expect(covers).toHaveCount(3);
-  // Drawn back first, so the first episode is the last card and sits on top, straight.
   await expect(covers.nth(2)).toHaveAttribute("title", `Episode 1 ${tag}`);
   await expect(covers.nth(0)).toHaveAttribute("title", `Episode 3 ${tag}`);
   const transforms = await covers.evaluateAll((els) => els.map((el) => getComputedStyle(el).transform));
@@ -87,7 +82,6 @@ test("clicking a playlist opens a pane with a scrollable list of every episode",
   await page.goto("/playlists");
   await playlistCard(page).getByRole("button", { name: `Podcast ${tag}` }).click();
   await expect(pane(page)).toBeVisible();
-  // A popup in the middle of the page, not a side panel: centred both ways, with room around it.
   const box = (await pane(page).boundingBox())!;
   expect(Math.abs(box.x + box.width / 2 - 640)).toBeLessThan(2);
   expect(Math.abs(box.y + box.height / 2 - 350)).toBeLessThan(2);

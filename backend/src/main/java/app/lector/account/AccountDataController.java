@@ -19,12 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The account's own data (docs/acceptance/gdpr.feature): download all of it, or delete the account. */
 @RestController
 @RequestMapping("/api/me")
 public class AccountDataController {
 
-    /** The account's email, typed again to confirm. */
     public record DeleteRequest(String confirmEmail) {}
 
     private final CurrentUser currentUser;

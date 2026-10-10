@@ -5,7 +5,6 @@ import type { VocabularyEntry } from "@/lib/types";
 import { Button, inputClass } from "../ui";
 import { parseTags } from "./search";
 
-/** The learner's own note and tags on a word: shown under its definition, edited in place; a tag filters the list. */
 export function WordNotes({ entry, onSave, onTag }: {
   entry: VocabularyEntry;
   onSave: (body: { note: string; tags: string[] }) => Promise<boolean>;

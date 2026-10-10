@@ -9,7 +9,6 @@ function mockFetch(status: number, body: string) {
 
 afterEach(() => vi.unstubAllGlobals());
 
-/** The ApiError a call rejects with. */
 async function failure(promise: Promise<unknown>): Promise<ApiError> {
   const err = await promise.then(
     () => null,

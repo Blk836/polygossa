@@ -21,16 +21,10 @@ interface Props {
   stats: ReaderStats;
   settings: ReaderSettings;
   onSettings: (change: Partial<ReaderSettings>) => void;
-  /** Null hides the audio button (no audio and not the owner). */
   audio: { open: boolean; exists: boolean; toggle: () => void } | null;
-  /** Whether playback shortcuts apply (audio or video). */
   media: boolean;
 }
 
-/**
- * A slim header, so most of the screen is text: the way back, the title with the reader's tools beside it, and one
- * line of details with how many of the words the learner knows (the same for every kind of lesson).
- */
 export function ReaderHeader({ text, playlist, stats, settings, onSettings, audio, media }: Props) {
   return (
     <div className="mb-5">
@@ -67,7 +61,6 @@ export function ReaderHeader({ text, playlist, stats, settings, onSettings, audi
   );
 }
 
-/** "You know 12% of the words", a known/learning bar, and the new and learning counts. */
 function KnownLine({ stats }: { stats: ReaderStats }) {
   return (
     <div data-testid="reader-known" className="flex w-full items-center gap-3 sm:ml-auto sm:w-auto">
@@ -80,7 +73,6 @@ function KnownLine({ stats }: { stats: ReaderStats }) {
   );
 }
 
-/** Opened from a playlist: its name (back to it), this item's place in it, and the items either side. */
 function PlaylistStrip({ playlist }: { playlist: ReaderPlaylist }) {
   const link = "rounded-md px-2 py-0.5 hover:bg-paper hover:text-ink";
   return (

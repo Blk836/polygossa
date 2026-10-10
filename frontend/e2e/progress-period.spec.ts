@@ -1,8 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// The Progress page's period picker: the stats card (words learned, minutes read, days practised) and the growth
-// curve cover the last week (default), month, quarter, year or all time.
-
 let savedWord: number | null = null;
 
 test.afterEach(async ({ page }) => {
@@ -10,7 +7,6 @@ test.afterEach(async ({ page }) => {
   savedWord = null;
 });
 
-/** Opens Progress with a word known today (so there is a growth curve), recording which periods were asked for. */
 async function openProgress(page: Page) {
   await page.goto("/library");
   const me = await (await page.request.get("/api/me")).json();
@@ -26,7 +22,6 @@ async function openProgress(page: Page) {
   return asked;
 }
 
-/** The periods asked for, in order. Dev mode's Strict Mode runs each effect twice, so one choice can ask twice in a row. */
 const distinct = (asked: string[]) => asked.filter((p, i) => p !== asked[i - 1]);
 
 const picker = (page: Page) => page.getByRole("combobox", { name: "Period" });
@@ -59,7 +54,7 @@ test("all time compares against nothing and counts days since joining", async ({
   const all = stats(page, "All time");
   const days = (await (await page.request.get("/api/dashboard?period=all")).json()).period.days;
   await expect(all.getByTestId("days-practised")).toHaveText(new RegExp(`^\\d+ of ${days.toLocaleString("en-US")}$`));
-  await expect(all.getByText("Since you joined")).toHaveCount(5); // one per tile
+  await expect(all.getByText("Since you joined")).toHaveCount(5);
   await expect(page.getByRole("heading", { name: /words — all time$/ })).toBeVisible();
 });
 
@@ -76,7 +71,6 @@ test("a failing period request keeps the last stats and says so", async ({ page 
   await expect(stats(page, "Last week")).toBeVisible();
   await page.route("**/api/dashboard?*period=quarter*", (route) => route.fulfill({ status: 500, json: { code: "internal", message: "Something went wrong" } }));
   await picker(page).selectOption("quarter");
-  // Next.js keeps its own (empty) route announcer alert on every page, so pick ours by its message.
   await expect(page.getByRole("alert").filter({ hasText: "Something went wrong" })).toBeVisible();
   await expect(page.getByTestId("streak-count")).toBeVisible();
 });

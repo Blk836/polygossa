@@ -5,7 +5,6 @@ import { Button, ErrorNote } from "../ui";
 import { api, errorMessage } from "@/lib/api";
 import type { Billing, Me } from "@/lib/types";
 
-/** The prices people can buy (Stripe lookup keys), with their button labels; VAT included. */
 const PRO_PRICES = [
   { plan: "pro_monthly", label: "€8 a month" },
   { plan: "pro_yearly", label: "€60 a year" },
@@ -48,12 +47,10 @@ function PlanCard({ card, current, prices, busy, onBuy }: {
 
 const planName = (plan: string) => (plan.startsWith("classroom") ? "Classroom" : "Pro");
 
-/** "8 November 2026", the day the period ends (in UTC, as Stripe states it). */
 export function billingDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 }
 
-/** Leaves for Stripe's page (Checkout or the portal) that the backend made. */
 async function goTo(path: string, body: Record<string, unknown>) {
   const { url } = await api<{ url: string }>(path, { body });
   window.location.assign(url);
@@ -71,10 +68,6 @@ function StatusLine({ billing }: { billing: Billing }) {
   );
 }
 
-/**
- * Settings › Subscription with real billing (stripe-billing.feature): buying opens Stripe Checkout, and a subscriber
- * manages everything (card, monthly/yearly, invoices, cancelling) in Stripe's portal.
- */
 export function StripePlans({ billing, me }: { billing: Billing; me: Me }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);

@@ -6,11 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Estimates a CEFR level from vocabulary density. Uses three length-robust signals: lexical diversity (Guiraud's
- * index, unique words / √total words), mean word length, and mean sentence length. Each is scaled to 0–1 against
- * language-appropriate ranges and blended into a score that maps onto A1–C2.
- */
 public final class DifficultyEstimator {
 
     public static final List<String> LEVELS = List.of("A1", "A2", "B1", "B2", "C1", "C2");
@@ -46,7 +41,6 @@ public final class DifficultyEstimator {
                 : scale(avgWordLength, 1.2, 2.2);
         double sentenceLength = scale(avgSentenceLength, 6, 28);
 
-        // Very short texts can't show much diversity, so lean on the other signals.
         double diversityWeight = words < 60 ? 0.2 : 0.45;
         double score = diversityWeight * diversity
                 + (1 - diversityWeight) * 0.55 * wordLength

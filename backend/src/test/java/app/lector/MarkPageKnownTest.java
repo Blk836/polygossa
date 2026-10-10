@@ -9,11 +9,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** POST /api/texts/{id}/mark-known: the reader's "turning the page marks its new words known". */
 @ApiTest
 class MarkPageKnownTest {
 
-    // Tokens: El(0) ' '(1) gato(2) ' '(3) come(4) '. '(5) La(6) ' '(7) casa(8) ' '(9) come(10) '.'(11)
     private static final String CONTENT = "El gato come. La casa come.";
 
     @Autowired

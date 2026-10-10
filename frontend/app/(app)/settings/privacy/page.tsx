@@ -4,7 +4,6 @@ import { buttonClass } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Privacy" };
 
-/** Settings' Privacy tab (gdpr.feature): a copy of all the account's data, and deleting the account. */
 export default function PrivacyPage() {
   return (
     <div className="space-y-6">
@@ -15,7 +14,6 @@ export default function PrivacyPage() {
           classes and forum posts) as one JSON file.
         </p>
         <div className="mt-3">
-          {/* A plain link: the file comes straight from the server as a download. */}
           <a href="/api/me/export" download className={buttonClass("secondary")}>Download my data</a>
         </div>
       </div>

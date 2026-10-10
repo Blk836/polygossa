@@ -5,7 +5,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/** The weights ranking uses now: the configured ones, or the latest learned ones when learning is switched on. */
 @Component
 public class ActiveWeights {
 
@@ -27,12 +26,10 @@ public class ActiveWeights {
         this.enabled = enabled;
     }
 
-    /** The recommendation properties with the weights ranking uses now. */
     RecommendProperties ranking() {
         return props.withWeights(current());
     }
 
-    /** The latest fit: learned weights, or empty when there wasn't enough data (ranking falls back). */
     void update(Optional<Weights> fit) {
         learned.set(fit.orElse(null));
     }
@@ -42,7 +39,6 @@ public class ActiveWeights {
         return enabled && w != null ? w : configured;
     }
 
-    /** "learned" or "configured". */
     public String using() {
         return enabled && learned.get() != null ? "learned" : "configured";
     }

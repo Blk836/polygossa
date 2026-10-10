@@ -11,7 +11,6 @@ const ICONS: Record<CardLayout, ComponentType<SVGProps<SVGSVGElement>>> = {
   list: RowsIcon,
 };
 
-/** Cards / compact / list switch for Library and Explore, like a file manager's "View" buttons; remembered on this device. */
 export function CardLayoutPicker() {
   const { layout, setLayout } = useCardLayout();
   return (

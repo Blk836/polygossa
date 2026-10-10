@@ -1,7 +1,3 @@
-# Full stack: PostgreSQL, Redis, the Spring Boot API and the Next.js frontend.
-#   cp .env.example .env   # set JWT_SECRET (and OPENAI_API_KEY for AI features)
-#   docker compose up --build
-# Then open http://localhost:3000
 services:
   postgres:
     image: postgres:17
@@ -33,7 +29,6 @@ services:
       CORS_ORIGINS: http://localhost:3000
       BRAND_NAME: ${BRAND_NAME:-}
       CURATOR_TOKEN: ${CURATOR_TOKEN:-}
-      # No Cognito here: keep the app's own email-and-password accounts (production signs in through Cognito).
       LOCAL_ACCOUNTS: "true"
     volumes:
       - uploads:/data/uploads

@@ -1,9 +1,5 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 
-// The Skill levels card on Progress (docs/acceptance/skill-levels.feature). One test checks the card against the real
-// API for test@lector.local; the rest serve fixed levels so every state (no data, estimates, overall) is shown.
-// Nothing here changes the shared test user: switching language is answered in the browser, never saved.
-
 type Fixture = Record<string, unknown>;
 
 const FULL: Fixture = {
@@ -37,10 +33,8 @@ test.afterEach(async ({ page }) => {
   for (const id of saved.splice(0)) await page.request.delete(`/api/vocabulary/${id}`);
 });
 
-/** The language Progress shows levels for: the top-bar language, else the first with progress (as the page does). */
 async function shownLanguage(page: Page): Promise<{ me: Record<string, unknown>; language: string }> {
-  await page.goto("/library"); // signs in (auto-login) for page.request
-  // Each e2e run starts on an empty database, so save a word first: then the test user has progress in some language.
+  await page.goto("/library");
   const word = await page.request.post("/api/vocabulary", { data: { language: "es", term: `nivel${Date.now()}` } });
   expect(word.ok(), await word.text()).toBe(true);
   saved.push((await word.json()).id);
@@ -51,7 +45,6 @@ async function shownLanguage(page: Page): Promise<{ me: Record<string, unknown>;
   return { me, language };
 }
 
-/** Serves {@code byLanguage[language]} (else {@code fallback}) for every levels request; records the languages asked. */
 async function serveLevels(page: Page, fallback: Fixture, byLanguage: Record<string, Fixture> = {}) {
   const asked: string[] = [];
   await page.route("**/api/levels?**", (route: Route) => {
@@ -124,7 +117,6 @@ test("levels follow the language picked in the top bar", async ({ page }) => {
   const { me, language } = await shownLanguage(page);
   const other = language === "fr" ? { code: "de", native: "Deutsch" } : { code: "fr", native: "Français" };
   const asked = await serveLevels(page, FULL, { [other.code]: { ...PARTIAL, reading: { level: "C1", confidence: "high", evidence: 10 } } });
-  // Answer the switch in the browser so the shared test user's language is never changed.
   await page.route("**/api/me", (route) =>
     route.request().method() === "PATCH"
       ? route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ...me, targetLanguage: other.code }) })

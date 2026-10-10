@@ -4,7 +4,6 @@ import { LOGIN_COOKIE, cognitoConfig, decodePending, exchangeCode, type Tokens }
 import { writeSession } from "@/lib/session";
 import { BACKEND_URL } from "@/lib/server-api";
 
-/** Starts the backend session for the tokens: null when it worked, else the error to show on the sign-in page. */
 async function startSession(tokens: Tokens, acceptLanguage: string | null): Promise<string | null> {
   try {
     const res = await fetch(`${BACKEND_URL}/api/auth/cognito`, {
@@ -20,14 +19,12 @@ async function startSession(tokens: Tokens, acceptLanguage: string | null): Prom
   }
 }
 
-/** Where Cognito's hosted pages return after signing in: checks the return, starts the session, goes on. */
 export async function GET(request: NextRequest) {
   const config = cognitoConfig();
   const params = request.nextUrl.searchParams;
   const pending = decodePending(request.cookies.get(LOGIN_COOKIE)?.value);
   const code = params.get("code");
   const done = (path: string) => {
-    // On this site's public address: behind CloudFront and the load balancer, the request's own URL may say http.
     const response = NextResponse.redirect(new URL(path, config?.appUrl ?? request.url));
     response.cookies.delete(LOGIN_COOKIE);
     return response;

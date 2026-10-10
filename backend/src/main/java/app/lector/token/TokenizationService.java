@@ -14,16 +14,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-/**
- * Turns raw text into tokens. Space-delimited languages are handled in-process; Japanese, Chinese and Korean are
- * sent to the Python sidecar (MeCab / jieba / KoNLPy) with a crude in-process fallback if it is unreachable.
- */
 @Service
 public class TokenizationService {
 
     private static final Logger log = LoggerFactory.getLogger(TokenizationService.class);
 
-    /** Sentence-ending punctuation, Western and CJK. */
     private static final Pattern SENTENCE_END = Pattern.compile("[.!?…。！？]|\\n");
 
     private final RestClient sidecar;
@@ -48,7 +43,6 @@ public class TokenizationService {
         return Annotations.unmark(finish(language, raw));
     }
 
-    /** Assigns indexes, sentence numbers and normalized lookup keys. */
     static List<Token> finish(Language language, List<RawToken> raw) {
         Locale locale = Locale.forLanguageTag(language.code());
         List<Token> out = new ArrayList<>(raw.size());
@@ -56,7 +50,6 @@ public class TokenizationService {
         boolean sentenceHasWords = false;
         for (RawToken t : raw) {
             if (t.word()) {
-                // Vocabulary is keyed by dictionary form when the tokenizer knows it, so 食べた and 食べる share a status.
                 String key = t.lemma() != null && !t.lemma().isBlank() ? t.lemma() : t.text();
                 out.add(new Token(out.size(), t.text(), true, normalize(key, locale), t.lemma(), t.reading(), sentence));
                 sentenceHasWords = true;

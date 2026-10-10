@@ -20,10 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Feature: uploaded files kept in S3 (docs/acceptance/s3-uploads.feature). The app is configured with a bucket and
- * talks to a fake S3 ({@link S3Stub}); its own setup, since every other test keeps the local folder.
- */
 @SpringBootTest(properties = {
         "test.database=s3",
         "app.seed-samples=false",
@@ -43,7 +39,6 @@ class S3UploadsApiTest {
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-        // The SDK's default credential chain reads these; the stub doesn't check signatures.
         System.setProperty("aws.accessKeyId", "test");
         System.setProperty("aws.secretAccessKey", "test");
     }

@@ -10,7 +10,6 @@ import java.util.Random;
 import java.util.Set;
 import org.springframework.core.io.ClassPathResource;
 
-/** The fixed situations writing tests are set on ({@code writing/prompts.txt}), by CEFR level. */
 public final class PromptBank {
 
     public record Prompt(String id, String situation) {}
@@ -40,7 +39,6 @@ public final class PromptBank {
         return prompts.stream().filter(p -> p.id().startsWith(level + "-")).toList();
     }
 
-    /** A random prompt at the level, preferring ones not in {@code recent}; repeats only once all have been seen. */
     public Prompt pick(String level, Set<String> recent, Random random) {
         List<Prompt> all = forLevel(level);
         List<Prompt> fresh = all.stream().filter(p -> !recent.contains(p.id())).toList();

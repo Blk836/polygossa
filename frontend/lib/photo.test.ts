@@ -55,7 +55,6 @@ describe("photoFileError", () => {
   });
 });
 
-// A 1200×800 landscape image in a 200px frame: at zoom 1 it is shown 300×200, so it can move 50px either side.
 const landscape = { width: 1200, height: 800 };
 const portrait = { width: 600, height: 900 };
 const FRAME = 200;

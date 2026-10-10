@@ -7,10 +7,6 @@ import { INTEREST_MINIMUM } from "@/lib/recommendations";
 import type { Category } from "@/lib/types";
 import { Button, ErrorNote } from "./ui";
 
-/**
- * "What do you like?": categories a new learner picks (at least three) so Explore can recommend before there is any
- * reading history. Optional: picking a text without saving skips it. "Other" isn't offered.
- */
 export function InterestPicker() {
   const [picked, setPicked] = useState<Category[]>([]);
   const [saved, setSaved] = useState(false);

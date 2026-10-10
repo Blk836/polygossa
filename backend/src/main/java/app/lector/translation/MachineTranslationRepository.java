@@ -18,10 +18,6 @@ public interface MachineTranslationRepository extends JpaRepository<MachineTrans
     long countBySourceLanguageAndTargetLanguageAndTerm(Language sourceLanguage, NativeLanguage targetLanguage,
                                                        String term);
 
-    /**
-     * Stores an answer unless one is already there (two lookups of a new word at once keep the first). The languages
-     * are enum names ("DE", "ES").
-     */
     @Modifying
     @Transactional
     @Query(value = """
@@ -32,10 +28,6 @@ public interface MachineTranslationRepository extends JpaRepository<MachineTrans
     int insertIfAbsent(@Param("source") String source, @Param("target") String target, @Param("term") String term,
                        @Param("translation") String translation, @Param("createdAt") Instant createdAt);
 
-    /**
-     * Records the in-context ask of a word stored as echoed: its meaning, or null when that gave nothing too. Only the
-     * first of two asks at once counts.
-     */
     @Modifying
     @Transactional
     @Query(value = """

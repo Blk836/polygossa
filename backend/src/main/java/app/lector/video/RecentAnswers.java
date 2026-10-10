@@ -8,12 +8,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-/**
- * Answers from an outside service, kept for a short while by key so the same question isn't asked again at once
- * (importing the same YouTube video twice downloaded its 1 MB watch page twice). Only answers that {@code keep}
- * accepts are stored, so failures are always retried; the least recently used are dropped beyond {@link #MAX}.
- * A zero time keeps nothing.
- */
 final class RecentAnswers<V> {
 
     static final int MAX = 500;
@@ -36,7 +30,6 @@ final class RecentAnswers<V> {
         this.keep = keep;
     }
 
-    /** The stored answer when it is younger than the cache time; else asks, and stores the answer if kept. */
     V get(String key, Function<String, V> ask) {
         if (ttl.isZero() || ttl.isNegative()) {
             return ask.apply(key);

@@ -10,7 +10,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** stripe-billing.feature, "Local runs and tests": with no Stripe keys, the plan switch works as before. */
 @ApiTest
 class BillingOffApiTest {
 

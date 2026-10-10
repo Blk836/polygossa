@@ -1,36 +1,19 @@
-# Normally nothing runs here, since GitHub's minutes cost too much: the gauntlet's checks (see CLAUDE.md) run on the
-# developer's PC (tools/local-checks.mjs, docs/acceptance/local-checks.feature), and so does the deploy to production
-# after a merge (tools/local-deploy.mjs, docs/acceptance/local-deploy.feature). GitHub deploys only when asked: a
-# hand-started deploy_only run, or every merge to main while the repository variable DEPLOY_ON_GITHUB is "true"
-# (docs/acceptance/staging.feature). The checks run here, on Linux like production
-# (docs/acceptance/ci.feature), only when asked: a pull request labelled "ci", a hand-started run, or every pull request
-# while the repository variable CHECKS_ON_GITHUB is "true". Mutation testing stays local (too slow per push). The
-# checks have no secrets and no cloud access: tests never call OpenAI or AWS. Only the deploy job signs in to AWS, with
-# short-lived credentials.
 name: CI
 
-# Changes arrive as pull requests (CLAUDE.md). When the checks run here, they run on the pull request, against its merge
-# with main; merging to main deploys without running them again. A pull request run that wasn't asked for skips every
-# check job, and skipped jobs cost no minutes.
 on:
   push:
     branches: [main]
     paths-ignore: ["docs/**", "**/*.md"]
   pull_request:
-    # labeled: adding the "ci" label starts the checks without a new push.
     types: [opened, synchronize, reopened, labeled]
     paths-ignore: ["docs/**", "**/*.md"]
   workflow_dispatch:
     inputs:
-      # Deploy main to production from GitHub by hand, without the checks (they ran before the merge): the fallback when
-      # the PC can't deploy (docs/acceptance/local-deploy.feature).
       deploy_only:
         description: "Skip the checks and only deploy main to production"
         type: boolean
         default: false
 
-# A newer push to a branch cancels its older run, except on main, where every commit keeps a result. Adding some other
-# label gets a group of its own, so it can't cancel a check run that is going.
 concurrency:
   group: >-
     ci-${{ github.ref }}${{ github.event.action == 'labeled' && github.event.label.name != 'ci'
@@ -41,13 +24,8 @@ permissions:
   contents: read
 
 jobs:
-  # Only the checks a change can affect run (docs/acceptance/ci.feature). Which ones is decided from the pull request's
-  # own changes (its merge commit against main) by tools/ci-checks.mjs; when unsure (CI itself changed, a file outside
-  # the known parts, a hand-started run, files that can't be listed) every check runs. Skipped jobs cost no minutes.
   changes:
     name: pick checks
-    # Only when asked (see the top): a hand-started run (not deploy-only), or a pull request while CHECKS_ON_GITHUB is
-    # "true" or it is labelled "ci". Adding some other label doesn't start them.
     if: >-
       (github.event_name == 'workflow_dispatch' && !inputs.deploy_only)
       || (github.event_name == 'pull_request'
@@ -95,9 +73,6 @@ jobs:
           path: backend/build/reports/tests/test
           retention-days: 14
 
-  # The frontend, infra and tools checks each take well under a minute, and GitHub bills every job as at least a whole
-  # minute, so they share one job. Each part's steps run even when another part's failed (!cancelled()), and every
-  # step's name starts with its part, so a red run still shows where to look.
   quick:
     name: quick checks (frontend, infra, tools)
     needs: changes
@@ -119,7 +94,6 @@ jobs:
           cache-dependency-path: |
             frontend/package-lock.json
             infra/package-lock.json
-      # The tools checks use ESLint from the frontend's packages; tools/ has none of its own.
       - name: "frontend: install"
         id: frontend-install
         if: env.FRONTEND == 'true' || env.TOOLS == 'true'
@@ -129,7 +103,6 @@ jobs:
         if: ${{ !cancelled() && env.FRONTEND == 'true' && steps.frontend-install.outcome == 'success' }}
         run: npm test
         working-directory: frontend
-      # The global route types (PageProps, LayoutProps, RouteContext) that a fresh checkout lacks; next dev makes them locally.
       - name: "frontend: type check"
         if: ${{ !cancelled() && env.FRONTEND == 'true' && steps.frontend-install.outcome == 'success' }}
         run: npx next typegen && npx tsc --noEmit
@@ -151,13 +124,10 @@ jobs:
         if: ${{ !cancelled() && env.INFRA == 'true' && steps.infra-install.outcome == 'success' }}
         run: npm run typecheck
         working-directory: infra
-      # Synthesizes the stacks and checks their properties; no AWS access needed.
       - name: "infra: tests"
         if: ${{ !cancelled() && env.INFRA == 'true' && steps.infra-install.outcome == 'success' }}
         run: npm test
         working-directory: infra
-      # The whole app, as the deploy runs it (catches a missing entry point or config); lookups come from
-      # cdk.context.json, so still no AWS access.
       - name: "infra: synth"
         if: ${{ !cancelled() && env.INFRA == 'true' && steps.infra-install.outcome == 'success' }}
         run: npx cdk synth --quiet
@@ -174,9 +144,6 @@ jobs:
           frontend/node_modules/.bin/eslint --no-config-lookup
           --rule '{"complexity":["error",10],"max-lines":["error",300]}' "tools/**/*.mjs"
 
-  # The browser suite is CPU-bound and a private repository's runner has 2 cores (Playwright runs 1 worker there), so it
-  # is split across 2 runners that each run half the tests: about 6-7 minutes instead of 10. Not more: each runner
-  # builds the backend and frontend itself, so 4 runners cost about 20 billed minutes for what 2 check in about 13.
   e2e:
     name: end-to-end (${{ matrix.shard }}/2)
     needs: changes
@@ -196,14 +163,11 @@ jobs:
       - uses: actions/setup-node@v7
         with: { node-version: "24", cache: npm, cache-dependency-path: frontend/package-lock.json }
       - run: npm ci
-      # Next's build cache: the production build the suite runs against reuses what didn't change.
       - uses: actions/cache@v6
         with:
           path: frontend/.next/cache
           key: next-${{ hashFiles('frontend/package-lock.json') }}-${{ hashFiles('frontend/app/**', 'frontend/components/**', 'frontend/lib/**') }}
           restore-keys: next-${{ hashFiles('frontend/package-lock.json') }}-
-      # No browser install: the tests drive the runner's preinstalled Google Chrome (playwright.config.ts). Installing
-      # Playwright's Chromium ran apt, and an unresponsive Ubuntu mirror hung shards for 15+ minutes.
       - run: google-chrome --version
       - run: npx playwright test --shard=${{ matrix.shard }}/2
       - if: failure()
@@ -213,13 +177,8 @@ jobs:
           path: frontend/playwright-report
           retention-days: 14
 
-  # Production (docs/acceptance/staging.feature, staging-becomes-production.feature; the stack is still named
-  # PolygossaStaging): on every merge to main. GitHub's OIDC token is exchanged for
-  # short-lived credentials of the deploy role (infra/lib/github-deploy-stack.ts), which only main can assume.
   deploy:
     name: deploy production
-    # Only when asked (see the top): a hand-started deploy_only run on main, or a merge to main while DEPLOY_ON_GITHUB
-    # is "true". Otherwise the PC deploys after merging (tools/local-deploy.mjs).
     if: >-
       github.ref == 'refs/heads/main'
       && ((github.event_name == 'push' && vars.DEPLOY_ON_GITHUB == 'true')
@@ -229,7 +188,6 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    # One deploy at a time; a newer one waits instead of cancelling a deploy halfway.
     concurrency:
       group: deploy-production
       cancel-in-progress: false
@@ -243,8 +201,6 @@ jobs:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: eu-west-1
       - run: npm ci
-      # Builds the backend and frontend images, pushes them, and updates production's stack and the QA resources
-      # (the user pool local runs sign in through).
       - run: npx cdk deploy PolygossaStaging PolygossaQa --require-approval never --progress events
       - name: The site answers
         run: |
@@ -252,7 +208,6 @@ jobs:
             --query "Stacks[0].Outputs[?OutputKey=='SiteUrl'].OutputValue" --output text)
           echo "Production: $url" >> "$GITHUB_STEP_SUMMARY"
           curl --fail --silent --show-error --retry 20 --retry-delay 15 --retry-all-errors -o /dev/null "$url/login"
-      # Through CloudFront, the frontend and on to the backend and its database: the languages list is public.
       - name: The backend answers through the site
         run: |
           url=$(aws cloudformation describe-stacks --stack-name PolygossaStaging \

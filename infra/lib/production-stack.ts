@@ -14,46 +14,19 @@ import { userPool } from "./login.ts";
 import { monitoring } from "./monitoring.ts";
 import { uploadsBucket } from "./uploads.ts";
 
-/**
- * The OpenAI API key for the AI features (docs/acceptance/production-ai.feature): a Secrets Manager entry made by
- * hand (its value can't be in code), read by ECS when the backend starts, so it never appears in the template.
- */
 export const OPENAI_SECRET = "polygossa/openai-api-key";
 
-/**
- * Stripe (docs/acceptance/stripe-billing.feature): the secret key (test mode until the beta), made by hand, and the
- * webhook's signing secret, saved by tools/stripe-setup.mjs when it registers the webhook. Read by ECS by name.
- */
 export const STRIPE_SECRET = "polygossa/stripe-secret-key";
 export const STRIPE_WEBHOOK_SECRET = "polygossa/stripe-webhook-secret";
-/**
- * The webhook secret's name ends in a hyphen and six characters ("-secret"), which Secrets Manager reads as the random
- * suffix of a complete ARN, so it can't be referenced by name: it is referenced by its complete ARN, whose suffix this
- * is (from `aws secretsmanager describe-secret`; it changes only if the secret is deleted and made again).
- */
 export const STRIPE_WEBHOOK_SECRET_ARN_SUFFIX = "jABTGF";
 
 export interface ProductionProps extends cdk.StackProps {
-  /** CloudFront's origin-facing prefix list; looked up in the account when absent (tests pass one). */
   readonly cloudFrontPrefixListId?: string;
-  /**
-   * The site's public address (cdk.json's `site-url`: CloudFront's, until there is a domain). Sign-in returns there.
-   * It can't be read from the distribution itself: the frontend's settings would then depend on the distribution,
-   * which depends on the frontend.
-   */
   readonly siteUrl?: string;
-  /** The owner's Google OAuth client (cdk.json's `google-client-id`), for Sign in with Google. */
   readonly googleClientId?: string;
-  /** Where production's alarms and budget warnings are emailed (cdk.json's `alert-email`); none without it. */
   readonly alertEmail?: string;
 }
 
-/**
- * Production, first built as staging (docs/acceptance/staging.feature, staging-becomes-production.feature):
- * CloudFront → load balancer → frontend on Fargate → backend on Fargate (private name only) → PostgreSQL on RDS in
- * isolated subnets. Sized small until the beta: no NAT gateway (tasks get public IPs to pull images and call out), one
- * task each, a single-zone database.
- */
 export class ProductionStack extends cdk.Stack {
   readonly siteUrl: string;
 
@@ -75,7 +48,6 @@ export class ProductionStack extends cdk.Stack {
       description: "Signs the app's login tokens (JWT_SECRET).",
       generateSecretString: { passwordLength: 64, excludePunctuation: true },
     });
-    // tools/import-videos.mjs reads it by name to import or copy videos into the community library.
     const curatorToken = new secretsmanager.Secret(this, "CuratorToken", {
       secretName: "polygossa/curator-token",
       description: "Lets the team's video import tool use the curator endpoints (CURATOR_TOKEN).",
@@ -88,7 +60,6 @@ export class ProductionStack extends cdk.Stack {
     });
     const publicTasks = { assignPublicIp: true, vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC } };
 
-    // Backend: no load balancer and no public route in; the frontend calls it at backend.<namespace>:8080.
     const siteUrl = props.siteUrl ?? "https://site.invalid";
     const login = userPool(this, {
       domainPrefix: "polygossa",
@@ -106,21 +77,15 @@ export class ProductionStack extends cdk.Stack {
       environment: {
         SPRING_PROFILES_ACTIVE: "prod",
         DATABASE_URL: `jdbc:postgresql://${database.dbInstanceEndpointAddress}:${database.dbInstanceEndpointPort}/lector`,
-        // No Redis yet: dictionary lookups are cached in memory.
         SPRING_CACHE_TYPE: "simple",
         MANAGEMENT_HEALTH_REDIS_ENABLED: "false",
         JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75",
-        // Uploads (audio, profile photos) live in S3, so they survive redeploys.
         STORAGE_S3_BUCKET: uploads.bucketName,
         STORAGE_S3_REGION: this.region,
-        // Everyone signs in through the user pool (the prod profile turns the app's own accounts off).
         COGNITO_ISSUER: login.issuer,
         COGNITO_CLIENT_ID: login.clientId,
-        // The team (admin panel, forum moderation); the prod profile names nobody by default.
         FORUM_ADMINS: "owner@example.com",
-        // Where Stripe Checkout and the portal return.
         APP_URL: siteUrl,
-        // Machine translation of single words (word-translations.feature), capped at $20 a month ($15 a million).
         TRANSLATION_ENABLED: "true",
         TRANSLATION_REGION: this.region,
         TRANSLATION_MONTHLY_CHARACTER_CAP: "1333333",
@@ -141,7 +106,6 @@ export class ProductionStack extends cdk.Stack {
           }))),
       },
     });
-    // TranslateText names no resource unless custom terminology is used, so "*", kept to this one action and region.
     backendTask.addToTaskRolePolicy(new iam.PolicyStatement({
       actions: ["translate:TranslateText"],
       resources: ["*"],
@@ -157,7 +121,6 @@ export class ProductionStack extends cdk.Stack {
     });
     database.connections.allowDefaultPortFrom(backend, "the backend");
 
-    // Frontend: behind the load balancer, which only CloudFront can reach.
     const frontendTask = new ecs.FargateTaskDefinition(this, "FrontendTask", { cpu: 256, memoryLimitMiB: 512 });
     frontendTask.addContainer("frontend", {
       image: frontendImage(),
@@ -165,9 +128,7 @@ export class ProductionStack extends cdk.Stack {
       logging: appLogs(this, "frontend"),
       environment: {
         BACKEND_URL: `http://${BACKEND_NAME}.${NAMESPACE}:8080`,
-        // Real sign-up and login: the test-account auto-login is off (the backend's prod profile refuses it too).
         AUTO_LOGIN: "false",
-        // Sign-in through Cognito's hosted pages, which return to this site.
         COGNITO_DOMAIN: login.domain,
         COGNITO_CLIENT_ID: login.clientId,
         APP_URL: siteUrl,
@@ -201,7 +162,6 @@ export class ProductionStack extends cdk.Stack {
       port: 3000,
       protocol: elbv2.ApplicationProtocol.HTTP,
       targets: [frontend],
-      // favicon.ico skips the login redirect (proxy.ts), so it answers 200 with no session.
       healthCheck: { path: "/favicon.ico", healthyHttpCodes: "200" },
       deregistrationDelay: cdk.Duration.seconds(10),
     });
@@ -216,7 +176,6 @@ export class ProductionStack extends cdk.Stack {
         }),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-        // The app is per-user (login cookie), so nothing is cached and everything reaches it as sent.
         cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
         originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
       },

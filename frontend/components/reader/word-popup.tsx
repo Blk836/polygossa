@@ -10,10 +10,6 @@ import { AiExplanation, DictionaryLinks, ExtraActions, Meanings, PopupHeader, St
 
 const lookupCache = new Map<string, Promise<WordLookup>>();
 
-/**
- * The word's meanings in the learner's language, kept for the page's life per word and native language. The text
- * around it lets the backend ask a word Amazon gives back unchanged inside its sentence (translation-in-context.feature).
- */
 function lookup(language: LanguageCode, term: string, nativeLanguage: string, around: TextAround): Promise<WordLookup> {
   const key = `${nativeLanguage}:${language}:${term}`;
   let p = lookupCache.get(key);
@@ -30,11 +26,10 @@ function lookup(language: LanguageCode, term: string, nativeLanguage: string, ar
 
 export interface PopupTarget {
   kind: "word" | "phrase";
-  term: string; // normalized lookup key
-  display: string; // as written in the text
+  term: string;
+  display: string;
   reading?: string;
   sentence: string;
-  /** The sentence's text before and after it. */
   around: TextAround;
   startToken: number;
 }
@@ -48,16 +43,13 @@ interface Props {
   notice: string | null;
   hasAudio: boolean;
   onStatus: (status: WordStatus | null) => void;
-  /** The lookup finished: a word saved by opening the popup keeps its meaning. */
   onLookup: (lookup: WordLookup) => void;
-  /** The learner picked another own-language meaning for the word. */
   onPickMeaning: (meaning: string) => void;
   onSaveSentence: (translation?: string) => Promise<void>;
   onPlayFromHere: () => void;
   onClose: () => void;
 }
 
-/** Runs an AI request with a shared busy flag and error message. */
 function useAiAction() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +67,6 @@ function useAiAction() {
   return { busy, error, run };
 }
 
-/** The lookup popup. State starts fresh per word: the reader remounts it (via key) for each new target. */
 export function WordPopup(props: Props) {
   const { target, language, onLookup } = props;
   const { me } = useMe();

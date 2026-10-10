@@ -24,13 +24,8 @@ async function call<T>(method: string, body?: object): Promise<T> {
   return data;
 }
 
-/** The secret in groups of four, easier to type into an app by hand. */
 const grouped = (secret: string) => secret.match(/.{1,4}/g)?.join(" ") ?? secret;
 
-/**
- * Settings › Profile: a second step at sign-in with an authenticator app (cognito-login.feature). Shown only for
- * accounts that sign in through Cognito; Google accounts use Google's own two-step verification.
- */
 export function MfaSection() {
   const [status, setStatus] = useState<Status | null>(null);
   const [setup, setSetup] = useState<Setup | null>(null);

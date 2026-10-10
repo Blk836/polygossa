@@ -16,7 +16,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 
-/** A named, ordered group of texts and videos in one language; private to its owner until shared. */
 @Entity
 @Table(name = "playlists", indexes = {
         @Index(name = "idx_playlists_owner", columnList = "owner_id"),

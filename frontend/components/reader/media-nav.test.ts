@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { cueMs, loopRestart, mediaShortcut, segmentAt, sentenceStart, spokenAt, SPEEDS } from "./media-nav";
 import type { Segment } from "./audio-sync";
 
-// Three sentences: 1–4 s, 4–9 s, 9–12 s (the first starts after a second of silence).
 const segments: Segment[] = [
   { sentence: 0, start: 1000, end: 4000 },
   { sentence: 1, start: 4000, end: 9000 },
@@ -96,7 +95,6 @@ describe("SPEEDS", () => {
 });
 
 describe("cueMs", () => {
-  // Words 0, 2, 4 and 8 are timed (odd tokens are spaces); token 6 has no timing. Listed out of order on purpose.
   const timings = [
     { i: 8, s: 9000, e: 9500 },
     { i: 0, s: 1000, e: 1500 },
@@ -130,7 +128,6 @@ describe("cueMs", () => {
 });
 
 describe("spokenAt", () => {
-  // One timed word per sentence above; speech ends at 11 s.
   const words = [
     { i: 0, s: 1000, e: 3500 },
     { i: 2, s: 4000, e: 8500 },

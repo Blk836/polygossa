@@ -4,7 +4,6 @@ import { DEMOS } from "./landing-demos";
 import { LEARNING_LANGUAGES } from "./languages";
 import { PAUSE_STEPS, lastStep, nextSplash, splashFrame, splashOrder, splashTokens } from "./splash";
 
-// "Hola" new, ", " punctuation, "amigo" known, "mar" new.
 const TOKENS: DemoToken[] = [
   { text: "Hola", word: { meaning: "hello", pos: "interjection" } },
   { text: ", " },

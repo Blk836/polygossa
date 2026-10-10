@@ -7,11 +7,6 @@ import { LANGUAGES } from "@/lib/languages";
 import type { LanguageCode } from "@/lib/types";
 import { STEP_MS, nextSplash, splashFrame, splashOrder, splashTokens, type SplashState } from "@/lib/splash";
 
-// The splash beside the sign-in and sign-up forms (auth-splash.feature): "a page that learns". A demo sentence learns
-// its new words one at a time, then the page turns to the next language; "hello" drifts by behind it. The timeline
-// is lib/splash.ts. Everything but the copy line is decorative (aria-hidden); the pause button is the only control.
-
-/** "Hello" in many languages and scripts, with where each one floats (left %, top %, size rem, drift delay s). */
 const GREETINGS: [string, number, number, number, number][] = [
   ["Hola", 8, 10, 1.6, 0], ["Bonjour", 62, 6, 1.3, -6], ["Hallo", 30, 24, 1.1, -12], ["Ciao", 80, 30, 1.8, -3],
   ["Olá", 12, 72, 1.4, -9], ["Hello", 70, 80, 1.2, -15], ["こんにちは", 44, 88, 1.1, -4], ["你好", 88, 58, 1.6, -11],
@@ -32,7 +27,6 @@ function subscribeVisibility(onChange: () => void) {
 }
 const pageVisible = () => document.visibilityState === "visible";
 
-/** Ticks the timeline every STEP_MS while `running`. */
 function useSplash(running: boolean, languages: number, tokensFor: Parameters<typeof nextSplash>[2]) {
   const [state, setState] = useState<SplashState>({ lang: 0, step: 0 });
   useEffect(() => {
@@ -43,7 +37,6 @@ function useSplash(running: boolean, languages: number, tokensFor: Parameters<ty
   return state;
 }
 
-/** The page of text: the sentence with its words coloured by status, the gloss of the word tapped, and the count. */
 function SplashPage({ language, tokens, step, showGloss }: { language: LanguageCode; tokens: DemoToken[]; step: number; showGloss: boolean }) {
   const frame = splashFrame(tokens, step);
   const glossed = showGloss ? frame.glossed : null;

@@ -44,8 +44,8 @@ describe("media clock", () => {
     const clock = createMediaClock();
     clock.read(5000, 1000, true, 1);
     expect(clock.read(5000, 1200, true, 1)).toBe(5200);
-    expect(clock.read(5100, 1210, true, 1)).toBe(5200); // 100 ms behind: held
-    expect(clock.read(5100, 1310, true, 1)).toBe(5200); // still behind what was shown
+    expect(clock.read(5100, 1210, true, 1)).toBe(5200);
+    expect(clock.read(5100, 1310, true, 1)).toBe(5200);
     expect(clock.read(5100, 1330, true, 1)).toBe(5220);
     expect(HOLD_MS).toBe(250);
   });
@@ -53,7 +53,7 @@ describe("media clock", () => {
   it("holds a report exactly HOLD_MS behind, but follows one further back (a seek)", () => {
     const clock = createMediaClock();
     clock.read(5000, 1000, true, 1);
-    clock.read(5000, 1400, true, 1); // shows 5400
+    clock.read(5000, 1400, true, 1);
     expect(clock.read(5150, 1401, true, 1)).toBe(5400);
     const seeked = createMediaClock();
     seeked.read(5000, 1000, true, 1);
@@ -80,7 +80,6 @@ describe("media clock", () => {
   });
 
   describe("after a seek", () => {
-    // YouTube keeps reporting the old time for a moment after a seek: showing it would pull the seek bar back.
     it("shows the target while the player still reports the old time, playing or paused", () => {
       const clock = createMediaClock();
       clock.read(60_000, 1000, true, 1);
@@ -94,7 +93,7 @@ describe("media clock", () => {
       const clock = createMediaClock();
       clock.seek(300_000, 1000);
       expect(clock.read(300_000 + SEEK_TOLERANCE_MS, 1500, true, 1)).toBe(300_000 + SEEK_TOLERANCE_MS);
-      expect(clock.read(60_000, 1600, true, 1)).toBe(60_000); // confirmed: later reports are followed as before
+      expect(clock.read(60_000, 1600, true, 1)).toBe(60_000);
       expect(SEEK_TOLERANCE_MS).toBe(1500);
     });
 
@@ -117,7 +116,7 @@ describe("media clock", () => {
     it("starts smoothing afresh from the confirming report", () => {
       const clock = createMediaClock();
       clock.read(60_000, 1000, true, 1);
-      clock.read(60_000, 1500, true, 1); // shows 60.5 s
+      clock.read(60_000, 1500, true, 1);
       clock.seek(300_000, 1510);
       expect(clock.read(300_200, 2000, true, 1)).toBe(300_200);
       expect(clock.read(300_200, 2100, true, 1)).toBe(300_300);
@@ -126,7 +125,7 @@ describe("media clock", () => {
     it("follows a small step back at once instead of holding the old position", () => {
       const clock = createMediaClock();
       clock.read(60_000, 1000, true, 1);
-      clock.read(60_000, 1500, true, 1); // shows 60.5 s
+      clock.read(60_000, 1500, true, 1);
       clock.seek(60_000, 1510);
       expect(clock.read(60_300, 1600, true, 1)).toBe(60_300);
     });

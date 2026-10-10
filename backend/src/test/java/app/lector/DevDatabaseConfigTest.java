@@ -12,7 +12,6 @@ import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.ClassPathResource;
 
-/** Development runs on PostgreSQL in Docker (compose.dev.yml); H2 is gone. */
 class DevDatabaseConfigTest {
 
     private static final Path COMPOSE = Path.of("..", "compose.dev.yml");

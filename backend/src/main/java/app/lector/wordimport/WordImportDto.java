@@ -4,7 +4,6 @@ import app.lector.token.Language;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
 
-/** An import as the Vocabulary page shows it; {@code language} is null for "every language". */
 @JsonInclude(JsonInclude.Include.ALWAYS)
 public record WordImportDto(Long id, WordImport.Source source, Language language, WordImport.State state, int found,
                             int added, int updated, int unchanged, int overLimit, String error, Instant createdAt,

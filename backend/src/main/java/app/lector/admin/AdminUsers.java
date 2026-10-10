@@ -26,15 +26,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The admin panel's accounts: finding them and acting on them. Removals go through the same services as the owner's
- * own deletes, so everything that hangs off a text or playlist goes with it. Every action is recorded.
- */
 @Service
 public class AdminUsers {
 
     static final int PAGE_SIZE = 25;
-    /** Admin views and removals cover everything a user has, paused languages included. */
     private static final List<Language> ALL_LANGUAGES = List.of(Language.values());
 
     public record UserRow(Long id, String email, String displayName, Tier plan, Instant createdAt,
@@ -47,7 +42,6 @@ public class AdminUsers {
 
     public record UserDetail(UserRow user, String suspendedReason, List<Item> texts, List<Item> playlists) {}
 
-    /** The repositories the panel reads. */
     public record Stores(UserRepository users, UserDayRepository userDays, TextRepository texts,
                          PlaylistRepository playlists, ForumPostRepository posts) {}
 
@@ -172,7 +166,6 @@ public class AdminUsers {
         return LibraryAccount.EMAIL.equalsIgnoreCase(user.getEmail());
     }
 
-    /** Bulk removal would wipe the starter texts and curated videos. */
     private static User notLibrary(User user) {
         if (isLibrary(user)) {
             throw ApiException.badRequest("The community library can't be emptied from the admin panel");

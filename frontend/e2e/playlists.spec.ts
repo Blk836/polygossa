@@ -1,15 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// Playlists: group texts and videos (a text can be in several), order them, read through them, and share them.
-// Everything is created through the API with a unique tag in its title, and deleted afterwards.
-
 let textIds: number[] = [];
 let playlistIds: number[] = [];
 let tag = "";
 let language = "es";
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("/library"); // signs in (auto-login) and sets the session cookie used by page.request
+  await page.goto("/library");
   language = (await (await page.request.get("/api/me")).json()).targetLanguage ?? "es";
   tag = `pl${Math.floor(Math.random() * 1e9).toString(36)}`;
 });
@@ -116,7 +113,6 @@ test("the owner shares a playlist, which a search in Explore then finds", async 
   await page.getByLabel("Search titles").press("Enter");
   const found = page.getByRole("region", { name: /^Playlists matching/ });
   await expect(found.getByRole("article").filter({ hasText: `Podcast ${tag}` })).toContainText("1 item");
-  // The playlists row sits above the matching texts and videos.
   const rowBox = (await found.boundingBox())!;
   const gridBox = (await page.getByTestId("card-grid").boundingBox())!;
   expect(rowBox.y).toBeLessThan(gridBox.y);

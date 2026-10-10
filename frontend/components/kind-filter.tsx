@@ -2,7 +2,6 @@
 
 import { KIND_FILTERS, type KindFilter } from "@/lib/media";
 
-/** A row of buttons picking one option, named for screen readers by `label`. */
 export function SegmentedFilter<T extends string>({ label, options, value, onChange }: {
   label: string;
   options: { id: T; label: string }[];
@@ -25,7 +24,6 @@ export function SegmentedFilter<T extends string>({ label, options, value, onCha
   );
 }
 
-/** All / Texts / Videos segmented control for library lists. */
 export function KindFilterTabs({ value, onChange }: { value: KindFilter; onChange: (kind: KindFilter) => void }) {
   return <SegmentedFilter label="Show" options={KIND_FILTERS} value={value} onChange={onChange} />;
 }

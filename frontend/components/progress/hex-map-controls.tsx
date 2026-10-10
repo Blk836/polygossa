@@ -6,7 +6,6 @@ export type Go = (regionId: string | null, areaId?: string | null) => void;
 
 const crumbClass = "rounded-lg px-2 py-1";
 
-/** "Map › Food & Drink › Fruit & vegetables", over the map's top-left corner: every level above is a way back out. */
 export function Breadcrumb({ region, area, go }: MapPlace & { go: Go }) {
   const link = `${crumbClass} text-accent hover:bg-accent-soft`;
   const here = `${crumbClass} font-semibold`;
@@ -26,7 +25,6 @@ export function Breadcrumb({ region, area, go }: MapPlace & { go: Go }) {
 
 const zoomClass = "grid size-9 place-items-center rounded-lg text-lg leading-none hover:bg-accent-soft";
 
-/** Zoom in and out, over the map's top-right corner. */
 export function ZoomButtons({ onIn, onOut }: { onIn: () => void; onOut: () => void }) {
   return (
     <div className="map-glass right-3 top-3 grid gap-0.5 p-1">
@@ -37,7 +35,6 @@ export function ZoomButtons({ onIn, onOut }: { onIn: () => void; onOut: () => vo
   );
 }
 
-/** Which bands the map counts ("Up to A1", "Up to A2", ...), over the map's bottom-right corner. */
 export function BandSwitch({ bands, top, onTop }: { bands: string[]; top: string; onTop: (band: string) => void }) {
   return (
     <div role="group" aria-label="Bands counted" className="map-glass bottom-3 right-3 flex gap-0.5 p-1">
@@ -58,7 +55,6 @@ export function BandSwitch({ bands, top, onTop }: { bands: string[]; top: string
 
 const SWATCHES: [string, string][] = [["Known", "--tile-known"], ["Learning", "--tile-learning"], ["New", "--tile-new"]];
 
-/** What the tiles' colours mean, over the map's bottom-left corner; left out on phones, where it has no room. */
 export function Legend() {
   return (
     <div className="map-glass bottom-3 left-3 hidden items-center gap-3 px-3 py-2 text-xs text-muted sm:flex" data-testid="map-legend">

@@ -1,5 +1,3 @@
-// Command-line wiring: arguments and environment in, files and an exit code out. The work is in the other modules.
-
 import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { Fatal, makeClient } from "./client.mjs";
@@ -44,7 +42,6 @@ const OPTIONS = {
   description: { type: "string" },
 };
 
-/** Runs the tool; returns the exit code (0 when the run finished, even if some videos failed). */
 export async function main(argv, { env, print, sleep, fetch = globalThis.fetch }) {
   const settings = settingsFrom(argv, env);
   if (typeof settings === "string") {
@@ -62,7 +59,6 @@ export async function main(argv, { env, print, sleep, fetch = globalThis.fetch }
   }
 }
 
-/** The run's settings, or a message saying what's wrong with the arguments. */
 function settingsFrom(argv, env) {
   let parsed;
   try {
@@ -87,13 +83,11 @@ function settingsFrom(argv, env) {
     baseUrl: values.backend ?? env.BACKEND_URL ?? "http://localhost:8080", ...mode };
 }
 
-/** Playlist or copy mode's settings ({} for a plain import), or a message saying what's wrong. */
 function modeSettings(values, env) {
   const playlistMode = values.playlist !== undefined || values.description !== undefined;
   return playlistMode ? playlistSettings(values) : copySettings(values, env);
 }
 
-/** Playlist mode's title and description, or a message saying what doesn't fit. */
 function playlistSettings(values) {
   if (values.playlist === undefined) {
     return "Stopped: --description goes with --playlist <title>";
@@ -104,7 +98,6 @@ function playlistSettings(values) {
   return { playlist: values.playlist, description: values.description };
 }
 
-/** Copy mode's source and its token ({} without copy mode), or a message saying what's missing. */
 function copySettings(values, env) {
   const copyFrom = values["copy-from"];
   if (!copyFrom) {
@@ -117,7 +110,6 @@ function copySettings(values, env) {
   return { copyFrom, fromToken };
 }
 
-/** The client that imports each entry: the backend itself, or in copy mode a copier from the source to it. */
 async function importer(settings, fetch) {
   if (!settings.copyFrom) {
     const client = makeClient({ baseUrl: settings.baseUrl, token: settings.token, fetch });
@@ -125,7 +117,7 @@ async function importer(settings, fetch) {
   }
   const source = makeClient({ baseUrl: settings.copyFrom, token: settings.fromToken, fetch, label: "source" });
   const target = makeClient({ baseUrl: settings.baseUrl, token: settings.token, fetch, label: "target" });
-  await source.options(); // a wrong token or address stops the run before any video
+  await source.options();
   return { client: makeCopier({ source, target }), options: await target.options() };
 }
 

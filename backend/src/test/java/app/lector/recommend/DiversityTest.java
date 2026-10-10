@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-/** Feature: Explore recommendations, diversity and exploration (docs/acceptance/explore-recommendations.feature). */
 class DiversityTest {
 
     private static Slot<String> slot(String id, String category, long creator, double score) {

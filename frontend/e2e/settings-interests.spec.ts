@@ -1,8 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// docs/acceptance/recommendation-learning.feature, "Interests in Settings". The shared test account's interests must
-// never change, so GET and PUT recommendations/interests are answered in the browser.
-
 const section = (page: Page) => page.getByRole("group", { name: "Interests" });
 const chip = (page: Page, name: string) => section(page).getByRole("button", { name, exact: true });
 
@@ -19,7 +16,7 @@ async function stubInterests(page: Page, initial: string[], put: (body: { catego
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("/library"); // signs in
+  await page.goto("/library");
 });
 
 test("Settings shows my interests, every category but Other", async ({ page }) => {

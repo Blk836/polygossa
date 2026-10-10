@@ -13,7 +13,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-/** Feature: Import my words from LingQ and Readlang, the LingQ side (docs/acceptance/word-import.feature). */
 class LingqClientTest {
 
     static LingqStub stub;

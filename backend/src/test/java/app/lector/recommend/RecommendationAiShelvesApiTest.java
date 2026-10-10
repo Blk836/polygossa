@@ -20,10 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Feature: Explore recommendations with AI features: "Because you read", topic shelves from tags, taste vectors,
- * interests and the topic filter (docs/acceptance/explore-recommendations.feature).
- */
 @SpringBootTest(properties = {
         "test.database=recai",
         "app.seed-samples=false",
@@ -79,12 +75,10 @@ class RecommendationAiShelvesApiTest {
         fx.learnWords(learner);
     }
 
-    /** A chat reply that passes moderation and tags the text with these topics. */
     private static String tags(String... topics) {
         return "{\"appropriate\":true,\"topics\":[\"" + String.join("\",\"", topics) + "\"],\"summary\":\"S.\"}";
     }
 
-    /** A public 95%-known text by {@code owner}, tagged and embedded as given once the job runs. */
     private long text(String owner, String title, String category, float[] vector, String... topics) throws Exception {
         AI.replyWhen(title, tags(topics));
         AI.embedWhen(title, vector);
@@ -93,7 +87,6 @@ class RecommendationAiShelvesApiTest {
 
     private void runJob() {
         while (job.runOnce() > 0) {
-            // until the queue is empty
         }
     }
 

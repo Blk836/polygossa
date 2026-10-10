@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Button, ErrorNote } from "../ui";
 
-/** Settings › Profile: sign out on every device at once (cognito-login.feature, "Signing out everywhere"). */
 export function DevicesSection() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -14,7 +13,6 @@ export function DevicesSection() {
     try {
       const res = await fetch("/api/auth/sign-out-everywhere", { method: "POST" });
       if (!res.ok && res.status !== 401) throw new Error(((await res.json().catch(() => ({}))) as { message?: string }).message);
-      // A Cognito session also signs out at Cognito, whose page comes back to the landing page.
       const cognito = res.status === 200 ? ((await res.json()) as { redirect?: string }).redirect : undefined;
       window.location.assign(cognito ?? "/");
     } catch (err) {

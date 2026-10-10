@@ -9,7 +9,6 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 
-/** The movable clock behind {@link ClockApiTest}: one per test JVM, put back to {@link #START} before every test. */
 public final class TestClock implements BeforeEachCallback {
 
     public static final MutableClock CLOCK = new MutableClock();

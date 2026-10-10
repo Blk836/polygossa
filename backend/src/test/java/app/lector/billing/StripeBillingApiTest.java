@@ -20,10 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Feature: real billing with Stripe (docs/acceptance/stripe-billing.feature), against a fake Stripe
- * ({@link StripeStub}); its own setup, since every other test has no Stripe and keeps the plan switch.
- */
 @SpringBootTest(properties = {
         "test.database=stripe",
         "app.seed-samples=false",
@@ -88,7 +84,6 @@ class StripeBillingApiTest {
         return mvc.perform(request).andReturn().getResponse().getStatus();
     }
 
-    /** Stripe reporting the subscription {@code id} of {@code customer} as it now is. */
     private void stripeSays(String id, String customer, String status, String lookupKey, boolean cancelAtPeriodEnd)
             throws Exception {
         String interval = lookupKey.endsWith("yearly") ? "year" : "month";
@@ -101,8 +96,6 @@ class StripeBillingApiTest {
     private String tier(String token) throws Exception {
         return api.get(token, "/api/me", 200).get("plan").get("tier").asString();
     }
-
-    // --- Upgrading ---
 
     @Test
     void upgradingOpensStripeCheckoutForThatPriceWithTheLearnersEmailAndChangesNothingYet() throws Exception {
@@ -148,8 +141,6 @@ class StripeBillingApiTest {
         JsonNode error = checkout(ana, "pro_monthly", 503);
         assertThat(error.get("message").asString()).isEqualTo("Payments are unavailable right now. Please try again.");
     }
-
-    // --- The webhook ---
 
     @Test
     void thePaidSubscriptionArrivingByWebhookPutsTheLearnerOnPro() throws Exception {
@@ -212,8 +203,6 @@ class StripeBillingApiTest {
         assertThat(tier(ana)).isEqualTo("FREE");
     }
 
-    // --- Managing the subscription ---
-
     @Test
     void cancellingKeepsProUntilThePeriodEndsThenTheAccountIsFree() throws Exception {
         String customer = customerOf(ana);
@@ -254,8 +243,6 @@ class StripeBillingApiTest {
                 .containsEntry("return_url", "https://site.test/settings/subscription");
     }
 
-    // --- Classroom ---
-
     @Test
     void aTeacherPaysPerStudentAndTheCountFollowsJoinsAndLeaves() throws Exception {
         checkout(ana, "classroom_monthly", 200);
@@ -284,8 +271,6 @@ class StripeBillingApiTest {
         stripeSays("sub_c", customer, "canceled", "classroom_monthly", false);
         assertThat(api.get(eva, "/api/me", 200).get("plan").get("effectiveTier").asString()).isEqualTo("FREE");
     }
-
-    // --- Accounts ---
 
     @Test
     void deletingTheAccountCancelsItsSubscriptionFirst() throws Exception {

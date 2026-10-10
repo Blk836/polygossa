@@ -12,10 +12,6 @@ const STATUS_TEXT: Record<string, string> = {
   new: "New to you",
 };
 
-/**
- * The meaning to show: the map's own (the learner's saved meaning, else the list's), else what the reader's word popup
- * would find (other learners' meanings, then machine translation). Undefined while looking, null when there is none.
- */
 function useMeaning(language: LanguageCode, word: VocabMapWord): string | null | undefined {
   const [found, setFound] = useState<{ term: string; meaning: string | null } | null>(null);
   useEffect(() => {
@@ -32,7 +28,6 @@ function useMeaning(language: LanguageCode, word: VocabMapWord): string | null |
   return found?.term === word.term ? found.meaning : undefined;
 }
 
-/** A tapped word, over the map: its meaning, band and status, with "Start learning" and "I know this" as in the reader. */
 export function WordPanel({ language, word, onSaved, onClose }: {
   language: LanguageCode;
   word: VocabMapWord;
@@ -88,7 +83,6 @@ function MeaningText({ meaning }: { meaning: string | null | undefined }) {
   return meaning ?? <span className="text-muted">No meaning found</span>;
 }
 
-/** The free plan's saved-word limit gets the same upgrade note as in the reader; anything else a plain error. */
 function SaveError({ error }: { error: unknown }) {
   if (error instanceof ApiError && error.upgradeRequired) return <UpgradeNote message={error.message} />;
   return <ErrorNote message={errorMessage(error)} />;

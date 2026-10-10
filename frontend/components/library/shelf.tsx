@@ -7,7 +7,6 @@ import type { Shelf, TextSummary } from "@/lib/types";
 import { useCardLayout } from "../card-layout-context";
 import { TextCard } from "../text-card";
 
-/** One Explore shelf: a heading with "See all", then a sideways-scrolling row of cards. */
 export function ShelfRow({ shelf, onSeeAll, actions }: {
   shelf: Shelf;
   onSeeAll: () => void;

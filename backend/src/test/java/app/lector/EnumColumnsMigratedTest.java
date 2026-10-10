@@ -16,11 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Feature: an enum stored as text has a check constraint listing its values, so adding a value needs a migration that
- * updates that constraint. Every enum column the entities map is compared with a database built by the migrations
- * alone (no app startup that could patch it): this test fails until the migration exists.
- */
 @ApiTest
 class EnumColumnsMigratedTest {
 
@@ -72,7 +67,6 @@ class EnumColumnsMigratedTest {
         return out;
     }
 
-    /** Each enum column whose check constraint doesn't list exactly the enum's values, with what it lists. */
     private List<String> outOfDate(JdbcTemplate db) {
         return enumColumns().stream()
                 .filter(c -> !listed(db, c).equals(c.values()))

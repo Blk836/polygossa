@@ -1,8 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
-// docs/acceptance/page-skeletons.feature: each page loads with an outline shaped like it, and fills in without moving.
-
-/** Holds the navigation request for `path` (not its prefetch) until `release()`, so the outline can be looked at. */
 async function holdPage(page: Page, path: string | RegExp) {
   let release!: () => void;
   const released = new Promise<void>((resolve) => (release = resolve));
@@ -18,7 +15,6 @@ async function holdPage(page: Page, path: string | RegExp) {
   return release;
 }
 
-/** Holds API requests whose path matches, e.g. a page's own data. */
 async function holdApi(page: Page, path: RegExp) {
   let release!: () => void;
   const released = new Promise<void>((resolve) => (release = resolve));
@@ -40,7 +36,6 @@ async function top(locator: Locator) {
   return { x: Math.round(box!.x), y: Math.round(box!.y) };
 }
 
-/** Opens the account menu and follows `name` once Next.js has prefetched its page (the outline comes with it). */
 async function openAccountItem(page: Page, name: string, path: string) {
   const prefetched = page.waitForResponse((res) => {
     const headers = res.request().headers();
@@ -57,9 +52,7 @@ type Destination = {
   path: string;
   from: string;
   open: (page: Page) => Promise<void>;
-  /** The outline's grey shapes for this page's content. */
   parts: string[];
-  /** A section the real page shows at once: it must appear where the outline had it. */
   section?: { part: string; real: (page: Page) => Locator };
 };
 
@@ -239,7 +232,6 @@ test.describe("on a phone", () => {
   });
 });
 
-// While a page's own data loads it keeps the outline's shapes, not a spinner (a full load: nothing remembered).
 const IN_PAGE: { page: string; path: string; api: RegExp; part: string }[] = [
   { page: "Progress", path: "/dashboard", api: /^\/api\/dashboard$/, part: "streak" },
   { page: "Explore", path: "/community", api: /^\/api\/library\/shelves$/, part: "shelf" },

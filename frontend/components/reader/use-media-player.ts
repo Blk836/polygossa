@@ -6,7 +6,6 @@ import { firstWordOfSentence, sentenceSegments, type Segment } from "./audio-syn
 import { cueMs, loopRestart, segmentAt, sentenceStart, spokenAt, type MediaShortcut, type Spoken } from "./media-nav";
 import { ListenContext } from "./use-reading-session";
 
-/** What the shared player needs from an <audio> element or the YouTube player. */
 export interface MediaElement {
   play(): void;
   pause(): void;
@@ -15,34 +14,23 @@ export interface MediaElement {
   setRate(rate: number): void;
 }
 
-/** What the reader can ask of whichever player is showing. */
 export interface MediaHandle {
-  /** Seek to a word and start playing. */
   playFromToken(tokenIndex: number): void;
   pause(): void;
   shortcut(action: MediaShortcut): void;
 }
 
 interface Options {
-  /** Stable (memoized) adapter over the player. */
   media: MediaElement;
   timings: WordTiming[];
   tokens: Token[];
-  /** 0 until the media reports its length. */
   duration: number;
   playing: boolean;
-  /** The word and sentence being spoken, whenever either changes. */
   onSpoken: (spoken: Spoken) => void;
   onJumpToToken: (tokenIndex: number) => void;
-  /** First token of the page shown (null on page 1): paused media is cued there until the listener plays or seeks. */
   cueToken: number | null;
 }
 
-/**
- * Shared playback logic for audio and video: follows the spoken word, steps and loops sentences, sets the speed, and
- * cues the start of the page shown until first played or seeked. The audio and video panels own their element and
- * report `playing` and `duration`.
- */
 export const NOTHING_SPOKEN: Spoken = { token: null, sentence: null };
 
 export function useMediaPlayer({ media, timings, tokens, duration, playing, onSpoken, onJumpToToken, cueToken }: Options) {
@@ -56,12 +44,10 @@ export function useMediaPlayer({ media, timings, tokens, duration, playing, onSp
   const firstWords = useMemo(() => firstWordOfSentence(tokens), [tokens]);
   const listen = useContext(ListenContext);
 
-  // Playing time counts as listening (Progress, daily goals).
   useEffect(() => {
     listen?.set(playing, Date.now());
   }, [listen, playing]);
 
-  /** Shows `ms` as the position and points the reader at the word and sentence spoken then (turning the page to it). */
   const follow = useCallback(
     (ms: number) => {
       setTime(ms);
@@ -85,10 +71,9 @@ export function useMediaPlayer({ media, timings, tokens, duration, playing, onSp
     }
     if (playing) setTouched(true);
     if (playing || touched) follow(ms);
-    else setTime(ms); // a cue alone highlights nothing
+    else setTime(ms);
   }, [media, looped, playing, touched, follow]);
 
-  // Once the media knows its length (it can't seek before), keep it on the cue.
   useEffect(() => {
     if (!touched && duration > 0) media.seek(cue);
   }, [media, cue, touched, duration]);
@@ -110,12 +95,11 @@ export function useMediaPlayer({ media, timings, tokens, duration, playing, onSp
       setTouched(true);
       m.seek(ms);
       if (play) m.play();
-      follow(ms); // not the player's position: YouTube reports it a moment later
+      follow(ms);
     },
     [media, follow],
   );
 
-  /** Seeks to a sentence and points the reader at it; a looped sentence follows. */
   const goToSentence = useCallback(
     (seg: Segment) => {
       seek(seg.start, true);
@@ -137,7 +121,7 @@ export function useMediaPlayer({ media, timings, tokens, duration, playing, onSp
   );
 
   const toggle = useCallback(() => {
-    if (!touched) setTime(cue); // the bar showed the cue: keep it there while the media starts (YouTube buffers first)
+    if (!touched) setTime(cue);
     setTouched(true);
     if (playing) media.pause();
     else media.play();

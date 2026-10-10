@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import org.junit.jupiter.api.Test;
 
-/** The daily streak and activity summary behind the Progress page. */
 class ActivityTallyTest {
 
     static final ZoneId UTC = ZoneId.of("UTC");
@@ -19,7 +18,6 @@ class ActivityTallyTest {
         return day.atTime(12, 0).toInstant(java.time.ZoneOffset.UTC);
     }
 
-    /** A tally with one saved word on each given number of days before today (0 = today). */
     static ActivityTally activeOn(int... daysAgo) {
         ActivityTally t = new ActivityTally(UTC);
         for (int d : daysAgo) {
@@ -93,7 +91,7 @@ class ActivityTallyTest {
     @Test
     void daysFollowTheUsersTimeZone() {
         ActivityTally t = new ActivityTally(ZoneId.of("America/Denver"));
-        t.wordSaved(Instant.parse("2026-03-21T03:00:00Z")); // 21:00 on the 20th in Denver
+        t.wordSaved(Instant.parse("2026-03-21T03:00:00Z"));
         Activity a = t.summarise(TODAY, 2);
         assertThat(a.streak().activeToday()).isTrue();
         assertThat(a.days().getLast().wordsSaved()).isEqualTo(1);
@@ -123,9 +121,9 @@ class ActivityTallyTest {
         t.wordKnown(at(TODAY));
         t.wordKnown(at(TODAY.minusDays(6)));
         t.reading(at(TODAY.minusDays(6)), 600);
-        t.wordKnown(at(TODAY.minusDays(7))); // last week
+        t.wordKnown(at(TODAY.minusDays(7)));
         t.reading(at(TODAY.minusDays(13)), 120);
-        t.wordKnown(at(TODAY.minusDays(14))); // before both
+        t.wordKnown(at(TODAY.minusDays(14)));
         t.reviews(TODAY.minusDays(8), 3);
         t.wordSaved(at(TODAY.minusDays(1)));
         Activity a = t.summarise(TODAY, 7);
@@ -139,9 +137,9 @@ class ActivityTallyTest {
         t.wordKnown(at(TODAY));
         t.wordKnown(at(TODAY.minusDays(29)));
         t.reading(at(TODAY.minusDays(29)), 300);
-        t.wordKnown(at(TODAY.minusDays(30))); // the month before
+        t.wordKnown(at(TODAY.minusDays(30)));
         t.reviews(TODAY.minusDays(59), 2);
-        t.wordSaved(at(TODAY.minusDays(60))); // before both
+        t.wordSaved(at(TODAY.minusDays(60)));
         assertThat(t.total(TODAY.minusDays(29), TODAY)).isEqualTo(new ActivityTally.Period(300, 0, 2, 0, 0, 0, 2));
         assertThat(t.total(TODAY.minusDays(59), TODAY.minusDays(30))).isEqualTo(new ActivityTally.Period(0, 0, 1, 2, 0, 0, 2));
     }

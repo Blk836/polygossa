@@ -20,12 +20,6 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
-/**
- * Feature: copying curated videos from one backend to another (docs/acceptance/copy-videos.feature), the backend side:
- * the source's export and the target's copy endpoint. Here one app plays both parts. No AI here; see
- * {@link CuratedVideoReviewApiTest} for the sharing check. Each test uses its own videos, since other classes on this
- * shared app import videos too and the export looks at every owner's copies.
- */
 @YouTubeApiTest
 class CuratedVideoCopyApiTest {
 
@@ -57,16 +51,12 @@ class CuratedVideoCopyApiTest {
         tx.executeWithoutResult(s -> libraryVideos().forEach(texts::delete));
     }
 
-    // ---- helpers ----
-
-    /** A French video on the stub, with word-level captions, and returns its id. */
     private static String video(String id) {
         YOUTUBE.add(id, YouTubeStub.Video.withCaptions("Le marché", 60, "fr",
                 YouTubeStub.srv3("0|2000|Bonjour à tous.", "2000|4000|On va au marché.")));
         return id;
     }
 
-    /** A learner (Pro) imports the video; returns the text's id. */
     private long learnerImport(String id, String title, boolean isPublic) throws Exception {
         var request = multipart("/api/texts/import-youtube").param("url", "https://youtu.be/" + id)
                 .param("language", "fr").param("category", "learners").param("isPublic", String.valueOf(isPublic));
@@ -103,8 +93,6 @@ class CuratedVideoCopyApiTest {
                 .map(u -> texts.findAll().stream().filter(t -> t.getOwner().getId().equals(u.getId())).toList())
                 .orElse(List.of());
     }
-
-    // ---- copying ----
 
     @Test
     void theExportHoldsTheFinishedTranscript() throws Exception {
@@ -145,7 +133,6 @@ class CuratedVideoCopyApiTest {
             assertThat(copied.getSourceUrl()).isEqualTo("https://www.youtube.com/watch?v=" + id);
             assertThat(copied.getContent()).isEqualTo(original.getContent());
             assertThat(copied.getCuesJson()).isEqualTo(original.getCuesJson());
-            // Worked out again on this backend, and they match a normal import of the same transcript.
             assertThat(copied.getTokensJson()).isEqualTo(original.getTokensJson());
             assertThat(copied.getTimingsJson()).isEqualTo(original.getTimingsJson());
             assertThat(copied.getCefrLevel()).isEqualTo(original.getCefrLevel());
@@ -175,8 +162,6 @@ class CuratedVideoCopyApiTest {
         assertThat(export(TOKEN, id, "es", 404).get("code").asString()).isEqualTo("not_on_source");
     }
 
-    // ---- re-runs and dry runs ----
-
     @Test
     void copyingAgainChangesNothing() throws Exception {
         String id = video("CPYAGAIN001");
@@ -201,19 +186,17 @@ class CuratedVideoCopyApiTest {
         assertThat(libraryVideos()).hasSize(1);
     }
 
-    // ---- refused ----
-
     @Test
     void aCopyWithMissingOrInvalidPartsIsRefused() throws Exception {
         String good = "\"videoId\":\"CPYBAD00001\",\"language\":\"fr\",\"title\":\"T\",\"category\":\"food\"";
-        copy(TOKEN, "{" + good + ",\"cues\":[]}", 400); // no transcript
+        copy(TOKEN, "{" + good + ",\"cues\":[]}", 400);
         copy(TOKEN, "{" + good + ",\"content\":\"   \"}", 400);
         copy(TOKEN, "{" + good.replace("\"fr\"", "\"xx\"") + ",\"content\":\"Bonjour.\"}", 400);
         copy(TOKEN, "{" + good.replace("food", "nonsense") + ",\"content\":\"Bonjour.\"}", 400);
         copy(TOKEN, "{" + good.replace("CPYBAD00001", "bad id") + ",\"content\":\"Bonjour.\"}", 400);
         copy(TOKEN, "{" + good.replace(",\"language\":\"fr\"", "") + ",\"content\":\"Bonjour.\"}", 400);
         copy(TOKEN, "{" + good + ",\"content\":\"Bonjour.\",\"cues\":[{\"startMs\":0,\"endMs\":1000,\"text\":\"x\","
-                + "\"charStart\":0,\"charEnd\":99}]}", 400); // a cue beyond the transcript
+                + "\"charStart\":0,\"charEnd\":99}]}", 400);
         assertThat(libraryVideos()).isEmpty();
     }
 

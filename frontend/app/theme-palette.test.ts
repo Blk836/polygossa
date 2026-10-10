@@ -1,6 +1,3 @@
-// Guards the colour system in globals.css: every theme token has a light and a dark value, text/background pairs
-// meet WCAG AA in both modes, and no component bypasses the tokens with Tailwind's `dark:` variant (which follows
-// only the OS, so it would ignore the light/dark choice in Settings).
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -8,7 +5,6 @@ import { describe, expect, it } from "vitest";
 const root = join(__dirname, "..");
 const css = readFileSync(join(__dirname, "globals.css"), "utf8");
 
-/** `--name: light-dark(#light, #dark)` declarations from the stylesheet. */
 function tokens(): Map<string, [string, string]> {
   const out = new Map<string, [string, string]>();
   for (const m of css.matchAll(/--([\w-]+):\s*light-dark\(\s*(#[0-9a-fA-F]{6})\s*,\s*(#[0-9a-fA-F]{6})\s*\)/g)) {
@@ -36,13 +32,11 @@ const TEXT_ON: [fg: string, bg: string][] = [
   ["rubric", "paper"], ["rubric", "card"], ["danger", "paper"], ["danger", "card"],
   ["good", "card"], ["good", "good-soft"], ["warn", "card"], ["warn", "warn-soft"], ["bad", "card"], ["bad", "bad-soft"],
   ["ink", "w-new"], ["ink", "w-learning"], ["ink", "w-known"], ["ink", "w-ignored"], ["ink", "w-active"], ["ink", "w-sentence"],
-  // The vocabulary map writes each word on its tile: ink on counted words, muted ink on the next and later bands'.
   ["ink", "tile-known"], ["ink", "tile-learning"], ["ink", "tile-new"], ["muted", "tile-next"], ["muted", "tile-later"],
   ...["learners", "daily-life", "stories", "news", "culture", "travel", "food", "science", "history", "entertainment", "other"]
     .flatMap((c): [string, string][] => [["ink", `cover-${c}`], ["muted", `cover-${c}`]]),
 ];
 
-/** Marks that are not text (the follow-along marker) need 3:1 against what is around them (WCAG 1.4.11). */
 const MARK_ON: [mark: string, bg: string][] = [["w-marker", "paper"], ["w-marker", "w-sentence"]];
 
 describe("theme tokens", () => {

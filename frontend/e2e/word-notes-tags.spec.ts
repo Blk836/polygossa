@@ -1,9 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-// docs/acceptance/word-notes-tags.feature: a note and tags on a word, edited on the Words page.
-
 test("a note and tags are added on the Words page, and a tag filters the list", async ({ page }) => {
-  await page.goto("/library"); // signs in
+  await page.goto("/library");
   const unique = `zqnote${Date.now().toString(36)}`;
   const ids: number[] = [];
   for (const term of [unique, `${unique}b`]) {
@@ -25,7 +23,6 @@ test("a note and tags are added on the Words page, and a tag filters the list", 
     await expect(row.getByTestId("word-note")).toHaveText("a mnemonic about pears");
     await expect(row.getByRole("button", { name: /^Tag / })).toHaveText(["animals", "pets"]);
 
-    // Clicking a tag filters to it: only the tagged word remains.
     await row.getByRole("button", { name: "Tag animals" }).click();
     await page.getByPlaceholder("Search words or definitions…").fill("");
     await page.getByPlaceholder("Search words or definitions…").press("Enter");

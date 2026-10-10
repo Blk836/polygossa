@@ -19,14 +19,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Reading-time tracking: the reader opens a session and sends heartbeats while the page is visible. */
 @RestController
 @RequestMapping("/api/sessions")
 public class SessionController {
 
     public record StartRequest(@NotNull Long textId) {}
 
-    /** Seconds of visible, active reading, and of audio or video playing (absent from older clients). */
     public record HeartbeatRequest(long seconds, Long listenedSeconds) {}
 
     public record SessionDto(Long id, long durationSeconds, boolean completed) {
@@ -56,10 +54,6 @@ public class SessionController {
                 clock.instant())));
     }
 
-    /**
-     * Adds active reading time and listening time. Each is capped by the wall-clock time since the previous heartbeat
-     * (and five minutes) so a client can't inflate its totals.
-     */
     @PostMapping("/{id}/heartbeat")
     @Transactional
     public SessionDto heartbeat(@AuthenticationPrincipal AuthUser principal, @PathVariable Long id,

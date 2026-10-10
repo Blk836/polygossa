@@ -2,11 +2,8 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-// Single-series charts (title names the series, so no legend). Thin marks, recessive axes, hover tooltips,
-// and a table view so no value depends on hovering.
-
 export interface Point {
-  label: string; // ISO date
+  label: string;
   value: number;
 }
 
@@ -148,7 +145,7 @@ export function BarChart({ title, unit, points }: { title: string; unit: string;
   const [hover, setHover] = useState<number | null>(null);
   const max = niceMax(Math.max(...points.map((p) => p.value), 1));
   const slot = (width - PAD.left - PAD.right) / Math.max(1, points.length);
-  const barW = Math.max(2, slot - 2); // 2px surface gap between bars
+  const barW = Math.max(2, slot - 2);
   const x = (i: number) => PAD.left + slot * i + slot / 2;
   const y = (v: number) => PAD.top + (HEIGHT - PAD.top - PAD.bottom) * (1 - v / max);
   const base = HEIGHT - PAD.bottom;
@@ -162,7 +159,6 @@ export function BarChart({ title, unit, points }: { title: string; unit: string;
             const h = base - y(p.value);
             const r = Math.min(4, barW / 2, h);
             const left = x(i) - barW / 2;
-            // Rounded data end, square at the baseline.
             const path = h <= 0 ? "" :
               `M${left},${base} V${base - h + r} Q${left},${base - h} ${left + r},${base - h} H${left + barW - r} Q${left + barW},${base - h} ${left + barW},${base - h + r} V${base} Z`;
             return (

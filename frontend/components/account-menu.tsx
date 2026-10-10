@@ -10,7 +10,6 @@ import { isUnder } from "@/lib/nav";
 import { initialOf } from "@/lib/photo";
 import type { Tier } from "@/lib/types";
 
-/** The backend's development test account (see proxy.ts). */
 const AUTO_LOGIN_EMAIL = "test@lector.local";
 
 const PLAN_NAMES: Record<Tier, string> = { FREE: "Free", PRO: "Pro", CLASSROOM: "Classroom" };
@@ -22,7 +21,6 @@ const ITEMS = [
 
 const itemClass = "block w-full px-3 py-2 text-left text-sm hover:bg-paper focus:bg-paper focus:outline-none";
 
-/** Arrow keys move between the menu's items, wrapping around. */
 function moveFocus(e: KeyboardEvent<HTMLDivElement>) {
   if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
   e.preventDefault();
@@ -32,7 +30,6 @@ function moveFocus(e: KeyboardEvent<HTMLDivElement>) {
   items[(at + step + items.length) % items.length]?.focus();
 }
 
-/** The avatar menu: who's signed in, their plan, Settings, Classes, the admin panel (for the team) and signing out. */
 export function AccountMenu() {
   const { me } = useMe();
   const pathname = usePathname();
@@ -49,7 +46,6 @@ export function AccountMenu() {
 
   async function logout() {
     const res = await fetch("/api/auth/logout", { method: "POST" });
-    // A Cognito session also signs out at Cognito, whose page comes back to the landing page.
     const cognito = res.status === 200 ? ((await res.json()) as { redirect?: string }).redirect : undefined;
     if (cognito) {
       window.location.assign(cognito);
@@ -94,7 +90,6 @@ export function AccountMenu() {
               {item.label}
             </Link>
           ))}
-          {/* The auto-login test account would just be signed straight back in. */}
           {me.email !== AUTO_LOGIN_EMAIL && (
             <button type="button" role="menuitem" onClick={() => void logout()} className={`${itemClass} border-t border-line text-muted`}>
               Sign out

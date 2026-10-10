@@ -5,10 +5,6 @@ import { api } from "@/lib/api";
 import type { PlaylistSummary } from "@/lib/playlist-types";
 import { BookmarkIcon } from "../icons";
 
-/**
- * Save / Saved toggle for a playlist, like the one on texts: flips at once, and flips back if the server says no.
- * Saved playlists are listed in My library's playlists row and on the playlists page.
- */
 export function SavePlaylistButton({ playlist, className = "" }: { playlist: PlaylistSummary; className?: string }) {
   const [saved, setSaved] = useState(playlist.bookmarked);
 

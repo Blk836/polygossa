@@ -4,7 +4,6 @@ import app.lector.common.ApiException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-/** Loads the {@link User} entity for the authenticated principal. */
 @Component
 public class CurrentUser {
 
@@ -29,7 +28,6 @@ public class CurrentUser {
         return user;
     }
 
-    /** What a suspended account gets from every request, and from signing in. */
     public static ApiException suspended() {
         return new ApiException(HttpStatus.FORBIDDEN, "account_suspended",
                 "This account is suspended. Contact the team if you think this is a mistake.");

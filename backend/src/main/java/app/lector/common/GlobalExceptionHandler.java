@@ -53,7 +53,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONTENT_TOO_LARGE).body(new ErrorBody("too_large", "File is too large"));
     }
 
-    /** Japanese, Chinese or Korean in a request: paused for learning (learning-languages.feature). */
     @ExceptionHandler(Language.NotOfferedException.class)
     ResponseEntity<ErrorBody> handleNotOffered(Language.NotOfferedException e) {
         return ResponseEntity.badRequest().body(new ErrorBody("language_not_offered", e.getMessage()));

@@ -14,11 +14,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 
-/**
- * How far one user has read one text. Positions are token indexes, not page numbers, because the reader cuts pages
- * to fit the screen. {@code position} is where reading stopped (where to resume); {@code percent} is the share of the
- * words before the furthest position reached, so re-reading an earlier page doesn't lower it.
- */
 @Entity
 @Table(name = "reading_progress", uniqueConstraints = @UniqueConstraint(name = "uk_progress_user_text",
         columnNames = {"user_id", "text_id"}))
@@ -42,7 +37,6 @@ public class ReadingProgress {
     @Column(nullable = false)
     private int percent;
 
-    /** Set by "Finish lesson"; re-reading afterwards keeps it. */
     @Column(nullable = false)
     private boolean completed;
 

@@ -9,7 +9,6 @@ import * as sns from "aws-cdk-lib/aws-sns";
 import * as subscriptions from "aws-cdk-lib/aws-sns-subscriptions";
 import type { Construct } from "constructs";
 
-/** The monthly AWS budget the owner is warned against (USD). */
 export const MONTHLY_BUDGET = 100;
 
 export interface Watched {
@@ -19,10 +18,6 @@ export interface Watched {
   readonly database: rds.DatabaseInstance;
 }
 
-/**
- * Production's alarms (docs/acceptance/monitoring.feature): each emails the owner through one alert topic, who
- * confirms AWS's subscription email once. Plus a monthly budget for the account's bill.
- */
 export function monitoring(scope: Construct, watched: Watched): void {
   const topic = new sns.Topic(scope, "Alerts", { displayName: "Polygossa production alerts" });
   topic.addSubscription(new subscriptions.EmailSubscription(watched.email));

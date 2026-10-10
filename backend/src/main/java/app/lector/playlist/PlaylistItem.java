@@ -12,7 +12,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-/** One text's place in a playlist. A text can be in any number of playlists, but only once in each. */
 @Entity
 @Table(name = "playlist_items",
         uniqueConstraints = @UniqueConstraint(name = "uk_playlist_item", columnNames = {"playlist_id", "text_id"}))

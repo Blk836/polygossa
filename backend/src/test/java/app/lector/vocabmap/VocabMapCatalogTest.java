@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-/** The blueprint and the word lists that fill it (vocabulary-map.feature, "Keeping the list right"). */
 class VocabMapCatalogTest {
 
     private static final VocabMapCatalog REAL = new VocabMapCatalog();

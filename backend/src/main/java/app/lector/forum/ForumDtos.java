@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
 import java.util.List;
 
-/** What the forum API returns. */
 public final class ForumDtos {
 
     private ForumDtos() {}
@@ -26,7 +25,6 @@ public final class ForumDtos {
 
     public record ThreadList(List<ThreadSummary> threads, long total, int page, int size, boolean canModerate) {}
 
-    /** {@code mine}: the viewer wrote it, so may edit it. */
     @JsonInclude(JsonInclude.Include.ALWAYS)
     public record Post(Long id, Author author, String body, Instant createdAt, Instant editedAt, boolean mine) {
         static Post of(ForumPost p, User viewer) {

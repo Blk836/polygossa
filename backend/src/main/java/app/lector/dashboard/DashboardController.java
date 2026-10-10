@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Progress dashboard: word counts by status per language, reading time, vocabulary growth and the daily streak. */
 @RestController
 @RequestMapping("/api/dashboard")
 public class DashboardController {
@@ -84,9 +83,7 @@ public class DashboardController {
         int span = Math.min(Math.max(days, 7), 365);
         List<LanguageProgress> languages = languageProgress(user);
         LocalDate today = LocalDate.now(zone);
-        // With a period, the growth curve covers it (all time: since signing up); without one, the last `days` days.
         LocalDate growthFrom = period == null ? today.minusDays(span - 1L) : activity.periodStart(user, period, today);
-        // Review stats span all languages; omitted for users without SRS.
         ReviewService.Stats review = plans.hasFeature(user, PlanService.Feature.SRS) ? reviews.stats(user, null) : null;
         return new Dashboard(languages,
                 languages.stream().mapToLong(LanguageProgress::sessions).sum(),
@@ -102,10 +99,6 @@ public class DashboardController {
                 activity.goalToday(user));
     }
 
-    /**
-     * The header's numbers: the daily streak, how long is left of today, known words (one language, or all) and
-     * today's goal.
-     */
     public record Header(int current, int best, boolean activeToday, long secondsLeftToday, long knownWords,
                          ActivityService.GoalToday goal) {}
 
@@ -121,9 +114,7 @@ public class DashboardController {
                 activity.goalToday(user));
     }
 
-    /** Word counts by status plus reading sessions and time, one row per language with any activity. */
     private List<LanguageProgress> languageProgress(User user) {
-        // known, learning, ignored, sessions, seconds, words read, seconds listened
         Map<Language, long[]> counts = new EnumMap<>(Language.class);
         for (var c : vocabulary.countByLanguageAndStatus(user.getId())) {
             int column = switch (c.getStatus()) {
@@ -171,7 +162,6 @@ public class DashboardController {
         return minutes;
     }
 
-    /** Cumulative count of known words at the end of each day in [start, end]. */
     static List<DayValue> cumulative(List<Instant> knownAt, ZoneId zone, LocalDate start, LocalDate end) {
         Map<LocalDate, Long> perDay = new TreeMap<>();
         long before = 0;

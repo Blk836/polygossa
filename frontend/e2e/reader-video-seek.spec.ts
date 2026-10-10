@@ -1,11 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { article, cleanUp, createVideo, openReader, player, type Created } from "./reader-helpers";
 
-// Seeking a playing video. Like YouTube's real player, the stand-in here keeps reporting the old time for a moment
-// after a seek, reports "buffering" a little later (its messages arrive asynchronously), then plays on from the
-// target. Showing that old time used to pull the seek bar back under a held click, and releasing it there seeked
-// back, so the jump was lost.
-
 let created: Created | null = null;
 
 test.afterEach(async ({ page }) => {
@@ -47,7 +42,6 @@ type Win = { __yt: { calls: (number | string)[]; confirm: boolean }; __samples: 
 const seekBar = (page: Page) => player(page).getByRole("slider", { name: "Seek" });
 const seeks = async (page: Page) => (await page.evaluate(() => (window as unknown as Win).__yt.calls)).filter((c) => typeof c === "number") as number[];
 
-/** Opens a playing video and records the seek bar's value and the play button's label on every frame. */
 async function playVideo(page: Page) {
   await page.route("https://www.youtube.com/iframe_api", (route) => route.fulfill({ contentType: "text/javascript", body: STALE_YOUTUBE }));
   created = await createVideo(page);
@@ -67,20 +61,18 @@ async function playVideo(page: Page) {
     };
     requestAnimationFrame(sample);
     bar.addEventListener("input", () => {
-      if (w.__pressed) w.__samples.length = 0; // record from the press on
+      if (w.__pressed) w.__samples.length = 0;
       w.__pressed = false;
       w.__inputs.push(Number(bar.value));
     });
   });
 }
 
-/** Presses the seek bar at `fraction` of its width, holds it `holdMs`, releases it, and returns the value pressed. */
 async function pressSeekBar(page: Page, fraction: number, holdMs: number): Promise<number> {
   const box = (await seekBar(page).boundingBox())!;
   await page.evaluate(() => ((window as unknown as Win).__pressed = true));
   await page.mouse.move(box.x + box.width * fraction, box.y + box.height / 2);
   await page.mouse.down();
-  // The value the press set (read from its input event: the bar may already have been pulled back since).
   const target = await page.evaluate(() => (window as unknown as Win).__inputs.at(-1)!);
   await page.waitForTimeout(holdMs);
   await page.mouse.up();
@@ -103,7 +95,7 @@ test("a click held past the player's stale time report still jumps there", async
 test("the seek bar never shows the old position after seeking backwards", async ({ page }) => {
   await playVideo(page);
   const ahead = await pressSeekBar(page, 0.6, 50);
-  await expect.poll(async () => near(Number(await seekBar(page).inputValue()), ahead + 1000)).toBe(true); // confirmed and playing on
+  await expect.poll(async () => near(Number(await seekBar(page).inputValue()), ahead + 1000)).toBe(true);
   const back = await pressSeekBar(page, 0.2, 50);
   await page.waitForTimeout(800);
   expect((await samples(page)).filter((s) => !near(s.v, back))).toEqual([]);
@@ -113,7 +105,7 @@ test("the seek bar never shows the old position after seeking backwards", async 
 test("buffering after a seek keeps the Pause button", async ({ page }) => {
   await playVideo(page);
   await pressSeekBar(page, 0.5, 50);
-  await page.waitForTimeout(800); // through the stand-in's buffering
+  await page.waitForTimeout(800);
   const labels = new Set((await samples(page)).map((s) => s.label));
   expect([...labels]).toEqual(["Pause"]);
 });
@@ -123,7 +115,7 @@ test("a seek the player never confirms gives way to the reported time", async ({
   await page.evaluate(() => ((window as unknown as Win).__yt.confirm = false));
   const target = await pressSeekBar(page, 0.5, 50);
   await page.waitForTimeout(1000);
-  expect(near(Number(await seekBar(page).inputValue()), target)).toBe(true); // still held
+  expect(near(Number(await seekBar(page).inputValue()), target)).toBe(true);
   await expect.poll(async () => Number(await seekBar(page).inputValue()), { timeout: 4000 }).toBeLessThan(60_000);
 });
 
@@ -142,7 +134,7 @@ test("buffering mid-playback keeps the Pause button and stops the highlight", as
   await page.evaluate(() => (window as unknown as Win).__ytBuffer());
   await page.waitForTimeout(100);
   const spoken = await article(page).locator(".w-speaking").getAttribute("data-i");
-  await page.waitForTimeout(1200); // words here last 300 ms: a running clock would move on
+  await page.waitForTimeout(1200);
   await expect(article(page).locator(".w-speaking")).toHaveAttribute("data-i", spoken!);
   await expect(player(page).getByRole("button", { name: "Pause", exact: true })).toBeVisible();
 });
@@ -160,7 +152,7 @@ test("a looped sentence jumps back to its start once per pass", async ({ page })
   await playVideo(page);
   await player(page).getByRole("button", { name: "Loop sentence" }).click();
   const before = (await seeks(page)).length;
-  await page.waitForTimeout(4500); // past the 3-second sentence's end, and through the stand-in's buffering
+  await page.waitForTimeout(4500);
   const restarts = (await seeks(page)).slice(before);
   expect(restarts.length).toBeGreaterThanOrEqual(1);
   expect(restarts.length).toBeLessThanOrEqual(2);

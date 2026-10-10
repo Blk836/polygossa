@@ -4,7 +4,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.time.Instant;
 
-/** Spaced-repetition scheduling state shared by word and sentence cards. */
 @Embeddable
 public class SrsState {
 
@@ -20,7 +19,6 @@ public class SrsState {
     @Column(nullable = false)
     private int lapses = 0;
 
-    /** When the card is next due; new cards are due immediately. */
     private Instant dueAt = Instant.now();
 
     private Instant lastReviewedAt;

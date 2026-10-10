@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import tools.jackson.databind.ObjectMapper;
 
-/** AI writing tutor: write a short response to a text and get corrective feedback. */
 @RestController
 @RequestMapping("/api/writing")
 public class WritingController {

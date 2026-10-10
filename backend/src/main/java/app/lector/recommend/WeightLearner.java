@@ -4,17 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Learns Explore's score weights from what learners opened: a logistic regression of "opened" on the seven unweighted
- * score parts, with the card's position on its shelf as a control term (people open what is first, whatever it is).
- * Plain, deterministic code: Newton's method with a weak ridge prior, which also keeps the fit finite when the data
- * separate perfectly. A part earns a weight only when its effect is clearly above zero (at least three standard
- * errors); a part that never varies says nothing and keeps its configured weight. Learned weights are scaled so all
- * seven add up to the configured total, keeping the "shown, never opened" penalty on the same scale.
- */
 final class WeightLearner {
 
-    /** One learner and item: the parts and position it was shown with, and whether it was opened (or read). */
     record Example(double[] parts, int position, boolean opened) {}
 
     static final int MIN_EXAMPLES = 200;
@@ -59,13 +50,11 @@ final class WeightLearner {
         return Optional.of(weights(learned));
     }
 
-    /** At least 200 examples, with 20 or more each opened and not opened. */
     static boolean enough(List<Example> data) {
         long positives = data.stream().filter(Example::opened).count();
         return data.size() >= MIN_EXAMPLES && positives >= MIN_EACH && data.size() - positives >= MIN_EACH;
     }
 
-    /** Parts (by index) whose value differs somewhere in the data. */
     private static List<Integer> varying(List<Example> data) {
         List<Integer> out = new ArrayList<>();
         for (int p = 0; p < PARTS; p++) {
@@ -78,7 +67,6 @@ final class WeightLearner {
         return out;
     }
 
-    /** Rows of [1, the varying parts, log(1 + position)]. */
     private static double[][] design(List<Example> data, List<Integer> varying) {
         double[][] x = new double[data.size()][varying.size() + 2];
         for (int i = 0; i < data.size(); i++) {
@@ -92,7 +80,6 @@ final class WeightLearner {
         return x;
     }
 
-    /** Coefficients and their variances (the diagonal of the inverse Hessian at the optimum). */
     record Fit(double[] beta, double[] variance) {}
 
     static Fit fit(double[][] x, double[] y) {
@@ -112,7 +99,7 @@ final class WeightLearner {
                     }
                 }
             }
-            for (int a = 1; a < k; a++) { // no prior on the intercept
+            for (int a = 1; a < k; a++) {
                 gradient[a] -= RIDGE * beta[a];
                 hessian[a][a] += RIDGE;
             }

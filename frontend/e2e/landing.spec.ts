@@ -1,9 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// The landing page (/) for visitors with no session. Playwright starts every test without cookies, so / shows it
-// even though auto-login is on in dev; links are checked by their href (the sign-up page has its own spec,
-// auth-splash.spec.ts).
-// Japanese, Chinese and Korean are paused for learning (learning-languages.feature): six languages are offered.
 const SIGNUP = /^\/signup(\?lang=(en|es|fr|de|it|pt))?$/;
 const NATIVE = ["English", "Español", "Français", "Deutsch", "Italiano", "Português"];
 
@@ -110,12 +106,12 @@ test.describe("landing page", () => {
     await expect(pickers.last().getByRole("link")).toHaveText(NATIVE);
     await expect(page.getByRole("link", { name: "Start reading free" })).toHaveCount(2);
     const hrefs = await page.locator('a[href^="/signup"]').evaluateAll((as) => as.map((a) => a.getAttribute("href")!));
-    expect(hrefs.length).toBeGreaterThanOrEqual(2 * NATIVE.length + 2); // both pickers, plus the two CTAs
+    expect(hrefs.length).toBeGreaterThanOrEqual(2 * NATIVE.length + 2);
     for (const href of hrefs) expect(href).toMatch(SIGNUP);
   });
 
   test("signed-in visitors are offered the library instead of sign-up", async ({ page }) => {
-    await page.goto("/library"); // auto-login
+    await page.goto("/library");
     await page.goto("/");
     await expect(page).toHaveURL("/");
     const header = page.getByRole("banner");
@@ -132,16 +128,15 @@ test.describe("landing page", () => {
     await page.goto("/");
     await expect(page.getByText(`${NATIVE.length} languages · free to start`)).toBeVisible();
     await expect(demo(page).getByTestId("demo-hint")).toHaveText("Tap a blue word to see what it means.");
-    // The words must be visibly apart, not just apart in the DOM (a flex container once swallowed the spaces).
     const gap = await demo(page).getByTestId("demo-hint").evaluate((p) => {
       const blue = p.querySelector(".w")!.getBoundingClientRect();
-      const before = p.firstChild!; // "Tap a ": measure to the end of the "a", not of the space after it
+      const before = p.firstChild!;
       const range = document.createRange();
       range.setStart(before, 0);
       range.setEnd(before, before.textContent!.trimEnd().length);
       return blue.left - range.getBoundingClientRect().right;
     });
-    expect(gap).toBeGreaterThan(1); // a space less the highlight's small negative margin is ~2px; the bug gave < 0
+    expect(gap).toBeGreaterThan(1);
   });
 
   test("Pro-only features are labelled and the free path doesn't promise review", async ({ page }) => {
@@ -185,7 +180,6 @@ test.describe("landing page", () => {
     await expect(meta("twitter:card")).toHaveAttribute("content", "summary_large_image");
     const image = await meta("og:image").getAttribute("content");
     expect(image).toMatch(/^https?:\/\/[^/]+\/opengraph-image/);
-    // As a crawler: no session and no following redirects (signed out, an app page would redirect to sign-in).
     const res = await request.get(new URL(image!).pathname + new URL(image!).search, { maxRedirects: 0 });
     expect(res.status()).toBe(200);
     expect(res.headers()["content-type"]).toContain("image/png");
@@ -207,8 +201,6 @@ test.describe("landing page", () => {
   });
 });
 
-// Choosing a language sets the account's target language, which the API can't clear again (null is ignored) and other
-// specs rely on the test account having none, so PATCH /api/me is stubbed and checked instead of sent.
 test.describe("onboarding with a language chosen on the landing page", () => {
   test("?lang=de starts at step 2 with German selected and sets German as the target language", async ({ page }) => {
     await page.goto("/library");
@@ -224,7 +216,7 @@ test.describe("onboarding with a language chosen on the landing page", () => {
     await expect(page.getByRole("button", { name: /Deutsch/ })).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByRole("heading", { name: "Pick something to read" })).toBeVisible();
     await expect(page.getByRole("main").getByRole("button").filter({ hasText: "words →" }).or(page.getByText("No starter texts yet"))).not.toHaveCount(0);
-    expect(patches.length).toBeGreaterThan(0); // React strict mode (dev) may run the effect twice
+    expect(patches.length).toBeGreaterThan(0);
     for (const body of patches) expect(body).toMatchObject({ targetLanguage: "de" });
   });
 

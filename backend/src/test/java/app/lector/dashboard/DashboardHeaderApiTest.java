@@ -13,7 +13,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** GET /api/dashboard/header: the streak for the header flame, how long is left of the learner's day, and known words. */
 @ClockApiTest
 class DashboardHeaderApiTest {
 
@@ -48,13 +47,11 @@ class DashboardHeaderApiTest {
 
     @Test
     void secondsLeftRunToMidnightInTheLearnersTimeZone() throws Exception {
-        // 09:00 UTC is 05:00 in New York (EDT): 19 hours to go.
         assertThat(streakIn("America/New_York", "2026-10-01T09:00:00Z").get("secondsLeftToday").asLong()).isEqualTo(19 * 3600);
     }
 
     @Test
     void theDayClocksGoBackHasTwentyFiveHours() throws Exception {
-        // Midnight EDT on 1 Nov 2026; clocks fall back at 02:00, so the day is 25 hours long.
         assertThat(streakIn("America/New_York", "2026-11-01T04:00:00Z").get("secondsLeftToday").asLong()).isEqualTo(25 * 3600);
     }
 

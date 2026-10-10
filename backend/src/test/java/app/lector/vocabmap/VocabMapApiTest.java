@@ -16,7 +16,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** GET /api/vocab-map: the vocabulary map's regions, areas and words with my status (vocabulary-map.feature). */
 @ApiTest
 class VocabMapApiTest {
 
@@ -213,7 +212,6 @@ class VocabMapApiTest {
         assertThat(millis).isLessThan(1000);
     }
 
-    /** Known words that are in no list ("x0", "x1", ...), written straight to the table to be quick. */
     private void insertKnown(long user, int count) {
         Timestamp now = Timestamp.from(Instant.now());
         List<Object[]> rows = new ArrayList<>();

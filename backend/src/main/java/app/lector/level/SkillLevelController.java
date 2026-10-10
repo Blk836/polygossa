@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The learner's Reading, Listening and Writing levels in a language (the Progress tab). Open to every plan. */
 @RestController
 @RequestMapping("/api/levels")
 public class SkillLevelController {
@@ -24,7 +23,6 @@ public class SkillLevelController {
         this.currentUser = currentUser;
     }
 
-    /** Levels in {@code language}, or in the learner's target language when none is given. */
     @GetMapping
     public SkillLevelService.Levels levels(@AuthenticationPrincipal AuthUser principal,
                                            @RequestParam(required = false) Language language) {

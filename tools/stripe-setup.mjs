@@ -1,8 +1,4 @@
 #!/usr/bin/env node
-// One-time Stripe setup for production (docs/acceptance/stripe-billing.feature): creates the prices and the webhook,
-// reading the secret key from Secrets Manager and saving the webhook's signing secret there; neither is printed.
-//   node tools/stripe-setup.mjs [--site https://…] [--live]
-// Needs the AWS CLI signed in to the app's account (profile polygossa). See tools/README.md.
 
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";

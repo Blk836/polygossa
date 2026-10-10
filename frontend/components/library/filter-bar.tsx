@@ -19,7 +19,6 @@ function FiltersIcon() {
   );
 }
 
-/** Everything but the category chips: a popover on wider screens, a sheet along the bottom on phones. */
 function FiltersPanel({ filters, onChange, count, onClose }: {
   filters: LibraryFilters;
   onChange: (f: LibraryFilters) => void;
@@ -50,15 +49,10 @@ function FiltersPanel({ filters, onChange, count, onClose }: {
   );
 }
 
-/**
- * My library's one filter bar, right above the cards (Airbnb-style): category chips to browse by, then a single
- * Filters button for the rest (type and source), badged with how many are set; those also show as pills that remove them.
- */
 export function FilterBar({ categories, filters, onChange, count }: {
   categories: Category[];
   filters: LibraryFilters;
   onChange: (f: LibraryFilters) => void;
-  /** Items the current filters show, for the panel's "Show N items". */
   count: number;
 }) {
   const [open, setOpen] = useState(false);

@@ -11,13 +11,11 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import tools.jackson.databind.JsonNode;
 
-/** Minimal client for an OpenAI-compatible /embeddings endpoint: one text in, one vector out. */
 @Component
 public class EmbeddingClient {
 
     private static final Logger log = LoggerFactory.getLogger(EmbeddingClient.class);
 
-    /** Why an embedding couldn't be made: the service failed or answered without a usable vector. */
     public static class EmbeddingException extends RuntimeException {
         public EmbeddingException(String message) {
             super(message);
@@ -39,7 +37,6 @@ public class EmbeddingClient {
                 .build();
     }
 
-    /** The model vectors come from; vectors of different models must not be compared. */
     public String model() {
         return config.embeddingModel();
     }
@@ -62,7 +59,6 @@ public class EmbeddingClient {
         return vector;
     }
 
-    /** The numbers of a JSON array; refuses anything else, including an empty array. */
     static float[] vector(JsonNode values) {
         if (values == null || !values.isArray() || values.isEmpty()) {
             throw new EmbeddingException("no embedding in the answer");

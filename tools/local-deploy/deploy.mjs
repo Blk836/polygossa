@@ -1,11 +1,6 @@
-// A deploy of production from this PC (docs/acceptance/local-deploy.feature): check AWS sign-in and Docker, take the
-// PC's turn, deploy the latest main from the deploy copy unless it is already live, check the site answers, and mark
-// main's commit on GitHub.
-
 const USAGE = "Usage: node tools/local-deploy.mjs [--again]";
-const PROBE_TRIES = 20; // 15 s apart, as GitHub's deploy waited: new containers take a few minutes to start
+const PROBE_TRIES = 20;
 
-/** @returns {Promise<number>} the exit code */
 export async function runDeploy(args, deps) {
   if (args.some((arg) => arg !== "--again")) {
     deps.log(`${USAGE}\n  (--again deploys main even if it is already live)`);
@@ -20,7 +15,6 @@ export async function runDeploy(args, deps) {
   }
 }
 
-/** Whether AWS sign-in and Docker are there, saying what to do when they aren't. */
 async function ready(deps) {
   const account = await deps.account();
   if (!account) {
@@ -60,7 +54,6 @@ async function deployMain(again, deps) {
   return 0;
 }
 
-/** Deploys, then checks the site; `problem` says what went wrong, if anything. */
 async function deployAndCheck(sha, deps) {
   if (!(await deps.prepare(sha))) return { problem: "the deploy copy of main could not be prepared" };
   const { ok, siteUrl } = await deps.deploy();
@@ -73,7 +66,6 @@ async function deployAndCheck(sha, deps) {
   return { siteUrl };
 }
 
-/** Asks `url` until it answers OK with a body passing `check`, up to PROBE_TRIES times. */
 async function probe(url, check, deps) {
   for (let attempt = 1; attempt <= PROBE_TRIES; attempt++) {
     if (await answers(url, check, deps)) return true;

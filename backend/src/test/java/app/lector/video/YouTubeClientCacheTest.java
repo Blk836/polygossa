@@ -11,7 +11,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/** Feature: A fast e2e suite, reusing YouTube's answers for a few minutes (docs/acceptance/e2e-speed.feature). */
 class YouTubeClientCacheTest {
 
     private static final String ID = "abcdefghijk";

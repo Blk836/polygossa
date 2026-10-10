@@ -3,9 +3,6 @@
 import { useCardLayout } from "../card-layout-context";
 import { Bone, ButtonBone, CardGridBone, LayoutPickerBone, PageLoading, SectionLoading, ShelfBone, SkeletonHeader } from "./parts";
 
-// Outlines of the pages made of text cards; their cards follow the learner's card layout (cards, compact or list).
-
-/** Explore's search box, level and type pickers (like its Toolbar). */
 function ExploreToolbarBone() {
   return (
     <div data-skeleton="toolbar" className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-center">
@@ -28,7 +25,6 @@ function CategoryChipsBone() {
   );
 }
 
-/** Explore's shelves while they load. */
 export function ExploreShelvesLoading() {
   const { layout } = useCardLayout();
   return (
@@ -39,7 +35,6 @@ export function ExploreShelvesLoading() {
   );
 }
 
-/** Explore's grid of cards (a category, search or topic) while it loads. */
 export function CardsLoading({ label }: { label: string }) {
   const { layout } = useCardLayout();
   return <SectionLoading label={label}><CardGridBone layout={layout} /></SectionLoading>;
@@ -63,7 +58,6 @@ export function LibrarySkeleton() {
   return (
     <PageLoading label="My library">
       <SkeletonHeader title="My library" actions={<><LayoutPickerBone /><ButtonBone className="h-[2.625rem] w-[5.25rem]" /><ButtonBone className="h-[2.625rem] w-[5.25rem]" /></>} />
-      {/* With no filters on, the filter bar is just its Filters button, on the right. */}
       <div data-skeleton="filters" className="mb-4 flex items-start justify-end gap-2">
         <Bone className="h-[2.125rem] w-[5.75rem] rounded-full" />
       </div>

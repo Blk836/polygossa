@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { playbackOf } from "./youtube-playback";
 
-// YouTube player states: -1 unstarted, 0 ended, 1 playing, 2 paused, 3 buffering, 5 cued.
 describe("YouTube playback state", () => {
   it("plays while playing, without buffering", () => {
     expect(playbackOf(false, 1)).toEqual({ playing: true, buffering: false });

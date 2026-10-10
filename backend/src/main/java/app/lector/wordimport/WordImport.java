@@ -15,10 +15,6 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.Locale;
 
-/**
- * One background import of a learner's words from another app, with its progress and result. Holds no credentials:
- * a LingQ API key lives only in memory while the import runs.
- */
 @Entity
 @Table(name = "word_imports", indexes = @Index(name = "idx_word_imports_user", columnList = "user_id,state"))
 public class WordImport {
@@ -52,7 +48,6 @@ public class WordImport {
     @Column(nullable = false, length = 16)
     private Source source;
 
-    /** Null: every language. */
     @Enumerated(EnumType.STRING)
     private Language language;
 
@@ -87,7 +82,6 @@ public class WordImport {
         state = State.RUNNING;
     }
 
-    /** Adds one batch: {@code found} words read, and what merging them did. */
     public void record(int foundInBatch, ImportCounts counts) {
         found += foundInBatch;
         added += counts.added();

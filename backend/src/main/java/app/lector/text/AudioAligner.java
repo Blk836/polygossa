@@ -7,17 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-/**
- * Produces per-word audio timings for synchronized playback. Three sources, best first:
- * subtitle cues (exact cue boundaries), sentence marks tapped by the user while listening, or an estimate that
- * spreads the audio duration over the words in proportion to their length with pauses at sentence breaks.
- */
 public final class AudioAligner {
 
-    /** Timing of one word token. */
     public record WordTiming(int i, long s, long e) {}
 
-    /** A user-tapped sentence start. */
     public record SentenceMark(int sentence, long startMs) {}
 
     private static final double SENTENCE_PAUSE_WEIGHT = 4.0;
@@ -27,8 +20,6 @@ public final class AudioAligner {
 
     public static List<WordTiming> fromCues(List<Token> tokens, List<SubtitleParser.Cue> cues) {
         int[] offsets = charOffsets(tokens);
-        // Where each token starts, in list order: never decreasing, so each cue's words are found by binary search
-        // instead of scanning the whole transcript once per cue (a long video's reader page did that on every load).
         int[] starts = new int[tokens.size()];
         for (int i = 0; i < starts.length; i++) {
             starts[i] = offsets[tokens.get(i).index()];
@@ -48,7 +39,6 @@ public final class AudioAligner {
         return out;
     }
 
-    /** The first position whose value is at least {@code value} ({@code sorted.length} when there is none). */
     static int firstAtOrAfter(int[] sorted, int value) {
         int lo = 0;
         int hi = sorted.length;
@@ -63,14 +53,8 @@ public final class AudioAligner {
         return lo;
     }
 
-    /** A stretch of a cue's text, from {@code offset}, spoken from {@code ms}. */
     private record Bound(int offset, long ms) {}
 
-    /**
-     * Words timed by the cue's word marks: the words from one mark up to the next share that stretch of time (one
-     * word, unless the transcript splits a caption word into several tokens). Marks are clamped into the cue and kept
-     * in order, so words never run backwards or into the next cue.
-     */
     private static List<WordTiming> byMarks(List<Token> words, int[] offsets, SubtitleParser.Cue cue, long endMs) {
         List<Bound> bounds = bounds(cue, endMs);
         List<WordTiming> out = new ArrayList<>();
@@ -85,7 +69,6 @@ public final class AudioAligner {
     }
 
     private static List<Bound> bounds(SubtitleParser.Cue cue, long endMs) {
-        // Words before the first mark run from the cue's start (an empty stretch when the first mark is at 0).
         List<Bound> out = new ArrayList<>(List.of(new Bound(0, cue.startMs())));
         long previous = cue.startMs();
         for (SubtitleParser.WordMark m : cue.words()) {
@@ -95,10 +78,6 @@ public final class AudioAligner {
         return out;
     }
 
-    /**
-     * Each cue's end, cut off at the start of the cue that follows it in time. YouTube keeps a caption line on
-     * screen after the next one starts; spreading words over that overlap would interleave the two lines.
-     */
     private static long[] clampedEnds(List<SubtitleParser.Cue> cues) {
         List<Integer> byStart = new ArrayList<>();
         for (int c = 0; c < cues.size(); c++) {

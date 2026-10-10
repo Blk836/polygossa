@@ -23,7 +23,6 @@ import {
 const tabClass = (current: boolean) =>
   `whitespace-nowrap rounded-md px-3 py-1.5 ${current ? "bg-accent-soft font-medium" : "text-muted hover:text-ink"}`;
 
-/** The forum: threads by category, pinned first, then by latest post. */
 export default function ForumPage() {
   return (
     <Suspense fallback={<ForumSkeleton />}>

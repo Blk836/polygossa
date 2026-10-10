@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import type { Token } from "@/lib/types";
 import { normalizePhrase, overlapping, sentenceHere, phraseMarks, phraseRange, readerStats, sentenceTexts, textAround, toParagraphs } from "./reader-text";
 
-/** Builds tokens like the backend: words and separators, with sentence numbers. */
 function tokens(...parts: (string | [string, number])[]): Token[] {
   return parts.map((p, index) => {
     const [text, sentence] = typeof p === "string" ? [p, 0] : p;
@@ -30,7 +29,6 @@ describe("toParagraphs", () => {
   });
 
   it("keeps text between two breaks of one separator as a paragraph of its own", () => {
-    // From a YouTube transcript: "… en [musique]\n2026.\n[musique]" — "2026." was dropped.
     const p = toParagraphs(tokens("en", " [", "musique", "]\n 2026. \n[", "musique", "]"));
     expect(p.map((x) => x.map((y) => y.text).join(""))).toEqual(["en [musique]", "2026.", "[musique]"]);
   });
@@ -134,7 +132,7 @@ describe("phraseRange", () => {
 });
 
 describe("overlapping", () => {
-  const p = tokens("a", " ", "b").map((t) => ({ ...t, index: t.index + 10 })); // indexes 10..12
+  const p = tokens("a", " ", "b").map((t) => ({ ...t, index: t.index + 10 }));
 
   it("passes the selection and active word through only when they touch the paragraph", () => {
     expect(overlapping(p, { start: 12, end: 15 }, 11)).toEqual({ sel: { start: 12, end: 15 }, active: 11 });
@@ -150,7 +148,6 @@ describe("overlapping", () => {
 });
 
 describe("sentenceHere", () => {
-  // Sentences 3 and 4 in this paragraph.
   const p = tokens(["a", 3], [" ", 3], ["b", 4]);
 
   it("passes the spoken sentence through only when the paragraph has some of it", () => {
@@ -168,7 +165,6 @@ describe("sentenceHere", () => {
 
 describe("edge cases", () => {
   it("trims only the whitespace between punctuation and the break", () => {
-    // French-style space before "?" must survive; only the space after it (before the break) goes.
     const p = toParagraphs(tokens("Ça va", " ? \n", "Adiós"));
     expect(p.map((x) => x.map((y) => y.text).join(""))).toEqual(["Ça va ?", "Adiós"]);
   });
@@ -198,7 +194,6 @@ describe("edge cases", () => {
   });
 });
 
-// translation-in-context.feature: the text around the clicked word, sent with its lookup.
 describe("textAround", () => {
   const t = tokens(["Fin", 0], [". ", 0], ["Un", 1], [" ", 1], ["os", 1], [",\n ", 1], ["un", 1], ["  ", 1], ["os", 1], [" !", 1], [" ", 2], ["Autre", 2]);
 

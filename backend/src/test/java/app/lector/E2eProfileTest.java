@@ -9,10 +9,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
-/**
- * The backend the browser tests run against ({@link E2eApplication}, the "e2e" profile on the test classpath): its own
- * PostgreSQL container, otherwise configured like development rather than like the backend tests.
- */
 @SpringBootTest(properties = "app.seed-samples=false")
 @ActiveProfiles("e2e")
 class E2eProfileTest {

@@ -29,16 +29,13 @@ const ALL_CATEGORIES = CATEGORIES.map((c) => c.code);
 
 type Grid = { items: TextSummary[]; total: number };
 
-/** Explore restarts (filters, page, shelves) whenever the language in the top bar changes. */
 export default function ExplorePage() {
   const { me } = useMe();
   return <Explore key={me.targetLanguage ?? "all"} language={me.targetLanguage ?? ""} />;
 }
 
-/** The category shelves, and the grid once a category, search or topic is picked; each remembered per filters. */
 function useExploreData(f: ExploreFilters) {
   const showShelves = f.category === null && f.query === "" && !f.topic;
-  // Shelves (and the category counts) follow language, level and type only.
   const shelvesPath = exploreQuery(f, PAGE_SIZE, true);
   const shelves = useRemembered(shelvesPath, () => api<Shelf[]>(shelvesPath));
   const gridPath = showShelves ? null : exploreQuery(f, PAGE_SIZE);
@@ -111,7 +108,6 @@ function Toolbar({ f, set }: { f: ExploreFilters; set: (patch: Partial<ExploreFi
   );
 }
 
-/** One category (or a search) as a paged grid. */
 function GridView({ f, grid, error, actions, set, onPage }: {
   f: ExploreFilters;
   grid: Grid | null;
@@ -144,10 +140,6 @@ function GridView({ f, grid, error, actions, set, onPage }: {
   );
 }
 
-/**
- * The rows picked for you, then shared playlists, then the category rows. They load separately, so they wait for each
- * other and appear together, in that order: otherwise the quickest (playlists) showed first and was then pushed down.
- */
 function ShelvesArea({ language, recs, shelves, actions, set }: {
   language: string;
   recs: ReturnType<typeof useRecommendations>;
@@ -183,7 +175,6 @@ function ShelvesView({ shelves, actions, onSeeAll }: {
   return <>{shelves.map((s) => <ShelfRow key={s.category} shelf={s} actions={actions} onSeeAll={() => onSeeAll(s.category)} />)}</>;
 }
 
-/** The personalised shelves above the category shelves; nothing while loading or when there are none. */
 function RecommendedShelves({ shelves, actions, onOpen, onNotInterested, onSeeAll }: {
   shelves: RecommendedShelf[] | null;
   actions: (t: TextSummary) => ReactNode;

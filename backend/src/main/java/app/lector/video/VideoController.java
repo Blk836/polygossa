@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-/** Import a YouTube video into the library (it then behaves like any text: share, like, bookmark, assign). */
 @RestController
 @RequestMapping("/api/texts")
 public class VideoController {

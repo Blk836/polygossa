@@ -5,17 +5,12 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** Parses SRT and WebVTT subtitle files into timed cues. */
 public final class SubtitleParser {
 
-    /**
-     * A subtitle cue; {@code charStart}/{@code charEnd} locate its text within the joined content. {@code words} are
-     * per-word start times when the source has them (YouTube's srv3 captions), else empty.
-     */
     public record Cue(long startMs, long endMs, String text, int charStart, int charEnd, List<WordMark> words) {
 
         public Cue {
-            words = words == null ? List.of() : List.copyOf(words); // null: cues stored before word marks existed
+            words = words == null ? List.of() : List.copyOf(words);
         }
 
         public Cue(long startMs, long endMs, String text, int charStart, int charEnd) {
@@ -23,7 +18,6 @@ public final class SubtitleParser {
         }
     }
 
-    /** A word starting at {@code offset} within its cue's text is spoken from {@code startMs}. */
     public record WordMark(int offset, long startMs) {}
 
     public record Parsed(String content, List<Cue> cues) {}
@@ -56,7 +50,6 @@ public final class SubtitleParser {
         return join(found);
     }
 
-    /** A cue's text runs until a blank line or the next timing line. */
     private static int endOfCueText(String[] lines, int from) {
         int i = from;
         while (i < lines.length && !lines[i].isBlank() && !TIMING.matcher(lines[i]).find()) {
@@ -76,7 +69,6 @@ public final class SubtitleParser {
         return String.join(" ", parts);
     }
 
-    /** Joins cue texts with line breaks and records where each cue sits in the joined content. */
     public static Parsed join(List<Cue> cues) {
         StringBuilder content = new StringBuilder();
         List<Cue> placed = new ArrayList<>();

@@ -1,11 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { addSyncedAudio, cleanUp, createText, createVideo, openReader, pager, player, TALL, type Created } from "./reader-helpers";
 
-// Pressing Play on a lesson reopened on a later page: the seek bar shows where that page starts, and must keep showing
-// it until playback moves on, never 0:00. Like YouTube's real player, the stand-in here takes a moment to start
-// (buffering) and reports a seek's new time a moment late.
-
-test.use({ viewport: TALL }); // four pages of 250 words
+test.use({ viewport: TALL });
 
 let created: Created | null = null;
 
@@ -47,7 +43,6 @@ const seekBar = (page: Page) => player(page).getByRole("slider", { name: "Seek" 
 const seekMs = async (page: Page) => Number(await seekBar(page).inputValue());
 const playButton = (page: Page) => player(page).getByRole("button", { name: "Play", exact: true });
 
-/** Reads page `n` (so the browser remembers it), leaves, and opens the lesson again without a page in the URL. */
 async function reopenOnPage(page: Page, id: number, n: number) {
   await openReader(page, `/read/${id}?page=${n}`);
   await expect(pager(page)).toContainText(`Page ${n} of 4`);
@@ -56,7 +51,6 @@ async function reopenOnPage(page: Page, id: number, n: number) {
   await expect(pager(page)).toContainText(`Page ${n} of 4`);
 }
 
-/** When the first word on the page shown is spoken, from the lesson's own timings. */
 async function pageStartMs(page: Page, id: number): Promise<number> {
   const first = Number(await page.locator("article [data-i]").first().getAttribute("data-i"));
   const detail = await (await page.request.get(`/api/texts/${id}`)).json();
@@ -64,7 +58,6 @@ async function pageStartMs(page: Page, id: number): Promise<number> {
   return Math.min(...timings.map((t) => t.s));
 }
 
-/** Records the seek bar's value on every frame from now on. */
 async function recordBar(page: Page) {
   await page.evaluate(() => {
     const w = window as unknown as Win;
@@ -80,7 +73,6 @@ async function recordBar(page: Page) {
 
 const recorded = (page: Page) => page.evaluate(() => (window as unknown as Win).__bar);
 
-/** Opens a video on page 3 with the bar cued there; returns where page 3 starts. */
 async function cuedVideo(page: Page): Promise<number> {
   await page.route("https://www.youtube.com/iframe_api", (route) => route.fulfill({ contentType: "text/javascript", body: SLOW_YOUTUBE }));
   created = await createVideo(page);
@@ -112,8 +104,6 @@ test.describe("videos", () => {
   });
 
   test("pressing Play twice while the video is still starting keeps the bar at the page's start", async ({ page }) => {
-    // While YouTube starts, the button still reads Play (there is no Pause to press yet), so a second press is the
-    // impatient listener's case.
     const start = await cuedVideo(page);
     await playButton(page).click();
     await page.waitForTimeout(200);
@@ -140,7 +130,7 @@ test("an audio lesson reopened on page 3 never shows 0:00 when Play is pressed",
   created = await createText(page);
   await addSyncedAudio(page, created.id);
   await reopenOnPage(page, created.id, 3);
-  await expect(player(page)).toContainText("1:00"); // metadata loaded
+  await expect(player(page)).toContainText("1:00");
   const start = await pageStartMs(page, created.id);
   await expect.poll(() => seekMs(page)).toBe(start);
   await recordBar(page);

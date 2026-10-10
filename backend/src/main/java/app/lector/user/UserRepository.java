@@ -15,7 +15,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByCognitoSub(String cognitoSub);
 
-    /** Users whose email or name contains {@code q} (a lower-cased LIKE pattern, or null for everyone). */
     @Query("select u from User u where :q is null or lower(u.email) like :q or lower(u.displayName) like :q")
     Page<User> search(@Param("q") String q, Pageable pageable);
 }

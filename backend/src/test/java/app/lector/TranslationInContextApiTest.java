@@ -31,11 +31,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * translation-in-context.feature: a word Amazon Translate gives back unchanged is asked again marked inside its
- * sentence, and the marked words become its shared meaning. Its own setup, like {@link WordTranslationsApiTest}:
- * machine translation on against {@link TranslateStub}, and a movable clock for the monthly cap.
- */
 @SpringBootTest(properties = {
         "test.database=translations-in-context",
         "app.seed-samples=false",
@@ -93,7 +88,6 @@ class TranslationInContextApiTest {
         usage.deleteAll();
     }
 
-    /** A made-up word nobody has looked up yet (stored translations are shared). */
     private static String fresh() {
         StringBuilder s = new StringBuilder("w");
         for (int i = 0; i < 9; i++) {
@@ -135,12 +129,9 @@ class TranslationInContextApiTest {
         return stored.findBySourceLanguageAndTargetLanguageAndTerm(Language.FR, NativeLanguage.EN, word).orElseThrow();
     }
 
-    /** The word as stored before this change: Amazon gave it back, so it has no meaning. */
     private void storedAsEchoed(String word) {
         stored.insertIfAbsent("FR", "EN", word, null, Instant.now());
     }
-
-    // --- Asking again in context ---
 
     @Test
     void anEchoedWordIsAskedAgainInsideItsSentence() throws Exception {
@@ -205,8 +196,6 @@ class TranslationInContextApiTest {
         assertThat(row(word).getTranslation()).isEqualTo("Were you limping");
     }
 
-    // --- When context doesn't help ---
-
     @Test
     void anAnswerWithNoUsableMarkIsStoredAsNoMeaning() throws Exception {
         String word = fresh();
@@ -254,8 +243,6 @@ class TranslationInContextApiTest {
         TRANSLATE.answer("Tom &amp; Jerry <b>" + word + "</b>.", "en", "Tom & Jerry <b>salt &amp; pepper</b>.");
         assertThat(meanings(lookup(word, "Tom & Jerry ", "."))).containsExactly("salt & pepper");
     }
-
-    // --- Failures, cap, older answers ---
 
     @Test
     void whenTheInContextAskFailsTheWordStaysOpen() throws Exception {

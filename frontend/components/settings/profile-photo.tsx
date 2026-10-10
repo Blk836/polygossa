@@ -11,7 +11,6 @@ import { PhotoCropper } from "./photo-cropper";
 
 const UNREADABLE = "That image couldn't be read. Try another one.";
 
-/** Decodes a picked file, or rejects when the browser can't read it as an image. */
 function decode(file: File): Promise<HTMLImageElement> {
   const url = URL.createObjectURL(file);
   return new Promise((resolve, reject) => {
@@ -26,10 +25,6 @@ function decode(file: File): Promise<HTMLImageElement> {
   });
 }
 
-/**
- * Settings › Profile's photo: the current photo (or initial), "Upload photo" / "Change photo", which opens the crop
- * dialog, and "Remove photo". Saved straight away, separately from the profile form's Save.
- */
 export function ProfilePhoto() {
   const { me, setMe } = useMe();
   const input = useRef<HTMLInputElement>(null);
@@ -37,14 +32,13 @@ export function ProfilePhoto() {
   const [removing, setRemoving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // The object URL lives as long as the crop dialog showing it.
   useEffect(() => () => {
     if (picked) URL.revokeObjectURL(picked.src);
   }, [picked]);
 
   async function onPick(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    e.target.value = ""; // so picking the same file again still fires a change
+    e.target.value = "";
     if (!file) return;
     setError(null);
     const invalid = photoFileError(file);

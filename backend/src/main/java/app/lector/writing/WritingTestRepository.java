@@ -10,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface WritingTestRepository extends JpaRepository<WritingTest, Long> {
 
-    /** A test still open for writing (not handed in, deadline plus grace not passed). */
     Optional<WritingTest> findFirstByUserIdAndLanguageAndSubmittedAtIsNullAndDeadlineAfterOrderByStartedAtDesc(
             Long userId, Language language, Instant closesAfter);
 

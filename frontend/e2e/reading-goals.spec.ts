@@ -1,9 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { addSyncedAudio, cleanUp, createText, openReader, player, type Created } from "./reader-helpers";
 
-// docs/acceptance/reading-listening-goals.feature: words read, time listened and the daily goal.
-
-/** The real dashboard, with today's goal replaced by the test's (the shared account's goal must not change). */
 async function stubGoal(page: Page, goal: { kind: string; target: number; done: number; met: boolean }) {
   await page.route("**/api/dashboard?*", async (route) => {
     const res = await route.fetch();
@@ -62,7 +59,6 @@ test.describe("listening", () => {
   test("playing audio is reported as listening time when the reader closes", async ({ page }) => {
     created = await createText(page, 40);
     await addSyncedAudio(page, created.id);
-    // The last heartbeat goes as a beacon when the reader closes, so the backend's total is what's checked.
     const listened = async () => {
       const days = (await (await page.request.get("/api/dashboard")).json()).activity.days;
       return days[days.length - 1].listenedSeconds as number;

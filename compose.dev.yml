@@ -1,8 +1,3 @@
-# The development database: PostgreSQL on localhost:5432, data kept in the polygossa-dev-db volume.
-# The backend's bootRun (and IntelliJ's Backend run) starts it automatically and leaves it running; by hand:
-#   docker compose -f compose.dev.yml up -d
-# Tests never use it: backend and e2e tests start throwaway PostgreSQL containers of their own (Testcontainers).
-# docker-compose.yml is the full production-like stack instead.
 name: polygossa-dev
 services:
   postgres:

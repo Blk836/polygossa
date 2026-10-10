@@ -9,10 +9,8 @@ import type { Point } from "@/lib/map-geometry";
 import type { VocabMapRegion, VocabMapWord } from "@/lib/types";
 import { regionWords, tileStats, type BandView, type TileStats } from "@/lib/vocab-map";
 
-/** Where a tag sits: its world point, which the frame's camera variables turn into a place on screen. */
 const at = (p: Point) => ({ "--x": p.x, "--y": p.y }) as CSSProperties;
 
-/** A name on two lines, split after "&" ("Food &" / "Drink"), for phones, where countries sit close together. */
 function Name({ name, compact, display }: { name: string; compact: boolean; display: boolean }) {
   const [first, ...rest] = name.split(" & ");
   const className = `name ${display ? "font-display" : ""}`;
@@ -20,10 +18,6 @@ function Name({ name, compact, display }: { name: string; compact: boolean; disp
   return <span className={className}>{first} &amp;<br />{rest.join(" & ")}</span>;
 }
 
-/**
- * A country's or province's name tag: its name, a small progress bar and "40 / 62", then "3 learning · +18 at A2"
- * when there is any (a country's only while it is pointed at or focused).
- */
 function Tag({ id, kind, name, words, view, where, compact, more, fit = FULL }: {
   id: string;
   kind: "country" | "area";
@@ -33,7 +27,6 @@ function Tag({ id, kind, name, words, view, where, compact, more, fit = FULL }: 
   where: Point;
   compact: boolean;
   more: boolean;
-  /** On a small map: moved to make room, and maybe without its count. */
   fit?: TagFit;
 }) {
   const stats = tileStats(words, view.shown, view.next);
@@ -59,7 +52,6 @@ function Tag({ id, kind, name, words, view, where, compact, more, fit = FULL }: 
   );
 }
 
-/** "3 learning · +18 at A2", when there is any of either. */
 function Notes({ stats, next }: { stats: TileStats; next: string | null }) {
   const notes = [
     stats.learning > 0 && <span key="l" data-testid="tile-learning">{stats.learning} learning</span>,
@@ -71,7 +63,6 @@ function Notes({ stats, next }: { stats: TileStats; next: string | null }) {
 
 const FULL: TagFit = { show: "full", dx: 0, dy: 0 };
 
-/** How each named country's tag fits on a small map, where the camera came to rest. */
 function countryFits(world: HexWorld, byId: Map<string, VocabMapRegion>, plan: LabelPlan, view: BandView, camera: Camera, viewport: Size) {
   return fitTags(world.countries.filter((c) => plan.countries.has(c.regionId) && byId.has(c.regionId)).map((c) => {
     const stats = tileStats(regionWords(byId.get(c.regionId)!), view.shown, view.next);
@@ -85,17 +76,14 @@ function countryFits(world: HexWorld, byId: Map<string, VocabMapRegion>, plan: L
   }));
 }
 
-/** Country names far out, the names of an open country's provinces closer in; HTML over the map, the same size at every zoom. */
 export function MapTags({ world, regions, plan, view, camera, viewport, compact, pointed }: {
   world: HexWorld;
   regions: VocabMapRegion[];
   plan: LabelPlan;
   view: BandView;
-  /** Where the camera came to rest, to keep compact tags from overlapping there. */
   camera: Camera;
   viewport: Size;
   compact: boolean;
-  /** The country pointed at or focused, whose tag shows more. */
   pointed: string | null;
 }) {
   const byId = new Map(regions.map((r) => [r.id, r]));
@@ -121,11 +109,9 @@ export function MapTags({ world, regions, plan, view, camera, viewport, compact,
   );
 }
 
-/** Known words outside the list: the uncharted sea off the coast, a way into Vocabulary's known words. */
 export function BeyondTheCore({ count, world }: { count: number; world: HexWorld }) {
   const router = useRouter();
   const href = "/vocabulary?status=known";
-  // It sits off a corner of the coast: written inwards from that corner, and moved clear of its floating controls.
   const top = world.beyond.y < world.height / 2;
   const left = world.beyond.x < world.width / 2;
   const style = { ...at(world.beyond), transform: `translate(${left ? "0" : "-100%"}, -50%)`, justifyItems: left ? "start" : "end" };

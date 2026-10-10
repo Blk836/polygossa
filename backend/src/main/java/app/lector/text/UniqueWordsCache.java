@@ -11,11 +11,6 @@ import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/**
- * Each text's distinct word forms, remembered so lists of cards don't re-parse every text's stored word list on each
- * request. An entry is only used while the stored list has the same length and hash, so a re-tokenised text is read
- * afresh; the least recently used texts are forgotten once {@code maxTexts} are held.
- */
 @Component
 public class UniqueWordsCache {
 
@@ -43,7 +38,6 @@ public class UniqueWordsCache {
         };
     }
 
-    /** The distinct normalised words of the text with this id, stored as {@code wordsJson}; {@code read} parses them. */
     public Set<String> words(Long textId, String wordsJson, Function<String, Set<String>> read) {
         if (textId == null) {
             return read.apply(wordsJson);

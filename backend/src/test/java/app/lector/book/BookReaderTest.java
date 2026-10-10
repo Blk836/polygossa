@@ -11,14 +11,11 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-/** book-import.feature: turning EPUB and PDF files into titled chapters. */
 class BookReaderTest {
 
     private static Book read(byte[] bytes, String fileName) {
         return BookReader.read(bytes, fileName);
     }
-
-    // --- EPUB ---
 
     @Test
     void anEpubBecomesItsChaptersInSpineOrder() {
@@ -52,8 +49,8 @@ class BookReaderTest {
 
     @Test
     void aVeryLongChapterIsSplitAtParagraphs() {
-        String paragraph = "palabra ".repeat(1249).strip() + "."; // ~10,000 characters
-        String[] paragraphs = new String[25]; // ~250,000 characters
+        String paragraph = "palabra ".repeat(1249).strip() + ".";
+        String[] paragraphs = new String[25];
         java.util.Arrays.fill(paragraphs, paragraph);
         Book book = read(BookFiles.epub("Largo", Map.of("a.xhtml", chapter("Largo", paragraphs))), "x.epub");
         assertThat(book.chapters()).extracting(Book.Chapter::title).containsExactly("Largo (1)", "Largo (2)", "Largo (3)");
@@ -100,8 +97,6 @@ class BookReaderTest {
                 .hasMessageContaining("Upload an EPUB or a PDF");
     }
 
-    // --- PDF ---
-
     @Test
     void aPdfWithAnOutlineIsSplitAtItsChapters() {
         byte[] pdf = BookFiles.pdf("Mi libro", List.of(
@@ -138,7 +133,6 @@ class BookReaderTest {
         assertThat(book.chapters().size()).isGreaterThan(1);
         assertThat(book.chapters().getFirst().title()).isEqualTo("Part 1");
         assertThat(book.chapters()).allSatisfy(c -> assertThat(c.content().length()).isLessThanOrEqualTo(25_000));
-        // Hard-wrapped lines are joined into paragraphs; pages end paragraphs.
         assertThat(book.chapters().getFirst().content()).doesNotContainPattern("[^\n]\n[^\n]")
                 .contains("mas.\n\nLinea 0 de la pagina 1");
     }

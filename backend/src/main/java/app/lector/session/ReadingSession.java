@@ -17,7 +17,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 
-/** Time spent with a text open in the reader; the client sends heartbeats while the tab is visible. */
 @Entity
 @Table(name = "reading_sessions", indexes = @Index(name = "idx_sessions_user", columnList = "user_id,started_at"))
 public class ReadingSession {
@@ -47,10 +46,8 @@ public class ReadingSession {
     @Column(nullable = false)
     private long durationSeconds;
 
-    /** Time the audio or video played (null in sessions from before listening was counted). */
     private Long listenedSeconds;
 
-    /** Set when the reader reaches the end of the text ("finish lesson"). */
     private boolean completed;
 
     protected ReadingSession() {}

@@ -1,6 +1,5 @@
 import type { Tours } from "./tours";
 import type { GoalKind } from "./dashboard-types";
-// Shapes of the Spring Boot API's JSON responses.
 
 export type LanguageCode = "en" | "es" | "fr" | "de" | "it" | "pt" | "ja" | "zh" | "ko";
 export type WordStatus = "learning" | "known" | "ignored";
@@ -17,11 +16,9 @@ export interface PlanInfo {
   usage: { texts: number; savedWords: number };
 }
 
-/** Settings › Subscription's view of Stripe billing (GET /api/billing); `enabled` false keeps the plan switch. */
 export interface Billing {
   enabled: boolean;
   testMode: boolean;
-  /** The price bought (pro_monthly, pro_yearly, classroom_monthly), or null without a live subscription. */
   plan: string | null;
   interval: "month" | "year" | null;
   status: string | null;
@@ -35,23 +32,17 @@ export interface Me {
   email: string;
   displayName: string;
   targetLanguage: LanguageCode | null;
-  /** The language definitions are translated into ("en" by default). */
   nativeLanguage: string;
   dailyReviewGoal: number;
-  /** What the daily goal measures and its target (a reviews goal's target is dailyReviewGoal). */
   dailyGoal: { kind: GoalKind; target: number };
-  /** Opt-in: only days that reach the goal count toward the streak. */
   streakNeedsGoal: boolean;
   timezone: string;
   plan: PlanInfo;
-  photoUrl: string | null; // the profile photo, served through the BFF; null for none
-  /** One of the team (FORUM_ADMINS): the account menu offers the admin panel. */
+  photoUrl: string | null;
   admin: boolean;
-  /** First-visit tours: on for new accounts; the ones already seen are not shown again. */
   tours: Tours;
 }
 
-/** Someone named in the app (an owner, author or student), with their profile photo or null. */
 export type Person = { id: number; displayName: string; photoUrl: string | null };
 
 export interface KnownStats {
@@ -81,26 +72,21 @@ export interface TextSummary {
   bookmarked?: boolean;
   stats?: KnownStats;
   kind: MediaKind;
-  /** Present for videos only. */
   video?: { videoId: string; thumbnailUrl: string; durationSeconds?: number };
   category: Category;
-  /** How far the viewer has read; absent until they open it. */
   progress?: ReadingProgress;
 }
 
-/** `position`: the token to resume at; `percent`: words before the furthest point reached (100 once finished). */
 export interface ReadingProgress {
   position: number;
   percent: number;
   completed: boolean;
 }
 
-/** Library categories; see lib/categories.ts for labels. "other" holds anything uncategorised. */
 export type Category =
   | "learners" | "daily-life" | "stories" | "news" | "culture" | "travel" | "food" | "science" | "history"
   | "entertainment" | "other";
 
-/** One Explore shelf: the newest public items in a category and how many there are in all. */
 export interface Shelf {
   category: Category;
   total: number;
@@ -118,9 +104,9 @@ export interface Token {
 }
 
 export interface WordTiming {
-  i: number; // token index
-  s: number; // start ms
-  e: number; // end ms
+  i: number;
+  s: number;
+  e: number;
 }
 
 export interface TextDetail {
@@ -129,7 +115,6 @@ export interface TextDetail {
   statuses: Record<string, WordStatus>;
   phrases: { term: string; status: WordStatus }[];
   audio: { src: string; contentType?: string; timings: WordTiming[]; hasCues: boolean } | null;
-  /** Present for videos: the YouTube id and word timings that drive highlighting while it plays. */
   video: { videoId: string; durationSeconds?: number; timings: WordTiming[]; hasCues: boolean } | null;
   speechLocale: string;
 }
@@ -151,16 +136,11 @@ export interface DictionaryResult {
   sourceUrl?: string | null;
 }
 
-/** What the word popup shows for a word or phrase: its meanings in the learner's own language. */
 export interface WordLookup {
-  /** The word's normalized key, as saved words keep it. */
   term: string;
   language: LanguageCode;
-  /** Empty when there is none to show yet. */
   meanings: string[];
-  /** The learner's native language; null when they are reading it. */
   meaningLanguage: string | null;
-  /** Other learners' saved meanings, or a machine translation; null without meanings. */
   source: "community" | "machine" | null;
 }
 
@@ -172,14 +152,12 @@ export interface VocabularyEntry {
   kind: EntryKind;
   status: WordStatus;
   definition?: string;
-  /** The word in the learner's own language, and that language's code. */
   meaning?: string;
   meaningLanguage?: string;
   partOfSpeech?: string;
   pronunciation?: string;
   example?: string;
   contextSentence?: string;
-  /** The learner's own note and tags (lower-case, one word each). */
   note?: string;
   tags?: string[];
   sourceText?: { id: number; title: string };
@@ -259,13 +237,11 @@ export interface WritingSubmission {
 
 export interface RubricScore {
   criterion: "task" | "grammar" | "vocabulary" | "coherence";
-  /** 1–5 */
   score: number;
   comment: string;
 }
 
 export interface WritingGrade {
-  /** 0–100; capped in proportion when the answer was shorter than the minimum. */
   score: number;
   level: CefrLevel | null;
   rubric: RubricScore[];
@@ -274,7 +250,6 @@ export interface WritingGrade {
   summary: string;
 }
 
-/** A timed writing test (GET/POST /api/writing/tests). */
 export interface WritingTest {
   id: number;
   language: LanguageCode;
@@ -291,7 +266,6 @@ export interface WritingTest {
   submittedAt?: string;
   grade?: WritingGrade;
   gradeError?: string;
-  /** The AI model and grading-prompt version that produced the grade. */
   gradeModel?: string;
   gradePromptVersion?: string;
 }

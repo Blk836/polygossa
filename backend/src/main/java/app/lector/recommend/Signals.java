@@ -3,17 +3,8 @@ package app.lector.recommend;
 import java.time.Duration;
 import java.time.Instant;
 
-/**
- * Implicit feedback: how much one learner's activity on one text says they liked it, each signal decaying from when it
- * happened. Finished +3, read at least half +2, liked +3, bookmarked +2, +1 per 10 minutes read (at most +3), opened
- * and left under 10% for a week -1, "Not interested" -4.
- */
 public final class Signals {
 
-    /**
-     * What a learner did with a text. Dates may be null when the signal is absent ({@code readAt} null with time
-     * spent counts the time undecayed).
-     */
     public record Activity(boolean completed, int percent, Instant progressAt, Instant likedAt, Instant bookmarkedAt,
                            long seconds, Instant readAt, Instant dismissedAt) {}
 
@@ -51,12 +42,10 @@ public final class Signals {
         return at(w, a.progressAt(), now, halfLifeDays);
     }
 
-    /** Opened, read under 10%, and not touched for a week. */
     public static boolean abandoned(int percent, boolean completed, Instant progressAt, Instant now) {
         return !completed && percent < 10 && progressAt != null && !progressAt.plus(ABANDON_AFTER).isAfter(now);
     }
 
-    /** Shown in Explore 5 times and never opened: -0.5; 10 times: -1. Not decayed. */
     public static double impressionPenalty(int impressions, int opens) {
         if (opens > 0 || impressions < 5) {
             return 0;

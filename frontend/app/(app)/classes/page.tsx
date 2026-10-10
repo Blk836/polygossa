@@ -113,7 +113,7 @@ export default function ClassesPage() {
 
   function joined(c: ClassSummary) {
     setClasses((list) => [...(list ?? []).filter((x) => x.id !== c.id), c]);
-    void refresh(); // joining a Classroom-plan class unlocks Pro
+    void refresh();
   }
 
   return (

@@ -3,12 +3,10 @@ package app.lector.book;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Cutting long chapters into parts that fit a text, at paragraph boundaries where possible. */
 final class Chapters {
 
     private Chapters() {}
 
-    /** The chapter as is, or "title (1)", "title (2)", … when it is longer than {@code max} characters. */
     static List<Book.Chapter> split(String title, String content, int max) {
         List<String> parts = pack(content, max);
         if (parts.size() == 1) {
@@ -21,10 +19,6 @@ final class Chapters {
         return out;
     }
 
-    /**
-     * Packs paragraphs (separated by blank lines) into parts of at most {@code max} characters. A paragraph too long
-     * for one part is cut at line breaks, and a line too long at the last space before the limit.
-     */
     static List<String> pack(String content, int max) {
         List<String> units = new ArrayList<>();
         for (String paragraph : content.strip().split("\\n\\s*\\n")) {
@@ -45,7 +39,6 @@ final class Chapters {
         return parts;
     }
 
-    /** A unit that fits, else its lines, else pieces cut at spaces. */
     private static List<String> cut(String text, int max) {
         if (text.length() <= max) {
             return List.of(text);

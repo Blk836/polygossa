@@ -8,11 +8,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-/**
- * Reads a word list exported from Readlang. Its export has changed over the years, so this is lenient: comma, tab,
- * semicolon or pipe separated, quoted fields, an optional header row naming the columns in any order (word,
- * translation, context), else the columns word, translation, context. Every word comes in as learning.
- */
 final class ReadlangParser {
 
     static final String NO_WORDS = "This file has no words in it. Export your words from Readlang and upload that file.";
@@ -20,7 +15,6 @@ final class ReadlangParser {
     private static final char[] DELIMITERS = {'\t', ',', ';', '|'};
     private static final Set<String> WORD_HEADERS = Set.of("word", "words", "phrase", "term", "expression", "front");
 
-    /** Column positions; -1 when the file has no such column. */
     private record Columns(int word, int translation, int context) {
         static final Columns DEFAULT = new Columns(0, 1, 2);
     }
@@ -55,7 +49,6 @@ final class ReadlangParser {
         return "";
     }
 
-    /** The separator used most outside quotes on the first line (tab, then comma, on a tie); comma by default. */
     static char delimiter(String line) {
         int[] counts = counts(line);
         int best = 1;
@@ -67,7 +60,6 @@ final class ReadlangParser {
         return DELIMITERS[best];
     }
 
-    /** How often each of {@link #DELIMITERS} appears outside quotes. */
     private static int[] counts(String line) {
         int[] counts = new int[DELIMITERS.length];
         boolean quoted = false;
@@ -82,7 +74,6 @@ final class ReadlangParser {
         return counts;
     }
 
-    /** The columns a header row names, or {@link Columns#DEFAULT} when the first row isn't a header. */
     private static Columns header(List<String> first) {
         int[] columns = {-1, -1, -1};
         for (int i = 0; i < first.size(); i++) {
@@ -94,7 +85,6 @@ final class ReadlangParser {
         return columns[0] < 0 ? Columns.DEFAULT : new Columns(columns[0], columns[1], columns[2]);
     }
 
-    /** What a header names: 0 the word, 1 its translation, 2 its context; -1 anything else. */
     private static int kind(String name) {
         if (WORD_HEADERS.contains(name)) {
             return 0;
@@ -118,7 +108,6 @@ final class ReadlangParser {
         return value.isEmpty() ? null : value;
     }
 
-    /** RFC 4180 rows: quoted fields may hold the delimiter, newlines and doubled quotes; blank lines are dropped. */
     private static List<List<String>> rows(String text, char delimiter) {
         List<List<String>> rows = new ArrayList<>();
         List<String> row = new ArrayList<>();

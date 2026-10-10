@@ -1,16 +1,9 @@
-// Pure text logic behind the reader: paragraphs, phrase matching, sentences and known-word stats.
 import type { Token, WordStatus } from "@/lib/types";
 
-/** Same normalization the backend applies to saved phrases. */
 export function normalizePhrase(s: string): string {
   return s.trim().replace(/’/g, "'").replace(/\s+/g, " ").toLowerCase();
 }
 
-/**
- * Splits tokens into paragraphs at line breaks. A separator token like ".\n\n" keeps its punctuation: text before
- * the first break ends the current paragraph, text after the last break starts the next, and text between breaks
- * (like "]\n2026.\n[") is a paragraph of its own; the breaks are dropped.
- */
 export function toParagraphs(tokens: Token[]): Token[][] {
   const out: Token[][] = [[]];
   for (const t of tokens) {
@@ -19,7 +12,7 @@ export function toParagraphs(tokens: Token[]): Token[][] {
       continue;
     }
     t.text.split("\n").forEach((line, k, lines) => {
-      if (k > 0) out.push([]); // empty paragraphs are filtered out below
+      if (k > 0) out.push([]);
       const text = k === 0 ? line.trimEnd() : k === lines.length - 1 ? line.trimStart() : line.trim();
       if (text) out[out.length - 1].push({ ...t, text });
     });
@@ -27,7 +20,6 @@ export function toParagraphs(tokens: Token[]): Token[][] {
   return out.filter((p) => p.length > 0);
 }
 
-/** Token index → status for every word inside an occurrence of a saved phrase. */
 export function phraseMarks(tokens: Token[], phrases: { term: string; status: WordStatus }[]): Map<number, WordStatus> {
   const marks = new Map<number, WordStatus>();
   const starts: number[] = [];
@@ -48,7 +40,6 @@ export function phraseMarks(tokens: Token[], phrases: { term: string; status: Wo
   return marks;
 }
 
-/** Sentence number → its text with whitespace collapsed (the "context sentence" for a word). */
 export function sentenceTexts(tokens: Token[]): Map<number, string> {
   const m = new Map<number, string>();
   for (const t of tokens) m.set(t.sentence, (m.get(t.sentence) ?? "") + t.text);
@@ -56,10 +47,6 @@ export function sentenceTexts(tokens: Token[]): Map<number, string> {
   return m;
 }
 
-/**
- * The text of the sentence before and after tokens start..end (a word or phrase), whitespace collapsed, sent with its
- * lookup so a word Amazon gives back unchanged can be asked inside its sentence (translation-in-context.feature).
- */
 export interface TextAround {
   before: string;
   after: string;
@@ -74,7 +61,6 @@ export function textAround(tokens: Token[], start: number, end: number): TextAro
 
 export interface ReaderStats {
   total: number;
-  /** Known plus ignored: words the reader doesn't need to learn. */
   known: number;
   learning: number;
   unseen: number;
@@ -96,14 +82,13 @@ export function readerStats(tokens: Token[], statuses: Record<string, WordStatus
   return { total, known, learning, unseen: total - known - learning, percent };
 }
 
-/** Orders a selection's ends and trims non-word tokens off both sides; null if no word is selected. */
 export function phraseRange(tokens: Token[], a: number, b: number): { start: number; end: number } | null {
   const hi = Math.max(a, b);
   let start = Math.min(a, b);
   while (start <= hi && !tokens[start].word) start++;
   if (start > hi) return null;
   let end = hi;
-  while (!tokens[end].word) end--; // stops at `start` at the latest, which is a word
+  while (!tokens[end].word) end--;
   return { start, end };
 }
 
@@ -112,7 +97,6 @@ export interface Range {
   end: number;
 }
 
-/** Narrows a range or index to a paragraph so unaffected paragraphs don't re-render. */
 export function overlapping(p: Token[], sel: Range | null, active: number | null) {
   if (!p.length) return { sel: null, active: null };
   const first = p[0].index;
@@ -122,13 +106,11 @@ export function overlapping(p: Token[], sel: Range | null, active: number | null
   return { sel: selHere ? sel : null, active: activeHere ? active : null };
 }
 
-/** The spoken sentence, only when this paragraph has some of it (keeps memoization effective). */
 export function sentenceHere(p: Token[], sentence: number | null): number | null {
   if (sentence === null || !p.length) return null;
   return sentence >= p[0].sentence && sentence <= p[p.length - 1].sentence ? sentence : null;
 }
 
-/** Next word token from `from` in direction `dir`, or null. */
 export function nextWord(tokens: Token[], from: number, dir: 1 | -1): number | null {
   for (let i = from + dir; i >= 0 && i < tokens.length; i += dir) if (tokens[i].word) return i;
   return null;

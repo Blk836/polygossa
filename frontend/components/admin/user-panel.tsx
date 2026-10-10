@@ -7,7 +7,6 @@ import { ACTIONS, actionSummary, type ActionKey, type AdminUserDetail } from "@/
 import { api, errorMessage } from "@/lib/api";
 import type { Tier } from "@/lib/types";
 
-/** Asks before an action runs, inline (never a browser dialog). */
 function Confirm({ text, yes, onYes, onNo }: { text: string; yes: string; onYes: () => void; onNo: () => void }) {
   return (
     <div role="alertdialog" aria-label="Are you sure?" className="mt-3 rounded-lg border border-line bg-paper p-3 text-sm">
@@ -38,7 +37,6 @@ function ItemList({ title, items, onRemove }: { title: string; items: AdminUserD
   );
 }
 
-/** Who the account is and where it stands. */
 function Summary({ detail }: { detail: AdminUserDetail }) {
   const u = detail.user;
   return (
@@ -53,14 +51,12 @@ function Summary({ detail }: { detail: AdminUserDetail }) {
   );
 }
 
-/** The actions on offer: admins can't be suspended, and a suspended account offers lifting it instead. */
 function actionKeys(detail: AdminUserDetail): ActionKey[] {
   const u = detail.user;
   const first: ActionKey[] = u.suspended ? ["unsuspend"] : u.admin ? [] : ["suspend"];
   return [...first, "unshare", "posts", "playlists", "texts"];
 }
 
-/** One account: its figures, its content, and what the team can do about it. */
 export function UserPanel({ id, onChanged }: { id: number; onChanged: () => void }) {
   const [detail, setDetail] = useState<AdminUserDetail | null>(null);
   const [error, setError] = useState<string | null>(null);

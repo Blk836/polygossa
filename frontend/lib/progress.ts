@@ -1,12 +1,8 @@
-// Pure helpers for the Progress page: known-word milestones, the streak call to action, week-on-week change and the
-// activity calendar layout. The page is there to keep learners coming back, so every message is phrased forwards:
-// nothing here reports a loss as a negative number.
 import type { ActivityDay, GoalKind, GoalToday, Streak } from "./types";
 
 const MILESTONES = [100, 250, 500, 1000, 1500, 2000, 3000, 4000, 5000, 7500, 10_000, 15_000, 20_000, 30_000, 40_000, 50_000];
 const STEP_AFTER_TABLE = 10_000;
 
-/** What each kind of daily goal counts, for "340 / 1,000 words read" and the Settings choice. */
 export const GOAL_UNITS: Record<GoalKind, string> = {
   reviews: "reviews",
   words_read: "words read",
@@ -14,13 +10,11 @@ export const GOAL_UNITS: Record<GoalKind, string> = {
   minutes_listened: "minutes listened",
 };
 
-/** Today's goal as a line of text and a bar (0–100, full once reached). */
 export function goalProgress(goal: GoalToday): { text: string; percent: number; met: boolean } {
   const percent = Math.min(100, Math.floor((goal.done / goal.target) * 100));
   return { text: `${goal.done.toLocaleString("en-US")} / ${goal.target.toLocaleString("en-US")} ${GOAL_UNITS[goal.kind]}`, percent, met: goal.met };
 }
 
-/** Listening time as "45 min" or "2 h 5 min". */
 export function listeningLabel(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
   return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
@@ -30,11 +24,9 @@ export interface Milestone {
   from: number;
   to: number;
   remaining: number;
-  /** 0–1 of the way from `from` to `to`, to two decimals. */
   fraction: number;
 }
 
-/** The next known-word milestone and how far along the way to it the learner is. */
 export function milestone(known: number): Milestone {
   const last = MILESTONES[MILESTONES.length - 1];
   let to = MILESTONES.find((m) => m > known);
@@ -43,7 +35,6 @@ export function milestone(known: number): Milestone {
   return { from, to, remaining: to - known, fraction: Math.round(((known - from) / (to - from)) * 100) / 100 };
 }
 
-/** One line under the streak telling the learner what to do next. */
 export function streakMessage({ current, best, activeToday }: Streak): string {
   if (activeToday) {
     return current > 1 && current >= best
@@ -59,7 +50,6 @@ export interface WeekChange {
   text: string;
 }
 
-/** The Progress page's stats windows (GET /api/dashboard?period=…), rolling back from today. */
 export type StatsPeriodKey = "week" | "month" | "quarter" | "year" | "all";
 
 const LABELS: Record<StatsPeriodKey, string> = {
@@ -72,7 +62,6 @@ const LABELS: Record<StatsPeriodKey, string> = {
 
 export const STATS_PERIODS = (Object.keys(LABELS) as StatsPeriodKey[]).map((key) => ({ key, label: LABELS[key] }));
 
-/** The picker's label for a period, e.g. "Last month". */
 export function periodLabel(key: StatsPeriodKey): string {
   return LABELS[key];
 }
@@ -84,7 +73,6 @@ const BEFORE: Record<Exclude<StatsPeriodKey, "all">, string> = {
   year: "the year before",
 };
 
-/** A window against the one before it, as growth when there is some and as the earlier figure otherwise. */
 export function periodChange(now: number, before: number | null, period: StatsPeriodKey, format: (n: number) => string = String): WeekChange {
   if (period === "all" || before === null) return { trend: "steady", text: "Since you joined" };
   const earlier = BEFORE[period];
@@ -99,12 +87,10 @@ export function periodChange(now: number, before: number | null, period: StatsPe
   return { trend: "steady", text: `${format(before)} ${earlier}` };
 }
 
-/** This week against last week, as growth when there is some and as last week's figure otherwise. */
 export function weekChange(thisWeek: number, lastWeek: number, format: (n: number) => string = String): WeekChange {
   return periodChange(thisWeek, lastWeek, "week", format);
 }
 
-/** How full a calendar square is: 0 no practice, 1 some, 2 a solid day, 3 a big day. */
 export function intensity(day: ActivityDay): 0 | 1 | 2 | 3 {
   if (!day.active) return 0;
   const minutes = day.readingSeconds / 60;
@@ -124,13 +110,11 @@ export interface StripDay {
   today: boolean;
 }
 
-/** The last seven days for the streak card, today last. */
 export function weekStrip(days: ActivityDay[]): StripDay[] {
   const last = days.slice(-7);
   return last.map((d, i) => ({ day: d.day, label: INITIALS[weekday(d.day)], active: d.active, today: i === last.length - 1 }));
 }
 
-/** Consecutive days split into Monday-first weeks (calendar columns); the first week is padded with nulls. */
 export function calendarWeeks(days: ActivityDay[]): (ActivityDay | null)[][] {
   if (days.length === 0) return [];
   const padded: (ActivityDay | null)[] = [...Array<null>((weekday(days[0].day) + 6) % 7).fill(null), ...days];

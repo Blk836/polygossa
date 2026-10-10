@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Timed writing tests: start one on a set situation, hand it in, get it graded. */
 @RestController
 @RequestMapping("/api/writing/tests")
 public class WritingTestController {

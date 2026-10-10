@@ -3,11 +3,6 @@ package app.lector.recommend;
 import app.lector.text.Category;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-/**
- * Why a card is on a shelf, for the short line under it. {@code kind}: progress (percent read), known (percent of
- * words known), because (title of the text read or liked), topic, category, level, popular (recent likes), new,
- * similar (like what you enjoy) or explore (something different).
- */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record Reason(String kind, Double percent, String topic, Category category, String title, Boolean liked,
                      String level, Long likes) {

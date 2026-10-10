@@ -1,8 +1,4 @@
 #!/usr/bin/env node
-// Deploys the latest main to production from this PC, in the PC's turn, and marks main's commit on GitHub
-// (docs/acceptance/local-deploy.feature, tools/README.md). Run it after merging a pull request.
-//   node tools/local-deploy.mjs           deploy main, unless it is already live
-//   node tools/local-deploy.mjs --again   deploy main even if it is already live
 import { execFileSync, spawn } from "node:child_process";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
@@ -16,7 +12,6 @@ const STATUS = "deploy production";
 const found = (path, fallback) => (WIN && existsSync(path) ? path : fallback);
 const GH = process.env.GH ?? found("C:\\Program Files\\GitHub CLI\\gh.exe", "gh");
 const AWS = process.env.AWS_CLI ?? found("C:\\Program Files\\Amazon\\AWSCLIV2\\aws.exe", "aws");
-// Docker Desktop's CLI, missing from PATH in shells opened before it was installed; cdk deploy runs `docker build`.
 const DOCKER_BIN = join(homedir(), "AppData", "Local", "Programs", "DockerDesktop", "resources", "bin");
 const PATH = existsSync(DOCKER_BIN) ? `${process.env.PATH}${delimiter}${DOCKER_BIN}` : process.env.PATH;
 
@@ -26,11 +21,9 @@ const git = (...args) => run("git", args);
 const tryRun = (fn) => { try { return fn(); } catch { return null; } };
 const root = git("rev-parse", "--show-toplevel");
 const common = resolve(root, git("rev-parse", "--git-common-dir"));
-// The PC's own checkout of main for deploying: no session's worktree or branch is touched.
 const copy = join(common, "polygossa-deploy");
 let signedInAccount = null;
 
-/** Runs a command with its output shown, resolving to its exit code. */
 function exec(command, cwd, env = process.env) {
   console.log(`\n> (${cwd}) ${command}`);
   return new Promise((done) => {
@@ -40,7 +33,6 @@ function exec(command, cwd, env = process.env) {
   });
 }
 
-/** The profile's short-lived credentials as environment variables, so cdk needs no knowledge of `aws login`. */
 function credentials() {
   const lines = run(AWS, ["configure", "export-credentials", "--profile", PROFILE, "--format", "env-no-export"]);
   return Object.fromEntries(lines.split(/\r?\n/).map((line) => line.split(/=(.*)/s).slice(0, 2)));
@@ -91,7 +83,6 @@ function isAlive(pid) {
   }
 }
 
-// Ctrl+C: give the turn back before exiting.
 let releaseOnExit = () => {};
 process.on("SIGINT", () => {
   releaseOnExit();

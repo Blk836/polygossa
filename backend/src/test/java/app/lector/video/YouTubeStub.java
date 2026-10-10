@@ -16,15 +16,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * A local stand-in for youtube.com: oEmbed, the watch page (API key), the innertube player endpoint and timed-text
- * captions. Videos are registered per test; unknown videos get oEmbed 400, like YouTube.
- */
 public final class YouTubeStub implements AutoCloseable {
 
     public static final String API_KEY = "AIzaTestKey";
 
-    /** A fake video. {@code captions} maps a language code to srv3 XML; {@code oembedStatus} 200 means available. */
     public record Video(String title, int oembedStatus, Integer lengthSeconds, Map<String, String> captions) {
 
         public static Video withCaptions(String title, int lengthSeconds, String lang, String srv3) {
@@ -54,17 +49,14 @@ public final class YouTubeStub implements AutoCloseable {
         videos.put(id, video);
     }
 
-    /** YouTube's own category for a video (e.g. "Education"), shown in its watch page's player microformat. */
     public void setCategory(String id, String youtubeCategory) {
         categories.put(id, youtubeCategory);
     }
 
-    /** When down, every endpoint answers 503. */
     public void setDown(boolean down) {
         this.down = down;
     }
 
-    /** Request paths (with query) received so far, e.g. "/api/timedtext?v=…". */
     public List<String> requests() {
         synchronized (requests) {
             return List.copyOf(requests);

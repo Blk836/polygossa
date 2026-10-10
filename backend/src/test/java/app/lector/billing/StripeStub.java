@@ -18,16 +18,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-/**
- * A fake Stripe API on localhost for backend tests (stripe-billing.feature): prices by lookup key, customers,
- * Checkout and portal sessions, subscriptions (set by the test), subscription item quantities and cancelling.
- * Every request is recorded as "METHOD /path" with its form fields. {@link #fail} makes every request answer 500.
- */
 public final class StripeStub implements AutoCloseable {
 
     public static final String WEBHOOK_SECRET = "whsec_test_secret";
 
-    /** One recorded request. */
     public record Call(String method, String path, Map<String, String> form) {}
 
     private final HttpServer server;
@@ -64,7 +58,6 @@ public final class StripeStub implements AutoCloseable {
         return calls().stream().filter(c -> c.method().equals(method) && c.path().startsWith(pathStart)).toList();
     }
 
-    /** A subscription Stripe will return for GET /v1/subscriptions/{id}. */
     public void subscription(String id, String customer, String status, String lookupKey, String interval,
                              long periodEnd, boolean cancelAtPeriodEnd, long quantity) {
         subscriptions.put(id, """
@@ -76,7 +69,6 @@ public final class StripeStub implements AutoCloseable {
                 interval));
     }
 
-    /** A webhook event of {@code type} about the subscription {@code subscriptionId}, as Stripe would send it. */
     public static String event(String eventId, String type, String subscriptionId, String customer) {
         return """
                 {"id":"%s","object":"event","type":"%s","api_version":"2026-09-30.endive","created":%d,
@@ -84,7 +76,6 @@ public final class StripeStub implements AutoCloseable {
                 """.formatted(eventId, type, System.currentTimeMillis() / 1000, subscriptionId, customer);
     }
 
-    /** The Stripe-Signature header for {@code payload}, signed with {@code secret}. */
     public static String signature(String payload, String secret) {
         long t = System.currentTimeMillis() / 1000;
         try {

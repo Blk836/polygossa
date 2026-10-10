@@ -8,10 +8,6 @@ import { useCardLayout } from "../card-layout-context";
 import { CloseIcon } from "../icons";
 import { TextCard } from "../text-card";
 
-/**
- * One personalised Explore shelf ("For you", "Because you read …"): a heading, then a sideways row of cards, each
- * saying why it is there. Recommendations (not Continue reading) can be dismissed with "Not interested".
- */
 export function RecommendedShelfRow({ shelf, actions, onOpen, onNotInterested, onSeeAll }: {
   shelf: RecommendedShelf;
   actions: (t: TextSummary) => ReactNode;

@@ -5,16 +5,14 @@ import { Button, ErrorNote } from "@/components/ui";
 import { errorMessage } from "@/lib/api";
 import { CROP_START, MAX_ZOOM, OUTPUT_SIZE, cropKey, dragCrop, sourceSquare, zoomCrop, type Crop } from "@/lib/photo";
 
-/** The crop frame's side in screen pixels; fits a 390px-wide phone with the dialog's padding. */
 const FRAME = 240;
 
-/** Draws the framed square onto a 256×256 canvas. Re-drawing drops the file's metadata (such as GPS location). */
 function render(image: HTMLImageElement, crop: Crop): Promise<Blob> {
   const canvas = document.createElement("canvas");
   canvas.width = OUTPUT_SIZE;
   canvas.height = OUTPUT_SIZE;
   const ctx = canvas.getContext("2d")!;
-  ctx.fillStyle = "#fff"; // JPEG has no transparency: transparent PNG areas become white, not black
+  ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
   const square = sourceSquare({ width: image.naturalWidth, height: image.naturalHeight }, FRAME, crop);
   ctx.drawImage(image, square.x, square.y, square.size, square.size, 0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
@@ -22,11 +20,6 @@ function render(image: HTMLImageElement, crop: Crop): Promise<Blob> {
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("That image couldn't be read. Try another one."))), "image/jpeg", 0.9));
 }
 
-/**
- * "Crop your photo": the picked image behind a round frame. Drag it (or use the arrow keys) to move it and the
- * slider (or + / -) to zoom; it always covers the frame. Save uploads the framed square; Cancel, Escape or a click
- * outside closes without uploading.
- */
 export function PhotoCropper({ image, onSave, onClose }: {
   image: HTMLImageElement;
   onSave: (photo: Blob) => Promise<void>;
@@ -97,7 +90,6 @@ export function PhotoCropper({ image, onSave, onClose }: {
           className="pointer-events-none absolute max-w-none"
           style={{ ...shown, left: (FRAME - shown.width) / 2 + crop.x, top: (FRAME - shown.height) / 2 + crop.y }}
         />
-        {/* Dims what falls outside the circle; the square inside it is what gets saved. */}
         <div aria-hidden className="pointer-events-none absolute inset-0 rounded-full shadow-[0_0_0_999px_rgb(0_0_0/0.45)] ring-2 ring-white/80" />
       </div>
       <label className="mt-4 flex items-center gap-3 text-sm text-muted">

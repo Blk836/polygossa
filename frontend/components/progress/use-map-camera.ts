@@ -15,9 +15,7 @@ import {
 import type { Point } from "@/lib/map-geometry";
 
 const GLIDE_MS = 550;
-/** A press that moves less than this is a tap, not a drag. */
 const DRAG_PX = 6;
-/** How long after the last wheel or drag movement the map redraws its labels for the new zoom. */
 const SETTLE_MS = 120;
 
 function reducedMotion(): boolean {
@@ -34,23 +32,15 @@ function local(svg: SVGSVGElement, e: { clientX: number; clientY: number }): Poi
 const mid = (a: Point, b: Point): Point => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
 
 interface Options {
-  /** The map's frame: it gets --k (screen pixels per world unit) and --tx/--ty (the world's offset), for the name tags. */
   frameRef: RefObject<HTMLDivElement | null>;
   svgRef: RefObject<SVGSVGElement | null>;
   worldRef: RefObject<SVGGElement | null>;
   viewport: Size;
   world: Size;
   limits: Limits;
-  /** Where the map should be: it glides there whenever this changes. */
   target: Camera;
 }
 
-/**
- * The map's camera (vocabulary-map.feature): glides to {@code target} (or jumps, for reduced motion), and follows the
- * wheel, drags, pinches and the zoom buttons ({@code zoomBy}) in between. It moves the world by setting its transform
- * directly, frame by frame (and the frame's CSS variables, which place the HTML name tags), and reports where it came
- * to rest ({@code settled}) so the map can choose which labels to write.
- */
 export function useMapCamera({ frameRef, svgRef, worldRef, viewport, world, limits, target }: Options) {
   const cam = useRef<Camera | null>(null);
   const frame = useRef(0);
@@ -67,7 +57,6 @@ export function useMapCamera({ frameRef, svgRef, worldRef, viewport, world, limi
     style?.setProperty("--ty", String(viewport.height / 2 - c.y * c.k));
   }, [frameRef, worldRef, viewport]);
 
-  /** Glides from where the camera is to {@code to}; jumps for reduced motion, or when asked, or with nowhere to start. */
   const glide = useCallback((to: Camera, jump: boolean) => {
     cancelAnimationFrame(frame.current);
     window.clearTimeout(settleTimer.current);
@@ -94,7 +83,6 @@ export function useMapCamera({ frameRef, svgRef, worldRef, viewport, world, limi
     glide(target, last?.viewport !== viewport);
   }, [viewport, target, glide]);
 
-  /** Zooms in (a factor above 1) or out around the middle of the map, gliding. */
   const zoomBy = useCallback((factor: number) => {
     const c = cam.current;
     if (!c) return;
@@ -107,7 +95,6 @@ export function useMapCamera({ frameRef, svgRef, worldRef, viewport, world, limi
     window.clearTimeout(settleTimer.current);
   }, []);
 
-  /** Moves straight to a camera (kept inside the world), stopping any glide. */
   const moveTo = useCallback((c: Camera) => {
     cancelAnimationFrame(frame.current);
     draw(clampCamera(c, world, viewport, limits));
@@ -123,7 +110,7 @@ export function useMapCamera({ frameRef, svgRef, worldRef, viewport, world, limi
       if (!c) return;
       const step = e.deltaMode === 1 ? 0.05 : 0.0015;
       const k = Math.min(Math.max(c.k * Math.exp(-e.deltaY * step), limits.kMin), limits.kMax);
-      if (Math.abs(k - c.k) < 1e-9) return; // fully out (or in): the page scrolls instead
+      if (Math.abs(k - c.k) < 1e-9) return;
       e.preventDefault();
       moveTo(zoomAt(c, k / c.k, local(svg, e), viewport));
     };
@@ -134,7 +121,6 @@ export function useMapCamera({ frameRef, svgRef, worldRef, viewport, world, limi
   return { settled, zoomBy, handlers: usePointers(cam, moveTo, viewport) };
 }
 
-/** Drags pan the map and two-finger pinches zoom it; a press that hardly moves stays a tap on whatever is under it. */
 function usePointers(cam: RefObject<Camera | null>, moveTo: (c: Camera) => void, viewport: Size) {
   const pointers = useRef(new Map<number, Point>());
   const start = useRef<Point | null>(null);
@@ -181,7 +167,6 @@ function usePointers(cam: RefObject<Camera | null>, moveTo: (c: Camera) => void,
     }
   };
 
-  /** The click that ends a drag or pinch is not a tap. */
   const onClickCapture = (e: React.MouseEvent) => {
     if (!swallowClick.current) return;
     swallowClick.current = false;

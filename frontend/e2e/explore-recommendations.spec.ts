@@ -1,12 +1,7 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 
-// Explore's personalised shelves (docs/acceptance/explore-recommendations.feature). One test runs against the real API
-// for test@lector.local (needs public content by others, e.g. the seeded starter library) and undoes what it marks;
-// the rest serve fixed shelves built from real cards, so every shelf, reason and action is shown, AI or not.
-
 type Json = Record<string, unknown>;
 
-/** A few real public cards (so links open real texts), signing in first. */
 async function realCards(page: Page, count: number): Promise<Json[]> {
   await page.goto("/library");
   const res = await page.request.get(`/api/library?size=${count}`);
@@ -35,7 +30,6 @@ function fixture(cards: Json[]): Json {
   };
 }
 
-/** Serves these shelves for every recommendations request, and records logged events instead of saving them. */
 async function serve(page: Page, body: Json) {
   const events: Json[] = [];
   await page.route("**/api/recommendations?**", (route: Route) => route.fulfill({ json: body }));
@@ -59,7 +53,6 @@ test("For you comes from the real API, each card says why, and Not interested re
   const id = Number(href?.split("/").pop());
   const title = (await first.getByRole("link").first().textContent()) ?? "";
   try {
-    // The card leaves at once; the server is asked afterwards, so wait for its answer before checking with it.
     const saved = page.waitForResponse((res) => res.url().includes(`/api/recommendations/not-interested/${id}`) && res.request().method() === "PUT");
     await first.getByRole("button", { name: "Not interested" }).click();
     await expect(forYou.getByRole("link", { name: title, exact: true })).toHaveCount(0);
@@ -83,7 +76,6 @@ test("personalised shelves come first, in order, with their reasons", async ({ p
   await expect(shelf(page, "For you").getByTestId("reason")).toHaveText(["96% known words", "Something different"]);
   await expect(shelf(page, "Because you liked Tapas en Madrid").getByTestId("reason")).toHaveText("Because you liked Tapas en Madrid");
   await expect(shelf(page, "Stretch").getByTestId("reason")).toHaveText("88% known words");
-  // Continue reading isn't a recommendation to dismiss.
   await expect(shelf(page, "Continue reading").getByRole("button", { name: "Not interested" })).toHaveCount(0);
 });
 
@@ -140,8 +132,6 @@ test("with no personalised shelves (nothing to recommend, or AI off) Explore sti
   await expect(page.getByRole("button", { name: /See all \d+/ }).first()).toBeVisible();
 });
 
-// Onboarding: PATCH /api/me (target language) and PUT interests are answered in the browser, never saved, so the
-// shared test account keeps no target language and no interests.
 test.describe("interests during onboarding", () => {
   test("picking at least three categories saves them as interests", async ({ page }) => {
     await page.goto("/library");
@@ -168,7 +158,6 @@ test.describe("interests during onboarding", () => {
     await save.click();
     await expect(interests.getByText("Saved: we'll recommend more of these")).toBeVisible();
     expect(saved).toEqual([{ categories: ["travel", "food", "history"] }]);
-    // Picking a starter text is still the way on (or skipping).
     await expect(page.getByRole("heading", { name: "Pick something to read" })).toBeVisible();
   });
 });

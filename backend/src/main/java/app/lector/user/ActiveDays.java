@@ -10,10 +10,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/**
- * Notes the (UTC) days users are active, once per user and day: remembered in memory, written in a transaction of its
- * own so a read-only request can still record it, and never failing the request it rides on.
- */
 @Component
 public class ActiveDays {
 
@@ -40,7 +36,7 @@ public class ActiveDays {
             try {
                 tx.executeWithoutResult(s -> days.record(userId, day));
             } catch (RuntimeException e) {
-                seenToday.remove(userId); // try again on the next request
+                seenToday.remove(userId);
             }
         }
     }

@@ -19,27 +19,19 @@ public interface TextRepository extends JpaRepository<Text, Long> {
 
     List<Text> findByOwnerIdAndVideoId(Long ownerId, String videoId);
 
-    /** Every owner's copies of a video in one language: public ones first, then the newest. */
     @Query("select t from Text t where t.videoId = :videoId and t.language = :language "
             + "order by t.isPublic desc, t.createdAt desc, t.id desc")
     List<Text> findCopiesOfVideo(@Param("videoId") String videoId, @Param("language") Language language);
 
     List<Text> findByOwnerIdAndLanguageAndTitle(Long ownerId, Language language, String title);
 
-    /** Texts with an opening square bracket of any width: the ones that may hold caption annotations. */
     @Query("select t from Text t where t.body.content like '%[%' or t.body.content like '%［%' or t.body.content like '%【%'")
     List<Text> findWithSquareBrackets();
 
-    /** Texts in these languages with a word token ending in an apostrophe: elisions split before they stayed one word. */
     @Query("select t.id from Text t where t.language in :languages and (t.body.tokensJson like '%''\",\"word\":true%'"
             + " or t.body.tokensJson like '%’\",\"word\":true%')")
     List<Long> findIdsWithSplitElisions(@Param("languages") Collection<Language> languages);
 
-    /**
-     * Public community content, newest first. {@code topic} is a {@link TextFeature#topicPattern} or null;
-     * {@code q} must be a lower-cased LIKE pattern or null; {@code kind} is
-     * "text", "video" or null for both; {@code category} OTHER also matches uncategorised rows.
-     */
     @Query("""
             select t from Text t
             where t.isPublic = true
@@ -60,17 +52,12 @@ public interface TextRepository extends JpaRepository<Text, Long> {
                                   @Param("topic") String topic,
                                   Pageable pageable);
 
-    /** The id and category (null if uncategorised) of a public item. */
     interface ShelfEntry {
         Long getId();
 
         Category getCategory();
     }
 
-    /**
-     * Every public item matching the filters, newest first, as ids and categories only: Explore's shelves pick and count
-     * their items from one query instead of one per category.
-     */
     @Query("""
             select t.id as id, t.category as category from Text t
             where t.isPublic = true
@@ -83,12 +70,10 @@ public interface TextRepository extends JpaRepository<Text, Long> {
     List<ShelfEntry> findPublicShelfEntries(@Param("languages") Collection<Language> languages, @Param("level") String level,
                                             @Param("kind") String kind);
 
-    /** Public items in these languages that someone else shared: what Explore can recommend. */
     @Query("select t from Text t where t.isPublic = true and t.language in :languages "
             + "and t.owner.id <> :userId")
     List<Text> findPublicCandidates(@Param("languages") Collection<Language> languages, @Param("userId") Long userId);
 
-    /** Public community content, most liked first. */
     @Query("""
             select t from Text t
             where t.isPublic = true

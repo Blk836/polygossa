@@ -1,7 +1,5 @@
 import { crc32 } from "node:zlib";
 
-// A tiny EPUB for the book-import specs: a stored (uncompressed) zip written by hand, so no zip package is needed.
-
 function zip(files: [string, string][]): Buffer {
   const locals: Buffer[] = [];
   const centrals: Buffer[] = [];
@@ -43,7 +41,6 @@ function zip(files: [string, string][]): Buffer {
 const xhtml = (heading: string, text: string) =>
   `<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml"><body><h1>${heading}</h1><p>${text}</p></body></html>`;
 
-/** An EPUB titled `title` with the given chapters (heading → paragraph), in order. */
 export function epub(title: string, chapters: [string, string][]): Buffer {
   const manifest = chapters.map((_, i) => `<item id="c${i}" href="c${i}.xhtml" media-type="application/xhtml+xml"/>`).join("");
   const spine = chapters.map((_, i) => `<itemref idref="c${i}"/>`).join("");

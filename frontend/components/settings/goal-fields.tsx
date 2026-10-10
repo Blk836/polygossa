@@ -10,10 +10,8 @@ export interface GoalChoice {
   streakNeedsGoal: boolean;
 }
 
-/** Targets that make sense for each kind of goal when switching to it (the backend checks the limits). */
 const DEFAULT_TARGETS: Record<GoalKind, number> = { reviews: 20, words_read: 1000, minutes_read: 15, minutes_listened: 15 };
 
-/** Settings › Profile: what the daily goal measures, its target, and whether only goal days count for the streak. */
 export function GoalFields({ value, onChange }: { value: GoalChoice; onChange: (v: GoalChoice) => void }) {
   return (
     <>

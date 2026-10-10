@@ -2,7 +2,6 @@
 
 import { useEffect, type RefObject } from "react";
 
-/** Closes an open popup on a pointer press outside `root` or on Escape (then `onEscape`, e.g. to refocus its button). */
 export function useDismiss(open: boolean, close: () => void, root: RefObject<HTMLElement | null>, onEscape?: () => void) {
   useEffect(() => {
     if (!open) return;

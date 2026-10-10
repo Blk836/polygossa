@@ -14,11 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * Imports a book: one private text per chapter, in order, gathered in a new private playlist named after the book.
- * All or nothing: a chapter that fails leaves no texts or playlist behind. Books are never shared from here, since
- * most are copyrighted.
- */
 @Service
 public class BookImportService {
 

@@ -9,7 +9,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** word-notes-tags.feature: a personal note and tags on saved words. */
 @ApiTest
 class WordNotesTagsApiTest {
 

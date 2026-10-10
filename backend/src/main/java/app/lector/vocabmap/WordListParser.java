@@ -14,16 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-/**
- * Reads one language's word list files: cells separated by {@code |}, a header line
- * {@code word | band | area | meaning:en | forms} (one meaning column per native language covered; forms are
- * separated by spaces), then one word per line. Blank lines and lines starting with
- * {@code #} are skipped. A meaning of {@code =} means the word is spelled the same in that language. A line with a
- * mistake is left out of the list and reported.
- */
 final class WordListParser {
 
-    /** One word as the reader splits text: letters, with parts joined by hyphens or apostrophes ("aujourd'hui"). */
     private static final Pattern ONE_WORD = Pattern.compile("[\\p{L}\\p{M}]+(?:['’-][\\p{L}\\p{M}]+)*");
 
     private static final String MEANING = "meaning:";
@@ -32,7 +24,6 @@ final class WordListParser {
     private final Set<String> areas;
     private final List<String> problems = new ArrayList<>();
     private final List<MapWord> words = new ArrayList<>();
-    /** Every form (headwords included) already taken, and the headword it belongs to. */
     private final Map<String, String> owners = new HashMap<>();
     private final Set<String> headwords = new LinkedHashSet<>();
     private List<NativeLanguage> meaningLanguages;
@@ -64,7 +55,6 @@ final class WordListParser {
         return cells;
     }
 
-    /** The meaning languages a header names, or null (reported) when the header is wrong. */
     private List<NativeLanguage> header(String name, String line) {
         List<NativeLanguage> columns = meaningColumns(cells(line));
         if (columns == null || meaningLanguages != null && !meaningLanguages.equals(columns)) {
@@ -76,7 +66,6 @@ final class WordListParser {
         return columns;
     }
 
-    /** The languages of a header's meaning columns, or null when it isn't word, band, area, meaning:xx..., forms. */
     private static List<NativeLanguage> meaningColumns(String[] cells) {
         boolean shape = cells.length >= 4 && cells[0].equals("word") && cells[1].equals("band")
                 && cells[2].equals("area") && cells[cells.length - 1].equals("forms");

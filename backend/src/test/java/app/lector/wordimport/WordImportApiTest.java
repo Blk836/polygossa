@@ -23,7 +23,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Feature: Import my words from LingQ and Readlang (docs/acceptance/word-import.feature). */
 @YouTubeApiTest
 class WordImportApiTest {
 
@@ -75,7 +74,6 @@ class WordImportApiTest {
         return api.send(req, user, status);
     }
 
-    /** Polls the import until it has finished, as the Vocabulary page does. */
     private JsonNode await(String user, JsonNode started) throws Exception {
         long deadline = System.currentTimeMillis() + 15_000;
         while (true) {
@@ -88,7 +86,6 @@ class WordImportApiTest {
         }
     }
 
-    /** term → status of my words in a language (sorted by term: many words share an update time, so "recent" pages can overlap). */
     private Map<String, String> words(String user, String language) throws Exception {
         Map<String, String> out = new HashMap<>();
         for (int page = 0; page * 200 < out.size() + 200; page++) {
@@ -115,8 +112,6 @@ class WordImportApiTest {
                 job.get("unchanged").asInt(), job.get("overLimit").asInt()))
                 .containsExactly(found, added, updated, unchanged, overLimit);
     }
-
-    // ---- LingQ ----
 
     @Test
     void aLingqImportBringsLingqsAndKnownWordsInTheBackground() throws Exception {
@@ -157,7 +152,6 @@ class WordImportApiTest {
         JsonNode done = await(me, startLingq(me, key, null, 202));
         assertThat(done.get("state").asString()).isEqualTo("done");
         assertThat(done.get("language").isNull()).isTrue();
-        // Japanese and Korean are paused for learning (learning-languages.feature): LingQ isn't asked for them.
         counts(done, 1, 1, 0, 0, 0);
         assertThat(words(me, "es")).containsOnlyKeys("casa");
         List<String> asked = YouTubeApiTest.LINGQ.account(key).requests().stream().map(r -> r.substring(8, 10)).distinct()
@@ -200,8 +194,6 @@ class WordImportApiTest {
         assertThat(api.get(me, "/api/word-imports", 200)).isEmpty();
     }
 
-    // ---- Readlang ----
-
     @Test
     void aReadlangImportReadsTheExportedFile() throws Exception {
         JsonNode started = startReadlang(me, "Word,Translation,Context\nmaison,house,Une maison bleue\nchat,cat,\n",
@@ -233,8 +225,6 @@ class WordImportApiTest {
         assertThat(api.get(me, "/api/word-imports", 200)).isEmpty();
     }
 
-    // ---- Merging ----
-
     @Test
     void anImportNeverLowersWhatIKnowButCanRaiseIt() throws Exception {
         api.post(me, "/api/vocabulary", "{\"language\":\"fr\",\"term\":\"maison\",\"status\":\"known\"}", 201);
@@ -246,8 +236,6 @@ class WordImportApiTest {
                 .card("fr", "chien", 4, 0, "dog", "Le chien").card("fr", "Oiseau", 0, 0, null, null)
                 .knownWord("fr", "oiseau");
         JsonNode done = await(me, startLingq(me, key, "fr", 202));
-        // maison gains a context sentence (updated), chat is unchanged, chien becomes known (updated), oiseau is
-        // added as learning and then raised to known by the known-words list (updated).
         counts(done, 5, 1, 3, 1, 0);
         assertThat(words(me, "fr")).containsExactlyInAnyOrderEntriesOf(
                 Map.of("maison", "known", "chat", "ignored", "chien", "known", "oiseau", "known"));
@@ -282,8 +270,6 @@ class WordImportApiTest {
         assertThat(vocabulary.knownSinceByUser(before).stream().filter(c -> c.getUserId().equals(userId))).isEmpty();
     }
 
-    // ---- Plan limits ----
-
     @Test
     void theFreePlanLimitStopsLearningWordsButNotKnownOnes() throws Exception {
         String free = api.signup();
@@ -307,8 +293,6 @@ class WordImportApiTest {
         assertThat(mine.values().stream().filter("learning"::equals)).hasSize(500);
         assertThat(mine.values().stream().filter("known"::equals)).hasSize(50);
     }
-
-    // ---- Jobs ----
 
     @Test
     void oneImportAtATime() throws Exception {

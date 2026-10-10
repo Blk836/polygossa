@@ -17,11 +17,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Component;
 
-/** Fetches a web page and extracts the main article body as plain paragraphs. */
 @Component
 public class UrlImporter {
 
-    /** Only tests turn this off, to fetch from a local stub server; production always blocks internal hosts. */
     private final boolean blockPrivateHosts;
 
     public UrlImporter() {
@@ -36,7 +34,6 @@ public class UrlImporter {
 
     private static final int MAX_REDIRECTS = 5;
     private static final int MAX_BYTES = 5 * 1024 * 1024;
-    /** Below this much paragraph text a semantic wrapper is probably not the article itself. */
     private static final int MIN_ARTICLE_CHARS = 200;
     private static final String USER_AGENT = "Mozilla/5.0 (compatible; LectorReader/1.0; +https://example.com/bot)";
 
@@ -51,7 +48,6 @@ public class UrlImporter {
 
     private record Page(Document doc, URI uri) {}
 
-    /** Fetches the page, following redirects manually so every hop is checked against internal addresses. */
     private static Page download(URI start, boolean blockPrivateHosts) {
         URI uri = start;
         for (int hop = 0; hop <= MAX_REDIRECTS; hop++) {
@@ -76,7 +72,7 @@ public class UrlImporter {
                     .maxBodySize(MAX_BYTES)
                     .followRedirects(false)
                     .ignoreHttpErrors(true)
-                    .ignoreContentType(true) // parsePage rejects non-pages with a clear message
+                    .ignoreContentType(true)
                     .execute();
         } catch (IOException e) {
             throw ApiException.badRequest("Could not fetch that URL: " + e.getMessage());
@@ -98,7 +94,6 @@ public class UrlImporter {
         }
     }
 
-    /** Long articles are cut at the last paragraph break that fits rather than rejected. */
     static String truncateAtParagraph(String body, int max) {
         if (body.length() <= max) {
             return body;
@@ -119,18 +114,11 @@ public class UrlImporter {
         return doc.title().isBlank() ? "Imported article" : doc.title().trim();
     }
 
-    /**
-     * Picks the element with the most paragraph text — a semantic wrapper ({@code <article>}, {@code <main>}) when it
-     * holds a real article, otherwise the parent element containing the most {@code <p>} text — and joins its
-     * paragraphs.
-     */
     static String extractBody(Document doc) {
         doc.select("script, style, noscript, nav, header, footer, aside, form, iframe, svg, figure, button").remove();
         List<Element> candidates = new ArrayList<>(doc.select("article, [itemprop=articleBody], main"));
         Element semantic = richest(candidates);
         if (semantic == null || paragraphText(semantic).length() < MIN_ARTICLE_CHARS) {
-            // Many sites have no semantic wrapper. <body> is deliberately not a candidate: it contains everything,
-            // so it would always win over the paragraph container and drag in sidebars.
             for (Element p : doc.select("p")) {
                 if (p.parent() != null) {
                     candidates.add(p.parent());
@@ -158,7 +146,6 @@ public class UrlImporter {
     private static String paragraphText(Element root) {
         List<String> parts = new ArrayList<>();
         for (Element el : root.select("p, h2, h3, li, blockquote")) {
-            // Skip containers whose text is already captured through a nested paragraph.
             if (!el.select("p").isEmpty() && !el.tagName().equals("p")) {
                 continue;
             }
@@ -186,7 +173,6 @@ public class UrlImporter {
         }
     }
 
-    /** Blocks requests to loopback, private, link-local and other internal addresses (SSRF protection). */
     static void assertPublicHost(URI uri) {
         try {
             for (InetAddress addr : InetAddress.getAllByName(IDN.toASCII(uri.getHost()))) {

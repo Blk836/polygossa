@@ -3,10 +3,6 @@ package app.lector.storage;
 import java.io.InputStream;
 import org.springframework.core.io.AbstractResource;
 
-/**
- * A file read once from a stream whose length is known (an S3 object, or the part of one a range asked for), so it is
- * served with its Content-Length.
- */
 final class StreamedFile extends AbstractResource {
 
     private final InputStream content;

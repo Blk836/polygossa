@@ -5,7 +5,6 @@ export interface LanguageInfo {
   name: string;
   native: string;
   speechLocale: string;
-  /** Scripts without spaces between words: phrase matching works on raw characters. */
   cjk: boolean;
 }
 
@@ -21,10 +20,6 @@ export const LANGUAGES: LanguageInfo[] = [
   { code: "ko", name: "Korean", native: "한국어", speechLocale: "ko-KR", cjk: true },
 ];
 
-/**
- * The languages that can be learned, for every picker. Japanese, Chinese and Korean are paused until they get real word
- * splitting (docs/acceptance/learning-languages.feature); LANGUAGES still names them for content stored in them.
- */
 const PAUSED = new Set<LanguageCode>(["ja", "zh", "ko"]);
 export const LEARNING_LANGUAGES: LanguageInfo[] = LANGUAGES.filter((l) => !PAUSED.has(l.code));
 

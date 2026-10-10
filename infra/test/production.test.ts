@@ -1,4 +1,3 @@
-// docs/acceptance/staging.feature, "The stack's properties are tested": synthesized without AWS access.
 import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
 import * as cdk from "aws-cdk-lib";
@@ -16,7 +15,6 @@ before(() => {
   template = Template.fromStack(stack);
 });
 
-/** The container definition of the task whose container is called `name`. */
 function container(name: string): Record<string, unknown> {
   const tasks = template.findResources("AWS::ECS::TaskDefinition");
   for (const task of Object.values(tasks)) {
@@ -30,7 +28,6 @@ const envOf = (c: Record<string, unknown>) =>
   Object.fromEntries((c.Environment as { Name: string; Value: unknown }[]).map((e) => [e.Name, e.Value]));
 const secretNames = (c: Record<string, unknown>) => (c.Secrets as { Name: string }[]).map((s) => s.Name).sort();
 
-/** Security group ingress rules into the group whose logical id starts with `prefix`. */
 function ingressInto(prefix: string) {
   const rules = Object.values(template.findResources("AWS::EC2::SecurityGroupIngress"));
   return rules.filter((r) => JSON.stringify(r.Properties.GroupId).includes(prefix)).map((r) => r.Properties);
@@ -50,7 +47,6 @@ describe("production stack", () => {
     });
   });
 
-  // docs/acceptance/production-database.feature: the database stays on the small settings until the beta.
   it("keeps its small database: one zone, the smallest instance, 1 day of backups, no growth or delete lock", () => {
     template.hasResourceProperties("AWS::RDS::DBInstance", {
       DBInstanceClass: "db.t4g.micro",
@@ -67,7 +63,6 @@ describe("production stack", () => {
     template.hasResourceProperties("AWS::SecretsManager::Secret", {
       GenerateSecretString: Match.objectLike({ PasswordLength: 64, ExcludePunctuation: true }),
     });
-    // The OpenAI and Stripe keys are secrets too, made by hand rather than generated (ai.test.ts, stripe.test.ts).
     assert.deepEqual(secretNames(container("backend")),
       ["CURATOR_TOKEN", "DATABASE_PASSWORD", "DATABASE_USER", "JWT_SECRET", "OPENAI_API_KEY", "STRIPE_SECRET_KEY",
         "STRIPE_WEBHOOK_SECRET"]);
@@ -78,7 +73,6 @@ describe("production stack", () => {
     }
   });
 
-  // docs/acceptance/copy-videos.feature: the import tool's token, generated and named so the tool can read it by name.
   it("generates the curator token under a fixed name, for the import tool", () => {
     template.hasResourceProperties("AWS::SecretsManager::Secret", {
       Name: "polygossa/curator-token",
@@ -91,7 +85,6 @@ describe("production stack", () => {
     assert.equal(envOf(container("frontend")).AUTO_LOGIN, "false");
   });
 
-  // docs/acceptance/admin-panel.feature, "The site's admins are set in the infrastructure".
   it("names the site's admins", () => {
     assert.equal(envOf(container("backend")).FORUM_ADMINS, "owner@example.com");
   });
@@ -127,8 +120,8 @@ describe("production stack", () => {
       DistributionConfig: Match.objectLike({
         DefaultCacheBehavior: Match.objectLike({
           ViewerProtocolPolicy: "redirect-to-https",
-          CachePolicyId: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad", // Managed-CachingDisabled
-          OriginRequestPolicyId: "216adef6-5c7f-47e4-b989-5492eafa07d3", // Managed-AllViewer
+          CachePolicyId: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+          OriginRequestPolicyId: "216adef6-5c7f-47e4-b989-5492eafa07d3",
           AllowedMethods: Match.arrayWith(["PUT", "PATCH", "POST", "DELETE"]),
         }),
       }),

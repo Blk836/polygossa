@@ -1,8 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
-// docs/acceptance/pointer-cursor.feature: everything clickable shows the pointing hand, like links do. Tailwind 4 no
-// longer gives buttons a pointer, so one app-wide rule in globals.css does it.
-
 const cursor = (el: Locator) => el.evaluate((e) => getComputedStyle(e).cursor);
 
 test("the top bar's language picker and profile menu show the hand, like the counters beside them", async ({ page }) => {
@@ -16,12 +13,10 @@ test("the top bar's language picker and profile menu show the hand, like the cou
 test("buttons inside the open menus show the hand", async ({ page }) => {
   await page.goto("/library");
   await page.getByRole("banner").getByRole("button", { name: /Change language/ }).click();
-  // The language options are buttons (the account menu's items are links, and the test account has no Sign out).
   const option = page.getByRole("menu", { name: "Language" }).getByRole("menuitemradio").first();
   expect(await cursor(option)).toBe("pointer");
 });
 
-// Controls the app has few or none of on its pages, so the rule is checked on elements added to a real app page.
 async function addControls(page: Page) {
   await page.goto("/library");
   await page.getByRole("banner").waitFor();

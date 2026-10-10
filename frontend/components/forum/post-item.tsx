@@ -6,10 +6,6 @@ import { Button, ErrorNote, inputClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import type { ForumPost } from "@/lib/forum";
 
-/**
- * One forum post, shown exactly as typed (plain text, line breaks kept). Its author can edit it; its author and
- * admins can delete it, after an inline "Delete?" confirmation. Deleting a thread's first post deletes the thread.
- */
 export function PostItem({ post, first, canDelete, onChanged, onDeleted }: {
   post: ForumPost;
   first: boolean;
@@ -69,7 +65,6 @@ export function PostItem({ post, first, canDelete, onChanged, onDeleted }: {
   );
 }
 
-/** "Delete", then an inline confirmation instead of a browser dialog. */
 function DeleteControl({ first, onDelete }: { first: boolean; onDelete: () => void }) {
   const [confirming, setConfirming] = useState(false);
   if (!confirming) {

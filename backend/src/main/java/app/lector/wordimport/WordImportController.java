@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-/** Importing a learner's words from LingQ or Readlang, in the background. */
 @RestController
 @RequestMapping("/api/word-imports")
 public class WordImportController {

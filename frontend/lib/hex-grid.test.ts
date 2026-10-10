@@ -4,7 +4,6 @@ import { mendTerritories } from "./hex-mend";
 
 const dist = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.hypot(a.x - b.x, a.y - b.y);
 
-/** Whether these hexes form one connected piece. */
 function connected(hexes: Hex[]): boolean {
   const all = new Set(hexes.map(hexKey));
   const seen = new Set([hexKey(hexes[0])]);
@@ -86,7 +85,7 @@ describe("growTerritories", () => {
     const out = growTerritories([{ id: "a", seed: { q: 0, r: 0 }, quota: 61 }]).get("a")!;
     expect(out[0]).toEqual({ q: 0, r: 0 });
     const radius = Math.max(...out.map((h) => dist(hexCentre(h, 10, false), { x: 0, y: 0 })));
-    expect(radius).toBeLessThan(10 * Math.sqrt(3) * 5); // a 61-tile hexagon is 4 rings out
+    expect(radius).toBeLessThan(10 * Math.sqrt(3) * 5);
   });
 
   it("never takes a blocked tile, growing round it instead", () => {
@@ -134,7 +133,6 @@ describe("growTerritories", () => {
   });
 
   it("mends territories that came out in pieces, by swapping border tiles, keeping each one's size", () => {
-    // A 6 x 3 block: "a" owns the left column and a stray tile on the right; "b" owns the rest.
     const hexes: Hex[] = [];
     for (let q = 0; q < 6; q++) for (let r = 0; r < 3; r++) hexes.push({ q, r });
     const a = hexes.filter((h) => h.q === 0 || (h.q === 5 && h.r === 1));

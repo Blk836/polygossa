@@ -1,4 +1,3 @@
-// docs/acceptance/stripe-billing.feature, "Test mode until launch": the Stripe keys reach only the backend, by name.
 import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
 import * as cdk from "aws-cdk-lib";

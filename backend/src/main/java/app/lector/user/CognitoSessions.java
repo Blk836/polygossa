@@ -10,10 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Starts a session after a sign-in through Cognito (cognito-login.feature): finds the account linked to the identity,
- * or links the account with the identity's verified email, or creates one, as sign-up did.
- */
 @Service
 public class CognitoSessions {
 
@@ -25,7 +21,6 @@ public class CognitoSessions {
         this.users = users;
     }
 
-    /** The account for the identity both tokens speak for; {@code nativeLanguage} is the browser's language tag. */
     @Transactional
     public User start(String accessToken, String idToken, String nativeLanguage) {
         if (!tokens.enabled()) {
@@ -47,7 +42,6 @@ public class CognitoSessions {
         return user;
     }
 
-    /** Keeps the account's email in step with Cognito's, unless another account already has that email. */
     private User followEmail(User user, String email) {
         if (!user.getEmail().equalsIgnoreCase(email) && !users.existsByEmailIgnoreCase(email)) {
             user.setEmail(email);

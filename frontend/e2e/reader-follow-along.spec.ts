@@ -1,9 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { addSyncedAudio, article, cleanUp, createText, openReader, PER_SENTENCE, player, setReaderCookie, wordAt, type Created } from "./reader-helpers";
 
-// docs/acceptance/follow-along-marker.feature and reader-count-and-follow.feature: while audio plays, a marker slides
-// under the spoken word, and with "Follow along" set to include it, the spoken sentence is tinted. 40 words over 12 seconds of audio: a word every 0.3 s.
-
 let created: Created | null = null;
 
 test.afterEach(async ({ page }) => {
@@ -14,11 +11,9 @@ test.afterEach(async ({ page }) => {
 interface Move {
   kind: string;
   ms: number;
-  /** The vertical position of each keyframe, from its translate(). */
   ys: number[];
 }
 
-/** Records every animation the marker runs, with the move it made (its data-move) and its keyframes' heights. */
 async function recordMoves(page: Page) {
   await page.addInitScript(() => {
     const w = window as unknown as { __moves: unknown[] };
@@ -39,7 +34,6 @@ async function recordMoves(page: Page) {
 const moves = (page: Page) => page.evaluate(() => (window as unknown as { __moves: Move[] }).__moves);
 const clearMoves = (page: Page) => page.evaluate(() => ((window as unknown as { __moves: Move[] }).__moves = []));
 
-/** The reader cookie for Follow along: Word and sentence (the tint is off by default). */
 const BOTH = "follow%3Dboth";
 
 const marker = (page: Page) => page.getByTestId("follow-marker");
@@ -50,10 +44,9 @@ async function openWithAudio(page: Page) {
   created = await createText(page, 40);
   await addSyncedAudio(page, created.id, 12);
   await openReader(page, `/read/${created.id}`);
-  await expect(player(page)).toContainText("0:12"); // metadata loaded
+  await expect(player(page)).toContainText("0:12");
 }
 
-/** Plays from the second sentence for a moment, then pauses: the marker stays on the word paused on. */
 async function playThenPause(page: Page, ms = 600) {
   await page.keyboard.press("]");
   await expect(speaking(page)).toHaveCount(1);
@@ -75,7 +68,6 @@ async function tokenColour(page: Page, name: string): Promise<string> {
 
 const background = (el: Locator) => el.evaluate((e) => getComputedStyle(e).backgroundColor);
 
-/** The marker is shown, as wide as the word and just under it. */
 async function expectMarkerUnder(page: Page, word: Locator) {
   await expect
     .poll(async () => {
@@ -105,11 +97,11 @@ test.describe("the word marker", () => {
   });
 
   test("slides along a line, hops across line breaks, and never two words at once", async ({ page }) => {
-    await page.setViewportSize({ width: 380, height: 900 }); // a few words a line, so playback crosses line breaks
+    await page.setViewportSize({ width: 380, height: 900 });
     await recordMoves(page);
     await openWithAudio(page);
     await page.keyboard.press("]");
-    await page.waitForTimeout(3000); // about ten words
+    await page.waitForTimeout(3000);
     await page.keyboard.press(" ");
     const all = await moves(page);
     const slides = all.filter((m) => m.kind === "slide");
@@ -171,15 +163,15 @@ test.describe("the word marker", () => {
   test("fades in on the new page when playback turns the page, without sliding there", async ({ page }) => {
     await recordMoves(page);
     created = await createText(page, 1000);
-    await addSyncedAudio(page, created.id, 300); // 0.3 s a word
+    await addSyncedAudio(page, created.id, 300);
     await openReader(page, `/read/${created.id}`);
     await expect(player(page)).toContainText("5:00");
     const last = article(page).locator(".w").last();
     const lastIndex = Number(await last.getAttribute("data-i"));
     await last.click();
     await page.getByRole("button", { name: "Play from here" }).click();
-    await expect(article(page).locator(`[data-i="${lastIndex}"]`)).toHaveCount(0, { timeout: 5000 }); // page turned
-    await page.keyboard.press(" "); // measured paused: while playing, the marker spends half of each word sliding
+    await expect(article(page).locator(`[data-i="${lastIndex}"]`)).toHaveCount(0, { timeout: 5000 });
+    await page.keyboard.press(" ");
     await expect(player(page).getByRole("button", { name: "Play", exact: true })).toBeVisible();
     await expect(speaking(page)).toHaveCount(1);
     await expectMarkerUnder(page, speaking(page));
@@ -190,12 +182,11 @@ test.describe("the word marker", () => {
 });
 
 test.describe("the sentence tint", () => {
-  test.beforeEach(({ page }) => setReaderCookie(page, BOTH)); // off by default
+  test.beforeEach(({ page }) => setReaderCookie(page, BOTH));
 
   test("tints the sentence being spoken, behind words without colour, and nothing else", async ({ page }) => {
     await openWithAudio(page);
     const c = created!;
-    // A known word in the second sentence (no colour of its own) and one in the third.
     for (const n of [PER_SENTENCE + 3, 2 * PER_SENTENCE + 3]) {
       const res = await page.request.post("/api/vocabulary", { data: { language: c.language, term: c.word(n), displayTerm: c.word(n), kind: "word", status: "known" } });
       expect(res.ok(), await res.text()).toBe(true);
@@ -205,7 +196,7 @@ test.describe("the sentence tint", () => {
     const tint = await tokenColour(page, "--w-sentence");
     await expect.poll(() => background(wordAt(page, PER_SENTENCE + 3))).toBe(tint);
     expect(await background(wordAt(page, 2 * PER_SENTENCE + 3))).toBe("rgba(0, 0, 0, 0)");
-    expect(await background(wordAt(page, PER_SENTENCE + 1))).toBe(await tokenColour(page, "--w-new")); // new stays blue
+    expect(await background(wordAt(page, PER_SENTENCE + 1))).toBe(await tokenColour(page, "--w-new"));
     await expect.poll(() => background(spokenGap(page))).toBe(tint);
     for (const n of [0, PER_SENTENCE - 1, 2 * PER_SENTENCE]) await expect(wordAt(page, n)).not.toHaveClass(/s-spoken/);
     for (let n = PER_SENTENCE; n < 2 * PER_SENTENCE; n++) await expect(wordAt(page, n)).toHaveClass(/s-spoken/);
@@ -228,7 +219,7 @@ test.describe("choosing what to show", () => {
     await expect(follow).toHaveValue("word");
     await follow.selectOption({ label: "Sentence" });
     await page.keyboard.press("Escape");
-    await page.getByRole("button", { name: "Reader settings" }).blur(); // Space on a focused button presses it, not pause
+    await page.getByRole("button", { name: "Reader settings" }).blur();
     await playThenPause(page);
     await expect(article(page).locator(".s-spoken").first()).toBeVisible();
     await expect(marker(page)).toHaveCount(0);
@@ -280,7 +271,7 @@ test.describe("with looking things up", () => {
     await word.click();
     await expect(word).toHaveClass(/w-selected/);
     const selected = await tokenColour(page, "--w-active");
-    await expect.poll(() => background(word)).toBe(selected); // the colour change is animated
+    await expect.poll(() => background(word)).toBe(selected);
     await expectMarkerUnder(page, word);
   });
 });

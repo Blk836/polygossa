@@ -18,17 +18,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Puts curated videos already in the community library into a public library playlist, in the order given
- * (docs/acceptance/copy-playlist.feature). Videos the library doesn't have in that language are left out and listed.
- */
 @Service
 public class CuratedPlaylistService {
 
-    /**
-     * {@code outcome}: {@code created}, {@code updated}, or (dry run) {@code would_create} / {@code would_update};
-     * {@code items}: how many videos it holds; {@code missing}: the video ids left out.
-     */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record CuratedPlaylist(String outcome, Long id, String title, int items, List<String> missing) {
 

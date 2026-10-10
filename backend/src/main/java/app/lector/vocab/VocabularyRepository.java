@@ -31,7 +31,6 @@ public interface VocabularyRepository extends JpaRepository<VocabularyEntry, Lon
             + "where v.user.id = :userId and v.language = :language")
     List<TermEntry> findTermEntries(@Param("userId") Long userId, @Param("language") Language language);
 
-    /** {@code q} must be a lower-cased LIKE pattern or null. */
     @Query("""
             select v from VocabularyEntry v
             where v.user.id = :userId
@@ -75,11 +74,9 @@ public interface VocabularyRepository extends JpaRepository<VocabularyEntry, Lon
             """)
     long countDue(@Param("userId") Long userId, @Param("language") Language language, @Param("now") Instant now);
 
-    /** When each of the user's words was saved, for those saved since {@code since}. */
     @Query("select v.createdAt from VocabularyEntry v where v.user.id = :userId and v.createdAt >= :since")
     List<Instant> findCreatedSince(@Param("userId") Long userId, @Param("since") Instant since);
 
-    /** When each currently known word was marked known, for those marked since {@code since}. */
     @Query("select v.knownAt from VocabularyEntry v where v.user.id = :userId "
             + "and v.status = app.lector.vocab.WordStatus.KNOWN and v.knownAt >= :since")
     List<Instant> findKnownSince(@Param("userId") Long userId, @Param("since") Instant since);
@@ -95,10 +92,6 @@ public interface VocabularyRepository extends JpaRepository<VocabularyEntry, Lon
 
     long countByUserIdAndLanguageAndStatus(Long userId, Language language, WordStatus status);
 
-    /**
-     * The meanings learners saved for a word in one native language that at least {@code minLearners} of them share
-     * (case aside), most shared first, ties alphabetically. One entry per learner and term, so entries count learners.
-     */
     @Query("""
             select min(v.meaning) from VocabularyEntry v
             where v.language = :language and v.term = :term and v.meaningLanguage = :meaningLanguage
@@ -115,7 +108,6 @@ public interface VocabularyRepository extends JpaRepository<VocabularyEntry, Lon
     @Query("update VocabularyEntry v set v.sourceText = null where v.sourceText.id = :textId")
     void detachText(@Param("textId") Long textId);
 
-    /** Words each user came to know since a moment. */
     interface UserCount {
         Long getUserId();
 

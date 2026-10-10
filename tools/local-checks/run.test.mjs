@@ -4,7 +4,6 @@ import { runChecks } from "./run.mjs";
 
 const SHA = "abc123";
 
-/** A fake world: a clean branch whose suites all pass, unless told otherwise. */
 function world(overrides = {}) {
   const calls = { plan: [], exec: [], status: [], locks: [], released: 0, log: [] };
   const suites = overrides.suites ?? [
@@ -40,7 +39,7 @@ test("uncommitted changes: refuses, says why, and runs nothing", async () => {
 test("the checks are picked from the branch's changes against main", async () => {
   const { deps, calls } = world({ git: { changedFiles: () => ["infra/lib/x.ts"] } });
   await runChecks([], deps);
-  assert.deepEqual(calls.plan[0], { backend: false, e2e: false, frontend: false, infra: true, tools: false });
+  assert.deepEqual(calls.plan[0], { backend: false, e2e: false, frontend: false, infra: true, tools: true });
 });
 
 test("--all, or changes that can't be listed, pick every check", async () => {

@@ -17,14 +17,11 @@ interface Props {
   tokens: Token[];
   onSpoken: (spoken: Spoken) => void;
   onJumpToToken: (tokenIndex: number) => void;
-  /** Where to cue the paused video: see `useMediaPlayer`. */
   cueToken: number | null;
-  /** Beside the text, or a mini player in the corner (wide screens only; phones always show it above the text). */
   layout: VideoLayout;
   onLayout: (layout: VideoLayout) => void;
 }
 
-/** Shown when embedding fails (blocked, offline, removed): the transcript stays fully usable. */
 function PlayerFailed({ videoId }: { videoId: string }) {
   return (
     <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-xl border border-line bg-card p-4 text-center text-sm">
@@ -34,18 +31,12 @@ function PlayerFailed({ videoId }: { videoId: string }) {
   );
 }
 
-/**
- * Seeking an unstarted YouTube video starts playing it, so until it has played a seek is only remembered (`pending`)
- * and applied when playback starts, from our Play button or YouTube's own.
- */
 interface Cue {
   started: boolean;
   pending: number | null;
-  /** Holds a seek's target as the position until YouTube reports it. */
   clock: MediaClock;
 }
 
-/** Creates the YouTube player in `host`, reporting its length, play state (buffering mid-play counts as playing) and failure. */
 function useYouTube(videoId: string, host: React.RefObject<HTMLDivElement | null>, player: React.RefObject<YTPlayer | null>, cue: React.RefObject<Cue>) {
   const [failed, setFailed] = useState(false);
   const [playback, setPlayback] = useState({ playing: false, buffering: false });
@@ -63,7 +54,6 @@ function useYouTube(videoId: string, host: React.RefObject<HTMLDivElement | null
           videoId,
           width: "100%",
           height: "100%",
-          // enablejsapi + origin keep the postMessage channel (state changes, current time) working.
           playerVars: { playsinline: 1, rel: 0, enablejsapi: 1, origin: window.location.origin },
           events: {
             onReady: (e) => {
@@ -90,25 +80,21 @@ function useYouTube(videoId: string, host: React.RefObject<HTMLDivElement | null
   return { failed, ...playback, seconds };
 }
 
-/** First playback: jump to the remembered cue, if any. */
 function startCued(yt: YTPlayer, cue: Cue) {
   const ms = cue.pending;
   cue.started = true;
-  cue.pending = null; // before seeking: the seek itself can report "playing" and land back here
+  cue.pending = null;
   if (ms === null) return;
   cue.clock.seek(ms, performance.now());
   yt.seekTo(ms / 1000, true);
 }
 
-/** Where the player sits: sticky above the text on phones; on wide screens beside the text, or floating in the corner. */
 function dockClass(mini: boolean): string {
   const base = "sticky top-14 z-20 -mx-4 mb-6 bg-paper/95 px-4 pt-2 pb-3 backdrop-blur sm:mx-0 sm:px-0 lg:mb-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none";
-  // Above the player bar, 360 px wide: YouTube asks for a player of at least 200 × 200 px, so 16:9 needs 356.
   if (mini) return `${base} lg:fixed lg:top-auto lg:right-6 lg:bottom-[5.5rem] lg:z-30 lg:w-[22.5rem]`;
   return `${base} lg:top-20`;
 }
 
-/** The player bar's button that swaps between the video beside the text and the mini player (wide screens only). */
 function LayoutButton({ layout, onLayout }: { layout: VideoLayout; onLayout: (layout: VideoLayout) => void }) {
   const mini = layout === "mini";
   const label = mini ? "Video beside text" : "Mini player";
@@ -125,15 +111,9 @@ function LayoutButton({ layout, onLayout }: { layout: VideoLayout; onLayout: (la
   );
 }
 
-/**
- * A video lesson's player: the YouTube player (sticky above the text on narrow screens; beside it, or a mini player, on
- * wide ones) and the same bottom player bar as audio texts, which highlights the word being spoken and follows clicks
- * on the transcript. Switching layouts only changes classes, so the playing video is never reloaded.
- */
 const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video, tokens, onSpoken, onJumpToToken, cueToken, layout, onLayout }, ref) {
   const host = useRef<HTMLDivElement>(null);
   const yt = useRef<YTPlayer | null>(null);
-  // YouTube reports its time only a few times a second; the clock fills in between so the highlight keeps pace.
   const [smooth] = useState(createMediaClock);
   const clock = useRef({ playing: false, rate: 1 });
   const cue = useRef<Cue>({ started: false, pending: null, clock: smooth });
@@ -163,12 +143,11 @@ const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video,
   );
   const { failed, playing, buffering, seconds } = useYouTube(video.videoId, host, yt, cue);
   useEffect(() => {
-    clock.current.playing = playing && !buffering; // while buffering the position waits for the data
+    clock.current.playing = playing && !buffering;
   }, [playing, buffering]);
   const duration = (seconds || video.durationSeconds || 0) * 1000;
   const mini = layout === "mini" && !failed;
 
-  // Captions give exact timings; without them, spread the words over the length the player reports.
   const timings = useMemo(() => {
     const given = [...video.timings].sort((a, b) => a.s - b.s);
     return given.length ? given : estimateTimings(tokens, duration);
@@ -197,7 +176,6 @@ const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video,
   );
 });
 
-/** The video column (beside the text on wide screens); nothing for texts without a video. */
 export const VideoPanel = forwardRef<MediaHandle, Omit<Props, "video"> & { video: TextDetail["video"] }>(function VideoPanel({ video, ...props }, ref) {
   if (!video) return null;
   return (

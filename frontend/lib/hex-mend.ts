@@ -1,14 +1,8 @@
-// Making the vocabulary map's provinces whole (vocabulary-map.feature): growing provinces side by side inside a country
-// can box one in, so part of it lands elsewhere. Mending trades those stray tiles, one at a time, with the neighbour
-// around them for a tile that touches the province's main piece, keeping every province's size. Pure and unit-tested
-// (hex-grid.test.ts). Works on numbered tiles with their neighbours listed once, as it runs on every map load.
 import { hexKey, NEIGHBOURS, type Hex } from "./hex-grid";
 
 interface Board {
   hexes: Hex[];
-  /** For each tile, the numbers of its neighbours on the board. */
   next: number[][];
-  /** For each tile, the territory (by number) that holds it. */
   owner: number[];
 }
 
@@ -20,7 +14,6 @@ function board(territories: Map<string, Hex[]>): Board {
   return { hexes, next, owner };
 }
 
-/** The connected pieces of territory {@code t}, biggest first; {@code without} and {@code with} try a swap. */
 function pieces(b: Board, t: number, without = -1, add = -1): number[][] {
   const inside = (i: number) => i !== without && (b.owner[i] === t || i === add);
   const seen = new Uint8Array(b.hexes.length);
@@ -42,14 +35,12 @@ function pieces(b: Board, t: number, without = -1, add = -1): number[][] {
   return out.sort((x, y) => y.length - x.length);
 }
 
-/** A tile of territory {@code giver} that touches {@code main} and can go without splitting it, once it gains {@code f}. */
 function spareTile(b: Board, giver: number, f: number, main: Set<number>): number {
   const candidates = b.owner.map((t, i) => i).filter((i) => b.owner[i] === giver && b.next[i].some((n) => main.has(n)));
   candidates.sort((x, y) => (hexKey(b.hexes[x]) < hexKey(b.hexes[y]) ? -1 : 1));
   return candidates.find((c) => pieces(b, giver, c, f).length === 1) ?? -1;
 }
 
-/** One trade: a tile of {@code t}'s smallest stray piece for a neighbour's tile next to {@code t}'s main piece. */
 function swapOne(b: Board, t: number): boolean {
   const [main, ...strays] = pieces(b, t);
   const mainSet = new Set(main);
@@ -67,7 +58,6 @@ function swapOne(b: Board, t: number): boolean {
   return false;
 }
 
-/** Territories made whole where a trade allows it; each keeps its size, and a whole one keeps its tiles in order. */
 export function mendTerritories(territories: Map<string, Hex[]>): Map<string, Hex[]> {
   const b = board(territories);
   const count = territories.size;

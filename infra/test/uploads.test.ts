@@ -1,4 +1,3 @@
-// docs/acceptance/s3-uploads.feature, "The bucket is private, encrypted and only the backend can use it".
 import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
 import * as cdk from "aws-cdk-lib";
@@ -18,7 +17,6 @@ before(() => {
 
 const bucketId = () => Object.keys(template.findResources("AWS::S3::Bucket"))[0];
 
-/** The IAM policy documents attached to the role whose logical id starts with `prefix`. */
 function statementsOf(prefix: string) {
   const policies = Object.values(template.findResources("AWS::IAM::Policy"));
   return policies

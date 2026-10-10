@@ -7,7 +7,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** The record of what admins did: who, what, to whom, when, and the details. */
 @Service
 public class AdminLog {
 

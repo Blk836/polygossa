@@ -26,12 +26,10 @@ const MODES: { id: Mode; label: string; hint: string }[] = [
   },
 ];
 
-/** Where a finished import opens: a book opens its first chapter inside its playlist. */
 interface Created {
   path: string;
 }
 
-/** A book: one private text per chapter, in a new playlist. */
 async function submitBook(d: Draft): Promise<Created> {
   if (!d.file) throw new Error("Choose an EPUB or PDF file");
   const form = new FormData();
@@ -51,7 +49,6 @@ interface Draft {
   isPublic: boolean;
 }
 
-/** A YouTube import: captions are fetched unless the user supplies a subtitle file or a transcript. */
 function submitYouTube(d: Draft): Promise<TextSummary> {
   const form = new FormData();
   form.append("url", d.url);
@@ -63,7 +60,6 @@ function submitYouTube(d: Draft): Promise<TextSummary> {
   return api("texts/import-youtube", { body: form });
 }
 
-/** Creates the text or video from whichever source the user picked. */
 function submitImport(mode: Mode, d: Draft): Promise<TextSummary> {
   if (mode === "youtube") return submitYouTube(d);
   if (mode === "paste") {

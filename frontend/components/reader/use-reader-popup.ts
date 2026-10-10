@@ -6,10 +6,8 @@ import { normalizePhrase, phraseRange, textAround, type Range } from "./reader-t
 import type { PopupTarget } from "./word-popup";
 
 const MAX_PHRASE_WORDS = 12;
-/** Popup width on wide screens (22rem), used to keep it inside the article. */
 const POPUP_WIDTH = 352;
 
-/** The word/phrase popup's state: selection, target, position, notice and phrase mode. */
 export function usePopupState(articleRef: RefObject<HTMLDivElement | null>) {
   const [sel, setSel] = useState<Range | null>(null);
   const [target, setTarget] = useState<PopupTarget | null>(null);
@@ -17,7 +15,6 @@ export function usePopupState(articleRef: RefObject<HTMLDivElement | null>) {
   const [notice, setNotice] = useState<string | null>(null);
   const [phraseMode, setPhraseMode] = useState(false);
 
-  /** Positions the popup under a token (on wide screens; phones show a bottom sheet). */
   const place = useCallback(
     (tokenIndex: number) => {
       const container = articleRef.current;
@@ -47,15 +44,12 @@ interface OpenerOptions {
   tokens: Token[];
   sentences: Map<number, string>;
   popup: PopupState;
-  /** Scrolls to the token (turning the page if needed) and places the popup there. */
   reveal: (token: number) => void;
   autoSave: (t: Token, sentence: string) => void;
   onError: (message: string) => void;
-  /** Called whenever a popup opens (e.g. to pause playback). */
   onOpen: () => void;
 }
 
-/** Opening the popup on a word (click, arrows) or a phrase (drag, shift-click, phrase mode). */
 export function usePopupOpeners({ tokens, sentences, popup, reveal, autoSave, onError, onOpen }: OpenerOptions) {
   const { setSel, setNotice, setPhraseMode, setTarget } = popup;
 

@@ -1,9 +1,6 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 import type { WordImportJob } from "../lib/word-import";
 
-// How the Words page shows a word import in progress: docs/acceptance/word-import.feature, "Showing progress".
-// LingQ and the import list are stubbed in the browser, so nothing here reaches lingq.com or saves words.
-
 const job = (over: Partial<WordImportJob>): WordImportJob => ({
   id: 9_000_101, source: "lingq", language: "fr", state: "running", found: 0, added: 0, updated: 0, unchanged: 0,
   overLimit: 0, error: null, createdAt: new Date().toISOString(), finishedAt: null, ...over,
@@ -18,7 +15,6 @@ async function openImport(page: Page) {
   await page.getByRole("button", { name: "Import words" }).click();
 }
 
-/** Serves the recent-imports list from `lists`, one per request, repeating the last. */
 async function stubList(page: Page, lists: WordImportJob[][]) {
   await page.route("**/api/word-imports", (route: Route) =>
     route.request().method() === "GET" ? route.fulfill({ json: lists.length > 1 ? lists.shift() : lists[0] }) : route.fallback());
@@ -61,12 +57,10 @@ test("a rejected start puts the button back and shows the error", async ({ page 
 
 test("a running import spins on its row and the button until it is done, then the word list refreshes", async ({ page }) => {
   await page.route("**/api/word-imports/lingq", (route) => route.fulfill({ status: 202, json: job({ state: "queued" }) }));
-  // The test moves the import along: nothing yet, started, words arriving, done.
   const stages = [[], [job({})], [job({ found: 120, added: 120 })], [job({ state: "done", found: 450, added: 450 })]];
   let stage = 0;
   await page.route("**/api/word-imports", (route) => route.fulfill({ json: stages[stage] }));
   await openImport(page);
-  // The finished row stays because the form is on its source and language.
   await panel(page).getByLabel("Language").selectOption("fr");
   await expect(panel(page).getByRole("button", { name: "Import from LingQ" })).toBeEnabled();
   stage = 1;

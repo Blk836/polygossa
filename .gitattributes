@@ -1,3 +1,2 @@
-# Scripts run inside Linux (the Docker images) need LF line endings, even when Git on Windows converts the rest.
 gradlew text eol=lf
 *.sh    text eol=lf

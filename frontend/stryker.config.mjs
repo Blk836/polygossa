@@ -1,8 +1,3 @@
-// Mutation testing (npm run mutate). Covers the modules with unit tests: the reader's text, transcript, paging
-// (and fitting pages to the screen), settings and audio logic, word colour classes, vocabulary/review query helpers and the API client,
-// library media helpers, the video playback clock and YouTube play states, categories, theme, card layout and card status (difficulty, reading progress), playlists, the header nav and its streak/known-words figures, library filters, the landing page (sign-up links, demo reader, showreel timeline), the sign-in splash timeline, brand name, progress (streak, milestones, calendar), skill levels, the vocabulary map (and its hex continent and camera), Explore recommendations, the forum, profile photos (file checks, crop maths), word imports, writing tests, languages and native-language translations, the admin panel, first-visit tours and the listening clock. React components are covered by the
-// Playwright suite (e2e/) instead.
-/** @type {import("@stryker-mutator/api/core").PartialStrykerOptions} */
 const config = {
   testRunner: "vitest",
   plugins: ["@stryker-mutator/vitest-runner"],
@@ -58,14 +53,7 @@ const config = {
   htmlReporter: { fileName: "reports/mutation/index.html" },
   thresholds: { high: 90, low: 80, break: 80 },
   tempDirName: ".stryker-tmp",
-  // Reuse the last run's results (reports/stryker-incremental.json) for mutants whose code and tests haven't changed,
-  // so a run costs about what the change touched; the score and report still cover every module.
-  // `npm run mutate -- --force` re-runs every mutant. Without per-test coverage, a reused result can be stale after a
-  // test file broke and was fixed (its mutants stay "no coverage"), which only ever lowers the score: if a score looks
-  // too low, force a run.
   incremental: true,
-  // Per-test coverage analysis does not map mutants to tests under Vitest 5 (every mutant reported as untested),
-  // so run the whole (fast) suite against each mutant instead.
   coverageAnalysis: "off",
 };
 

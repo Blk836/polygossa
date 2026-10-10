@@ -25,13 +25,8 @@ import java.util.zip.ZipOutputStream;
 import org.jsoup.Jsoup;
 import tools.jackson.databind.json.JsonMapper;
 
-/**
- * Writes an Anki package (.apkg): a zip holding {@code collection.anki2} (an SQLite database in Anki's schema 11
- * format, which every Anki version imports) and an empty {@code media} map.
- */
 public final class AnkiExporter {
 
-    /** Fixed so re-imports update the same note type rather than creating a duplicate. */
     static final long MODEL_ID = 1_607_392_319_001L;
     private static final String FIELD_SEPARATOR = "\u001f";
     private static final String GUID_CHARS =
@@ -45,7 +40,7 @@ public final class AnkiExporter {
         Path db = null;
         try {
             db = Files.createTempFile("lector-anki", ".anki2");
-            Files.delete(db); // let SQLite create it fresh
+            Files.delete(db);
             long deckId = Math.abs(deckName.hashCode()) + 1_000_000_000L;
             try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + db.toAbsolutePath())) {
                 conn.setAutoCommit(false);
@@ -64,7 +59,6 @@ public final class AnkiExporter {
                 try {
                     Files.deleteIfExists(db);
                 } catch (IOException ignored) {
-                    // temp file cleanup is best effort
                 }
             }
         }
@@ -193,7 +187,6 @@ public final class AnkiExporter {
                 note.setString(2, guid());
                 note.setLong(3, MODEL_ID);
                 note.setLong(4, nowSec);
-                // The "lector" tag is fixed, not the brand: notes imported before a rename keep matching.
                 note.setString(5, " lector " + e.getLanguage().code() + " " + e.getStatus().json() + " "
                         + e.getTags().stream().map(t -> t + " ").collect(Collectors.joining()));
                 note.setString(6, String.join(FIELD_SEPARATOR, values));
@@ -221,7 +214,6 @@ public final class AnkiExporter {
         return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>");
     }
 
-    /** Anki's duplicate-detection checksum: first 8 hex digits of SHA-1 of the stripped first field. */
     static long checksum(String field) {
         try {
             String stripped = Jsoup.parse(field).text();

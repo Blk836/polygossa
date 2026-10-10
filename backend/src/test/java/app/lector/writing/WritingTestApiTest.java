@@ -21,7 +21,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Feature: a short timed writing test on a set situation, graded by AI at the end. */
 @SpringBootTest(properties = {
         "test.database=writingtest",
         "app.seed-samples=false",
@@ -99,8 +98,6 @@ class WritingTestApiTest {
         return "mot ".repeat(n).strip();
     }
 
-    // ---- starting ----
-
     @Test
     void startsATimedTestOnASituationFromTheBank() throws Exception {
         JsonNode t = start(user, "fr", "B1", 201);
@@ -118,7 +115,6 @@ class WritingTestApiTest {
 
     @Test
     void japaneseTestsAreRefused() throws Exception {
-        // Paused for learning (learning-languages.feature); character counting stays covered by WritingRulesTest.
         assertThat(start(user, "ja", "A2", 400).get("code").asString()).isEqualTo("language_not_offered");
     }
 
@@ -145,8 +141,6 @@ class WritingTestApiTest {
         start(user, "fr", "D1", 400);
         start(api.signup(), "fr", "B1", 402);
     }
-
-    // ---- submitting ----
 
     @Test
     void cannotHandInEarlyBelowTheMinimum() throws Exception {
@@ -179,10 +173,10 @@ class WritingTestApiTest {
     @Test
     void whenTimeRunsOutWhateverIsWrittenIsGradedButShortWorkIsCapped() throws Exception {
         long id = start(user, "fr", "B1", 201).get("id").asLong();
-        CLOCK.advance(Duration.ofMinutes(5).plusSeconds(10)); // the browser auto-submits at 0:00; network lag
+        CLOCK.advance(Duration.ofMinutes(5).plusSeconds(10));
         JsonNode graded = submit(user, id, words(30), 200);
         assertThat(graded.get("wordCount").asInt()).isEqualTo(30);
-        assertThat(graded.get("grade").get("score").asInt()).isEqualTo(50); // 30 of 60 words: at most 50
+        assertThat(graded.get("grade").get("score").asInt()).isEqualTo(50);
     }
 
     @Test
@@ -209,8 +203,6 @@ class WritingTestApiTest {
         submit(other, id, words(30), 404);
     }
 
-    // ---- grading failures ----
-
     @Test
     void whenGradingFailsTheWritingIsKeptAndCanBeGradedLater() throws Exception {
         long id = start(user, "fr", "A1", 201).get("id").asLong();
@@ -221,7 +213,7 @@ class WritingTestApiTest {
         assertThat(saved.get("content").asString()).isEqualTo(words(30));
 
         AI.setFailing(false);
-        CLOCK.advance(Duration.ofHours(1)); // regrading isn't bound by the time limit
+        CLOCK.advance(Duration.ofHours(1));
         JsonNode graded = api.post(user, "/api/writing/tests/" + id + "/grade", "{}", 200);
         assertThat(graded.get("status").asString()).isEqualTo("graded");
         assertThat(graded.has("gradeError")).isFalse();
@@ -234,8 +226,6 @@ class WritingTestApiTest {
         api.post(user, "/api/writing/tests/" + id + "/grade", "{}", 409);
     }
 
-    // ---- writing situations stay a fixed bank shared by everyone ----
-
     @Test
     void everyUserDrawsSituationsFromTheSameBankWithoutAskingTheAi() throws Exception {
         var bank = PromptBank.load().forLevel("B1").stream().map(PromptBank.Prompt::situation).toList();
@@ -244,8 +234,6 @@ class WritingTestApiTest {
         assertThat(bank).contains(first, second);
         assertThat(AI.requests()).isEmpty();
     }
-
-    // ---- consistent grading ----
 
     @Test
     void gradingAsksForDeterministicOutputFromTheConfiguredModel() throws Exception {
@@ -286,8 +274,6 @@ class WritingTestApiTest {
         assertThat(grade.path("level").isNull() || grade.path("level").isMissingNode()).isTrue();
     }
 
-    // ---- grading failures that keep the writing ----
-
     @Test
     void aSlowAiServiceTimesOutAndTheWritingIsKept() throws Exception {
         long id = start(user, "fr", "A1", 201).get("id").asLong();
@@ -316,8 +302,6 @@ class WritingTestApiTest {
         JsonNode saved = submit(user, id, words(30), 200);
         assertThat(saved.get("gradeError").asString()).isEqualTo("The AI service is unavailable right now");
     }
-
-    // ---- history ----
 
     @Test
     void historyListsTestsInTheLanguageNewestFirst() throws Exception {

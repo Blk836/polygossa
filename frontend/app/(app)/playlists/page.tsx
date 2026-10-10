@@ -13,13 +13,11 @@ import { languageName, LEARNING_LANGUAGES } from "@/lib/languages";
 import type { PlaylistSummary } from "@/lib/playlist-types";
 import type { LanguageCode } from "@/lib/types";
 
-/** Playlists restart whenever the language in the top bar changes. */
 export default function PlaylistsPage() {
   const { me } = useMe();
   return <Playlists key={me.targetLanguage ?? "all"} language={me.targetLanguage ?? ""} />;
 }
 
-/** The playlists you made and the ones you saved (shared ones are found by searching Explore). */
 function Playlists({ language }: { language: string }) {
   const { layout } = useCardLayout();
   const [lists, setLists] = useState<PlaylistSummary[] | null>(null);
@@ -52,7 +50,6 @@ function Playlists({ language }: { language: string }) {
   );
 }
 
-/** A new playlist in the top bar's language (or a chosen one when the top bar shows every language). */
 function CreateForm({ language, onCreated }: { language: string; onCreated: (p: PlaylistSummary) => void }) {
   const [title, setTitle] = useState("");
   const [lang, setLang] = useState<LanguageCode>((language || "es") as LanguageCode);

@@ -12,7 +12,6 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
             + "order by a.assignedAt desc")
     List<Assignment> findByClassroomId(@Param("classroomId") Long classroomId);
 
-    /** Whether the text is assigned in a class the user teaches or belongs to. */
     @Query("""
             select count(a) > 0 from Assignment a
             where a.text.id = :textId and (a.classroom.teacher.id = :userId or exists (

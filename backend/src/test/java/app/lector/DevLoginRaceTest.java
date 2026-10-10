@@ -17,11 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 
-/**
- * Regression: on a fresh database, several first visits at once all tried to create the shared test account; all
- * but one failed, and the browser fell back to the login page and then the library instead of the page it asked for.
- * Its own database, so the account doesn't exist yet when the test starts.
- */
 @SpringBootTest(properties = {
         "test.database=devloginrace",
         "app.seed-samples=false",

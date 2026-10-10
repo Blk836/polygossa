@@ -1,9 +1,6 @@
-// Landing page logic: where sign-up links go (carrying the language a visitor picked through sign-up into
-// onboarding), and the try-it-now reader demo's state. The demo texts themselves are in landing-demos.ts.
 import { LEARNING_LANGUAGES } from "./languages";
 import type { LanguageCode } from "./types";
 
-/** A supported language code, or null for anything else (absent, blank, unknown, wrong case). */
 export function parseLanguage(value: string | null | undefined): LanguageCode | null {
   return LEARNING_LANGUAGES.find((l) => l.code === value)?.code ?? null;
 }
@@ -13,26 +10,19 @@ function withLanguage(path: string, language: string | null | undefined): string
   return code ? `${path}?lang=${code}` : path;
 }
 
-/** The sign-up page, remembering the language picked on the landing page. */
 export const signupHref = (language?: string | null) => withLanguage("/signup", language);
 
-/** Where a new account goes: onboarding, starting from the language picked before signing up. */
 export const onboardingPath = (language?: string | null) => withLanguage("/onboarding", language);
-
-// ---- the demo reader ----
 
 export type DemoStatus = "new" | "learning" | "known";
 
 export interface DemoToken {
   text: string;
-  /** Present on words (clickable); absent on spaces and punctuation. */
   word?: { meaning: string; pos: string; reading?: string; known?: boolean };
 }
 
-/** A glossed word: text, meaning, part of speech, and optionally k (already known) and r (reading). */
 export type DemoGloss = [text: string, meaning: string, pos: string, opts?: { k?: boolean; r?: string }];
 
-/** Builds demo tokens from glossed words and punctuation, joined by `gap` (a space, or nothing for Chinese and Japanese). */
 export function demoSentence(words: (DemoGloss | string)[], gap = " "): DemoToken[] {
   const glossed = ([text, meaning, pos, { r, k } = {}]: DemoGloss): DemoToken => ({ text, word: { meaning, pos, reading: r, known: k } });
   return words.flatMap((w, i): DemoToken[] => {
@@ -44,10 +34,8 @@ export function demoSentence(words: (DemoGloss | string)[], gap = " "): DemoToke
 }
 
 export interface DemoState {
-  /** Status of each word token, by token index. */
   statuses: Record<number, DemoStatus>;
   selected: number | null;
-  /** How many different words the visitor has looked up. */
   lookups: number;
 }
 
@@ -59,7 +47,6 @@ export function initialDemoState(tokens: DemoToken[]): DemoState {
   return { statuses, selected: null, lookups: 0 };
 }
 
-/** Clicking a word opens it; a new word becomes "learning", as in the real reader. Non-words are ignored. */
 export function selectWord(state: DemoState, index: number): DemoState {
   const status = state.statuses[index];
   if (status === undefined) return state;

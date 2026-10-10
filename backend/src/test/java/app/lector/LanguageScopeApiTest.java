@@ -14,7 +14,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Feature: the library is scoped to one language at a time (the language picked in the top bar). */
 @ApiTest
 class LanguageScopeApiTest {
 

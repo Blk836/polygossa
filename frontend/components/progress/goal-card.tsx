@@ -2,7 +2,6 @@ import Link from "next/link";
 import { goalProgress } from "@/lib/progress";
 import type { GoalToday } from "@/lib/types";
 
-/** Today's daily goal: how far along it is, with a bar, and a way to change what it measures. */
 export function GoalCard({ goal }: { goal: GoalToday }) {
   const { text, percent, met } = goalProgress(goal);
   return (

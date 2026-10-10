@@ -1,6 +1,5 @@
 import { expect, test } from "@playwright/test";
 
-// The default brand (BRAND_NAME unset). Pages without their own title get the site title; titled pages get the suffix.
 test("the app is branded Polygossa, with no trace of the old Lector name", async ({ page }) => {
   await page.goto("/library");
   const home = page.getByRole("link", { name: "Polygossa home" });
@@ -11,7 +10,7 @@ test("the app is branded Polygossa, with no trace of the old Lector name", async
 });
 
 test("a page with its own title is suffixed with the brand", async ({ page }) => {
-  await page.goto("/library"); // signs in (auto-login) for page.request
+  await page.goto("/library");
   const res = await page.request.post("/api/texts", {
     data: { title: `Brand check ${Date.now()}`, language: "fr", content: "Le chat dort.", isPublic: false },
   });

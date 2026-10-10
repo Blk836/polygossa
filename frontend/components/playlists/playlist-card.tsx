@@ -16,7 +16,6 @@ const TITLE: Record<CardLayout, string> = {
   list: "line-clamp-1 text-[15px]",
 };
 
-/** One card of the deck: the episode's video thumbnail, or its category's ruled cover with the title's first letter. */
 function DeckCardFace({ cover, small }: { cover: PlaylistCover; small: boolean }) {
   if (cover.thumbnailUrl) {
     return <Image src={cover.thumbnailUrl} alt="" fill sizes={small ? "120px" : "240px"} className="object-cover" />;
@@ -28,7 +27,6 @@ function DeckCardFace({ cover, small }: { cover: PlaylistCover; small: boolean }
   );
 }
 
-/** The playlist's first episodes as a small fanned deck of cards, the first one on top. */
 function Deck({ playlist, small }: { playlist: PlaylistSummary; small: boolean }) {
   const cards = deck(playlist.covers);
   return (
@@ -64,10 +62,6 @@ const SAVE: Record<CardLayout, string> = {
   list: "shrink-0",
 };
 
-/**
- * A playlist as one card, the size of a text card: a fanned deck of its first episodes under a "Playlist" tag, then
- * its title and progress. Clicking it opens the side pane listing every episode. `saveable` adds a Save button.
- */
 export function PlaylistCard({ playlist, layout = "cards", className = "", saveable = false }: {
   playlist: PlaylistSummary;
   layout?: CardLayout;
@@ -101,7 +95,6 @@ export function PlaylistCard({ playlist, layout = "cards", className = "", savea
   );
 }
 
-/** "11 items" (with "Playlist ·" in the list layout, which has no tag), and Shared / Private on your own. */
 function Meta({ playlist, list }: { playlist: PlaylistSummary; list: boolean }) {
   return (
     <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide whitespace-nowrap text-muted uppercase">

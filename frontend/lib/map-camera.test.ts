@@ -29,7 +29,7 @@ describe("clampCamera", () => {
 
   it("stops at the edge of the world", () => {
     const cam = clampCamera({ x: -500, y: 5000, k: 2 }, world, viewport, limits);
-    expect(cam.x).toBe(200); // half the viewport (400 px) at 2 px per unit
+    expect(cam.x).toBe(200);
     expect(cam.y).toBe(1000 - 125);
   });
 

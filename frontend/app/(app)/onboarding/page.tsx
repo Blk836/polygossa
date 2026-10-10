@@ -12,7 +12,6 @@ import { LEARNING_LANGUAGES } from "@/lib/languages";
 import { HOME } from "@/lib/nav";
 import type { LanguageCode, Me, TextSummary } from "@/lib/types";
 
-/** Sets the target language and fetches a few starter texts in it. */
 function startLanguage(code: LanguageCode) {
   return Promise.all([
     api<Me>("me", {
@@ -23,11 +22,6 @@ function startLanguage(code: LanguageCode) {
   ]);
 }
 
-/**
- * Two steps to reading: pick a language, then (optionally saying what you like, for Explore's recommendations)
- * pick a starter text. A language picked on the landing page arrives as
- * ?lang= (through sign-up) and skips straight to step 2.
- */
 export default function OnboardingPage() {
   const router = useRouter();
   const { setMe } = useMe();

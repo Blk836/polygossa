@@ -8,7 +8,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Characterization of GET /api/dashboard aggregation. */
 @ApiTest
 class DashboardApiTest {
 

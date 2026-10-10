@@ -17,14 +17,9 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
-/** Everything one learner did that recommendations learn from, gathered in a handful of queries. */
 @Service
 public class LearnerSignals {
 
-    /**
-     * Per text: what the learner did ({@code activity}), their reading progress, impressions and opens; plus the
-     * texts they marked "Not interested" and the categories they picked as interests.
-     */
     public record Snapshot(Map<Long, Signals.Activity> activity, Map<Long, ReadingProgress> progress,
                            Set<Long> dismissed, Map<Long, TextTally> tallies, Set<Category> interests) {}
 

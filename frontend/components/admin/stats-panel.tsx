@@ -14,7 +14,6 @@ function Tile({ label, value, hint }: { label: string; value: number; hint?: str
   );
 }
 
-/** How the product is doing: users, activity, plans, languages and content. */
 export function StatsPanel({ stats }: { stats: AdminStats }) {
   const { users, content } = stats;
   return (

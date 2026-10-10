@@ -5,7 +5,6 @@ import { areaTiles, layoutHexWorld, PLACE_MARGIN, TILE, type HexWorld } from "./
 import { fitBox } from "./map-camera";
 import type { VocabMapRegion, VocabMapWord } from "./types";
 
-/** The French list's regions and area sizes (all bands), in blueprint order. */
 const FRENCH: [string, number[]][] = [
   ["people", [42, 39, 35, 32]], ["body", [44, 34, 36, 34]], ["food", [48, 51, 38, 26, 30, 34]], ["home", [57, 26, 27, 28]],
   ["shopping", [52, 35, 36, 35]], ["travel", [59, 42, 23, 43]], ["work", [51, 33, 51, 28]], ["nature", [36, 48, 28, 33, 27]],
@@ -49,7 +48,6 @@ function connected(hexes: Hex[]): boolean {
   return seen.size === all.size;
 }
 
-/** Sea tiles the open sea can't reach: an inland lake or lagoon. */
 function lakes(w: HexWorld): number {
   const land = new Set(allHexes(w).map(hexKey));
   const qs = allHexes(w).map((h) => h.q);
@@ -199,7 +197,6 @@ describe("layoutHexWorld", () => {
       expect(edges(c.outline)).toBeLessThan(tiles * 6);
       for (const a of c.areas) expect(edges(a.outline)).toBeGreaterThanOrEqual(6);
     }
-    // A single tile's outline is its six edges.
     const one = layoutHexWorld([{ id: "core", name: "Core", areas: [{ id: "a", name: "A", words: [word("je", "A1")] }] }], false);
     expect(edges(one.countries[0].outline)).toBe(6);
     expect(edges(one.countries[0].areas[0].outline)).toBe(6);
@@ -290,7 +287,6 @@ describe("labelPlan, zoomLimits and placeBox", () => {
 });
 
 describe("layoutHexWorld for other list sizes", () => {
-  // Last in the file, as it builds other layouts that push the French one out of the cache.
   it.each([0.5, 2])("leaves no sea inside the continent, and every country whole, for a list %s times the size", (scale) => {
     const w = layoutHexWorld(regions(FRENCH.map(([id, a]) => [id, a.map((n) => Math.max(3, Math.round(n * scale)))])), false);
     expect(lakes(w)).toBe(0);

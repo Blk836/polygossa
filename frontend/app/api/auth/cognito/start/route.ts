@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import { LOGIN_COOKIE, cognitoConfig, encodePending, startLogin } from "@/lib/cognito";
 import { sessionCookieOptions } from "@/lib/session";
 
-/** Leaves for Cognito's hosted sign-in (or, with ?screen=signup, sign-up) page, remembering where to come back to. */
 export async function GET(request: NextRequest) {
   const config = cognitoConfig();
   if (!config) return NextResponse.redirect(new URL("/login", request.url));

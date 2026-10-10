@@ -6,7 +6,6 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import org.junit.jupiter.api.Test;
 
-/** Which day an AI call counts towards: the learner's own timezone, else UTC. */
 class AiAllowanceTest {
 
     @Test

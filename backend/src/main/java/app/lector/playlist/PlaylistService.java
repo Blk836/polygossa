@@ -27,7 +27,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Playlists: owners group texts and videos and may share the group; viewers see only the items they can read. */
 @Service
 public class PlaylistService {
 
@@ -53,14 +52,11 @@ public class PlaylistService {
         this.clock = clock;
     }
 
-    // ---- reading ----
-
     @Transactional(readOnly = true)
     public List<PlaylistSummary> mine(User user, Language language, Long containing) {
         return summaries(user, playlists.findMine(user.getId(), Language.scope(language)), containing);
     }
 
-    /** Shared playlists that have something the viewer can read. */
     @Transactional(readOnly = true)
     public List<PlaylistSummary> shared(User user, Language language, String q) {
         String pattern = q == null || q.isBlank() ? null : "%" + q.strip().toLowerCase(Locale.ROOT) + "%";
@@ -68,7 +64,6 @@ public class PlaylistService {
         return summaries(user, found, null).stream().filter(s -> s.itemCount() > 0).toList();
     }
 
-    /** Playlists the user saved and can still see, newest save first. */
     @Transactional(readOnly = true)
     public List<PlaylistSummary> saved(User user, Language language) {
         return summaries(user, bookmarks.findSaved(user.getId(), Language.scope(language)), null);
@@ -87,8 +82,6 @@ public class PlaylistService {
         boolean saved = !bookmarks.savedAmong(user.getId(), List.of(id)).isEmpty();
         return new PlaylistDetail(summary(user, playlist, readable, done, null, saved), summaries, privateItems);
     }
-
-    // ---- changes (owner only) ----
 
     @Transactional
     public PlaylistSummary create(User user, String title, String description, Language language) {
@@ -125,9 +118,6 @@ public class PlaylistService {
         playlists.delete(playlist);
     }
 
-    // ---- saving (anyone who can see the playlist) ----
-
-    /** Saves a playlist the user can see; saving one that is already saved changes nothing. */
     @Transactional
     public void bookmark(User user, Long id) {
         Playlist playlist = loadVisible(user, id);
@@ -141,7 +131,6 @@ public class PlaylistService {
         bookmarks.findByUserIdAndPlaylistId(user.getId(), id).ifPresent(bookmarks::delete);
     }
 
-    /** Appends a text the owner can read; adding one that is already there changes nothing. */
     @Transactional
     public void addItem(User user, Long id, Long textId) {
         Playlist playlist = loadOwned(user, id);
@@ -168,10 +157,6 @@ public class PlaylistService {
         });
     }
 
-    /**
-     * Puts the items the owner can see in the given order, which must name each of them once; items they can no
-     * longer read (someone else's text that stopped being shared) keep their relative order after them.
-     */
     @Transactional
     public void reorder(User user, Long id, List<Long> textIds) {
         Playlist playlist = loadOwned(user, id);
@@ -189,9 +174,6 @@ public class PlaylistService {
         playlist.setUpdatedAt(clock.instant());
     }
 
-    // ---- helpers ----
-
-    /** The owner's playlist, or a shared one; anyone else's private playlist does not exist for them. */
     private Playlist loadVisible(User user, Long id) {
         Playlist playlist = playlists.findById(id).orElseThrow(() -> ApiException.notFound("Playlist"));
         if (!playlist.isOwnedBy(user) && !playlist.isPublic()) {

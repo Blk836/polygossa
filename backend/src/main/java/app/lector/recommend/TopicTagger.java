@@ -7,13 +7,8 @@ import java.util.Locale;
 import java.util.Set;
 import tools.jackson.databind.JsonNode;
 
-/**
- * The tagging prompt and the checks on its answer. The text goes in as delimited data, and the answer is
- * schema-checked field by field, so a text that says "ignore your instructions" can at most change its own tags.
- */
 final class TopicTagger {
 
-    /** How much of the content the AI sees, and the embedding covers. */
     static final int EXCERPT = 2_000;
     static final int MAX_TOPICS = 6;
     static final int MAX_SUMMARY = 300;
@@ -35,7 +30,6 @@ final class TopicTagger {
         return "Language: " + language + "\nTitle: " + title + "\n<text>\n" + excerpt(content) + "\n</text>";
     }
 
-    /** What is embedded: the title, the AI's summary when there is one, and the opening. */
     static String embeddingInput(String title, String summary, String content) {
         return title + "\n" + (summary == null ? "" : summary + "\n") + excerpt(content);
     }
@@ -50,7 +44,6 @@ final class TopicTagger {
                 oneOf(answer.path("register"), REGISTERS, null), oneOf(answer.path("suitableFor"), AUDIENCES, "general"));
     }
 
-    /** Valid tags, lower-cased and de-duplicated, at most {@link #MAX_TOPICS}. */
     static List<String> topics(JsonNode values) {
         List<String> out = new ArrayList<>();
         if (!values.isArray()) {

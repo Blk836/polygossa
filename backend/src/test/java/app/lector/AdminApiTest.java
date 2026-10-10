@@ -14,7 +14,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** admin-panel.feature: stats and moderation for the team (the forum admins named in configuration). */
 @ApiTest
 class AdminApiTest {
 
@@ -41,7 +40,6 @@ class AdminApiTest {
         admin = admin();
     }
 
-    /** Signs the admin up the first time, and in after that. */
     private String admin() throws Exception {
         String body = "{\"email\":\"" + ADMIN + "\",\"password\":\"password123\"}";
         var signup = mvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON).content(body))
@@ -65,8 +63,6 @@ class AdminApiTest {
         return api.get(admin, "/api/admin/stats", 200);
     }
 
-    // --- Access ---
-
     @Test
     void onlyAdmins() throws Exception {
         Learner l = learner("plain");
@@ -79,8 +75,6 @@ class AdminApiTest {
         assertThat(api.get(l.token(), "/api/me", 200).get("admin").asBoolean()).isFalse();
         assertThat(api.get(admin, "/api/me", 200).get("admin").asBoolean()).isTrue();
     }
-
-    // --- Stats ---
 
     @Test
     void usersPerPlanSignUpsAndActiveUsers() throws Exception {
@@ -146,8 +140,6 @@ class AdminApiTest {
         api.get(admin, "/api/admin/stats?days=366", 400);
     }
 
-    // --- Users ---
-
     @Test
     void findingUsersAndTheirDetails() throws Exception {
         String tag = "zq" + UUID.randomUUID().toString().substring(0, 8);
@@ -182,8 +174,6 @@ class AdminApiTest {
         api.get(admin, "/api/admin/users/999999999", 404);
     }
 
-    // --- Actions ---
-
     @Test
     void suspendingAndLiftingASuspension() throws Exception {
         Learner l = learner("spammer");
@@ -197,7 +187,6 @@ class AdminApiTest {
         assertThat(api.get(l.token(), "/api/library", 403).get("code").asString()).isEqualTo("account_suspended");
         assertThat(api.post(null, "/api/auth/login", "{\"email\":\"" + l.email() + "\",\"password\":\"password123\"}",
                 403).get("code").asString()).isEqualTo("account_suspended");
-        // Their public text stays until it is removed.
         assertThat(api.get(admin, "/api/texts/" + text, 200).get("text").get("id").asLong()).isEqualTo(text);
 
         api.post(admin, "/api/admin/users/" + l.id() + "/unsuspend", "", 200);
@@ -208,7 +197,6 @@ class AdminApiTest {
     @Test
     void adminsAndTheLibraryCantBeSuspended() throws Exception {
         long me = api.get(admin, "/api/me", 200).get("id").asLong();
-        // Other classes on this database expect no library account (seeding is off), so one made here goes again.
         boolean existed = library.find().isPresent();
         app.lector.user.User lib = library.getOrCreate();
         try {

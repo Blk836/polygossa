@@ -9,12 +9,10 @@ import java.util.Random;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 
-/** recommendation-learning.feature: fitting weights to what learners opened (logistic regression, plain code). */
 class WeightLearnerTest {
 
     static final Weights CONFIGURED = new Weights(1.0, 0.8, 1.0, 0.6, 0.15, 0.3, 0.3);
 
-    /** Seven parts in Scoring.Part order, each uniform in [0, 1) from a fixed seed, and a position 0-7. */
     private static List<WeightLearner.Example> examples(int n, long seed, Predicate<WeightLearner.Example> opened) {
         Random random = new Random(seed);
         List<WeightLearner.Example> out = new ArrayList<>();
@@ -52,11 +50,10 @@ class WeightLearnerTest {
 
     @Test
     void onlyClearEvidenceEarnsAWeightAndNegativeEffectsEarnNothing() {
-        // Comprehension drives opening; level counts against it (opened only when level is low).
         List<WeightLearner.Example> data = examples(600, 3, e -> e.parts()[2] > 0.4 && e.parts()[3] < 0.7);
         Weights w = WeightLearner.learn(data, CONFIGURED).orElseThrow();
         assertThat(w.level()).isZero();
-        assertThat(w.interest()).isZero(); // pure noise
+        assertThat(w.interest()).isZero();
         assertThat(w.comprehend()).isPositive();
     }
 
@@ -65,12 +62,11 @@ class WeightLearnerTest {
         List<WeightLearner.Example> data = new ArrayList<>();
         for (WeightLearner.Example e : examples(400, 4, x -> x.parts()[2] > 0.5)) {
             double[] parts = e.parts().clone();
-            parts[0] = 0; // interest is 0 everywhere: nothing embedded yet
+            parts[0] = 0;
             data.add(new WeightLearner.Example(parts, e.position(), e.opened()));
         }
         Weights w = WeightLearner.learn(data, CONFIGURED).orElseThrow();
         assertThat(w.interest()).isEqualTo(CONFIGURED.interest());
-        // The others are scaled so all seven still add up to the configured total.
         assertThat(total(w)).isCloseTo(total(CONFIGURED), org.assertj.core.data.Offset.offset(1e-9));
         assertThat(w.comprehend()).isGreaterThan(0).isLessThan(total(CONFIGURED) - CONFIGURED.interest() + 1e-9);
     }
@@ -102,9 +98,7 @@ class WeightLearnerTest {
     @Test
     void notEnoughData() {
         assertThat(WeightLearner.learn(examples(199, 6, e -> e.parts()[2] > 0.5), CONFIGURED)).isEmpty();
-        // 400 examples but only a handful opened
         assertThat(WeightLearner.learn(examples(400, 7, e -> e.parts()[2] > 0.97), CONFIGURED)).isEmpty();
-        // ... or a handful not opened
         assertThat(WeightLearner.learn(examples(400, 8, e -> e.parts()[2] > 0.03), CONFIGURED)).isEmpty();
     }
 

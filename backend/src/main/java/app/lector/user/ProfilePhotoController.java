@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-/** Uploading, removing and serving profile photos. */
 @RestController
 @RequestMapping("/api")
 public class ProfilePhotoController {
@@ -51,7 +50,6 @@ public class ProfilePhotoController {
         return MeDto.of(user, plans, admins);
     }
 
-    /** Photo URLs carry the stored name as a version, so a URL's content never changes and can be cached for good. */
     @GetMapping("/users/{id}/photo")
     public ResponseEntity<Resource> photo(@PathVariable Long id) {
         ProfilePhotoService.Photo photo = photos.load(id);

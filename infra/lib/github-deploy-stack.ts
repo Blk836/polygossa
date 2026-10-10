@@ -3,22 +3,12 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import type { Construct } from "constructs";
 
 export interface GitHubDeployProps extends cdk.StackProps {
-  /** "owner/name" of the repository allowed to deploy. */
   readonly repository: string;
-  /**
-   * How GitHub's OIDC tokens name that repository: "repo:owner@ownerId/name@repoId", with the immutable IDs (so a
-   * renamed or re-created repository with the same name can't deploy).
-   */
   readonly subject: string;
 }
 
 const GITHUB_TOKENS = "token.actions.githubusercontent.com";
 
-/**
- * Lets GitHub Actions deploy without stored keys: a workflow on the repository's main branch exchanges its OIDC token for
- * short-lived credentials of this role, which may only assume CDK's own bootstrap roles (the ones `cdk deploy` uses to
- * publish images and run CloudFormation). Deployed once by hand; afterwards every deploy goes through it.
- */
 export class GitHubDeployStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: GitHubDeployProps) {
     super(scope, id, props);
@@ -43,7 +33,6 @@ export class GitHubDeployStack extends cdk.Stack {
       actions: ["sts:AssumeRole"],
       resources: [`arn:aws:iam::${this.account}:role/cdk-hnb659fds-*-${this.account}-*`],
     }));
-    // The deploy job reads the stack's outputs (the site URL) to check the site afterwards.
     role.addToPolicy(new iam.PolicyStatement({
       actions: ["cloudformation:DescribeStacks"],
       resources: [`arn:aws:cloudformation:*:${this.account}:stack/Polygossa*/*`],

@@ -10,10 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-/**
- * Guards the curator endpoints with a shared secret (CURATOR_TOKEN) sent in a header by the tools/ importer. With no
- * token configured they answer 404, as if they didn't exist. A learner's login never grants access.
- */
 @Component
 public class CuratorAccess implements HandlerInterceptor {
 
@@ -25,7 +21,6 @@ public class CuratorAccess implements HandlerInterceptor {
         this.token = token.strip().getBytes(StandardCharsets.UTF_8);
     }
 
-    /** Runs before the request body is read, so a disabled endpoint never reveals itself through a 400. */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         require(request.getHeader(HEADER));

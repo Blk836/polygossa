@@ -1,8 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// The sign-in and sign-up splash (auth-splash.feature): a page of text that learns its words one by one beside the
-// form. Its root exposes the language shown (data-language), the step of its timeline (data-step) and whether it is
-// ticking (data-running), so tests can follow the animation without screenshots. The timeline is lib/splash.ts.
 const splash = (page: Page) => page.getByTestId("auth-splash");
 const words = (page: Page) => splash(page).getByTestId("splash-words");
 const counter = (page: Page) => splash(page).getByTestId("splash-known");
@@ -19,7 +16,7 @@ test.describe("auth splash", () => {
   ]) {
     test(`${path} shows the splash beside the form`, async ({ page }) => {
       await page.goto(path);
-      expect(new URL(page.url()).pathname).toBe(path); // auto-login no longer skips the page
+      expect(new URL(page.url()).pathname).toBe(path);
       await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
       await expect(page.getByLabel("Email")).toBeVisible();
       await expect(splash(page)).toContainText(copy);
@@ -52,7 +49,6 @@ test.describe("auth splash", () => {
     await expect(splash(page)).toHaveAttribute("data-running", "true");
     await expect(splash(page)).toHaveAttribute("data-language", "fr");
     await expect(splash(page)).toContainText("Français");
-    // The first new French word is "dimanche"; the gloss shows its meaning, then it turns learning.
     await expect(splash(page).getByTestId("splash-gloss")).toHaveText(/dimanche\s*—\s*Sunday/);
     const dimanche = words(page).getByText("dimanche", { exact: true });
     await expect(dimanche).toHaveClass(/w-learning/, { timeout: 4000 });
@@ -64,7 +60,7 @@ test.describe("auth splash", () => {
 
   test("turns the page to the next language once every word is known, wrapping round", async ({ page }) => {
     test.setTimeout(45_000);
-    await page.goto("/signup?lang=pt"); // the last language: the next is the first, English
+    await page.goto("/signup?lang=pt");
     await expect(splash(page)).toHaveAttribute("data-language", "pt");
     const total = (await counter(page).textContent())!.split("/")[1];
     await expect(counter(page)).toHaveText(`${total}/${total}`, { timeout: 15_000 });
@@ -110,7 +106,6 @@ test.describe("auth splash", () => {
     await page.goto("/login");
     await expect(words(page)).toHaveAttribute("aria-hidden", "true");
     await expect(splash(page).getByTestId("splash-greetings")).toHaveAttribute("aria-hidden", "true");
-    // Tab order: the splash's pause button, the logo, then straight into the form.
     await page.keyboard.press("Tab");
     await expect(pauseButton(page)).toBeFocused();
     await page.keyboard.press("Tab");
@@ -127,7 +122,7 @@ test.describe("auth pages and auto-login", () => {
   });
 
   test("a signed-in visitor opening /login or /signup is sent to Explore", async ({ page }) => {
-    await page.goto("/library"); // auto-login sets the session cookie
+    await page.goto("/library");
     for (const path of ["/login", "/signup"]) {
       await page.goto(path);
       await expect(page).toHaveURL(/\/community$/);

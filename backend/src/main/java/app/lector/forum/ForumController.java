@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The forum: threads, posts, and admins' pinning and locking. Free on every plan. */
 @RestController
 @RequestMapping("/api/forum")
 public class ForumController {

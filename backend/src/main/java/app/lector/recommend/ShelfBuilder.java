@@ -7,16 +7,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-/**
- * Picks and orders the items of each personalised shelf from scored candidates, with each card's reason. Pure:
- * candidates come in id order, so equal scores always resolve the same way.
- */
 final class ShelfBuilder {
 
-    /** An item on a shelf and why it is there. */
     record Pick(Candidate candidate, Reason reason) {}
 
-    /** "More about …": a topic tag, or a category when no tag has items. */
     record TopicShelf(String topic, Category category, List<Pick> picks) {}
 
     static final double JUST_RIGHT_MIN = 90;
@@ -41,7 +35,6 @@ final class ShelfBuilder {
         return picks;
     }
 
-    /** Candidates most like the anchor (similarity above the minimum), most similar first. */
     static List<Pick> because(long anchorId, float[] anchorVector, String title, boolean liked,
                               List<Candidate> candidates, RecommendProperties props) {
         record Similar(Candidate c, double similarity) {}
@@ -55,7 +48,6 @@ final class ShelfBuilder {
                 .toList();
     }
 
-    /** The learner's strongest topic tag that has items; else their strongest category that has items. */
     static Optional<TopicShelf> topic(TasteProfile profile, List<Candidate> candidates, RecommendProperties props) {
         for (String topic : profile.topicsByStrength()) {
             List<Pick> picks = best(candidates, c -> c.topics().contains(topic), props, c -> Reason.topic(topic));
@@ -72,7 +64,6 @@ final class ShelfBuilder {
         return Optional.empty();
     }
 
-    /** 90–98% known, best comprehension fit first. */
     static List<Pick> justRight(List<Candidate> candidates, RecommendProperties props) {
         return candidates.stream()
                 .filter(c -> c.knownPercent() >= JUST_RIGHT_MIN && c.knownPercent() <= JUST_RIGHT_MAX)
@@ -83,7 +74,6 @@ final class ShelfBuilder {
                 .toList();
     }
 
-    /** 85–90% known, in the learner's topics (any topic when they have none), best score first. */
     static List<Pick> stretch(List<Candidate> candidates, TasteProfile profile, RecommendProperties props) {
         return best(candidates, c -> c.knownPercent() >= STRETCH_MIN && c.knownPercent() < JUST_RIGHT_MIN
                 && (!profile.hasTopics() || profile.inTopics(c.topics(), c.category())), props,
@@ -96,10 +86,8 @@ final class ShelfBuilder {
                 .map(c -> new Pick(c, reason.apply(c))).toList();
     }
 
-    /** The reason named by the part that adds most to the score; "new" when nothing adds anything. */
     static Reason reason(Candidate c, TasteProfile profile, Weights w, boolean levelKnown) {
         Scoring.Parts p = c.parts();
-        // An unknown level is the same for every item, so it says nothing about this one.
         Scoring.Parts shown = new Scoring.Parts(p.interest(), p.topic(), p.comprehension(), levelKnown ? p.level() : 0,
                 p.popular(), p.fresh(), p.format(), 0);
         Scoring.Part part = Scoring.strongest(shown, w);

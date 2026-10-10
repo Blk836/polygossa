@@ -8,11 +8,6 @@ import type { Category } from "@/lib/types";
 
 const CHOICES = CATEGORIES.filter((c) => c.code !== "other");
 
-/**
- * Settings › Profile: the categories Explore recommends more of. Unlike onboarding there is no minimum, so they can be
- * cleared. Saved on its own, apart from the profile form. When they can't be loaded it says so, rather than showing an
- * empty choice whose saving would wipe them.
- */
 export function InterestsSection() {
   const [picked, setPicked] = useState<Category[] | null>(null);
   const [loadError, setLoadError] = useState(false);

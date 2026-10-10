@@ -162,10 +162,8 @@ describe("placeCard", () => {
   });
 
   it("just fits under, or over, at the edge", () => {
-    // under: 100 + 40 + 12 + 150 = 302 must leave the 12px margin: viewport 314 fits exactly
     expect(placeCard({ top: 100, left: 500, width: 100, height: 40 }, card, { width: 1200, height: 314 }).top).toBe(152);
     expect(placeCard({ top: 100, left: 500, width: 100, height: 40 }, card, { width: 1200, height: 313 }).top).not.toBe(152);
-    // over: 174 - 12 - 150 = 12, exactly the margin
     expect(placeCard({ top: 174, left: 500, width: 100, height: 600 }, card, desktop).top).toBe(12);
   });
 

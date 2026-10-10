@@ -5,15 +5,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** Splits space-delimited languages on whitespace and punctuation, keeping the separators as non-word tokens. */
 final class SpaceDelimitedTokenizer {
 
     private static final String LETTERS = "[\\p{L}\\p{M}]+";
 
-    /**
-     * Words joined by internal apostrophes or hyphens ("don't", "c'est", "dell'anno", "arc-en-ciel"): one word in
-     * every language, so clicking an elision looks up the whole word. An apostrophe not between letters is punctuation.
-     */
     private static final Pattern WORD = Pattern.compile(LETTERS + "(?:['’\\-]" + LETTERS + ")*");
 
     private SpaceDelimitedTokenizer() {}

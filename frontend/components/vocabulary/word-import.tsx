@@ -9,12 +9,6 @@ import { POLL_MS, anyActive, importButtonLabel, importCounts, importHeadline, is
 
 type Source = "lingq" | "readlang";
 
-/**
- * Importing words from LingQ (API key) or Readlang (exported word list). Imports run on the server; this shows the
- * history for the form's source and language (and any running import), refreshing every couple of seconds while one
- * is going and calling {@code onImported} when it ends.
- * A running import spins on its row and on the button; screen readers hear "Importing" once, not every refresh.
- */
 export function WordImports({ open, defaultLanguage, onImported }: { open: boolean; defaultLanguage: string; onImported: () => void }) {
   const [jobs, setJobs] = useState<WordImportJob[]>([]);
   const [reload, setReload] = useState(0);
@@ -41,7 +35,6 @@ export function WordImports({ open, defaultLanguage, onImported }: { open: boole
     };
   }, [reload, onImported]);
 
-  // The started job shows at once, so the button goes from Starting… straight to Importing…; the reload then polls it.
   const started = useCallback((job: WordImportJob) => {
     setJobs((list) => [job, ...list.filter((j) => j.id !== job.id)]);
     setReload((r) => r + 1);

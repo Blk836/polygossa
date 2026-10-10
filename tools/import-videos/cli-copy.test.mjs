@@ -6,9 +6,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { main } from "./cli.mjs";
 
-// Copy mode (docs/acceptance/copy-videos.feature): a stand-in source backend exports videos, a stand-in target saves
-// them. Each records its requests and checks its own token.
-
 const OPTIONS = { languages: ["fr", "es"], categories: ["learners", "other"] };
 const VIDEO = { videoId: "AAAAAAAAAAA", language: "fr", title: "Le marché", category: "learners", durationSeconds: 60,
   content: "Bonjour.", cues: [] };
@@ -132,7 +129,6 @@ test("an unreachable source stops the run", async () => {
 test("a target failing partway stops the run and marks the rest for a retry", async () => {
   targetAnswer = () => [401, {}];
   const file = listFile("https://youtu.be/AAAAAAAAAAA fr\n");
-  // The target accepts its token for the options, then refuses the copy (e.g. the token was rotated mid-run).
   const { code, out } = await cli([file, "--copy-from", source]);
   assert.equal(code, 1);
   assert.match(out, /1 line: 1 not run/);

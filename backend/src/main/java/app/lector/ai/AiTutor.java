@@ -8,7 +8,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 
-/** Prompts for AI definitions, example sentences, translations and writing feedback. */
 @Service
 public class AiTutor {
 

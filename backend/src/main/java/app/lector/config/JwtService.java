@@ -37,7 +37,6 @@ public class JwtService {
                 .compact();
     }
 
-    /** A valid token's account and when the token was issued. */
     public record Verified(AuthUser user, Instant issuedAt) {}
 
     public Optional<AuthUser> verify(String token) {

@@ -20,24 +20,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-/**
- * Real billing (stripe-billing.feature): Checkout to subscribe, the portal to manage, and Stripe's webhook as the
- * only thing that changes a paid plan. Each subscription event re-reads the subscription from Stripe, so repeated or
- * out-of-order events always land on Stripe's current state.
- */
 @Service
 public class BillingService {
 
     private static final Logger log = LoggerFactory.getLogger(BillingService.class);
 
-    /** The prices people can buy (Stripe lookup keys) and the plan each gives. */
     static final Map<String, Tier> PLANS =
             Map.of("pro_monthly", Tier.PRO, "pro_yearly", Tier.PRO, "classroom_monthly", Tier.CLASSROOM);
 
-    /** Subscription states that keep the plan: paid, or still being retried after a failed payment. */
     private static final Set<String> LIVE = Set.of("active", "trialing", "past_due");
 
-    /** What Settings › Subscription shows. */
     public record Status(boolean enabled, boolean testMode, String plan, String interval, String status,
                          Instant periodEnd, boolean cancelAtPeriodEnd, boolean paymentProblem) {}
 
@@ -74,7 +66,6 @@ public class BillingService {
                 .orElse(new Status(enabled(), enabled() && props.testMode(), null, null, null, null, false, false));
     }
 
-    /** A Checkout page for {@code plan}; the plan itself changes only when Stripe's webhook says it's paid. */
     @Transactional
     public String checkout(User user, String plan) {
         if (!enabled()) {
@@ -99,13 +90,11 @@ public class BillingService {
         return stripe.portal(account.getStripeCustomerId());
     }
 
-    /** One customer per account, made on its first checkout. */
     private BillingAccount accountOf(User user) {
         return accounts.findById(user.getId()).orElseGet(() -> accounts.save(new BillingAccount(user.getId(),
                 stripe.createCustomer(user.getId(), user.getEmail(), user.getDisplayName()))));
     }
 
-    /** Applies a verified webhook event about a subscription, once per event. */
     @Transactional
     public void subscriptionEvent(String eventId, String subscriptionId) {
         if (events.existsById(eventId)) {
@@ -132,12 +121,10 @@ public class BillingService {
         users.findById(account.getUserId()).ifPresent(user -> user.setTier(live ? PLANS.get(plan) : Tier.FREE));
     }
 
-    /** Students in all of a teacher's classes, at least one seat. */
     private long seats(Long teacherId) {
         return Math.max(1, members.countStudentsOfTeacher(teacherId));
     }
 
-    /** A Classroom subscription bills for the students who have joined; Stripe prorates the change. */
     @TransactionalEventListener
     public void classMembersChanged(ClassMembersChanged change) {
         if (!enabled()) {
@@ -149,13 +136,11 @@ public class BillingService {
                     try {
                         stripe.setQuantity(a.getItemId(), seats(change.teacherId()));
                     } catch (ApiException e) {
-                        // The class change stands; the next change or a portal visit brings the count back in line.
                         log.warn("Seat count for teacher {} not updated: {}", change.teacherId(), e.getMessage());
                     }
                 });
     }
 
-    /** Before an account is deleted: its subscription ends at once, so it is never charged again. */
     public void cancelForDeletion(User user) {
         if (!enabled()) {
             return;

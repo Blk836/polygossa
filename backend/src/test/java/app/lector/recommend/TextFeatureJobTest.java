@@ -25,11 +25,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Feature: Explore recommendations, content understanding: topic tags, summaries and embeddings made once per public
- * text by a background job (docs/acceptance/explore-recommendations.feature). The daily AI allowance is 0 here, to
- * show that the job doesn't use anyone's.
- */
 @SpringBootTest(properties = {
         "test.database=featurejob",
         "app.seed-samples=false",
@@ -43,7 +38,6 @@ class TextFeatureJobTest {
 
     static final MutableClock CLOCK = new MutableClock();
     static final OpenAiStub AI = RecommendAi.start();
-    /** Every chat reply allows sharing, so public imports pass moderation. */
     static final String TAGS = "{\"appropriate\":true,\"topics\":[\"cooking\",\"spain\",\"tapas\"],"
             + "\"summary\":\"Tapas in Madrid.\",\"register\":\"casual\",\"suitableFor\":\"general\"}";
 
@@ -85,14 +79,14 @@ class TextFeatureJobTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS); // what the database stores
+        now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
         CLOCK.set(now);
         AI.reset();
         AI.reply(TAGS);
         api = new TestApi(mvc, json);
         fx = new RecommendFixture(api);
         author = api.signupPro();
-        job.runOnce(); // features for other tests' texts, so each test starts with an empty queue
+        job.runOnce();
         AI.reset();
         AI.reply(TAGS);
     }
@@ -134,7 +128,7 @@ class TextFeatureJobTest {
     @Test
     void theScheduleDoesNothingWhileTheJobIsSwitchedOff() throws Exception {
         long id = fx.publicText(author, "Pas encore", "food");
-        job.scheduled(); // app.recommend.feature-job=false in tests
+        job.scheduled();
         assertThat(features.findByTextId(id)).isEmpty();
         job.runOnce();
         assertThat(features.findByTextId(id)).isPresent();
@@ -194,12 +188,11 @@ class TextFeatureJobTest {
 
         AI.setEmbeddingsFailing(false);
         job.runOnce();
-        assertThat(feature(id).vector()).isNull(); // not due yet
+        assertThat(feature(id).vector()).isNull();
         CLOCK.set(now.plus(Duration.ofMinutes(2)));
         job.runOnce();
         assertThat(feature(id).vector()).containsExactly(1f, 0f, 0f);
         assertThat(feature(id).getAttempts()).isZero();
-        // the tags were kept, only the embedding was redone
         assertThat(taggingRequests().stream().filter(r -> r.contains("Panne de vecteur"))).hasSize(1);
     }
 

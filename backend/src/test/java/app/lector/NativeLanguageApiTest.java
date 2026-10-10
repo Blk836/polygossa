@@ -10,7 +10,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** native-language.feature: the native-language setting. */
 @ApiTest
 class NativeLanguageApiTest {
 
@@ -39,7 +38,6 @@ class NativeLanguageApiTest {
         assertThat(api.patch(user, "/api/me", "{\"nativeLanguage\":\"es\"}", 200).get("nativeLanguage").asString())
                 .isEqualTo("es");
         assertThat(api.get(user, "/api/me", 200).get("nativeLanguage").asString()).isEqualTo("es");
-        // Other fields left out of the request are untouched, and the reverse.
         api.patch(user, "/api/me", "{\"displayName\":\"Ana\"}", 200);
         assertThat(api.get(user, "/api/me", 200).get("nativeLanguage").asString()).isEqualTo("es");
     }

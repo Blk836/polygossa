@@ -1,8 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// The header: four top-level tabs (Library, Practice, Progress, Forum) with sub-tabs, the account menu (Settings, Classes,
-// plan, sign out) and the Practice due-cards badge. Known words and the streak flame are in app-nav-header.spec.ts.
-
 const topNav = (page: Page) => page.getByRole("banner").getByRole("navigation", { name: "Main" });
 const sections = (page: Page) => page.getByRole("navigation", { name: "Section" });
 
@@ -72,7 +69,7 @@ test.describe("top-level tabs", () => {
     await sections(page).getByRole("link", { name: "Words" }).click();
     await page.waitForURL("**/vocabulary");
     await topNav(page).getByRole("link", { name: "Library" }).click();
-    await page.waitForURL("**/community"); // the Library tab opens Explore
+    await page.waitForURL("**/community");
     await expect(sections(page).locator("[aria-current=page]")).toHaveText("Explore");
     await sections(page).getByRole("link", { name: "My library" }).click();
     await page.waitForURL("**/library");
@@ -98,11 +95,9 @@ test.describe("account menu", () => {
     await expect(menu(page)).toHaveCount(0);
     await menuButton(page).click();
     await expect(menuButton(page)).toHaveAttribute("aria-expanded", "true");
-    // The test account is one of the team (FORUM_ADMINS), so it also has the admin panel.
     await expect(menu(page).getByRole("menuitem")).toHaveText(["Settings", "Classes", "Admin"]);
     await expect(menu(page).getByTestId("account-plan")).toHaveText("Classroom plan");
     await expect(menu(page)).toContainText("test@lector.local");
-    // The auto-login test account would just be signed straight back in.
     await expect(menu(page).getByRole("menuitem", { name: "Sign out" })).toHaveCount(0);
   });
 

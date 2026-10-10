@@ -9,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface RecommendationEventRepository extends JpaRepository<RecommendationEvent, Long> {
 
-    /** How often one learner was shown and opened each text. */
     interface TextTally {
         Long getTextId();
 
@@ -25,7 +24,6 @@ public interface RecommendationEventRepository extends JpaRepository<Recommendat
             + "from RecommendationEvent e where e.userId = :userId group by e.textId")
     List<TextTally> tallies(@Param("userId") Long userId);
 
-    /** Events per shelf and type since a moment. */
     interface ShelfCount {
         String getShelf();
 
@@ -34,14 +32,12 @@ public interface RecommendationEventRepository extends JpaRepository<Recommendat
         long getCount();
     }
 
-    /** Every event since a moment, oldest first (the weight fit's input). */
     List<RecommendationEvent> findByCreatedAtGreaterThanEqualOrderByIdAsc(Instant since);
 
     @Query("select e.shelf as shelf, e.type as type, count(e) as count from RecommendationEvent e "
             + "where e.createdAt >= :since group by e.shelf, e.type")
     List<ShelfCount> countByShelf(@Param("since") Instant since);
 
-    /** A learner opening a text from a shelf (once per shelf, learner and text). */
     interface Opened {
         String getShelf();
 

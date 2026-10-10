@@ -44,10 +44,6 @@ function DefinitionEditor({ definition, onSave }: { definition: string | undefin
   );
 }
 
-/**
- * The word in the learner's own language, which other learners' popups count once two of them agree. Shown when the
- * word has one, or when the learner's native language isn't English (English speakers have the definitions).
- */
 function MeaningEditor({ entry, onSave }: { entry: VocabularyEntry; onSave: (value: string) => Promise<boolean> }) {
   const { me } = useMe();
   const [editing, setEditing] = useState(false);
@@ -84,7 +80,6 @@ function Context({ entry }: { entry: VocabularyEntry }) {
   );
 }
 
-/** One vocabulary entry: edit its definition, note, tags or status, or delete it. */
 export function EntryRow({ entry, onChange, onDelete, onTag }: {
   entry: VocabularyEntry;
   onChange: (e: VocabularyEntry) => void;
@@ -93,7 +88,6 @@ export function EntryRow({ entry, onChange, onDelete, onTag }: {
 }) {
   const [error, setError] = useState<ApiError | string | null>(null);
 
-  /** True when saved; on failure the error is shown and false returned. */
   async function patch(body: Record<string, unknown>): Promise<boolean> {
     setError(null);
     try {

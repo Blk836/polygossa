@@ -17,10 +17,6 @@ import {
   world,
 } from "./vocab-map-helpers";
 
-// The vocabulary map on Progress (docs/acceptance/vocabulary-map.feature): the hex continent, its counts, bands and
-// words. The camera and the floating controls' tests are in vocab-map-camera.spec.ts; the helpers and the shared test
-// user's rules in vocab-map-helpers.ts.
-
 cleanUpAfterEach();
 
 interface ApiMap {
@@ -41,11 +37,9 @@ test("the map is one continent above the period comparison, with a country per r
   await expect(map(page).getByTestId("map-overall")).toHaveText(/^[\d,]+ of [\d,]+ core words known$/);
   await expect(country(page, "Food & Drink")).toHaveAttribute("aria-label", /^Food & Drink: \d+ of \d+ known$/);
   await expect(label(page, "region-label", "food").getByTestId("tile-count")).toHaveText(/^\d+ \/ \d+$/);
-  // Bigger regions are bigger countries: Core words holds the most words, Communication the fewest.
   const core = (await country(page, "Core words").boundingBox())!;
   const communication = (await country(page, "Communication").boundingBox())!;
   expect(core.width * core.height).toBeGreaterThan(communication.width * communication.height * 3);
-  // A tile per word in the list, every band, from far away too.
   const list: ApiMap = await (await page.request.get("/api/vocab-map?language=fr")).json();
   const words = list.regions.flatMap((r) => r.areas.flatMap((a) => a.words)).length;
   expect(words).toBeGreaterThan(1000);
@@ -108,7 +102,6 @@ test("a word counts in the form I know it, and tapping it shows its meaning over
   await expect(panel.getByTestId("map-word-meaning")).toHaveText("to eat");
   await expect(panel.getByTestId("map-word-status")).toHaveText("Known");
   await expect(panel.getByRole("button", { name: "I know this" })).toHaveCount(0);
-  // The panel floats over the map, and closes.
   const [box, mapBox] = [(await panel.boundingBox())!, (await world(page).boundingBox())!];
   expect(box.y + box.height).toBeLessThanOrEqual(mapBox.y + mapBox.height);
   expect(box.y).toBeGreaterThan(mapBox.y);

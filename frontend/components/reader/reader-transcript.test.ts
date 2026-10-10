@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import type { Token } from "@/lib/types";
 import { TRANSCRIPT_PARAGRAPH_WORDS as N, transcriptParagraphs } from "./reader-transcript";
 
-/** Tokens like the backend's for a transcript: every line break also starts a new sentence number. */
 function tokens(...parts: string[]): Token[] {
   let sentence = 0;
   return parts.map((text, index) => {
@@ -13,10 +12,6 @@ function tokens(...parts: string[]): Token[] {
   });
 }
 
-/**
- * `sentences` sentences of `words` words each, ended by `end`, with a caption line break after every
- * `line`-th word of the text (wherever it falls, as in real captions).
- */
 function captions(sentences: number, words: number, line: number, end = ". "): Token[] {
   const parts: string[] = [];
   let n = 0;
@@ -79,7 +74,6 @@ describe("transcriptParagraphs", () => {
   });
 
   it("ends a paragraph at the first sentence end once it has enough words", () => {
-    // 10-word sentences with a line break every 7 words: paragraphs of N words, ending at a full stop.
     const p = transcriptParagraphs(captions(12, 10, 7));
     expect(words(p)).toEqual([N, N, 120 - 2 * N]);
     expect(texts(p).slice(0, -1).every((s) => s.trimEnd().endsWith("."))).toBe(true);
@@ -96,9 +90,8 @@ describe("transcriptParagraphs", () => {
   });
 
   it("breaks unpunctuated captions at a line break once a paragraph is twice as long", () => {
-    // One "sentence" with no punctuation at all, as in automatic captions; a line break every 7 words.
     const p = transcriptParagraphs(captions(1, 250, 7));
-    const first = Math.ceil((2 * N) / 7) * 7; // the first line break at or after 2N words
+    const first = Math.ceil((2 * N) / 7) * 7;
     expect(words(p)).toEqual([first, first, 250 - 2 * first]);
   });
 

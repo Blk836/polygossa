@@ -10,17 +10,11 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
-/**
- * Texts' tags and vectors, held in memory so ranking doesn't read every vector on every request. Each request only
- * reads the rows' versions; a row is read in full again only when its version changed. The least recently used
- * entries are dropped beyond {@link #MAX_TEXTS}.
- */
 @Component
 public class FeatureCache {
 
     static final int MAX_TEXTS = 20_000;
 
-    /** A text's features; {@code vector} is null when it has none from the embedding model asked for. */
     public record Features(float[] vector, List<String> topics) {
         static final Features NONE = new Features(null, List.of());
     }
@@ -39,7 +33,6 @@ public class FeatureCache {
         this.repository = repository;
     }
 
-    /** Features of these texts (texts without any are left out), with vectors only from {@code model}. */
     public Map<Long, Features> get(Collection<Long> textIds, String model) {
         Map<Long, Features> out = new HashMap<>();
         if (textIds.isEmpty()) {

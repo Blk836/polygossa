@@ -1,17 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 import { addSyncedAudio, article, cleanUp, createText, createVideo, openReader, pager, player, setReaderCookie, TALL, type Created } from "./reader-helpers";
 
-// Reopening a lesson on a later page cues the player (paused) to where that page starts, until the listener plays or
-// seeks. Moving the slider turns to the page being spoken at that point. Videos use a stand-in for YouTube's player
-// API that records calls and, like the real one, starts playing when an unstarted video is seeked and reports the new
-// time only a moment after a seek.
-
-test.use({ viewport: TALL }); // four pages of 250 words
+test.use({ viewport: TALL });
 
 let created: Created | null = null;
 
 test.beforeEach(async ({ page }) => {
-  await setReaderCookie(page, "known%3D0"); // turning the page doesn't mark words known here
+  await setReaderCookie(page, "known%3D0");
 });
 
 test.afterEach(async ({ page }) => {
@@ -52,7 +47,6 @@ const seek = (page: Page) => player(page).getByRole("slider", { name: "Seek" });
 const seekMs = async (page: Page) => Number(await seek(page).inputValue());
 const audioPaused = (page: Page) => page.locator("audio").evaluate((a) => (a as HTMLAudioElement).paused);
 
-/** When the first word on the page shown is spoken, from the lesson's own timings. */
 async function pageStartMs(page: Page, id: number): Promise<number> {
   const first = Number(await article(page).locator("[data-i]").first().getAttribute("data-i"));
   const detail = await (await page.request.get(`/api/texts/${id}`)).json();
@@ -63,19 +57,16 @@ async function pageStartMs(page: Page, id: number): Promise<number> {
 
 interface Timing { i: number; s: number; e: number }
 
-/** The lesson's word timings, in text order. */
 async function timingsOf(page: Page, id: number): Promise<Timing[]> {
   const detail = await (await page.request.get(`/api/texts/${id}`)).json();
   return [...((detail.video ?? detail.audio).timings as Timing[])].sort((a, b) => a.i - b.i);
 }
 
-/** Moves the slider into word `t` and expects the reader to show it as the word being spoken. */
 async function seekToWord(page: Page, t: Timing) {
   await seek(page).fill(String(t.s + 1));
   await expect(article(page).locator(`[data-i="${t.i}"]`)).toHaveClass(/w-speaking/);
 }
 
-/** Reads page `n` (so the browser remembers it), leaves, and opens the lesson again without a page in the URL. */
 async function reopenOnPage(page: Page, id: number, n: number) {
   await openReader(page, `/read/${id}?page=${n}`);
   await expect(pager(page)).toContainText(`Page ${n} of 4`);
@@ -110,7 +101,7 @@ test.describe("videos", () => {
   test("moving the slider on an unstarted video turns to that point's page and stays paused", async ({ page }) => {
     created = await createVideo(page);
     await openReader(page, `/read/${created.id}`);
-    await expect(player(page)).toContainText("60:00"); // the player is ready
+    await expect(player(page)).toContainText("60:00");
     const timings = await timingsOf(page, created.id);
     await seekToWord(page, timings[Math.floor(timings.length * 0.6)]);
     await expect(pager(page)).toContainText("Page 3 of 4");
@@ -128,7 +119,6 @@ test.describe("videos", () => {
     await seekToWord(page, timings[Math.floor(timings.length * 0.6)]);
     await expect(pager(page)).toContainText("Page 3 of 4");
     expect(await ytState(page)).toBe(2);
-    // Playing straight away must not flash back to page 1 while YouTube still reports the old time.
     await page.evaluate(() => {
       const seen: string[] = ((window as unknown as { __pages: string[] }).__pages = []);
       const nav = document.querySelector('nav[aria-label="Pages"]')!;
@@ -219,7 +209,7 @@ test.describe("audio texts", () => {
   test("page 1 stays at 0:00", async ({ page }) => {
     const id = await withAudio(page);
     await openReader(page, `/read/${id}`);
-    await expect(player(page)).toContainText("1:00"); // metadata loaded
+    await expect(player(page)).toContainText("1:00");
     expect(await seekMs(page)).toBe(0);
     await expect(player(page)).toContainText("0:00");
   });
@@ -241,7 +231,7 @@ test.describe("audio texts", () => {
     await expect.poll(() => seekMs(page)).toBe(5000);
     await pager(page).getByRole("button", { name: "Next page" }).click();
     await expect(pager(page)).toContainText("Page 2 of 4");
-    await page.waitForTimeout(500); // give a wrong cue time to land
+    await page.waitForTimeout(500);
     expect(await seekMs(page)).toBe(5000);
   });
 
@@ -252,8 +242,6 @@ test.describe("audio texts", () => {
     await player(page).getByRole("button", { name: "Play", exact: true }).click();
     await expect.poll(() => seekMs(page)).toBeGreaterThan(0);
     await player(page).getByRole("button", { name: "Pause" }).click();
-    // The player stops following the audio once its pause event lands (the button flips back to Play); until then
-    // one more frame can still move the bar to where the audio stopped.
     await expect(player(page).getByRole("button", { name: "Play", exact: true })).toBeVisible();
     const paused = await seekMs(page);
     await pager(page).getByRole("button", { name: "Next page" }).click();

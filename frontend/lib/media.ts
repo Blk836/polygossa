@@ -1,4 +1,3 @@
-// Pure helpers for library items that may be texts or YouTube videos.
 import type { TextSummary, Token, WordTiming } from "./types";
 
 export type KindFilter = "all" | "text" | "video";
@@ -9,13 +8,11 @@ export const KIND_FILTERS: { id: KindFilter; label: string }[] = [
   { id: "video", label: "Videos" },
 ];
 
-/** Adds `kind=` to an API path unless showing everything. */
 export function withKind(path: string, kind: KindFilter): string {
   if (kind === "all") return path;
   return `${path}${path.includes("?") ? "&" : "?"}kind=${kind}`;
 }
 
-/** Adds `language=` to an API path, scoping lists to the language picked in the top bar (none: every language). */
 export function withLanguage(path: string, language: string | null | undefined): string {
   if (!language) return path;
   return `${path}${path.includes("?") ? "&" : "?"}language=${language}`;
@@ -23,13 +20,11 @@ export function withLanguage(path: string, language: string | null | undefined):
 
 export type Reaction = "like" | "bookmark";
 
-/** The item after the viewer toggles a like or bookmark (applied optimistically before the API call). */
 export function toggleReaction(t: TextSummary, reaction: Reaction): TextSummary {
   if (reaction === "bookmark") return { ...t, bookmarked: !t.bookmarked };
   return { ...t, liked: !t.liked, likes: (t.likes ?? 0) + (t.liked ? -1 : 1) };
 }
 
-/** "3:33" or "1:02:05"; null when the length is unknown. */
 export function formatVideoLength(seconds: number | null | undefined): string | null {
   if (seconds == null || seconds <= 0) return null;
   const total = Math.floor(seconds);
@@ -52,13 +47,8 @@ function weight(t: Token): number {
   return SENTENCE_END.test(t.text) ? SENTENCE_PAUSE_WEIGHT : 0.3;
 }
 
-/**
- * Proportional word timings over a duration — the client-side twin of the backend's AudioAligner.estimate, used when
- * a video was imported without captions and its length only becomes known once the player loads.
- */
 export function estimateTimings(tokens: Token[], durationMs: number): WordTiming[] {
   if (!(durationMs > 0)) return [];
-  // Every token weighs more than zero, so total is only 0 when there are no tokens (and the loop never runs).
   const total = tokens.reduce((sum, t) => sum + weight(t), 0);
   const out: WordTiming[] = [];
   let cursor = 0;

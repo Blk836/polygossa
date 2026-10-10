@@ -1,15 +1,10 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { cleanUp, createText, createVideo, openReader, pager, setReaderCookie, TALL, wordAt, type Created } from "./reader-helpers";
 
-// Library and Explore cards: difficulty ("10% new · Stretch") in the card body, and reading progress as a bar along
-// the bottom of the cover (or "Finished"). A 1,000-word text is four pages of 250 in this tall window, so page 3
-// starts at word 500: 50% read. It has 901 unique words (every sentence starts with the same one).
-
 test.use({ viewport: TALL });
 
 let created: Created | null = null;
 
-// Turning pages here should save progress, not mark words known (reader-experience.spec.ts covers that).
 test.beforeEach(async ({ page }) => {
   await setReaderCookie(page, "known%3D0");
 });
@@ -19,14 +14,12 @@ test.afterEach(async ({ page }) => {
   created = null;
 });
 
-/** Every created title holds the text's unique word prefix. */
 const title = () => created!.prefix;
 const card = (page: Page) => page.getByTestId("card-grid").getByRole("article").filter({ hasText: title() });
 const bar = (page: Page) => card(page).getByRole("progressbar", { name: "Reading progress" });
 const finishedTag = (page: Page) => card(page).getByText("Finished", { exact: true });
 const difficultyChip = (page: Page) => card(page).getByTestId("difficulty");
 
-/** The progress the backend has for the text, once the reader's (beacon) save has arrived. */
 async function savedProgress(page: Page) {
   const detail = await (await page.request.get(`/api/texts/${created!.id}`)).json();
   return detail.text.progress as { position: number; percent: number; completed: boolean } | undefined;
@@ -38,7 +31,6 @@ async function readPage(page: Page, n: number, percent: number) {
   await expect.poll(async () => (await savedProgress(page))?.percent).toBe(percent);
 }
 
-/** Marks words 0..n-1 known, as turning pages would. */
 async function markKnown(page: Page, words: number) {
   const res = await page.request.post(`/api/texts/${created!.id}/mark-known`, { data: { fromToken: 0, toToken: 2 * words - 2 } });
   expect(res.ok(), await res.text()).toBe(true);
@@ -58,9 +50,9 @@ test.describe("difficulty", () => {
   });
 
   test("updates after learning words", async ({ page }) => {
-    test.slow(); // cleaning up 901 known words takes a while
+    test.slow();
     created = await createText(page);
-    await markKnown(page, 900); // 811 of 901 unique words known, 90 new
+    await markKnown(page, 900);
     await page.goto("/library");
     await expect(difficultyChip(page)).toContainText("10% new words");
     await expect(difficultyChip(page)).toContainText("Stretch");
@@ -104,7 +96,6 @@ test.describe("progress", () => {
       await expect(bar(page), layout).toHaveAttribute("aria-valuenow", "50");
       await expect(bar(page), layout).toHaveAttribute("aria-valuetext", "50% read");
       await expect(difficultyChip(page), layout).toBeVisible();
-      // The bar sits on the cover, along its bottom edge.
       const cover = await card(page).locator("[data-cover]").boundingBox();
       const line = await bar(page).boundingBox();
       expect(Math.abs(line!.y + line!.height - (cover!.y + cover!.height)), layout).toBeLessThanOrEqual(1);
@@ -124,12 +115,10 @@ test.describe("progress", () => {
   });
 
   test("finishing the lesson shows Finished instead of a bar, and re-reading keeps it", async ({ page }) => {
-    test.slow(); // finishing marks 901 words known, which afterEach removes
+    test.slow();
     created = await createText(page);
     await readPage(page, 4, 75);
     await page.getByRole("button", { name: "Finish lesson" }).click();
-    // Saving 901 known words can take longer than the default 5 s while other tests load the PC: wait for the reader
-    // to say it's done, as a learner would, before checking what the backend kept.
     await expect(page.getByText("Lesson complete")).toBeVisible({ timeout: 30_000 });
     await expect.poll(async () => (await savedProgress(page))?.completed).toBe(true);
     await page.goto("/library");

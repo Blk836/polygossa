@@ -9,7 +9,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-/** Scenario: accept every common YouTube URL form; reject URLs that aren't a YouTube video. */
 class YouTubeUrlsTest {
 
     @ParameterizedTest

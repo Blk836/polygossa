@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface ReadingProgressRepository extends JpaRepository<ReadingProgress, Long> {
 
-    /** A finished text's level and whether it is listened to (a video or a text with audio). */
     interface FinishedText {
         String getLevel();
         String getVideoId();
@@ -27,11 +26,9 @@ public interface ReadingProgressRepository extends JpaRepository<ReadingProgress
     @Query("select p from ReadingProgress p where p.user.id = :userId and p.text.id = :textId")
     Optional<ReadingProgress> findOne(@Param("userId") Long userId, @Param("textId") Long textId);
 
-    /** All of a user's progress, with the texts (card fields only). */
     @Query("select p from ReadingProgress p join fetch p.text where p.user.id = :userId")
     List<ReadingProgress> findAllForUser(@Param("userId") Long userId);
 
-    /** Progress of these users on these texts (for recommendation metrics). */
     @Query("select p from ReadingProgress p where p.user.id in :userIds and p.text.id in :textIds")
     List<ReadingProgress> findForUsersAndTexts(@Param("userIds") Collection<Long> userIds,
                                                @Param("textIds") Collection<Long> textIds);
@@ -39,7 +36,6 @@ public interface ReadingProgressRepository extends JpaRepository<ReadingProgress
     @Query("select p from ReadingProgress p where p.user.id = :userId and p.text.id in :textIds")
     List<ReadingProgress> findForTexts(@Param("userId") Long userId, @Param("textIds") Collection<Long> textIds);
 
-    /** Everyone's progress on one text. */
     @Query("select p from ReadingProgress p where p.text.id = :textId")
     List<ReadingProgress> findForText(@Param("textId") Long textId);
 

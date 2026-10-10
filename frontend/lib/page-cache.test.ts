@@ -20,7 +20,7 @@ describe("PageCache", () => {
     const cache = new PageCache(2);
     cache.remember("a", 1);
     cache.remember("b", 2);
-    cache.recall("a"); // a is now the most recently used
+    cache.recall("a");
     cache.remember("c", 3);
     expect(cache.recall("a")).toBe(1);
     expect(cache.recall("b")).toBeUndefined();

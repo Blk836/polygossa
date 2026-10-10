@@ -15,10 +15,6 @@ import {
   zoom,
 } from "./vocab-map-helpers";
 
-// The vocabulary map's camera and floating controls (docs/acceptance/vocabulary-map.feature): gliding, reduced motion,
-// the zoom buttons, the wheel, drags, the keyboard and phones. The helpers and the shared test user's rules are in
-// vocab-map-helpers.ts.
-
 cleanUpAfterEach();
 
 async function box(locator: Locator) {
@@ -51,7 +47,6 @@ test("the zoom buttons zoom in around the middle, and out a level at a time", as
   await openInFrench(page);
   const out = await restingZoom(page);
   const centre = await world(page).getAttribute("data-centre");
-  // The map reports its zoom once the glide comes to rest.
   await map(page).getByRole("button", { name: "Zoom in" }).click();
   await expect.poll(() => zoom(page)).toBeGreaterThan(out * 1.3);
   await expect(world(page)).toHaveAttribute("data-centre", centre!);
@@ -82,14 +77,12 @@ test("the wheel zooms around the pointer, a drag pans to the world's edge, and t
   const out = await restingZoom(page);
   const box1 = (await world(page).boundingBox())!;
 
-  // Fully zoomed out, scrolling down over the map scrolls the page.
   await page.mouse.move(box1.x + box1.width / 2, box1.y + box1.height / 2);
   const scrollBefore = await page.evaluate(() => window.scrollY);
   await page.mouse.wheel(0, 300);
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(scrollBefore);
   expect(await zoom(page)).toBeCloseTo(out, 6);
 
-  // Scrolling up over the map zooms it in, and the page stays put.
   const box2 = (await world(page).boundingBox())!;
   await page.mouse.move(box2.x + box2.width / 2, box2.y + box2.height / 2);
   const scrollAt = await page.evaluate(() => window.scrollY);
@@ -97,14 +90,12 @@ test("the wheel zooms around the pointer, a drag pans to the world's edge, and t
   expect(await restingZoom(page)).toBeGreaterThan(out * 1.5);
   expect(await page.evaluate(() => window.scrollY)).toBe(scrollAt);
 
-  // A drag pans; dragging far stops at the edge of the world.
   const centre = await world(page).getAttribute("data-centre");
   await page.mouse.move(box2.x + box2.width / 2, box2.y + box2.height / 2);
   await page.mouse.down();
   await page.mouse.move(box2.x + box2.width / 2 + 120, box2.y + box2.height / 2, { steps: 6 });
   await page.mouse.up();
   await expect(world(page)).not.toHaveAttribute("data-centre", centre!);
-  // A drag that ends over a country doesn't open it.
   await expect(map(page).getByTestId("map-breadcrumb")).toHaveText("Map");
 
   for (let i = 0; i < 4; i++) {
@@ -116,7 +107,7 @@ test("the wheel zooms around the pointer, a drag pans to the world's edge, and t
   await restingZoom(page);
   const [x] = (await world(page).getAttribute("data-centre"))!.split(",").map(Number);
   const k = await zoom(page);
-  expect(x).toBeCloseTo(box2.width / (2 * k), -1); // the world's left edge sits at the map's left edge
+  expect(x).toBeCloseTo(box2.width / (2 * k), -1);
 });
 
 test("name tags stay on their countries while the map moves", async ({ page }) => {
@@ -146,7 +137,6 @@ test("countries, provinces and words can be reached with the keyboard and say wh
   await expect(map(page).getByTestId("map-area")).toHaveCount(6);
   await expect(province(page, "Fruit & vegetables")).toHaveAttribute("aria-label", /^Fruit & vegetables: \d+ of \d+ known$/);
 
-  // Provinces come after every country in the tab order.
   await map(page).getByTestId("map-region").last().focus();
   await page.keyboard.press("Tab");
   await expect(map(page).getByTestId("map-area").first()).toBeFocused();
@@ -169,7 +159,6 @@ test("the map fits a phone, and at province zoom every word is big enough to tap
   expect(mapBox.height).toBeGreaterThan(mapBox.width);
   await expect(world(page)).toHaveCSS("touch-action", "pan-y");
   await expect(bandButton(page, "A1")).toBeVisible();
-  // Zoomed out on a phone, the country names stay readable: no two tags overlap.
   await expect(map(page).getByTestId("region-label")).toHaveCount(14);
   const labels = await map(page).getByTestId("region-label").evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON()));
   for (let i = 0; i < labels.length; i++) {

@@ -34,7 +34,6 @@ public class Classroom {
     @Column(nullable = false)
     private Language language;
 
-    /** Students join with this code. */
     @Column(nullable = false, unique = true, length = 12)
     private String joinCode;
 

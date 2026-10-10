@@ -15,7 +15,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Caption annotations ("[musique]") are not words, in new imports and, after the startup backfill, old ones. */
 @ApiTest
 class AnnotationTokensTest {
 
@@ -33,7 +32,6 @@ class AnnotationTokensTest {
     @Autowired
     AnnotationBackfill backfill;
 
-    /** A text's body loads lazily, so changes made here to a stored text need a transaction. */
     @Autowired
     TransactionTemplate tx;
 
@@ -54,7 +52,6 @@ class AnnotationTokensTest {
         return detail.get("tokens").valueStream().filter(t -> t.get("word").asBoolean()).map(t -> t.get("text").asString()).toList();
     }
 
-    /** Stores the tokens and counts a text imported before annotations were recognised would have. */
     private void makeLegacy(long id) {
         tx.executeWithoutResult(status -> makeLegacy(texts.findById(id).orElseThrow()));
     }
@@ -97,7 +94,7 @@ class AnnotationTokensTest {
 
         JsonNode d = detail(id);
         assertThat(words(d)).containsExactly("Bonjour", "à", "tous");
-        assertThat(d.get("tokens").size()).isEqualTo(9); // same tokens, so audio/video timings still line up
+        assertThat(d.get("tokens").size()).isEqualTo(9);
         assertThat(d.get("text").get("wordCount").asInt()).isEqualTo(3);
         assertThat(d.get("text").get("uniqueWordCount").asInt()).isEqualTo(3);
         assertThat(level).isNotEqualTo("C2");
@@ -120,7 +117,7 @@ class AnnotationTokensTest {
         long id = api.createText(token, "fr", "Bonjour à tous.", false);
         tx.executeWithoutResult(status -> {
             Text before = texts.findById(id).orElseThrow();
-            before.setWordCount(99); // a stale count proves the text was not rewritten
+            before.setWordCount(99);
             texts.save(before);
         });
 

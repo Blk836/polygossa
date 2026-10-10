@@ -18,7 +18,6 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 
-/** A piece of imported content (article, chapter, subtitles, lyrics…) in one language. */
 @Entity
 @Table(name = "texts", indexes = {
         @Index(name = "idx_texts_owner", columnList = "owner_id"),
@@ -41,12 +40,10 @@ public class Text {
     @Column(nullable = false)
     private Language language;
 
-    /** Content, tokens, timings and cues: loaded only when one of them is read, never for a list of cards. */
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "body_id")
     private TextBody body;
 
-    /** JSON array of the distinct normalised words, kept beside the card's other figures for its known-word counts. */
     @Column(columnDefinition = "text")
     private String wordsJson;
 
@@ -55,29 +52,23 @@ public class Text {
     @Column(name = "is_public", nullable = false)
     private boolean isPublic;
 
-    /** CEFR estimate (A1–C2) from vocabulary density. */
     private String cefrLevel;
 
     private int wordCount;
 
     private int uniqueWordCount;
 
-    /** Stored file name of uploaded audio (see StorageService), or null. */
     private String audioFile;
 
     private String audioContentType;
 
-    /** External audio URL when the user links audio rather than uploading it. */
     private String audioUrl;
 
-    /** YouTube video id when this item is a video (its content is then the transcript), otherwise null. */
     @Column(length = 16)
     private String videoId;
 
-    /** Video length in seconds, when known. */
     private Integer videoDurationSeconds;
 
-    /** Null for rows from before categories existed; read as OTHER. */
     @Enumerated(EnumType.STRING)
     @Column(length = 24)
     private Category category;

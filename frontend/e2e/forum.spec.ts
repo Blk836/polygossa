@@ -1,9 +1,6 @@
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 import type { ThreadList, ThreadPage, ThreadSummary } from "../lib/forum";
 
-// The forum: docs/acceptance/forum.feature. The test account is a forum admin in development (FORUM_ADMINS), so
-// learner views are checked by stubbing canModerate off. Threads made here are deleted afterwards.
-
 const made: number[] = [];
 
 async function createThread(request: APIRequestContext, category: string, body = "First message"): Promise<ThreadSummary> {
@@ -14,7 +11,6 @@ async function createThread(request: APIRequestContext, category: string, body =
   return thread;
 }
 
-/** Signs in (auto-login) so page.request carries the session. */
 async function signIn(page: Page) {
   await page.goto("/forum");
 }

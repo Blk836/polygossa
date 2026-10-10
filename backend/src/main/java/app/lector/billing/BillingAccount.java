@@ -6,10 +6,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 
-/**
- * An account's Stripe customer and its subscription as the last webhook reported it (stripe-billing.feature).
- * One per account, made on its first checkout.
- */
 @Entity
 @Table(name = "subscriptions")
 public class BillingAccount {
@@ -26,14 +22,12 @@ public class BillingAccount {
     @Column(length = 64)
     private String itemId;
 
-    /** The price's lookup key (pro_monthly, pro_yearly, classroom_monthly), or null without a live subscription. */
     @Column(length = 32)
     private String plan;
 
     @Column(length = 8)
     private String billingInterval;
 
-    /** Stripe's subscription status (active, past_due, canceled, …). */
     @Column(length = 32)
     private String status;
 

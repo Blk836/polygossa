@@ -14,11 +14,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * word-translations.feature, "What a saved word keeps": a saved word's own-language meaning, kept apart from its
- * definition, and how saved meanings add up to community meanings. Lookups themselves are in
- * {@link WordTranslationsApiTest}, which has the dictionary and translation stubs.
- */
 @ApiTest
 class WordMeaningsApiTest {
 
@@ -76,7 +71,6 @@ class WordMeaningsApiTest {
         JsonNode edited = api.patch(ana, "/api/vocabulary/" + entry.get("id").asLong(),
                 "{\"meaning\":\"perro (animal)\"}", 200);
         assertThat(edited.get("meaning").asString()).isEqualTo("perro (animal)");
-        // Saving again from the popup (another pick) replaces it too.
         assertThat(save(ana, "de", word, "can").get("meaning").asString()).isEqualTo("can");
     }
 
@@ -127,7 +121,6 @@ class WordMeaningsApiTest {
                 "pichicho", "chucho"}) {
             save(learner("es"), "de", word, meaning);
         }
-        // perro 3, chucho 3, can 2, pichicho 2: ties go alphabetically.
         assertThat(community.top(Language.DE, word, NativeLanguage.ES)).containsExactly("chucho", "perro", "can");
     }
 

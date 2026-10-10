@@ -15,10 +15,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/**
- * Authenticates requests carrying {@code Authorization: Bearer <jwt>}: a Cognito access token of an identity linked
- * to an account, or, when local accounts are on (never in production), one of the app's own tokens.
- */
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService ownTokens;
@@ -47,7 +43,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-    /** The account the token signs in, unless the account signed out everywhere after the token was issued. */
     private Optional<AuthUser> authenticate(String token) {
         Optional<AuthUser> fromCognito = cognito.access(token).flatMap(identity -> users.findByCognitoSub(identity.sub())
                 .filter(user -> user.acceptsTokenIssuedAt(identity.issuedAt()))

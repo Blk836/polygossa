@@ -67,9 +67,7 @@ describe("youtubeWatchUrl", () => {
 const tok = (index: number, text: string, word: boolean, sentence = 0): Token => ({ index, text, word, sentence });
 
 describe("estimateTimings", () => {
-  // Same weights as the backend's AudioAligner.estimate: word = length + 1, sentence end = 4, other gaps = 0.3.
   const tokens = [tok(0, "ab", true), tok(1, " ", false), tok(2, "c", true), tok(3, ".", false)];
-  // weights: 3, 0.3, 2, 4 → total 9.3
 
   it("spreads words over the duration by length, with pauses at sentence ends", () => {
     const t = estimateTimings(tokens, 9300);

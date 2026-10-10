@@ -3,7 +3,6 @@
 import { categoryLabel } from "@/lib/categories";
 import type { Category } from "@/lib/types";
 
-/** "All" plus one pill per category; scrolls sideways on narrow screens. */
 export function CategoryChips({ options, value, onChange, counts }: {
   options: Category[];
   value: Category | null;

@@ -1,8 +1,5 @@
 import { expect, test, type Browser } from "@playwright/test";
 
-// gdpr.feature: Settings › Privacy downloads all of the account's data and deletes the account. Each test signs up
-// an account of its own, never the shared test account other specs run as.
-
 async function newAccount(browser: Browser) {
   const context = await browser.newContext({ baseURL: test.info().project.use.baseURL });
   const email = `privacy-${Date.now()}-${Math.random().toString(36).slice(2)}@test.co`;
@@ -23,7 +20,6 @@ test("the privacy policy and terms are drafts anyone can read, linked from the l
   await expect(page.getByRole("main")).toContainText("Amazon Web Services, Ireland");
   await page.getByRole("navigation", { name: "Legal" }).getByRole("link", { name: "Terms" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Terms of service" })).toBeVisible();
-  // Reading them never signs anyone in.
   expect((await context.cookies()).map((c) => c.name)).not.toContain("lector_token");
   await context.close();
 });

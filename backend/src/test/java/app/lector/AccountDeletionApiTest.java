@@ -19,14 +19,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Feature: Delete my account (docs/acceptance/gdpr.feature). One account with data everywhere, and another learner
- * whose own data refers to it: deleting the first leaves nothing of it anywhere, and the other keeps their own.
- */
 @ApiTest
 class AccountDeletionApiTest {
 
-    /** Every column that names an account; a new table with one is checked automatically. */
     static final List<String> USER_COLUMNS =
             List.of("user_id", "owner_id", "author_id", "teacher_id", "student_id", "target_user_id");
 
@@ -62,7 +57,6 @@ class AccountDeletionApiTest {
                 .content(body)).andReturn().getResponse().getStatus();
     }
 
-    /** Rows anywhere in the database that still name the account, as "table.column". */
     private List<String> leftovers(long userId) {
         List<String> found = new ArrayList<>();
         for (Map<String, Object> col : jdbc.queryForList("select table_name, column_name from information_schema.columns"
@@ -82,7 +76,6 @@ class AccountDeletionApiTest {
 
     @Test
     void deletingTheAccountLeavesNothingOfItAndOthersKeepTheirOwnData() throws Exception {
-        // Ana's own things: texts (one shared, one with audio), words, progress, a playlist, a photo, a class, the forum.
         long shared = api.createText(ana, "es", "Hola amigo.", true);
         long privateText = api.createText(ana, "es", "Buenos días.", false);
         api.send(multipart("/api/texts/" + privateText + "/audio")
@@ -94,12 +87,11 @@ class AccountDeletionApiTest {
         api.patch(ana, "/api/playlists/" + playlist, "{\"isPublic\":true}", 200);
         String photo = api.send(multipart("/api/me/photo").file(new MockMultipartFile("file", "me.png", "image/png",
                 ProfilePhotoApiTest.image("png", 8))), ana, 200).get("photoUrl").asString();
-        Path photoFile = Path.of("build/test-uploads").resolve(photo.substring(photo.indexOf("?v=") + 3)); // app.storage.dir
+        Path photoFile = Path.of("build/test-uploads").resolve(photo.substring(photo.indexOf("?v=") + 3));
         JsonNode cls = api.post(ana, "/api/classes", "{\"name\":\"Clase\",\"language\":\"es\"}", 201);
         long thread = api.post(ana, "/api/forum/threads",
                 "{\"category\":\"general\",\"title\":\"Ana's question\",\"body\":\"Hello\"}", 201).get("id").asLong();
 
-        // Ben's own things, some pointing at Ana's.
         api.post(ben, "/api/vocabulary", "{\"language\":\"es\",\"term\":\"amigo\",\"textId\":" + shared + "}", 201);
         api.put(ben, "/api/library/" + shared + "/like", "", 204);
         api.put(ben, "/api/playlists/" + playlist + "/bookmark", "", 204);

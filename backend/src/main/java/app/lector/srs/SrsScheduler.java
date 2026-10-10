@@ -3,20 +3,11 @@ package app.lector.srs;
 import java.time.Duration;
 import java.time.Instant;
 
-/**
- * SM-2–style scheduler reduced to three buttons:
- * <ul>
- *   <li><b>Forgot</b> — lapse: reset repetitions, lower ease, show again in 10 minutes.</li>
- *   <li><b>Hard</b> — recalled with effort: grow the interval slowly (×1.2), lower ease slightly.</li>
- *   <li><b>Easy</b> — recalled: 1 day, then 3 days, then interval × ease; ease rises slightly.</li>
- * </ul>
- */
 public final class SrsScheduler {
 
     public static final double MIN_EASE = 1.3;
     public static final double MAX_EASE = 3.0;
     public static final Duration RELEARN_DELAY = Duration.ofMinutes(10);
-    /** A word whose next interval reaches this many days is considered learned. */
     public static final double GRADUATE_DAYS = 90;
 
     private SrsScheduler() {}

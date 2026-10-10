@@ -1,10 +1,7 @@
-// A local run of the checks (docs/acceptance/local-checks.feature): refuse uncommitted work, pick the suites from the
-// branch's changes against main, run them in the PC's single turn (the lock), and mark the commit on GitHub.
 import { ALL, checksFor } from "../ci-checks/checks.mjs";
 
 const USAGE = "Usage: node tools/local-checks.mjs [--all] | --run -- <command>";
 
-/** @returns {Promise<number>} the exit code */
 export async function runChecks(args, deps) {
   return args.includes("--run") ? runOne(args, deps) : runSuites(args, deps);
 }
@@ -52,7 +49,6 @@ async function mark(sha, results, deps) {
   return passed ? 0 : 1;
 }
 
-/** Runs `work` holding the PC's turn, saying whom it waits for, and always gives the turn back. */
 async function inTurn(deps, work) {
   const release = await deps.lock({ pid: deps.pid, branch: deps.git.branch(), folder: deps.git.folder,
     started: deps.started });
@@ -73,7 +69,6 @@ async function runPlan(plan, deps) {
   return results;
 }
 
-/** Every step runs even after one failed (to show every problem), except after a failed required one (an install). */
 async function runSteps(steps, deps) {
   let passed = true;
   for (const step of steps) {
@@ -84,7 +79,6 @@ async function runSteps(steps, deps) {
   return passed;
 }
 
-/** The mark's description (GitHub allows 140 characters). */
 function describe(results) {
   if (!results.length) return "Nothing to check (docs and Markdown only)";
   const names = (passed) => results.filter((r) => r.passed === passed).map((r) => r.name).join(", ");

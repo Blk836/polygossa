@@ -1,4 +1,3 @@
-// docs/acceptance/cognito-login.feature: the frontend's half of signing in through Cognito.
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   challengeFor,
@@ -59,7 +58,6 @@ describe("startLogin", () => {
       response_type: "code",
       client_id: "abc",
       redirect_uri: "https://site/api/auth/callback",
-      // The last one lets the session sign itself out everywhere (Cognito's GlobalSignOut).
       scope: "openid email aws.cognito.signin.user.admin",
       state: pending.state,
       code_challenge: await challengeFor(pending.verifier),

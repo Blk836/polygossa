@@ -19,16 +19,10 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-/**
- * The only way the backend talks to LingQ: its official API, with the learner's own API key sent as
- * "Authorization: Token &lt;key&gt;". Reads every page of a language's LingQs ({@code /api/v3/<lang>/cards/}) and
- * known words ({@code /api/v2/<lang>/known-words/}). The key is never logged or kept.
- */
 @Component
 public class LingqClient {
 
     static final int PAGE_SIZE = 200;
-    /** A safety stop: 1,000 pages of 200 is far beyond any real vocabulary. */
     static final int MAX_PAGES = 1000;
     static final int MAX_RETRIES = 3;
     static final Duration MAX_WAIT = Duration.ofSeconds(30);
@@ -53,7 +47,6 @@ public class LingqClient {
         this.http = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).connectTimeout(timeout).build();
     }
 
-    /** Hands each page of the language's LingQs, then of its known words, to {@code onPage} as it arrives. */
     public void fetchAll(String apiKey, Language language, Consumer<List<ImportedWord>> onPage) {
         pages(apiKey, "/api/v3/" + language.code() + "/cards/", LingqClient::card, onPage);
         pages(apiKey, "/api/v2/" + language.code() + "/known-words/", LingqClient::knownWord, onPage);
@@ -82,7 +75,6 @@ public class LingqClient {
         }
     }
 
-    /** One page's JSON; null when LingQ has nothing there (404). */
     private JsonNode get(String apiKey, String pathAndQuery) {
         HttpRequest request = HttpRequest.newBuilder(URI.create(base + pathAndQuery)).timeout(timeout)
                 .header("Authorization", "Token " + apiKey).header("Accept", "application/json").GET().build();
@@ -141,7 +133,6 @@ public class LingqClient {
         }
     }
 
-    /** How long LingQ asked us to wait, at most {@link #MAX_WAIT}; {@link #DEFAULT_WAIT} when it didn't say. */
     static Duration retryDelay(String retryAfter) {
         try {
             long seconds = Long.parseLong(retryAfter == null ? "" : retryAfter.trim());
@@ -151,10 +142,6 @@ public class LingqClient {
         }
     }
 
-    /**
-     * LingQ's status 0–3 is new, recognised, familiar, learned; "known" is status 3 with extended status 3, and
-     * newer API versions also use status 4 for it.
-     */
     static WordStatus status(int status, int extended) {
         boolean known = status >= 4 || status == 3 && extended == 3;
         return known ? WordStatus.KNOWN : WordStatus.LEARNING;
@@ -169,7 +156,6 @@ public class LingqClient {
         return new ImportedWord(term, status, text(item.path("hints").path(0).path("text")), text(item.path("fragment")));
     }
 
-    /** Known words come as plain strings or as objects naming the word. */
     private static ImportedWord knownWord(JsonNode item) {
         String term = text(item);
         for (int i = 0; term == null && i < KNOWN_WORD_FIELDS.length; i++) {
@@ -178,7 +164,6 @@ public class LingqClient {
         return term == null ? null : new ImportedWord(term, WordStatus.KNOWN, null, null);
     }
 
-    /** A non-blank string, stripped; null for anything else. */
     private static String text(JsonNode node) {
         if (node == null || !node.isString()) {
             return null;

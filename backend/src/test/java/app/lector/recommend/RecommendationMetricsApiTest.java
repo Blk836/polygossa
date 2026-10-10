@@ -14,10 +14,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Feature: Explore recommendations, measuring whether they work (docs/acceptance/explore-recommendations.feature).
- * Its own database, so the global figures are exactly this test's.
- */
 @SpringBootTest(properties = {
         "test.database=recmetrics",
         "app.seed-samples=false"
@@ -62,7 +58,6 @@ class RecommendationMetricsApiTest {
             texts.add(fx.publicText(author, "T" + i, "food"));
         }
         String reader = api.signupPro();
-        // For you: 4 shown, 2 opened (one read to the end, one barely started)
         for (int i = 0; i < 4; i++) {
             log(api, reader, "impression", "for-you", texts.get(i));
         }
@@ -71,7 +66,6 @@ class RecommendationMetricsApiTest {
         log(api, reader, "open", "for-you", texts.get(1));
         api.post(reader, "/api/texts/" + texts.get(0) + "/complete", "", 200);
         api.post(reader, "/api/texts/" + texts.get(1) + "/progress", "{\"position\":0}", 200);
-        // Stretch: shown once, never opened
         log(api, reader, "impression", "stretch", texts.get(5));
 
         JsonNode metrics = api.get(reader, "/api/recommendations/metrics?days=28", 200);
@@ -89,11 +83,9 @@ class RecommendationMetricsApiTest {
         assertThat(stretch.get("clickThrough").asDouble()).isZero();
         assertThat(stretch.get("readHalf").isNull()).isTrue();
 
-        // Too few learners in each group: no growth figures, so no one learner can be singled out.
         assertThat(metrics.get("growth").get("heavy").isNull()).isTrue();
         assertThat(metrics.get("growth").get("light").isNull()).isTrue();
 
-        // 5 heavy users (5 opens each) learn 8 words; 5 light users learn 4; all read something.
         for (int u = 0; u < 10; u++) {
             String user = api.signupPro();
             boolean heavy = u < 5;

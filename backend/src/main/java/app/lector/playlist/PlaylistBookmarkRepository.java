@@ -13,10 +13,6 @@ public interface PlaylistBookmarkRepository extends JpaRepository<PlaylistBookma
 
     Optional<PlaylistBookmark> findByUserIdAndPlaylistId(Long userId, Long playlistId);
 
-    /**
-     * The playlists the user saved that they can still see (their own, or shared), in these languages,
-     * newest save first.
-     */
     @Query("""
             select p from PlaylistBookmark b join b.playlist p join fetch p.owner
             where b.user.id = :userId and p.language in :languages
@@ -25,7 +21,6 @@ public interface PlaylistBookmarkRepository extends JpaRepository<PlaylistBookma
             """)
     List<Playlist> findSaved(@Param("userId") Long userId, @Param("languages") Collection<Language> languages);
 
-    /** Which of these playlists the user saved. */
     @Query("select b.playlist.id from PlaylistBookmark b where b.user.id = :userId and b.playlist.id in :playlistIds")
     List<Long> savedAmong(@Param("userId") Long userId, @Param("playlistIds") Collection<Long> playlistIds);
 

@@ -34,11 +34,9 @@ function storeBand(band: string) {
   try {
     window.localStorage.setItem(BAND_KEY, band);
   } catch {
-    // Private windows and blocked storage just don't remember the choice.
   }
 }
 
-/** The card: its title and figures, then the map edge to edge (or a message, padded). */
 function Frame({ children, header, notes, bleed = false }: {
   children: React.ReactNode;
   header?: React.ReactNode;
@@ -59,7 +57,6 @@ function Frame({ children, header, notes, bleed = false }: {
   );
 }
 
-/** The vocabulary map on Progress (vocabulary-map.feature). Key it by language so a switch starts afresh. */
 export function VocabMapCard({ language }: { language: LanguageCode | null }) {
   if (!language) {
     return <Frame><p className="text-muted">Pick the language you&apos;re learning in the top bar to see your vocabulary map.</p></Frame>;

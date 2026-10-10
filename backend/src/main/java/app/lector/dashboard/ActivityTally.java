@@ -10,31 +10,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-/**
- * Practice per calendar day (in the user's time zone) and the daily streak built from it. A day counts as practice if
- * the learner read or listened for at least a minute, read any words, saved a word, marked one known, reviewed a card
- * or handed in a writing test; with the opt-in goal-only streak, only days that reach the daily goal count.
- */
 final class ActivityTally {
 
     static final long MIN_READING_SECONDS = 60;
     static final long MIN_LISTENING_SECONDS = 60;
 
-    /** One day's practice. */
     public record Day(LocalDate day, long readingSeconds, long wordsSaved, long wordsKnown, long reviews,
                       long writingTests, long wordsRead, long listenedSeconds, boolean active, boolean goalMet) {}
 
-    /**
-     * Consecutive practice days ending today, or yesterday while today has no practice yet (the streak is still
-     * alive until the day ends); {@code best} is the longest run in the tallied history.
-     */
     public record Streak(int current, int best, boolean activeToday) {}
 
-    /** Totals over a span of days. */
     public record Period(long readingSeconds, long wordsSaved, long wordsKnown, long reviews, long wordsRead,
                          long listenedSeconds, int activeDays) {}
 
-    /** The streak, the last {@code shown} days oldest first, and this week (last 7 days) against the 7 before. */
     public record Activity(Streak streak, List<Day> days, Period thisWeek, Period lastWeek) {}
 
     private static final int READING = 0;
@@ -47,7 +35,6 @@ final class ActivityTally {
     private static final int COLUMNS = 7;
 
     private final ZoneId zone;
-    /** Null when no goal is tallied (days then never report a goal met). */
     private final DailyGoal goal;
     private final boolean streakNeedsGoal;
     private final Map<LocalDate, long[]> byDay = new HashMap<>();
@@ -70,7 +57,6 @@ final class ActivityTally {
         add(LocalDate.ofInstant(at, zone), LISTENED, seconds);
     }
 
-    /** Words read are stored per calendar day already. */
     void wordsRead(LocalDate day, long words) {
         add(day, WORDS_READ, words);
     }
@@ -83,7 +69,6 @@ final class ActivityTally {
         add(LocalDate.ofInstant(at, zone), KNOWN, 1);
     }
 
-    /** Review logs already carry the user's calendar day. */
     void reviews(LocalDate day, long count) {
         add(day, REVIEWS, count);
     }
@@ -105,7 +90,6 @@ final class ActivityTally {
                 total(today.minusDays(13), today.minusDays(7)));
     }
 
-    /** What the goal measures on {@code day}. */
     DailyGoal.Day goalDay(LocalDate day) {
         long[] c = byDay.getOrDefault(day, new long[COLUMNS]);
         return new DailyGoal.Day(c[REVIEWS], c[WORDS_READ], c[READING], c[LISTENED]);
@@ -154,7 +138,6 @@ final class ActivityTally {
         return new Streak(current, best, activeToday);
     }
 
-    /** Totals from {@code from} to {@code to}, both included. */
     Period total(LocalDate from, LocalDate to) {
         long[] sum = new long[COLUMNS];
         int activeDays = 0;

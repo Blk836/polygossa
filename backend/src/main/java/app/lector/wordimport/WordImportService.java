@@ -27,14 +27,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * Imports a learner's words from LingQ (official API, their API key) or Readlang (their exported word list) in the
- * background: starting one queues it and returns at once; the Vocabulary page polls its progress. One import per
- * learner at a time. A LingQ key is only held in memory by the running task, never stored or logged.
- *
- * <p>The history keeps the latest attempt that matters per source and language: a success replaces every earlier row
- * for them, a failure replaces only earlier failures (the last success stays).
- */
 @Service
 public class WordImportService {
 
@@ -47,7 +39,6 @@ public class WordImportService {
     private static final Pattern API_KEY = Pattern.compile("[A-Za-z0-9_-]{1,100}");
     private static final Set<WordImport.State> ACTIVE = Set.of(WordImport.State.QUEUED, WordImport.State.RUNNING);
 
-    /** Reads the words and hands them over a batch at a time, with their language. */
     @FunctionalInterface
     interface Fetcher {
         void fetch(BiConsumer<Language, List<ImportedWord>> onBatch);
@@ -115,7 +106,6 @@ public class WordImportService {
                 .orElseThrow(() -> ApiException.notFound("Import"));
     }
 
-    /** Imports cut off by a restart can't resume (a LingQ key isn't kept), so they are shown as failed. */
     @EventListener(ApplicationReadyEvent.class)
     public void markInterrupted() {
         for (WordImport job : jobs.findByStateIn(ACTIVE)) {
@@ -162,10 +152,6 @@ public class WordImportService {
         });
     }
 
-    /**
-     * Finishes or fails the import and drops the history rows it replaces, in one transaction: otherwise a reader could
-     * see the import finished while the rows it replaces are still there.
-     */
     private void end(Long jobId, Consumer<WordImport> change) {
         tx.executeWithoutResult(status -> jobs.findById(jobId).ifPresent(job -> {
             change.accept(job);

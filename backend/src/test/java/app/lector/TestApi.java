@@ -10,7 +10,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Small helper for MockMvc API tests: sign up users and send JSON with status assertions. */
 public final class TestApi {
 
     private final MockMvc mvc;
@@ -21,7 +20,6 @@ public final class TestApi {
         this.json = json;
     }
 
-    /** Signs up a fresh user and returns its "Bearer …" header value. */
     public String signup() throws Exception {
         JsonNode r = post(null, "/api/auth/signup",
                 "{\"email\":\"" + UUID.randomUUID() + "@test.co\",\"password\":\"password123\"}", 201);
@@ -63,7 +61,6 @@ public final class TestApi {
         return body.isEmpty() || !body.startsWith("{") && !body.startsWith("[") ? null : json.readTree(body);
     }
 
-    /** Creates a text and returns its id. */
     public long createText(String token, String language, String content, boolean isPublic) throws Exception {
         return post(token, "/api/texts", "{\"title\":\"T\",\"language\":\"" + language + "\",\"content\":\""
                 + content + "\",\"isPublic\":" + isPublic + "}", 201).get("id").asLong();

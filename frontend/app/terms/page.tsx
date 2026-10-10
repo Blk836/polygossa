@@ -5,7 +5,6 @@ import { BRAND } from "@/lib/brand";
 
 export const metadata: Metadata = { title: "Terms of service" };
 
-/** The terms of service (draft, gdpr.feature). */
 export default function TermsPage() {
   return (
     <LegalPage title="Terms of service" updated="October 2026">

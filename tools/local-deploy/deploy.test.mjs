@@ -6,7 +6,6 @@ const MAIN = "main111";
 const ACCOUNT = "123456789012";
 const SITE = "https://abc.cloudfront.net";
 
-/** A fake world: signed in, Docker up, main not yet deployed, and a deploy and site that work, unless told otherwise. */
 function world(overrides = {}) {
   const calls = { order: [], status: [], locks: [], released: 0, prepared: [], fetched: [], log: [] };
   let clock = 0;

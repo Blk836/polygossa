@@ -1,9 +1,6 @@
 import { expect, test, type Browser, type BrowserContext, type Locator, type Page } from "@playwright/test";
 import type { Me } from "../lib/types";
 
-// feature-tours.feature: a short tour the first time a new account opens each main page.
-// Each test signs up an account of its own: the shared test account has tours off (like accounts from before tours).
-
 async function newcomer(browser: Browser, viewport = { width: 1280, height: 900 }): Promise<{ context: BrowserContext; page: Page }> {
   const context = await browser.newContext({ baseURL: test.info().project.use.baseURL, viewport });
   const email = `tour-${Date.now()}-${Math.random().toString(36).slice(2)}@test.co`;
@@ -16,7 +13,6 @@ async function me(page: Page): Promise<Me> {
   return (await (await page.request.get("/api/me")).json()) as Me;
 }
 
-/** New accounts are on Free; Review and Write are part of Pro. */
 async function goPro(page: Page) {
   expect((await page.request.post("/api/me/plan", { data: { tier: "PRO" } })).ok()).toBe(true);
 }
@@ -24,7 +20,6 @@ async function goPro(page: Page) {
 const tip = (page: Page) => page.getByTestId("tour");
 const highlight = (page: Page) => page.getByTestId("tour-highlight");
 
-/** The highlight rings `target`, and the tip sits clear of it (beside, above or below). */
 async function expectHighlightAround(page: Page, target: Locator) {
   await expect(highlight(page)).toBeVisible();
   await expect.poll(async () => {
@@ -45,7 +40,6 @@ test.describe("feature tours", () => {
     await expect(page.getByRole("dialog", { name: "Add something to read" })).toBeVisible();
     await expect(tip(page)).toContainText("1 of 3");
 
-    // The highlight sits on the control the tip is about.
     const importBox = (await page.locator('[data-tour="import"]').boundingBox())!;
     const ring = (await highlight(page).boundingBox())!;
     expect(Math.abs(ring.x + ring.width / 2 - (importBox.x + importBox.width / 2))).toBeLessThan(3);
@@ -86,7 +80,6 @@ test.describe("feature tours", () => {
     await expect(page.getByRole("dialog", { name: "Add something to read" })).toBeVisible();
     await page.locator('[data-tour="import"]').click();
     await expect(page).toHaveURL(/\/import/);
-    // A new page for the first time: its own tour.
     await expect(page.getByRole("dialog", { name: "Choose where it comes from" })).toBeVisible();
     await page.getByLabel("Title").fill("Typed while the tip is up");
     await expect(page.getByLabel("Title")).toHaveValue("Typed while the tip is up");
@@ -129,7 +122,6 @@ test.describe("feature tours", () => {
     await expect(tip(page)).toHaveCount(0);
 
     await page.goto("/settings");
-    // Settings has no tour of its own.
     await expect(page.getByRole("heading", { name: "Feature tours" })).toBeVisible();
     await expect(tip(page)).toHaveCount(0);
     await page.getByRole("button", { name: "Turn off tours" }).click();
@@ -159,16 +151,14 @@ test.describe("feature tours", () => {
     await tip(page).getByRole("button", { name: "Next" }).click();
     await tip(page).getByRole("button", { name: "Next" }).click();
     await expect(page.getByRole("dialog", { name: "Turn the page when you're done" })).toBeVisible();
-    // One page: the tip points at Finish lesson instead of the page buttons.
     await expect(highlight(page)).toBeVisible();
     await page.request.delete(`/api/texts/${id}`);
     await context.close();
   });
 
-  // docs/acceptance/tours-point.feature: Review's tips used to sit at the bottom with nothing highlighted.
   test("Review's tour points at the daily goal, then the card", async ({ browser }) => {
     const { context, page } = await newcomer(browser);
-    await goPro(page); // Review is part of Pro: on Free it has no tour (see below)
+    await goPro(page);
     await page.goto("/review");
     await expect(page.getByRole("dialog", { name: "Review before you forget" })).toBeVisible();
     await expect(tip(page)).toContainText("1 of 2");

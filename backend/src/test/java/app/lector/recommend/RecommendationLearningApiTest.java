@@ -16,10 +16,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * recommendation-learning.feature: score parts on cards and in the impression log, the fit, and ranking by learned
- * weights. Its own database (the fit reads every logged event), with learned weights switched on.
- */
 @SpringBootTest(properties = {
         "test.database=reclearning",
         "app.seed-samples=false",

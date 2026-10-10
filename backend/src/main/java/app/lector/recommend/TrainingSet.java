@@ -9,14 +9,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Turns logged impressions and opens into training examples: one per learner and item. An item opened from Explore
- * gives the parts and position of the last impression before the (first) open; one never opened gives its latest
- * impression. Impressions logged without parts aren't used.
- */
 final class TrainingSet {
 
-    /** What counts as success: opening the item, or opening it and reading at least half (or finishing it). */
     enum Outcome {
         OPEN, HALF;
 
@@ -34,15 +28,12 @@ final class TrainingSet {
         }
     }
 
-    /** A logged event: an impression (with its parts, or null) or an open. */
     record Event(long userId, long textId, boolean open, int position, double[] parts, Instant at) {}
 
-    /** How far a learner read an item. */
     record Reached(int percent, boolean completed) {}
 
     private TrainingSet() {}
 
-    /** {@code reached} is keyed "user:text" (only needed for {@link Outcome#HALF}). */
     static List<WeightLearner.Example> examples(List<Event> events, Outcome outcome, Map<String, Reached> reached) {
         Map<String, List<Event>> byItem = new LinkedHashMap<>();
         for (Event e : events) {

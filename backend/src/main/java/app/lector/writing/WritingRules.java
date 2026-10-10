@@ -7,11 +7,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** The fixed rules of a writing test: a set time, a minimum length by level, and how writing is counted. */
 public final class WritingRules {
 
     public static final Duration TIME_LIMIT = Duration.ofMinutes(5);
-    /** Accepts the browser's automatic hand-in at 0:00 despite network lag; nothing later. */
     public static final Duration GRACE = Duration.ofSeconds(30);
 
     private static final Map<String, Integer> MIN_WORDS = Map.of(
@@ -21,7 +19,6 @@ public final class WritingRules {
 
     private WritingRules() {}
 
-    /** Japanese and Chinese are counted in characters (about two per word), everything else in words. */
     public static String unit(Language language) {
         return countsCharacters(language) ? "characters" : "words";
     }
@@ -46,7 +43,6 @@ public final class WritingRules {
         return n;
     }
 
-    /** Writing short of the minimum can score at most its share of it (30 of 60 words: 50 at most). */
     public static int capForLength(int score, int count, int minimum) {
         if (count >= minimum) {
             return score;

@@ -9,7 +9,6 @@ interface Options {
   tokens: Token[];
   sel: Range | null;
   setSel: (r: Range) => void;
-  /** Whether a popup is open, and for a single word. */
   popup: "word" | "phrase" | null;
   phraseMode: boolean;
   openWord: (i: number, autoSave: boolean) => void;
@@ -18,11 +17,9 @@ interface Options {
   close: () => void;
   articleRef: RefObject<HTMLDivElement | null>;
   popupRef: RefObject<HTMLDivElement | null>;
-  /** ←/→ with no popup open turn the page. */
   turnPage: (dir: 1 | -1) => void;
 }
 
-/** Keys that set a status while a popup is open. */
 const STATUS_KEYS: Record<string, WordStatus | null> = { l: "learning", "1": "learning", k: "known", i: "ignored", x: null };
 
 function wordIndex(target: EventTarget | null): number | null {
@@ -37,7 +34,6 @@ function isTyping(e: KeyboardEvent): boolean {
 
 const ARROWS: Record<string, 1 | -1> = { arrowright: 1, arrowleft: -1 };
 
-/** Esc closes the popup, L/K/I/X set the status, ←/→ move to the neighbouring word. */
 function handleKey(e: KeyboardEvent, o: Options) {
   const key = e.key.toLowerCase();
   if (key === "escape") return o.close();
@@ -46,13 +42,9 @@ function handleKey(e: KeyboardEvent, o: Options) {
   if (!dir) return;
   e.preventDefault();
   const i = nextWord(o.tokens, o.sel?.start ?? 0, dir);
-  if (i !== null) o.openWord(i, false); // opening scrolls to the word, turning the page if needed
+  if (i !== null) o.openWord(i, false);
 }
 
-/**
- * Reader input: click a word to look it up (click again to dismiss), drag or shift-click to select a phrase, tap
- * outside to close, and keyboard shortcuts (Esc, L/K/I/X, ←/→ between words, or between pages with no popup).
- */
 export function useReaderInput(o: Options) {
   const drag = useRef<{ anchor: number; moved: boolean } | null>(null);
   const suppressClick = useRef(false);
@@ -108,7 +100,7 @@ export function useReaderInput(o: Options) {
     onPointerDown(e: React.PointerEvent) {
       const i = wordIndex(e.target);
       if (i === null || e.pointerType !== "mouse" || e.button !== 0 || e.shiftKey) return;
-      e.preventDefault(); // stop the browser starting a text selection
+      e.preventDefault();
       drag.current = { anchor: i, moved: false };
     },
     onPointerOver(e: React.PointerEvent) {
@@ -127,16 +119,12 @@ export function useReaderInput(o: Options) {
       if (i === null) return;
       if ((e.shiftKey || o.phraseMode) && o.sel) return o.openPhrase(o.sel.start, i);
       const sameWord = o.popup === "word" && o.sel?.start === i && o.sel.end === i;
-      if (sameWord) return o.close(); // tap the selected word again to dismiss
+      if (sameWord) return o.close();
       o.openWord(i, true);
     },
   };
 }
 
-/**
- * Playback shortcuts while audio or video is available: Space, R, [ and ]. Keys already handled (tap-sync claims
- * Space) and focused buttons (Space presses them) are left alone.
- */
 export function useMediaShortcuts(onShortcut: ((action: MediaShortcut) => void) | null) {
   const latest = useRef(onShortcut);
   useEffect(() => {

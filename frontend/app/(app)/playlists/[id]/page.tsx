@@ -10,7 +10,6 @@ import { moveItem, playlistReadHref } from "@/lib/playlists";
 import type { PlaylistDetail } from "@/lib/playlist-types";
 import type { TextSummary } from "@/lib/types";
 
-/** One playlist: anyone it's shared with can read through it; its owner can also edit, order and share it. */
 export default function PlaylistPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();

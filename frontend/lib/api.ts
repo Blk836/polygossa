@@ -1,6 +1,3 @@
-// Browser-side API client. Requests go to the Next.js BFF (/api/*), which attaches the JWT from an httpOnly cookie
-// and forwards them to the Spring Boot backend.
-
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -37,10 +34,8 @@ function toError(status: number, data: unknown): ApiError {
   return new ApiError(status, err.code ?? "error", err.message ?? `Request failed (${status})`);
 }
 
-/** An expired session on a page request: send the user to log in (auth calls report their own 401s). */
 function redirectToLogin(path: string, status: number) {
   if (status !== 401 || typeof window === "undefined" || path.startsWith("auth/")) return;
-  // Full navigation (not the router): this runs outside React and must also drop any cached RSC state.
   // eslint-disable-next-line @next/next/no-location-assign-relative-destination
   window.location.href = `/login?next=${encodeURIComponent(window.location.pathname)}`;
   throw new ApiError(401, "unauthorized", "Please sign in again");
@@ -60,7 +55,6 @@ export async function api<T = unknown>(
   return data as T;
 }
 
-/** Fire-and-forget POST that survives page unload (reading-time heartbeats). */
 export function beacon(path: string, body: Record<string, unknown>) {
   const blob = new Blob([JSON.stringify(body)], { type: "application/json" });
   if (!navigator.sendBeacon?.(`/api/${path}`, blob)) {

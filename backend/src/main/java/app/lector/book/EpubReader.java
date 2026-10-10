@@ -19,13 +19,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 
-/**
- * Reads an EPUB: a zip whose META-INF/container.xml points at the package (OPF) file, whose spine lists the chapter
- * documents in reading order. Each document's paragraphs become a chapter; documents without text (covers) are skipped.
- */
 final class EpubReader {
 
-    /** Limits that keep a hostile zip (a "zip bomb") from exhausting memory. */
     private static final int MAX_ENTRIES = 5_000;
     private static final long MAX_TOTAL_BYTES = 150L * 1024 * 1024;
     private static final String BLOCKS = "p, li, h1, h2, h3, h4, h5, h6, pre, blockquote, dd, dt";
@@ -57,7 +52,6 @@ final class EpubReader {
         return new Book(bookTitle, chapters);
     }
 
-    /** A chapter document's title and paragraphs; empty when it has no text. */
     private static Optional<Book.Chapter> chapter(String xhtml, int number) {
         Document doc = Jsoup.parse(xhtml);
         doc.select("script, style").remove();
@@ -72,13 +66,11 @@ final class EpubReader {
                 paragraphs.add(text);
             }
         }
-        // Text outside any paragraph (a body of bare text) counts too, but a heading alone is not a chapter.
         String content = paragraphs.isEmpty() ? doc.body().text().strip() : String.join("\n\n", paragraphs);
         return content.isEmpty() || content.equals(headingText) ? Optional.empty()
                 : Optional.of(new Book.Chapter(title, content));
     }
 
-    /** Blocks that hold no other block, so nested ones (a paragraph in a list item) aren't read twice. */
     private static List<Element> innermost(Elements blocks) {
         return blocks.stream().filter(b -> b.select(BLOCKS).size() == 1).toList();
     }

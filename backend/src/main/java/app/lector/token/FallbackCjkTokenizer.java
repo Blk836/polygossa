@@ -3,10 +3,6 @@ package app.lector.token;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Crude segmentation used when the tokenizer sidecar is unavailable: Chinese is split per character, Japanese into
- * runs of the same script, and Korean on whitespace.
- */
 final class FallbackCjkTokenizer {
 
     private enum Script { HAN, HIRAGANA, KATAKANA, HANGUL, LATIN, OTHER }
@@ -21,8 +17,6 @@ final class FallbackCjkTokenizer {
         while (i < text.length()) {
             int cp = text.codePointAt(i);
             Script script = scriptOf(cp);
-            // Chinese words are mostly 1–2 characters with no reliable boundary cue, so split per character;
-            // Japanese kanji runs (毎朝, 六時) are usually one word, so keep them together.
             boolean splitEachChar = script == Script.HAN && language == Language.ZH;
             if (current.length() > 0 && (script != currentScript || splitEachChar)) {
                 flush(tokens, current, currentScript);

@@ -1,32 +1,21 @@
-// First-visit tours: a few short tips the first time a new account opens each main page, each pointing at the control
-// it explains (marked in the page with data-tour="<target>"). The account remembers which tours were seen; see
-// components/feature-tour.tsx for the card. Pure data and helpers, unit-tested.
-
 export interface TourStep {
-  /** The data-tour name of the control this tip points at. Every tip has one: a tip with none shows at the bottom of
-   * the screen with nothing highlighted, which looks misplaced (docs/acceptance/tours-point.feature). */
   target?: string;
   title: string;
   body: string;
 }
 
 export interface Tour {
-  /** Stored on the account once seen: lower-case letters and dashes. */
   key: string;
-  /** The page it belongs to; a path ending in "/" covers the pages under it (the reader's /read/12). */
   path: string;
-  /** What the page needs before it can be used; until then it shows a message instead, and no tour. */
   needs?: (keyof Access)[];
   steps: TourStep[];
 }
 
-/** What the learner has: a paid plan, and a language picked to learn. */
 export interface Access {
   pro: boolean;
   language: boolean;
 }
 
-/** What the account says about tours: whether they're on, and which ones were already seen. */
 export interface Tours {
   on: boolean;
   seen: string[];
@@ -117,20 +106,16 @@ export const TOURS: Tour[] = [
   },
 ];
 
-/** The tour for this page, if it has one. */
 export function tourFor(pathname: string): Tour | undefined {
   return TOURS.find((t) => (t.path.endsWith("/") ? pathname.startsWith(t.path) && pathname.length > t.path.length : pathname === t.path));
 }
 
-/** The tour to show on this page: none when tours are off, already seen, or the page has none. */
 export function pendingTour(pathname: string, tours: Tours, access: Access): Tour | null {
   const tour = tourFor(pathname);
   if (!tours.on || !tour || tours.seen.includes(tour.key)) return null;
-  // A locked page keeps its tour (not marked seen) for the first visit after it opens up.
   return (tour.needs ?? []).every((need) => access[need]) ? tour : null;
 }
 
-/** The account's tours with one more seen (at most once). */
 export function withSeen(tours: Tours, key: string): Tours {
   return tours.seen.includes(key) ? tours : { ...tours, seen: [...tours.seen, key] };
 }
@@ -151,12 +136,10 @@ export interface Size {
   height: number;
 }
 
-/** A control's box, or null when it's hidden (no size, e.g. display: none) or missing. */
 export function visibleRect(box: Rect | null): Rect | null {
   return box && box.width > 0 && box.height > 0 ? box : null;
 }
 
-/** Same box to the pixel: the card only moves when its control does. */
 export function sameRect(a: Rect | null, b: Rect | null): boolean {
   if (!a || !b) return a === b;
   const near = (x: number, y: number) => Math.round(x) === Math.round(y);
@@ -164,19 +147,13 @@ export function sameRect(a: Rect | null, b: Rect | null): boolean {
 }
 
 const MARGIN = 12;
-/** Below this width the app shows the phone tab bar at the bottom. */
 const PHONE = 768;
 
-/** Bottom of the screen, centred (above the phone tab bar). */
 function atBottom(card: Size, viewport: Size): { top: number; left: number } {
   const gap = viewport.width < PHONE ? 80 : 24;
   return { top: Math.max(MARGIN, viewport.height - card.height - gap), left: Math.max(MARGIN, (viewport.width - card.width) / 2) };
 }
 
-/**
- * Where the tip card goes: under its control if it fits, else over it, centred on it and kept on screen; at the
- * bottom of the screen when there's no control or no room around it.
- */
 export function placeCard(target: Rect | null, card: Size, viewport: Size): { top: number; left: number } {
   if (!target) return atBottom(card, viewport);
   const below = target.top + target.height + MARGIN;

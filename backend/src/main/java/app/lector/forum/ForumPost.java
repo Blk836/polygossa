@@ -13,7 +13,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 
-/** One plain-text post in a forum thread. */
 @Entity
 @Table(name = "forum_posts", indexes = @Index(name = "idx_forum_posts_thread", columnList = "thread_id,id"))
 public class ForumPost {

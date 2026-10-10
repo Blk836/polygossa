@@ -11,7 +11,6 @@ function describe(d: ActivityDay): string {
   return `${d.day}: ${parts.join(", ")}`;
 }
 
-/** Twelve weeks of practice, one square per day (darker = more), Monday at the top. */
 export function ActivityCalendar({ days }: { days: ActivityDay[] }) {
   const active = days.filter((d) => d.active).length;
   return (

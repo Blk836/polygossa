@@ -1,13 +1,5 @@
 @import "tailwindcss";
 
-/* "Ink & rubric": a reading-room palette. Warm paper and deep ink-navy by day, midnight ink and cream by night.
-   `accent` is the ink used for actions (buttons, links, selection); `rubric` is the vermilion of a scribe's
-   red-ink headings, kept for small brand highlights (logo, active tab, the word you're on, streaks).
-   Word-status colours follow LingQ in the reader: new = blue, learning = yellow, known and ignored = no highlight.
-   The known/ignored tokens still colour status buttons, badges and progress bars elsewhere.
-
-   Every colour is light-dark(light, dark). `color-scheme` picks the side: the OS by default, or the choice made in
-   Settings via <html data-theme>. Components use these tokens, never Tailwind's `dark:` variant (OS-only). */
 :root {
   color-scheme: light dark;
 
@@ -37,13 +29,9 @@
   --w-ignored: light-dark(#dde4f2, #26335a);
   --w-ignored-line: light-dark(#4767a8, #8fa8de);
   --w-active: light-dark(#f8d8ca, #5a2e2a);
-  /* Follow-along while audio or video plays: a quiet tint on the spoken sentence, an ink bar under the spoken word. */
   --w-sentence: light-dark(#ede6d5, #282f54);
   --w-marker: light-dark(#3b4ba3, #9fb0f5);
 
-  /* The vocabulary map's hex continent: the sea (lit in the middle), the continent's shadow and the grout between its
-     tiles, and a tile per word: green known, yellow learning, plain new, the next band paler, later bands paler still.
-     Words are written on the tiles, so ink (and muted ink, on the paler ones) must read on every tile. */
   --sea-deep: light-dark(#bcd5df, #0e1a2a);
   --sea: light-dark(#d3e6ec, #142338);
   --sea-glow: light-dark(#e6f1f0, #1c3048);
@@ -55,7 +43,6 @@
   --tile-next: light-dark(#f4eddb, #2c3044);
   --tile-later: light-dark(#f8f3e7, #24283c);
 
-  /* Text covers: one quiet tint per library category (see lib/categories.ts). */
   --cover-learners: light-dark(#e4e7f6, #252b52);
   --cover-daily-life: light-dark(#f3e6d3, #3a2f22);
   --cover-stories: light-dark(#ecdff0, #33263d);
@@ -112,7 +99,6 @@ body {
   background: var(--w-active);
 }
 
-/* ---- charts (recessive grid/axes) ---- */
 .viz {
   --viz-series-1: light-dark(#26336b, #aab6f2);
   --viz-grid: light-dark(#ebe4d6, #262a45);
@@ -120,7 +106,6 @@ body {
   --viz-text-muted: var(--muted);
 }
 
-/* ---- reader word tokens ---- */
 .w {
   border-radius: 0.25rem;
   padding: 0 0.06em;
@@ -132,7 +117,6 @@ body {
 .w:hover {
   box-shadow: inset 0 -2px 0 var(--rubric);
 }
-/* The spoken sentence's tint, behind its words and the gaps between them; word colours (below) sit on top of it. */
 .s-spoken {
   background: var(--w-sentence);
   transition: background-color 200ms;
@@ -148,7 +132,6 @@ span.s-spoken:not(.w) {
 .w-learning {
   background: var(--w-learning);
 }
-/* .w-known and .w-ignored have no highlight. Quiet colours hides the new-word blue too. */
 .reader-quiet .w-new {
   background: transparent;
 }
@@ -173,8 +156,6 @@ span.s-spoken:not(.w) {
   letter-spacing: 0.02em;
 }
 
-/* ---- the reader's canvas: wider than other pages. The text column grows to the reader's Text width setting, plus
-   room either side for the page arrows on wide screens; a video sits beside it (or floats as a mini player). ---- */
 main:has(> [data-reader]) {
   max-width: 100rem;
 }
@@ -215,7 +196,6 @@ main:has(> [data-reader]) {
   }
 }
 
-/* ---- text covers: a ruled "page" in the category's tint, for texts that have no thumbnail ---- */
 .cover {
   background-color: var(--cover-other);
   background-image: repeating-linear-gradient(to bottom, transparent 0 21px, color-mix(in srgb, var(--ink) 8%, transparent) 21px 22px);
@@ -254,12 +234,10 @@ main:has(> [data-reader]) {
   background-color: var(--cover-other);
 }
 
-/* Keep the bottom sheet / audio bar clear of iOS home indicator */
 .safe-bottom {
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
 
-/* The header streak flame flickers while the streak is at risk (components/header-stats.tsx). */
 @keyframes streak-flicker {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
@@ -273,9 +251,6 @@ main:has(> [data-reader]) {
   }
 }
 
-/* The vocabulary map's hex continent (components/progress/hex-map*.tsx). The camera sets --k (screen pixels per world
-   unit) and --tx/--ty (where the world's origin is on screen) on the frame each frame; a name tag sits at its world
-   point (--x, --y) through them, so tags follow the map without React redrawing them. */
 .hex-map {
   --k: 1;
   --tx: 0;
@@ -380,7 +355,6 @@ main:has(> [data-reader]) {
   }
 }
 
-/* Everything clickable shows the hand, as links do: Tailwind 4 leaves buttons on the default arrow. */
 @layer base {
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -389,9 +363,6 @@ main:has(> [data-reader]) {
   }
 }
 
-/* Dropdowns look like the cards (classes: selectClass / chipSelectClass in components/ui.tsx). Where the browser
-   supports customisable selects (Chrome), the open list is drawn as a rounded card too; elsewhere it stays native,
-   with the app's chevron on the closed box. */
 @layer base {
   select {
     appearance: none;
@@ -458,7 +429,6 @@ main:has(> [data-reader]) {
   }
 }
 
-/* ---- landing page showreel (components/landing/showreel*.tsx) ---- */
 @keyframes showreel-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }
@@ -524,7 +494,6 @@ main:has(> [data-reader]) {
   }
 }
 
-/* ---- sign-in/sign-up splash: "a page that learns" (components/auth-splash.tsx) ---- */
 .splash-greeting {
   opacity: 0.13;
   white-space: nowrap;

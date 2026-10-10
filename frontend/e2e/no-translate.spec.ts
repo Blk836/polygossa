@@ -1,10 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { cleanUp, createText, openReader, type Created } from "./reader-helpers";
 
-// Chrome offers (or auto-runs) page translation when a page reads as another language, and a lesson page is mostly
-// that language. Translation rewrites text React rendered (wrapping it in <font> tags), which breaks hydration and
-// crashes the page on the next update ("removeChild ... not a child of this node"). Every page opts out.
-
 let created: Created | null = null;
 
 test.afterEach(async ({ page }) => {

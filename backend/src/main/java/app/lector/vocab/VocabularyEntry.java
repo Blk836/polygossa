@@ -22,7 +22,6 @@ import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 import java.util.List;
 
-/** A word or phrase in a user's personal vocabulary list for one language. */
 @Entity
 @Table(name = "vocabulary_entries",
         uniqueConstraints = @UniqueConstraint(name = "uk_vocab_user_lang_term", columnNames = {"user_id", "language", "term"}),
@@ -41,11 +40,9 @@ public class VocabularyEntry {
     @Column(nullable = false)
     private Language language;
 
-    /** Normalized lookup key (lower-cased; dictionary form when known). */
     @Column(nullable = false, length = 500)
     private String term;
 
-    /** The form as first encountered, for display. */
     @Column(nullable = false, length = 500)
     private String displayTerm;
 
@@ -60,14 +57,9 @@ public class VocabularyEntry {
     @Column(columnDefinition = "text")
     private String definition;
 
-    /**
-     * The word in the learner's own language ("perro"), apart from the definition, so learners' meanings can add up to
-     * community meanings. Null for words saved before meanings were kept, and when the learner cleared it.
-     */
     @Column(length = 200)
     private String meaning;
 
-    /** The native language {@link #meaning} is in: the learner's when it was saved. */
     @Enumerated(EnumType.STRING)
     private NativeLanguage meaningLanguage;
 
@@ -78,15 +70,12 @@ public class VocabularyEntry {
     @Column(columnDefinition = "text")
     private String example;
 
-    /** The sentence the word was first encountered in. */
     @Column(columnDefinition = "text")
     private String contextSentence;
 
-    /** The learner's own note: a mnemonic, a grammar reminder. */
     @Column(columnDefinition = "text")
     private String note;
 
-    /** The learner's tags, space-separated and padded (" animals a1 ") so a whole tag matches with LIKE. */
     @Column(columnDefinition = "text")
     private String tags;
 
@@ -103,7 +92,6 @@ public class VocabularyEntry {
     @Column(nullable = false)
     private Instant updatedAt = Instant.now();
 
-    /** When the entry was (most recently) marked known; drives the vocabulary growth chart. */
     private Instant knownAt;
 
     protected VocabularyEntry() {}
@@ -128,7 +116,6 @@ public class VocabularyEntry {
         touch();
     }
 
-    /** Marks an imported word known as of {@code knownAt} (when it was learned elsewhere, not now). */
     public void knownSince(Instant knownAt) {
         status = WordStatus.KNOWN;
         this.knownAt = knownAt;
@@ -150,7 +137,6 @@ public class VocabularyEntry {
     public void setDefinition(String definition) { this.definition = definition; }
     public String getMeaning() { return meaning; }
     public NativeLanguage getMeaningLanguage() { return meaningLanguage; }
-    /** Sets the meaning in {@code language}; a null meaning clears both. */
     public void setMeaning(String meaning, NativeLanguage language) {
         this.meaning = meaning;
         this.meaningLanguage = meaning == null ? null : language;
@@ -166,7 +152,6 @@ public class VocabularyEntry {
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
     public List<String> getTags() { return tags == null ? List.of() : List.of(tags.strip().split(" ")); }
-    /** Tags must already be normalized ({@link Tags#normalize}). */
     public void setTags(List<String> list) { tags = list.isEmpty() ? null : " " + String.join(" ", list) + " "; }
     public Text getSourceText() { return sourceText; }
     public void setSourceText(Text sourceText) { this.sourceText = sourceText; }

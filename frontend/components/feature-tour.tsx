@@ -9,11 +9,9 @@ import { api } from "@/lib/api";
 import { pendingTour, placeCard, sameRect, stepLabel, visibleRect, withSeen, type Rect, type Tour } from "@/lib/tours";
 import type { Me } from "@/lib/types";
 
-/** How long a tip waits for its control to appear (data still loading) before showing on its own. */
 const WAIT_TICKS = 8;
 const TICK_MS = 150;
 
-/** The first-visit tour for this page, if the account still has one to see (lib/tours.ts). */
 export function FeatureTour() {
   const pathname = usePathname();
   const { me, isPro } = useMe();
@@ -21,14 +19,12 @@ export function FeatureTour() {
   return tour ? <TourCard key={tour.key} tour={tour} /> : null;
 }
 
-/** The first visible element marked data-tour="<name>" (a page can mark two, e.g. the pager and Finish lesson). */
 function findTarget(name: string | undefined): HTMLElement | null {
   if (!name) return null;
   const all = Array.from(document.querySelectorAll<HTMLElement>(`[data-tour="${name}"]`));
   return all.find((el) => visibleRect(el.getBoundingClientRect()) !== null) ?? null;
 }
 
-/** The control and its box on screen, or nulls when it's missing or hidden. */
 function locate(name: string | undefined): { el: HTMLElement | null; rect: Rect | null } {
   const el = findTarget(name);
   if (!el) return { el: null, rect: null };
@@ -36,7 +32,6 @@ function locate(name: string | undefined): { el: HTMLElement | null; rect: Rect 
   return { el, rect: visibleRect({ top, left, width, height }) };
 }
 
-/** Brings a control that is entirely off screen into view. */
 function reveal(el: HTMLElement, r: Rect) {
   if (r.top + r.height < 0 || r.top > window.innerHeight) el.scrollIntoView({ block: "center" });
 }
@@ -47,7 +42,6 @@ interface Layout {
   left: number;
 }
 
-/** The card's layout beside `rect`; the previous one when nothing moved, so React doesn't re-render. */
 function nextLayout(prev: Layout | null, rect: Rect | null, card: HTMLDivElement | null): Layout {
   const size = { width: card?.offsetWidth ?? 320, height: card?.offsetHeight ?? 160 };
   const pos = placeCard(rect, size, { width: window.innerWidth, height: window.innerHeight });
@@ -55,10 +49,6 @@ function nextLayout(prev: Layout | null, rect: Rect | null, card: HTMLDivElement
   return same ? prev : { rect, ...pos };
 }
 
-/**
- * Follows the step's control (it may load late, move or scroll) and works out where the card goes. Null until the
- * card can be placed: a tip waits briefly for its control, then shows on its own at the bottom of the screen.
- */
 function useCardLayout(target: string | undefined, card: RefObject<HTMLDivElement | null>): Layout | null {
   const [layout, setLayout] = useState<Layout | null>(null);
   useEffect(() => {
@@ -87,12 +77,10 @@ function useCardLayout(target: string | undefined, card: RefObject<HTMLDivElemen
   return layout;
 }
 
-/** Remembers on the account that this tour was seen, or that tours are off; the card goes either way. */
 function useTourActions(tour: Tour) {
   const { me, setMe } = useMe();
   const save = (local: Me, request: Promise<Me>) => {
     setMe(local);
-    // If saving fails the tour may come back on a later visit; nothing else is lost.
     request.then(setMe).catch(() => undefined);
   };
   return {
@@ -101,13 +89,11 @@ function useTourActions(tour: Tour) {
   };
 }
 
-/** One tour, a tip at a time. */
 function TourCard({ tour }: { tour: Tour }) {
   const [index, setIndex] = useState(0);
   return <Tip key={index} tour={tour} index={index} onNext={() => setIndex(index + 1)} />;
 }
 
-/** A tip card beside the control it explains, which stays highlighted; the page stays usable. */
 function Tip({ tour, index, onNext }: { tour: Tour; index: number; onNext: () => void }) {
   const card = useRef<HTMLDivElement>(null);
   const titleId = useId();

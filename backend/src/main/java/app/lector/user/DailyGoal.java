@@ -2,10 +2,8 @@ package app.lector.user;
 
 import app.lector.common.ApiException;
 
-/** A learner's daily goal: what it measures and how much of it makes a day. */
 public record DailyGoal(GoalKind kind, int target) {
 
-    /** One day's practice, as far as goals are concerned. */
     public record Day(long reviews, long wordsRead, long readingSeconds, long listenedSeconds) {}
 
     public DailyGoal {
@@ -18,7 +16,6 @@ public record DailyGoal(GoalKind kind, int target) {
         }
     }
 
-    /** How much of the goal's measure the day holds (whole minutes for time goals). */
     public long done(Day day) {
         return switch (kind) {
             case REVIEWS -> day.reviews();

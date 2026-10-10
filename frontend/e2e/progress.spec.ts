@@ -1,12 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// The Progress page as test@lector.local sees it. Its history is whatever the dev database holds, so these checks are
-// about structure and today's practice, which each test creates (and deletes) itself.
-
 let savedWord: number | null = null;
 
 async function saveWordToday(page: Page) {
-  await page.goto("/library"); // signs in (auto-login) for page.request
+  await page.goto("/library");
   const res = await page.request.post("/api/vocabulary", {
     data: { language: "es", term: `progreso${Date.now()}${Math.floor(Math.random() * 1e6)}` },
   });
@@ -41,7 +38,7 @@ test("the page leads with motivation, not sessions", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Progress" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Known words" }).getByRole("progressbar")).toBeVisible();
   await expect(page.getByRole("region", { name: "Known words" }).getByTestId("milestone")).toContainText(/more to reach/);
-  const week = page.getByRole("region", { name: "Last week" }); // the period picker's default
+  const week = page.getByRole("region", { name: "Last week" });
   for (const label of ["Words learned", "Minutes read", "Days practised"]) await expect(week).toContainText(label);
   await expect(page.getByRole("region", { name: "Activity" }).locator("[data-level]")).toHaveCount(84);
   await expect(page.locator("main")).not.toContainText(/session/i);
@@ -53,7 +50,6 @@ test("the known-words card follows the language picked in the top bar", async ({
   await page.goto("/library");
   const me = await (await page.request.get("/api/me")).json();
   const real = await (await page.request.get("/api/dashboard")).json();
-  // A fixed response: French listed first, so the top-bar language (when set) must win over list order.
   const languages = [
     { language: "fr", known: 56, learning: 1, ignored: 0, sessions: 0, readingSeconds: 0 },
     ...["es", "de", "it", "pt", "ja", "zh", "ko"].map((language, i) => ({ language, known: 1000 + i, learning: 0, ignored: 0, sessions: 0, readingSeconds: 0 })),

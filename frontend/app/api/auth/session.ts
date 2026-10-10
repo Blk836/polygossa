@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
 import { BACKEND_URL, TOKEN_COOKIE, cookieOptions } from "@/lib/server-api";
 
-/** Forwards a login/signup to the backend and stores the returned JWT in an httpOnly cookie. */
 export async function authenticate(request: Request, backendPath: string): Promise<Response> {
   let res: Response;
   try {

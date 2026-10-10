@@ -1,5 +1,3 @@
-// docs/acceptance/word-translations.feature, "Production has it switched on": the backend may call Amazon Translate's
-// TranslateText (nothing else of Translate, in our region only), and machine translation is on with its monthly cap.
 import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
 import * as cdk from "aws-cdk-lib";
@@ -19,7 +17,6 @@ before(() => {
 
 type Statement = { Action: string | string[]; Resource: unknown; Condition?: unknown };
 
-/** The IAM statements attached to the roles whose logical ids start with `prefix`. */
 function statementsOf(prefix: string): Statement[] {
   return Object.values(template.findResources("AWS::IAM::Policy"))
     .filter((p) => JSON.stringify(p.Properties.Roles).includes(prefix))
@@ -43,7 +40,7 @@ describe("machine translation in production", () => {
     const statements = translateStatements("BackendTaskTaskRole");
     assert.equal(statements.length, 1);
     assert.deepEqual(actions(statements[0]), ["translate:TranslateText"]);
-    assert.equal(statements[0].Resource, "*"); // TranslateText names no resource unless custom terminology is used
+    assert.equal(statements[0].Resource, "*");
     assert.deepEqual(statements[0].Condition, { StringEquals: { "aws:RequestedRegion": "eu-west-1" } });
   });
 

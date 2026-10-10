@@ -23,11 +23,9 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     setError(null);
     try {
       await api(`auth/${mode}`, {
-        // Sign-up starts the native language from the browser's (the backend falls back to English).
         body: mode === "signup" ? { email, password, displayName, nativeLanguage: navigator.language } : { email, password },
       });
       const next = params.get("next");
-      // New accounts go straight to onboarding: pick a language (or keep the one picked on the landing page) and read.
       router.replace(mode === "signup" ? onboardingPath(params.get("lang")) : next && next.startsWith("/") ? next : HOME);
       router.refresh();
     } catch (err) {

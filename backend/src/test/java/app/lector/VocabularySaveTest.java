@@ -13,7 +13,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Characterization of POST /api/vocabulary (create-or-update) with a tiny free-tier word limit. */
 @SpringBootTest(properties = {
         "test.database=vocab",
         "app.seed-samples=false",
@@ -126,7 +125,6 @@ class VocabularySaveTest {
     }
 
     private Instant updatedAt(String body) throws Exception {
-        // The database keeps microseconds; compare at millisecond precision.
         return Instant.parse(save(body, 201).get("updatedAt").asString()).truncatedTo(ChronoUnit.MILLIS);
     }
 

@@ -19,7 +19,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** Feature: texts and videos are filed under a small set of categories, and Explore shows them as shelves. */
 @YouTubeApiTest
 class CategoryApiTest {
 
@@ -62,8 +61,6 @@ class CategoryApiTest {
         return out;
     }
 
-    // ---- assigning a category ----
-
     @Test
     void newTextKeepsTheChosenCategory() throws Exception {
         assertThat(summary(create(user, "es", "food", false)).get("category").asString()).isEqualTo("food");
@@ -104,8 +101,6 @@ class CategoryApiTest {
         assertThat(summary(id).get("category").asString()).isEqualTo("food");
     }
 
-    // ---- YouTube imports ----
-
     private JsonNode importVideo(String category) throws Exception {
         var req = multipart("/api/texts/import-youtube").param("url", "https://youtu.be/" + VIDEO).param("language", "es");
         if (category != null) {
@@ -134,8 +129,6 @@ class CategoryApiTest {
         STUB.add(VIDEO, YouTubeStub.Video.withCaptions("Clase", 60, "es", YouTubeStub.srv3("0|2000|Hola amigos.")));
         assertThat(importVideo(null).get("category").asString()).isEqualTo("other");
     }
-
-    // ---- browsing ----
 
     @Test
     void exploreFiltersByCategory() throws Exception {
@@ -166,8 +159,8 @@ class CategoryApiTest {
         }
         create(author, "pt", "stories", true);
         create(author, "pt", null, true);
-        create(author, "pt", "learners", false); // private: not on any shelf
-        create(author, "de", "news", true); // other language
+        create(author, "pt", "learners", false);
+        create(author, "de", "news", true);
 
         JsonNode shelves = api.get(user, "/api/library/shelves?language=pt", 200);
         assertThat(field(shelves, "category")).containsExactly("stories", "food", "other");
@@ -181,7 +174,7 @@ class CategoryApiTest {
     @Test
     void shelvesHonourLevelAndKindFilters() throws Exception {
         String author = api.signupPro();
-        create(author, "en", "food", true); // no other API test publishes English texts
+        create(author, "en", "food", true);
         assertThat(api.get(user, "/api/library/shelves?language=en&kind=video", 200)).isEmpty();
         assertThat(api.get(user, "/api/library/shelves?language=en&kind=text", 200)).hasSize(1);
         assertThat(api.get(user, "/api/library/shelves?language=en&level=C2", 200)).isEmpty();
@@ -198,8 +191,6 @@ class CategoryApiTest {
         stats.clear();
         JsonNode shelves = api.get(user, "/api/library/shelves?language=it", 200);
         assertThat(shelves).hasSize(Category.values().length);
-        // Every public row is read in full to test the filters (the database keeps the text inline), so a query per category
-        // re-read them all: Explore's front page took seconds once there were a few long transcripts.
         assertThat(stats.getQueryExecutionCount()).isLessThan(Category.values().length);
     }
 

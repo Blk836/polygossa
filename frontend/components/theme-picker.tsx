@@ -3,7 +3,6 @@
 import { THEMES } from "@/lib/theme";
 import { useTheme } from "./theme-context";
 
-/** Light / dark / system switch; applies at once and is remembered on this device. */
 export function ThemePicker() {
   const { theme, setTheme } = useTheme();
   return (

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Locale;
 
-/** The three-button difficulty rating shown after revealing a card. */
 public enum Rating {
     FORGOT,
     HARD,

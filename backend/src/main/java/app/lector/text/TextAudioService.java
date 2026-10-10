@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
 
-/** Audio sync (Pro): attach uploaded or linked audio to a text and align its words to the audio. */
 @Service
 public class TextAudioService {
 
@@ -53,7 +52,6 @@ public class TextAudioService {
         clear(texts.loadOwned(user, id));
     }
 
-    /** Aligns words to audio from subtitle cues when available, otherwise by proportional estimate. */
     @Transactional
     public List<AudioAligner.WordTiming> alignAuto(User user, Long id, long durationMs) {
         Text text = loadSyncable(user, id);
@@ -78,7 +76,6 @@ public class TextAudioService {
         return timings;
     }
 
-    /** Videos play their own soundtrack, so separate audio can't be attached to them. */
     private Text loadAudioTarget(User user, Long id) {
         Text text = texts.loadOwned(user, id);
         if (text.isVideo()) {
@@ -96,7 +93,6 @@ public class TextAudioService {
         return text;
     }
 
-    /** Drops any stored file, link and timings. */
     private void clear(Text text) {
         storage.delete(text.getAudioFile());
         text.setAudioFile(null);

@@ -1,11 +1,9 @@
 package app.lector.recommend;
 
-/** Small dense linear algebra for the weight fit: Gauss-Jordan elimination with partial pivoting. */
 final class Matrices {
 
     private Matrices() {}
 
-    /** x with a x = b; a must be square and non-singular (the ridge prior keeps the fit's Hessian so). */
     static double[] solve(double[][] a, double[] b) {
         int n = b.length;
         double[][] m = new double[n][n + 1];
@@ -36,7 +34,6 @@ final class Matrices {
         return inv;
     }
 
-    /** Reduces the first n columns of the augmented matrix m to the identity. */
     private static void eliminate(double[][] m, int n) {
         for (int col = 0; col < n; col++) {
             int pivot = col;

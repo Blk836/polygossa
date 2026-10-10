@@ -13,10 +13,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Feature: lists of cards (Library, Explore, playlists) stay fast however long the texts are. A card needs a text's
- * title, counts and distinct words, never its content, tokens or timings, so listing must not load any text body.
- */
 @ApiTest
 class CardListsTest {
 
@@ -61,7 +57,7 @@ class CardListsTest {
         assertThat(bodiesLoadedBy("/api/library?language=fr&sort=new&page=0&size=24")).isZero();
         assertThat(bodiesLoadedBy("/api/library?language=fr&sort=popular&page=0&size=24")).isZero();
         assertThat(bodiesLoadedBy("/api/library/shelves?language=fr")).isZero();
-        api.post(me, "/api/texts/" + text + "/progress", "{\"position\":2}", 200); // fills Continue reading
+        api.post(me, "/api/texts/" + text + "/progress", "{\"position\":2}", 200);
         assertThat(bodiesLoadedBy("/api/recommendations?language=fr")).isZero();
         assertThat(bodiesLoadedBy("/api/library?language=fr&topic=cooking")).isZero();
     }

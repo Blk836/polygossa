@@ -1,14 +1,9 @@
-// One-time Stripe setup (docs/acceptance/stripe-billing.feature): the prices the app sells, found by lookup key, and
-// the webhook that tells the app about subscriptions. Safe to run again. Plain Node, no packages.
-
-/** What the app sells: amounts in cents, VAT included. The backend finds them by lookup key (BillingService). */
 export const PRICES = [
   { lookupKey: "pro_monthly", product: "Pro", amount: 800, interval: "month" },
   { lookupKey: "pro_yearly", product: "Pro", amount: 6000, interval: "year" },
   { lookupKey: "classroom_monthly", product: "Classroom (per student)", amount: 400, interval: "month" },
 ];
 
-/** The events the backend listens to, and the API version of the backend's Stripe library. */
 const EVENTS = ["customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted"];
 const API_VERSION = "2026-09-30.endive";
 const API = "https://api.stripe.com";
@@ -52,7 +47,6 @@ async function ensurePrices(stripe, print) {
   }
 }
 
-/** Replaces any webhook at this address (Stripe shows a signing secret only once, when it is made). */
 async function ensureWebhook(stripe, url, saveWebhookSecret, print) {
   for (const old of (await stripe("GET", "/v1/webhook_endpoints?limit=100")).data.filter((e) => e.url === url)) {
     await stripe("DELETE", `/v1/webhook_endpoints/${old.id}`);

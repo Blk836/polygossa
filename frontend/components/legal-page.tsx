@@ -3,10 +3,6 @@ import type { ReactNode } from "react";
 import { Logo } from "./ui";
 import { BRAND } from "@/lib/brand";
 
-/**
- * The privacy policy and terms (gdpr.feature): drafts written from the real providers and data, to be approved by a
- * lawyer or template service before real users. The banner says so until then.
- */
 export function LegalPage({ title, updated, children }: { title: string; updated: string; children: ReactNode }) {
   return (
     <div className="min-h-screen bg-paper">

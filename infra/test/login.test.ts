@@ -1,4 +1,3 @@
-// docs/acceptance/cognito-login.feature, "The user pools are defined in CDK".
 import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
 import * as cdk from "aws-cdk-lib";
@@ -20,7 +19,6 @@ before(() => {
   qa = Template.fromStack(stacks.qa);
 });
 
-/** The container definition called `name` in `template`. */
 function container(template: Template, name: string): Record<string, unknown> {
   for (const task of Object.values(template.findResources("AWS::ECS::TaskDefinition"))) {
     const found = (task.Properties.ContainerDefinitions as Record<string, unknown>[]).find((c) => c.Name === name);
@@ -81,10 +79,10 @@ for (const [label, template, home] of [
       assert.equal(style.UseCognitoProvidedValues, false);
       const s = style.Settings;
       assert.equal(s.categories.global.colorSchemeMode, "DYNAMIC");
-      assert.equal(s.components.primaryButton.lightMode.defaults.backgroundColor, "26336bff"); // --accent
+      assert.equal(s.components.primaryButton.lightMode.defaults.backgroundColor, "26336bff");
       assert.equal(s.components.primaryButton.darkMode.defaults.backgroundColor, "aab6f2ff");
-      assert.equal(s.components.pageBackground.lightMode.color, "f6f1e7ff"); // --paper
-      assert.equal(s.components.form.lightMode.backgroundColor, "fffcf6ff"); // --card
+      assert.equal(s.components.pageBackground.lightMode.color, "f6f1e7ff");
+      assert.equal(s.components.form.lightMode.backgroundColor, "fffcf6ff");
       assert.equal(s.components.form.logo.enabled, true);
       const logos = (style.Assets as { Category: string; ColorMode: string; Extension: string; Bytes: string }[])
         .filter((a) => a.Category === "FORM_LOGO");
@@ -93,7 +91,6 @@ for (const [label, template, home] of [
         assert.equal(logo.Extension, "SVG");
         const svg = Buffer.from(logo.Bytes, "base64").toString("utf8");
         assert.match(svg, /<svg[^>]*>.*Polygossa.*<\/svg>/s);
-        // Cognito refuses logos outside 1:1 to 4:1 (width:height), as the first deploy found.
         const [, width, height] = /width="([\d.]+)" height="([\d.]+)"/.exec(svg)!.map(Number);
         assert.ok(width / height >= 1 && width / height <= 4, `logo ratio ${width}:${height}`);
       }

@@ -8,7 +8,6 @@ const bad = { line: 2, url: "https://example.com", error: "not a YouTube video l
 const b = { line: 3, url: "https://youtu.be/BBBBBBBBBBB", language: "es", category: "news" };
 const c = { line: 4, url: "https://youtu.be/CCCCCCCCCCC", language: "es", category: null };
 
-/** A client whose answers come from a map of URL → outcome (or an Error to throw). */
 function fakeClient(answers) {
   const calls = [];
   return {

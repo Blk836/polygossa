@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-/** Feature: Explore recommendations, engagement signals (docs/acceptance/explore-recommendations.feature). */
 class SignalsTest {
 
     private static final Instant NOW = Instant.parse("2026-10-05T12:00:00Z");
@@ -76,7 +75,6 @@ class SignalsTest {
         assertThat(weight(progress(0, false, daysAgo(7)))).isEqualTo(-1);
         assertThat(weight(progress(9, false, daysAgo(6)))).isZero();
         assertThat(weight(progress(10, false, daysAgo(30)))).isZero();
-        // Finished texts are never abandoned: a finish under 50% (not possible in the app) counts +3 only.
         assertThat(weight(progress(9, true, daysAgo(30)))).isCloseTo(1.5, within(1e-9));
     }
 

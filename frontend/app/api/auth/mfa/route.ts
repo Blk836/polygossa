@@ -5,12 +5,8 @@ import { confirmTotp, mfaStatus, startTotp, turnOffTotp } from "@/lib/cognito-ap
 import { backendFetch } from "@/lib/server-api";
 import { currentAccess } from "@/lib/session";
 
-// The authenticator-app second step for a Cognito session (cognito-login.feature), through Cognito's own API. Only
-// Cognito sessions have one: anything else (the app's own accounts) gets 404, and Settings shows nothing.
-
 const fail = (status: number, message: string) => Response.json({ code: "mfa", message }, { status });
 
-/** The Cognito session's config and access token, or the response to give instead. */
 async function session(): Promise<{ config: CognitoConfig; access: string } | Response> {
   const jar = await cookies();
   const config = cognitoConfig();

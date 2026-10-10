@@ -6,8 +6,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { main } from "./cli.mjs";
 
-// --playlist (docs/acceptance/copy-playlist.feature), against a stand-in backend.
-
 let server;
 let backend;
 let requests;

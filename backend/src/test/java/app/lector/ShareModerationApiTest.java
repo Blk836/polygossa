@@ -22,10 +22,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Feature: AI checks content before it is shared (docs/acceptance/share-moderation.feature). The daily AI allowance
- * is 0 here, to show that the check doesn't use it.
- */
 @SpringBootTest(properties = {
         "test.database=sharemoderation",
         "app.seed-samples=false",
@@ -101,8 +97,6 @@ class ShareModerationApiTest {
         assertThat(created.get("category").asString()).isEqualTo("food");
     }
 
-    // ---- shared imports that pass ----
-
     @Test
     void aSharedPastedTextThatPassesIsShared() throws Exception {
         AI.reply("{\"appropriate\":true,\"category\":\"food\"}");
@@ -147,8 +141,6 @@ class ShareModerationApiTest {
         askedOnceIfAppropriate();
     }
 
-    // ---- refusals ----
-
     @Test
     void aSharedImportThatFailsIsRefusedAndNothingIsSaved() throws Exception {
         int before = libraryCount();
@@ -180,8 +172,6 @@ class ShareModerationApiTest {
         assertThat(AI.requests().get(0)).contains("a".repeat(8_000)).doesNotContain("TAIL").doesNotContain("bbbb");
     }
 
-    // ---- sharing later ----
-
     @Test
     void sharingAPrivateTextLaterIsChecked() throws Exception {
         long id = paste(false, "news", 201).get("id").asLong();
@@ -204,8 +194,6 @@ class ShareModerationApiTest {
         api.patch(user, "/api/texts/" + id, "{\"isPublic\":false}", 200);
         assertThat(AI.requests()).isEmpty();
     }
-
-    // ---- when the check can't run ----
 
     private void sharingIsRefusedButPrivateImportsWork() throws Exception {
         int before = libraryCount();

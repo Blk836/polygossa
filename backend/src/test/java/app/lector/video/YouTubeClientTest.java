@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-/** YouTubeClient against a local stub of youtube.com. */
 class YouTubeClientTest {
 
     private static YouTubeStub stub;
@@ -59,7 +58,6 @@ class YouTubeClientTest {
 
     @Test
     void unknownIdsAreRejected() {
-        // YouTube answers 400 for ids that don't exist.
         assertThatThrownBy(() -> client.metadata("ccccccccccc")).isInstanceOf(ApiException.class);
     }
 

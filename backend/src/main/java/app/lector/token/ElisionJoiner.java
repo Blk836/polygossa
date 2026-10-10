@@ -3,16 +3,8 @@ package app.lector.token;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Joins the elisions that texts tokenized before elisions stayed one word still hold split ("l'" + "homme" →
- * "l'homme"), merging the tokens rather than tokenizing again so nothing else about the text changes.
- */
 public final class ElisionJoiner {
 
-    /**
-     * @param tokens   the joined tokens, re-indexed
-     * @param newIndex for each old token index, the index of the token it is now part of
-     */
     public record Joined(List<Token> tokens, int[] newIndex) {
 
         public boolean changed() {

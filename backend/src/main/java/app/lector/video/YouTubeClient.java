@@ -25,18 +25,12 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-/**
- * The only way the backend talks to YouTube. Metadata comes from the official oEmbed endpoint; captions come from
- * the (unofficial) innertube player endpoint, so every caption failure degrades to "no captions" rather than an
- * error, and the user can supply a transcript instead.
- */
 @Component
 public class YouTubeClient {
 
     public record Metadata(String title, String thumbnailUrl) {}
 
     private static final String UNAVAILABLE = "This video is private, removed, or can't be embedded";
-    /** oEmbed answers 400 for unknown ids, 401/403 for private or non-embeddable videos, 404 for removed ones. */
     private static final Set<Integer> UNAVAILABLE_STATUSES = Set.of(400, 401, 403, 404);
     private static final String BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
             + "(KHTML, like Gecko) Chrome/130.0 Safari/537.36";
@@ -46,11 +40,9 @@ public class YouTubeClient {
     private final URI base;
     private final Duration timeout;
     private final HttpClient http;
-    /** A video's metadata and player data, reused for app.youtube.cache-ttl (failures are never kept). */
     private final RecentAnswers<Optional<Metadata>> metadataCache;
     private final RecentAnswers<PlayerInfo> playerCache;
 
-    /** Without a cache: every call asks YouTube. */
     public YouTubeClient(String baseUrl, Duration timeout) {
         this(baseUrl, timeout, Duration.ZERO, Clock.systemUTC());
     }
@@ -70,7 +62,6 @@ public class YouTubeClient {
                 .build();
     }
 
-    /** Title and thumbnail; empty when YouTube can't be reached. Throws 422 when the video isn't available. */
     public Optional<Metadata> metadata(String videoId) {
         return metadataCache.get(videoId, this::fetchMetadata);
     }
@@ -88,7 +79,6 @@ public class YouTubeClient {
         return status == 200 ? parseOembed(response.get().body()) : Optional.empty();
     }
 
-    /** Video length, caption tracks and YouTube category; {@link CaptionParser#NONE} on any failure. */
     public PlayerInfo player(String videoId) {
         return playerCache.get(videoId, this::fetchPlayer);
     }
@@ -110,7 +100,6 @@ public class YouTubeClient {
         return body(player).map(CaptionParser::parsePlayer).orElse(CaptionParser.NONE).withCategory(category);
     }
 
-    /** The track's cues; empty on failure, or when the track URL isn't on the YouTube host. */
     public List<Cue> captions(Track track) {
         URI uri = parse(CaptionParser.srv3Url(track.baseUrl()));
         if (uri == null || !sameOrigin(uri)) {
@@ -136,7 +125,6 @@ public class YouTubeClient {
                 .timeout(timeout)
                 .header("User-Agent", BROWSER_UA)
                 .header("Accept-Language", "en-US,en;q=0.8")
-                // Skips the EU cookie-consent interstitial that would otherwise replace the watch page.
                 .header("Cookie", "CONSENT=YES+cb; SOCS=CAI");
     }
 

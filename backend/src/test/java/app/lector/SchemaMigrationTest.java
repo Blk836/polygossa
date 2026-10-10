@@ -19,20 +19,11 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Feature: versioned schema changes with Flyway (docs/acceptance/flyway.feature). Each test prepares a database in a
- * given state, then boots the whole app on it, as a deploy would. Extra migrations (V900 on, after any real one) live
- * in a temporary folder added to the app's migration locations.
- */
 class SchemaMigrationTest {
 
     @TempDir
     Path extra;
 
-    /**
-     * Boots the app on {@code database}. Properties ("key=value", replacing the defaults here) are passed as
-     * command-line arguments, so they win over the YAML.
-     */
     private static ConfigurableApplicationContext boot(String database, String... properties) {
         Map<String, String> args = new LinkedHashMap<>(Map.of("test.database.existing", database, "server.port", "0",
                 "app.seed-samples", "false", "app.storage.dir", "build/test-uploads"));
@@ -58,14 +49,12 @@ class SchemaMigrationTest {
         return new JdbcTemplate(TestDatabases.dataSource(database));
     }
 
-    /** The history Flyway keeps: version and type (SQL, BASELINE) of each successful step, in order. */
     private static List<String> history(String database) {
         return jdbc(database).queryForList("""
                 select version || ' ' || type from flyway_schema_history where success order by installed_rank""",
                 String.class);
     }
 
-    /** The app's own migrations, as history() lists them once they ran: "1 SQL", "2 SQL", … */
     private static List<String> appMigrations() throws IOException {
         return Arrays.stream(new PathMatchingResourcePatternResolver().getResources("classpath:db/migration/V*__*.sql"))
                 .map(r -> Integer.parseInt(r.getFilename().substring(1, r.getFilename().indexOf("__"))))
@@ -86,7 +75,6 @@ class SchemaMigrationTest {
                 order by 1""", String.class);
     }
 
-    /** Every message in an exception's cause chain, so a test can look for what the developer would read. */
     private static String messages(Throwable e) {
         List<String> out = new ArrayList<>();
         for (Throwable t = e; t != null; t = t.getCause()) {
@@ -127,10 +115,6 @@ class SchemaMigrationTest {
         assertThat(jdbc(db).queryForObject("select count(*) from texts", Integer.class)).isEqualTo(texts);
     }
 
-    /**
-     * Hibernate's ddl-auto gave some unique constraints generated names (as in the dev database), where V1 lets
-     * PostgreSQL name them. After adoption every database has the same names, so a later migration can name them.
-     */
     @Test
     void anAdoptedDatabaseEndsUpWithTheSameConstraintNamesAsANewOne() {
         String fresh = TestDatabases.newDatabase("named");

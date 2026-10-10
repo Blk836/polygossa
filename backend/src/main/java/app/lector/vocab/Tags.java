@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-/** A learner's tags on their words: one word each (letters, digits, - and _), lower-case, at most ten per entry. */
 public final class Tags {
 
     static final int MAX_TAGS = 10;
@@ -19,7 +18,6 @@ public final class Tags {
 
     private Tags() {}
 
-    /** Trimmed, lower-cased and de-duplicated (first spelling kept), or a 400 naming the problem. */
     public static List<String> normalize(List<String> raw) {
         Set<String> out = new LinkedHashSet<>();
         for (String tag : raw) {
@@ -38,7 +36,6 @@ public final class Tags {
 
     public record TagCount(String tag, int count) {}
 
-    /** How many entries carry each tag, most used first (ties alphabetical), from the stored tag columns. */
     static List<TagCount> count(List<String> columns) {
         Map<String, Integer> counts = new LinkedHashMap<>();
         for (String column : columns) {

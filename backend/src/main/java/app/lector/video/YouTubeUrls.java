@@ -8,7 +8,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-/** Recognizes YouTube video links and extracts the 11-character video id. */
 public final class YouTubeUrls {
 
     public static final Pattern VIDEO_ID = Pattern.compile("[A-Za-z0-9_-]{11}");
@@ -16,12 +15,10 @@ public final class YouTubeUrls {
     private static final String NOT_YOUTUBE = "Not a YouTube video link";
     private static final Set<String> HOSTS = Set.of("youtube.com", "www.youtube.com", "m.youtube.com",
             "music.youtube.com", "youtube-nocookie.com", "www.youtube-nocookie.com");
-    /** Path forms like /shorts/{id} and /embed/{id}. */
     private static final Set<String> ID_PATHS = Set.of("shorts", "embed", "live", "v");
 
     private YouTubeUrls() {}
 
-    /** The video id in {@code url}; throws 400 "Not a YouTube video link" for anything else. */
     public static String videoId(String url) {
         URI uri = parse(url);
         String id = uri == null ? null : idFrom(uri);

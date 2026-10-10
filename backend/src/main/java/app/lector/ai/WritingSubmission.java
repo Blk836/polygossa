@@ -16,7 +16,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 
-/** A short written response to a text plus the AI tutor's corrective feedback. */
 @Entity
 @Table(name = "writing_submissions")
 public class WritingSubmission {
@@ -40,7 +39,6 @@ public class WritingSubmission {
     @Column(nullable = false, columnDefinition = "text")
     private String content;
 
-    /** JSON produced by the tutor: corrected text, list of corrections with explanations, overall comment. */
     @Column(columnDefinition = "text")
     private String feedbackJson;
 

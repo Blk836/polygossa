@@ -5,12 +5,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * The languages the app knows, English first. Only {@link #offered()} ones can be learned: Japanese, Chinese and Korean
- * are paused (docs/acceptance/learning-languages.feature) because their built-in word splitting is too crude, but rows
- * stored in them are kept. Incoming codes go through {@link #parse}, which refuses a paused language; {@link #fromCode}
- * accepts every known one.
- */
 public enum Language {
     EN("en", "English", "en-US", true, true),
     ES("es", "Spanish", "es-ES", true, true),
@@ -24,7 +18,6 @@ public enum Language {
 
     private static final List<Language> OFFERED = Arrays.stream(values()).filter(l -> l.offered).toList();
 
-    /** A request named a language that exists but isn't offered for learning. */
     public static final class NotOfferedException extends IllegalArgumentException {
         NotOfferedException(Language language) {
             super(language.displayName + " isn't offered for learning yet.");
@@ -66,17 +59,14 @@ public enum Language {
         return offered;
     }
 
-    /** The languages that can be learned, English first. */
     public static List<Language> offered() {
         return OFFERED;
     }
 
-    /** What a list filtered by {@code language} may show: that language, or (null) every offered one. */
     public static List<Language> scope(Language language) {
         return language == null ? OFFERED : List.of(language);
     }
 
-    /** A language from a request (JSON or parameter): any known code, but only an offered language. */
     @JsonCreator
     public static Language parse(String code) {
         Language language = fromCode(code);

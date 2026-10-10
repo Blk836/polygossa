@@ -8,7 +8,6 @@ export function levelText(skill: Skill): string {
   return skill.level ?? "Not enough data";
 }
 
-/** Low-confidence levels are labelled as estimates. */
 export function isEstimate(skill: Skill): boolean {
   return skill.confidence === "low";
 }
@@ -30,7 +29,6 @@ function count(n: number, one: string, many: string): string {
   return `${n.toLocaleString("en-US")} ${n === 1 ? one : many}`;
 }
 
-/** What a skill's level rests on; {@code listened} is the formatted listening time. */
 export function evidenceText(key: SkillKey, levels: SkillLevels, listened: string): string {
   const n = levels[key].evidence;
   const parts: string[] = [];
@@ -46,7 +44,6 @@ export function evidenceText(key: SkillKey, levels: SkillLevels, listened: strin
   return parts.join(" · ");
 }
 
-/** For a skill without a level: how to get one. */
 export function emptyHint(key: SkillKey): { text: string; href: string; action: string } {
   switch (key) {
     case "reading":
