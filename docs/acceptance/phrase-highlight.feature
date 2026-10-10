@@ -30,3 +30,43 @@ Feature: A selected phrase is highlighted as one band
 
   Scenario: Works in light and dark themes, and with word colours off
     Then the band uses the theme's selection colour in light and dark themes, and in quiet mode
+
+  # --- Clicking a saved phrase (reproduced in Chrome: a click inside a saved phrase opened only the word) ---
+
+  Scenario: Clicking a word of a saved phrase opens the phrase
+    Given I saved "en train de" as a phrase
+    When I click "train" in "Il est en train de manger."
+    Then the popup opens for the phrase "en train de", with its meaning and its status
+    And the whole phrase is highlighted as one band
+
+  Scenario: Clicking the same word again opens just that word
+    Given the popup is open for the phrase "en train de" after I clicked "train"
+    When I click "train" again
+    Then the popup opens for the word "train" alone
+
+  Scenario: Clicking another word of the same phrase keeps the phrase open
+    Given the popup is open for the phrase "en train de"
+    When I click "de"
+    Then the phrase popup stays open
+
+  Scenario: A word in two saved phrases opens the longer one
+    Given I saved "en train" and "en train de" as phrases
+    When I click "train"
+    Then the popup opens for "en train de"
+
+  Scenario: Words outside any saved phrase open as before
+    When I click a word that is in no saved phrase
+    Then the popup opens for that word
+
+  Scenario: Phrases I marked known or ignored don't capture clicks
+    Given I saved a phrase as known or ignored (it isn't underlined)
+    When I click one of its words
+    Then the popup opens for that word, as before
+
+  Scenario: A saved phrase is underlined as one line
+    Given I saved a phrase I'm learning
+    Then its underline runs under the words and the spaces between them, without gaps
+
+  Scenario: Selecting a new phrase across a saved one still works
+    When I drag across words that include part of a saved phrase
+    Then the new selection is opened as a phrase, as before
