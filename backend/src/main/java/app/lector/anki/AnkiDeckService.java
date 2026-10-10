@@ -2,6 +2,7 @@ package app.lector.anki;
 
 import app.lector.common.ApiException;
 import app.lector.token.Language;
+import app.lector.token.TokenizationService;
 import app.lector.user.User;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
@@ -12,6 +13,7 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -38,10 +40,21 @@ public class AnkiDeckService {
 
     public record DecksDto(List<DeckDto> decks) {}
 
-    private final AnkiDeckRepository decks;
+    public record WordLinkDto(AnkiCardState state, boolean promoted) {}
 
-    public AnkiDeckService(AnkiDeckRepository decks) {
+    private final AnkiDeckRepository decks;
+    private final AnkiLinkRepository links;
+
+    public AnkiDeckService(AnkiDeckRepository decks, AnkiLinkRepository links) {
         this.decks = decks;
+        this.links = links;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<WordLinkDto> word(User user, Language language, String term) {
+        List<AnkiLink> found = links.findForTerm(user.getId(), language, TokenizationService.normalize(term, language));
+        return found.stream().map(AnkiLink::getState).reduce(AnkiCardState::best)
+                .map(state -> new WordLinkDto(state, found.stream().anyMatch(AnkiLink::isPromoted)));
     }
 
     @Transactional(readOnly = true)

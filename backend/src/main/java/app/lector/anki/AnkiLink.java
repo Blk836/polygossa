@@ -60,4 +60,5 @@ public class AnkiLink {
 
     public VocabularyEntry getEntry() { return entry; }
     public AnkiCardState getState() { return state; }
+    public boolean isPromoted() { return promoted; }
 }

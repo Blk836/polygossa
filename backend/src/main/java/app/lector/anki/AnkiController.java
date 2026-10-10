@@ -1,5 +1,6 @@
 package app.lector.anki;
 
+import app.lector.token.Language;
 import app.lector.user.AuthUser;
 import app.lector.user.CurrentUser;
 import jakarta.validation.Valid;
@@ -46,6 +47,14 @@ public class AnkiController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void disconnect(@AuthenticationPrincipal AuthUser principal) {
         deckService.disconnect(currentUser.load(principal));
+    }
+
+    @GetMapping("/word")
+    public ResponseEntity<AnkiDeckService.WordLinkDto> word(@AuthenticationPrincipal AuthUser principal,
+                                                            @RequestParam Language language,
+                                                            @RequestParam String term) {
+        return deckService.word(currentUser.load(principal), language, term).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
     @PostMapping("/runs")
