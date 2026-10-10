@@ -13,7 +13,7 @@ import { slideBudgets } from "./follow-marker";
 import type { Spoken } from "./media-nav";
 import { Paragraph } from "./paragraph";
 import { ReaderHeader } from "./reader-header";
-import { pageRange, unseenOnPage } from "./reader-pages";
+import { pageOfToken, pageRange, unseenOnPage } from "./reader-pages";
 import { PageArrows, ReaderPager } from "./reader-pager";
 import { articleClass, audioToggle, layoutProps, mediaState, onPage, pageNote, PhraseHint, showsMarker } from "./reader-parts";
 import { ReaderPopup } from "./reader-popup";
@@ -87,15 +87,29 @@ export function Reader({ initial, initialSettings, playlist }: {
 
   const cueToken = page > 1 ? (pageRange(paging.paragraphs)?.from ?? null) : null;
 
-  const { reveal, turnPage } = usePageTurns({ page, goTo, goToToken, articleRef, place, close, active });
   const markPageKnown = usePageKnown({ textId: text.id, statuses: vocab.statuses, markRemainingKnown, onSaved, onError: setError });
+  const leavePage = useCallback(
+    (n: number) => {
+      if (settings.pageKnown && n === page + 1 && n <= paging.count) markPageKnown(paging.paragraphs);
+    },
+    [settings.pageKnown, page, paging.count, paging.paragraphs, markPageKnown],
+  );
+  const follow = useCallback(
+    (i: number) => {
+      const n = pageOfToken(pages, i);
+      leavePage(n);
+      return goTo(n, "replace");
+    },
+    [pages, leavePage, goTo],
+  );
+  const { reveal, turnPage } = usePageTurns({ page, goTo, goToToken, follow, articleRef, place, close, active });
 
   const changePage = useCallback(
     (n: number) => {
-      if (settings.pageKnown && n === page + 1 && n <= paging.count) markPageKnown(paging.paragraphs);
+      leavePage(n);
       turnPage(n);
     },
-    [settings.pageKnown, page, paging.count, paging.paragraphs, markPageKnown, turnPage],
+    [leavePage, turnPage],
   );
 
   const onOpen = useCallback(() => {

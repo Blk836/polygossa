@@ -10,13 +10,14 @@ interface Options {
   page: number;
   goTo: (n: number, mode?: Mode) => boolean;
   goToToken: (index: number, mode?: Mode) => boolean;
+  follow: (index: number) => boolean;
   articleRef: RefObject<HTMLDivElement | null>;
   place: (token: number) => void;
   close: () => void;
   active: number | null;
 }
 
-export function usePageTurns({ page, goTo, goToToken, articleRef, place, close, active }: Options) {
+export function usePageTurns({ page, goTo, goToToken, follow, articleRef, place, close, active }: Options) {
   const pending = useRef<PendingScroll | null>(null);
 
   useEffect(() => {
@@ -56,12 +57,12 @@ export function usePageTurns({ page, goTo, goToToken, articleRef, place, close, 
     [goTo, close],
   );
 
-  const follow = useRef(goToToken);
+  const following = useRef(follow);
   useEffect(() => {
-    follow.current = goToToken;
+    following.current = follow;
   });
   useEffect(() => {
-    if (active !== null && follow.current(active, "replace")) pending.current ??= { top: true };
+    if (active !== null && following.current(active)) pending.current ??= { top: true };
   }, [active]);
 
   return { reveal, turnPage };
