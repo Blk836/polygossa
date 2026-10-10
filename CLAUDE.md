@@ -91,6 +91,8 @@ when its test is fixed.
   2026-10-10, PR #90.
 - `e2e/reader-colours.spec.ts` › "the word being spoken still shows, quiet or not": after "]" the word never got
   `w-speaking` within 5 s. Seen 2026-10-10, PR #90.
+- `e2e/reader-media-resume.spec.ts` › "pressing Play twice while the video is still starting keeps the bar at the
+  page's start". Seen 2026-10-10, PR #94.
 
 ### One worktree per session
 Several Claude sessions often work on this repository at once, and in one shared folder they switch branches under
