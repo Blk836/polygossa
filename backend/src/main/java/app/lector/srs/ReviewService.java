@@ -13,9 +13,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -27,6 +27,7 @@ public class ReviewService {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record Card(
             String type,
+            String kind,
             Long id,
             Language language,
             String front,
@@ -44,20 +45,17 @@ public class ReviewService {
 
     public record DayCount(LocalDate day, long count) {}
 
-    public record Stats(long dueWords, long dueSentences, long reviewedToday, int dailyGoal, boolean goalMet,
+    public record Stats(long dueWords, long reviewedToday, int dailyGoal, boolean goalMet,
                         int streak, List<DayCount> history, long wordsInAnki) {}
 
     public record ReviewResult(Instant nextDueAt, double intervalDays, boolean graduated, Stats stats) {}
 
     private final VocabularyRepository vocabulary;
-    private final SentenceCardRepository sentences;
     private final ReviewLogRepository logs;
     private final PlanService plans;
 
-    public ReviewService(VocabularyRepository vocabulary, SentenceCardRepository sentences, ReviewLogRepository logs,
-                         PlanService plans) {
+    public ReviewService(VocabularyRepository vocabulary, ReviewLogRepository logs, PlanService plans) {
         this.vocabulary = vocabulary;
-        this.sentences = sentences;
         this.logs = logs;
         this.plans = plans;
     }
@@ -70,54 +68,36 @@ public class ReviewService {
         List<Card> cards = new ArrayList<>();
         for (VocabularyEntry v : vocabulary.findDue(user.getId(), language, cutoff, page)) {
             Text t = v.getSourceText();
-            cards.add(new Card("word", v.getId(), v.getLanguage(), v.getDisplayTerm(), v.getDefinition(),
+            cards.add(new Card("word", v.getKind().name().toLowerCase(Locale.ROOT), v.getId(), v.getLanguage(),
+                    v.getDisplayTerm(), v.getDefinition(),
                     v.getPronunciation(), v.getPartOfSpeech(), v.getContextSentence(), v.getExample(), null, v.getNote(),
                     t == null ? null : t.getId(), t == null ? null : t.getTitle(), v.getSrs().getDueAt(),
                     v.getSrs().getRepetitions()));
         }
-        for (SentenceCard s : sentences.findDue(user.getId(), language, cutoff, page)) {
-            Text t = s.getSourceText();
-            cards.add(new Card("sentence", s.getId(), s.getLanguage(), s.getSentence(), null, null, null, null, null,
-                    s.getTranslation(), s.getNotes(), t == null ? null : t.getId(), t == null ? null : t.getTitle(),
-                    s.getSrs().getDueAt(), s.getSrs().getRepetitions()));
-        }
-        cards.sort(Comparator.comparing(Card::dueAt));
         return cards.size() > limit ? cards.subList(0, limit) : cards;
     }
 
     @Transactional
     public ReviewResult review(User user, String type, Long id, Rating rating, Language statsLanguage) {
         plans.require(user, PlanService.Feature.SRS);
-        Instant now = Instant.now();
-        SrsState state;
-        ReviewLog.CardType cardType;
-        boolean graduated = false;
-        if ("word".equals(type)) {
-            VocabularyEntry entry = vocabulary.findById(id)
-                    .filter(v -> v.getUser().getId().equals(user.getId()))
-                    .orElseThrow(() -> ApiException.notFound("Card"));
-            if (entry.getStatus() != WordStatus.LEARNING) {
-                throw ApiException.badRequest("Only words you are learning can be reviewed");
-            }
-            state = entry.getSrs();
-            SrsScheduler.apply(state, rating, now);
-            entry.touch();
-            if (state.getIntervalDays() >= SrsScheduler.GRADUATE_DAYS) {
-                entry.changeStatus(WordStatus.KNOWN);
-                graduated = true;
-            }
-            cardType = ReviewLog.CardType.WORD;
-        } else if ("sentence".equals(type)) {
-            SentenceCard card = sentences.findById(id)
-                    .filter(s -> s.getUser().getId().equals(user.getId()))
-                    .orElseThrow(() -> ApiException.notFound("Card"));
-            state = card.getSrs();
-            SrsScheduler.apply(state, rating, now);
-            cardType = ReviewLog.CardType.SENTENCE;
-        } else {
+        if (!"word".equals(type)) {
             throw ApiException.badRequest("Unknown card type: " + type);
         }
-        logs.save(new ReviewLog(user, cardType, id, rating, LocalDate.now(user.zone())));
+        VocabularyEntry entry = vocabulary.findById(id)
+                .filter(v -> v.getUser().getId().equals(user.getId()))
+                .orElseThrow(() -> ApiException.notFound("Card"));
+        if (entry.getStatus() != WordStatus.LEARNING) {
+            throw ApiException.badRequest("Only words you are learning can be reviewed");
+        }
+        SrsState state = entry.getSrs();
+        SrsScheduler.apply(state, rating, Instant.now());
+        entry.touch();
+        boolean graduated = false;
+        if (state.getIntervalDays() >= SrsScheduler.GRADUATE_DAYS) {
+            entry.changeStatus(WordStatus.KNOWN);
+            graduated = true;
+        }
+        logs.save(new ReviewLog(user, ReviewLog.CardType.WORD, id, rating, LocalDate.now(user.zone())));
         return new ReviewResult(state.getDueAt(), state.getIntervalDays(), graduated, stats(user, statsLanguage));
     }
 
@@ -138,7 +118,6 @@ public class ReviewService {
         }
         return new Stats(
                 vocabulary.countDue(user.getId(), language, now),
-                sentences.countDue(user.getId(), language, now),
                 reviewedToday, goal, reviewedToday >= goal, streak(perDay, today, goal), history,
                 vocabulary.countLearningInAnki(user.getId(), language));
     }

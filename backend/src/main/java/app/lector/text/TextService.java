@@ -7,7 +7,6 @@ import app.lector.library.TextReactionRepository;
 import app.lector.playlist.PlaylistItemRepository;
 import app.lector.progress.ReadingProgressRepository;
 import app.lector.session.ReadingSessionRepository;
-import app.lector.srs.SentenceCardRepository;
 import app.lector.storage.StorageService;
 import app.lector.text.TextDtos.AudioDto;
 import app.lector.text.TextDtos.KnownStats;
@@ -43,7 +42,6 @@ public class TextService {
 
     private final TextRepository texts;
     private final VocabularyRepository vocabulary;
-    private final SentenceCardRepository sentences;
     private final ReadingSessionRepository sessions;
     private final ReadingProgressRepository progress;
     private final TextReactionRepository reactions;
@@ -57,7 +55,7 @@ public class TextService {
     private final UniqueWordsCache uniqueWords;
     private final ApplicationEventPublisher events;
 
-    public TextService(TextRepository texts, VocabularyRepository vocabulary, SentenceCardRepository sentences,
+    public TextService(TextRepository texts, VocabularyRepository vocabulary,
                        ReadingSessionRepository sessions, ReadingProgressRepository progress,
                        TextReactionRepository reactions, PlaylistItemRepository playlistItems,
                        AssignmentRepository assignments,
@@ -66,7 +64,6 @@ public class TextService {
                        UniqueWordsCache uniqueWords, ApplicationEventPublisher events) {
         this.texts = texts;
         this.vocabulary = vocabulary;
-        this.sentences = sentences;
         this.sessions = sessions;
         this.progress = progress;
         this.reactions = reactions;
@@ -271,7 +268,6 @@ public class TextService {
     public void delete(User user, Long id) {
         Text text = loadOwned(user, id);
         vocabulary.detachText(id);
-        sentences.detachText(id);
         sessions.detachText(id);
         progress.deleteByTextId(id);
         writings.detachText(id);

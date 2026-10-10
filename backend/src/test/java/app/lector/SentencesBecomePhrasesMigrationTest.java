@@ -54,8 +54,9 @@ class SentencesBecomePhrasesMigrationTest {
     private List<Map<String, Object>> entries() {
         return jdbc.queryForList("""
                 select term, display_term, kind, status, definition, note, source_text_id, ease_factor, interval_days,
-                    lapses, repetitions, due_at::text as due, last_reviewed_at::text as reviewed,
-                    created_at::text as created, meaning
+                    lapses, repetitions, (due_at at time zone 'UTC')::text as due,
+                    (last_reviewed_at at time zone 'UTC')::text as reviewed,
+                    (created_at at time zone 'UTC')::text as created, meaning
                 from vocabulary_entries where user_id = ? order by term""", user);
     }
 

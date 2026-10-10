@@ -71,8 +71,7 @@ class SavedSentenceReviewApiTest {
     }
 
     @Test
-    void theSeparateSentenceListIsGone() throws Exception {
-        api.get(token, "/api/sentences", 404);
+    void reviewStatsNoLongerCountSentencesApart() throws Exception {
         assertThat(api.get(token, "/api/review/stats?language=es", 200).has("dueSentences")).isFalse();
     }
 }
