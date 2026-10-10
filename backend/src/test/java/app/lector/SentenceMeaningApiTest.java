@@ -340,6 +340,19 @@ class SentenceMeaningApiTest {
     }
 
     @Test
+    void theAiIsToldToGiveTheDictionaryEquivalentNotADefinition() throws Exception {
+        String word = fresh();
+        AI.reply(meaning("incomparably"));
+        lookup(word, "C'est ", " plus beau que l'original.");
+        assertThat(AI.requests().getFirst())
+                .contains("Give the equivalent a bilingual dictionary would list, as few words as possible, "
+                        + "never a definition or paraphrase")
+                .contains("<b>incomparablement</b>")
+                .contains("not \\\"in a way that cannot be compared\\\"")
+                .contains("Only when no such equivalent exists, give a short explanation.");
+    }
+
+    @Test
     void aMeaningStoredUnderTheOldInstructionsIsAskedAgain() throws Exception {
         String word = fresh();
         String marked = "On dit tirer le <b>" + word + "</b> sous les pieds.";
