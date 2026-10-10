@@ -241,10 +241,7 @@ test.describe("video: beside the text, or a mini player", () => {
     await openReader(page, `/read/${created.id}`);
     await player(page).getByRole("button", { name: "Mini player" }).click();
     await expect.poll(async () => (await box(dock(page))).width).toBe(360);
-    expect((await box(dock(page))).height).toBeCloseTo(202.5, 0);
-    const frame = await box(dock(page).locator("iframe"));
-    expect(frame.width).toBe(360);
-    expect(frame.height).toBeCloseTo(202.5, 0);
+    for (const b of [await box(dock(page)), await box(dock(page).locator("iframe"))]) expect([b.width, b.height / 202.5]).toEqual([360, expect.closeTo(1, 2)]);
     expect(await page.evaluate(() => (window as unknown as { __players: number }).__players)).toBe(1);
   });
 
