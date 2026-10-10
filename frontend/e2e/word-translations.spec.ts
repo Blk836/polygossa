@@ -193,7 +193,7 @@ test.describe("the word popup", () => {
     const sent = vocabularyWrites(page);
     await openWord(page, created);
     await expect(page.getByTestId("meaning-type")).toHaveText("verb");
-    await expect.poll(() => sent.length).toBeGreaterThan(0);
+    await expect.poll(() => sent.some((b) => b.partOfSpeech === "verb")).toBe(true);
     const before = sent.length;
     await page.getByTestId("meaning-also").getByRole("button", { name: "go", exact: true }).click();
     await expect.poll(() => sent.length).toBeGreaterThan(before);
