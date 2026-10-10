@@ -182,20 +182,9 @@ export interface Page<T> {
   size: number;
 }
 
-export interface SentenceCard {
-  id: number;
-  language: LanguageCode;
-  sentence: string;
-  translation?: string;
-  notes?: string;
-  sourceTextId?: number;
-  sourceTextTitle?: string;
-  createdAt: string;
-  dueAt: string;
-}
-
 export interface ReviewCard {
-  type: "word" | "sentence";
+  type: "word";
+  kind: "word" | "phrase";
   id: number;
   language: LanguageCode;
   front: string;
@@ -204,7 +193,6 @@ export interface ReviewCard {
   partOfSpeech?: string;
   context?: string;
   example?: string;
-  translation?: string;
   notes?: string;
   sourceTextId?: number;
   sourceTextTitle?: string;
@@ -214,7 +202,6 @@ export interface ReviewCard {
 
 export interface ReviewStats {
   dueWords: number;
-  dueSentences: number;
   reviewedToday: number;
   dailyGoal: number;
   goalMet: boolean;

@@ -60,9 +60,9 @@ export function VocabularySkeleton() {
       <div data-skeleton="switch" className="mb-4 flex gap-1 rounded-lg border border-line bg-card p-1 sm:w-fit">
         <Bone className="h-[1.875rem] w-24" /><Bone className="h-[1.875rem] w-28" />
       </div>
-      <div data-skeleton="filters" className="mb-4 grid gap-2 sm:grid-cols-[1fr_auto_auto_auto]">
+      <div data-skeleton="filters" className="mb-4 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
         <Bone className="h-[2.375rem] rounded-lg" />
-        {[0, 1, 2].map((i) => <Bone key={i} className="h-[2.375rem] rounded-xl sm:w-32" />)}
+        {[0, 1].map((i) => <Bone key={i} className="h-[2.375rem] rounded-xl sm:w-32" />)}
       </div>
       <WordRowsBone />
     </PageLoading>

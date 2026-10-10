@@ -4,6 +4,7 @@ import { article, cleanUp, createText, openReader, popupClose, type Created } fr
 const section = (page: Page) => page.getByRole("group", { name: "Vocabulary section" });
 const tab = (page: Page, name: string) => section(page).getByRole("button", { name, exact: true });
 const search = (page: Page) => page.getByPlaceholder("Search words or definitions…");
+const filter = (page: Page, name: string) => page.locator("[data-tour=words-filters]").getByRole("combobox", { name });
 
 async function save(page: Page, data: Record<string, unknown>): Promise<number> {
   const res = await page.request.post("/api/vocabulary", { data: { language: "es", status: "learning", ...data } });
@@ -42,13 +43,13 @@ test("words and phrases each have their own tab, and the filters carry across", 
     await expect(page.getByText(`${unique}por favor`, { exact: true })).toBeVisible();
     await expect(page.getByText(`${unique}casa`, { exact: true })).toHaveCount(0);
 
-    await page.getByRole("combobox", { name: "Status" }).selectOption("known");
-    await page.getByRole("combobox", { name: "Sort" }).selectOption("alpha");
+    await filter(page, "Status").selectOption("known");
+    await filter(page, "Sort").selectOption("alpha");
     await expect(page.getByText(`${unique}por favor`, { exact: true })).toHaveCount(0);
 
     await tab(page, "Words").click();
-    await expect(page.getByRole("combobox", { name: "Status" })).toHaveValue("known");
-    await expect(page.getByRole("combobox", { name: "Sort" })).toHaveValue("alpha");
+    await expect(filter(page, "Status")).toHaveValue("known");
+    await expect(filter(page, "Sort")).toHaveValue("alpha");
     await expect(search(page)).toHaveValue(unique);
     await expect(page.getByText(`${unique}casa`, { exact: true })).toHaveCount(0);
   } finally {
@@ -78,7 +79,7 @@ test.describe("saving a sentence from the reader", () => {
     const sentence = Array.from({ length: 10 }, (_, k) => created!.word(k)).join(" ") + ".";
     const saves: Record<string, unknown>[] = [];
     page.on("request", (r) => {
-      if (r.url().endsWith("/api/vocabulary") && r.method() === "POST") saves.push(r.postDataJSON());
+      if (r.url().endsWith("/api/vocabulary") && r.method() === "POST" && r.postDataJSON()?.kind === "phrase") saves.push(r.postDataJSON());
     });
 
     await openReader(page, `/read/${created.id}`);

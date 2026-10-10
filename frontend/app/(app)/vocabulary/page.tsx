@@ -6,12 +6,11 @@ import { useMe } from "@/components/me-context";
 import { PageHeader, Spinner } from "@/components/ui";
 import { FilterBar } from "@/components/vocabulary/filters";
 import { exportParams, initialStatus, type Filters } from "@/components/vocabulary/search";
-import { SentenceList } from "@/components/vocabulary/sentence-list";
 import { WordImports } from "@/components/vocabulary/word-import";
 import { WordList } from "@/components/vocabulary/word-list";
 import type { PlanInfo } from "@/lib/types";
 
-type Tab = "words" | "sentences";
+const SECTIONS = [{ kind: "word", label: "Words" }, { kind: "phrase", label: "Phrases" }] as const;
 
 function usageLine(plan: PlanInfo): string {
   const limit = plan.limits.savedWords;
@@ -33,11 +32,10 @@ export default function VocabularyPage() {
 function VocabularyView() {
   const { me, refresh } = useMe();
   const params = useSearchParams();
-  const [tab, setTab] = useState<Tab>("words");
   const [filters, setFilters] = useState<Filters>(() => ({
     language: me.targetLanguage ?? "",
     status: initialStatus(params.get("status")),
-    kind: "",
+    kind: "word",
     sort: "recent",
     query: "",
     tag: "",
@@ -67,18 +65,15 @@ function VocabularyView() {
       />
       <WordImports open={importOpen} defaultLanguage={me.targetLanguage ?? ""} onImported={imported} />
       <div className="mb-4 flex gap-1 rounded-lg border border-line bg-card p-1 text-sm sm:w-fit" role="group" aria-label="Vocabulary section">
-        {(["words", "sentences"] as const).map((t) => (
-          <button key={t} onClick={() => setTab(t)} className={`flex-1 whitespace-nowrap rounded-md px-4 py-1.5 capitalize ${tab === t ? "bg-accent-soft font-medium" : "text-muted"}`}>
-            {t}
+        {SECTIONS.map(({ kind, label }) => (
+          <button key={kind} type="button" aria-pressed={filters.kind === kind} onClick={() => update({ kind, page: 0 })}
+            className={`flex-1 whitespace-nowrap rounded-md px-4 py-1.5 ${filters.kind === kind ? "bg-accent-soft font-medium" : "text-muted"}`}>
+            {label}
           </button>
         ))}
       </div>
-      <div data-tour="words-filters"><FilterBar filters={filters} wordsTab={tab === "words"} onChange={update} /></div>
-      {tab === "sentences" ? (
-        <SentenceList language={filters.language} />
-      ) : (
-        <WordList key={reload} filters={filters} onPage={(page) => update({ page })} onTag={(tag) => update({ tag, page: 0 })} onChanged={() => void refresh()} />
-      )}
+      <div data-tour="words-filters"><FilterBar filters={filters} onChange={update} /></div>
+      <WordList key={reload} filters={filters} onPage={(page) => update({ page })} onTag={(tag) => update({ tag, page: 0 })} onChanged={() => void refresh()} />
     </div>
   );
 }

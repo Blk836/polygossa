@@ -3,9 +3,9 @@ import { expect, test, type Page } from "@playwright/test";
 const topNav = (page: Page) => page.getByRole("banner").getByRole("navigation", { name: "Main" });
 const sections = (page: Page) => page.getByRole("navigation", { name: "Section" });
 
-async function stubDue(page: Page, dueWords: number, dueSentences = 0) {
+async function stubDue(page: Page, dueWords: number) {
   await page.route("**/api/review/stats*", (route) =>
-    route.fulfill({ json: { dueWords, dueSentences, reviewedToday: 0, dailyGoal: 20, goalMet: false, streak: 0, history: [] } }),
+    route.fulfill({ json: { dueWords, reviewedToday: 0, dailyGoal: 20, goalMet: false, streak: 0, history: [] } }),
   );
 }
 
@@ -125,8 +125,8 @@ test.describe("account menu", () => {
 test.describe("due-cards badge", () => {
   const practice = (page: Page) => topNav(page).getByRole("link", { name: /^Practice/ });
 
-  test("shows how many cards are due, words and sentences together", async ({ page }) => {
-    await stubDue(page, 3, 2);
+  test("shows how many cards are due", async ({ page }) => {
+    await stubDue(page, 5);
     await page.goto("/library");
     await expect(practice(page).getByTestId("due-badge")).toHaveText("5");
     await expect(practice(page)).toHaveAccessibleName("Practice, 5 cards due");
@@ -140,7 +140,7 @@ test.describe("due-cards badge", () => {
   });
 
   test("caps at 99+", async ({ page }) => {
-    await stubDue(page, 150, 3);
+    await stubDue(page, 153);
     await page.goto("/library");
     await expect(practice(page).getByTestId("due-badge")).toHaveText("99+");
     await expect(practice(page)).toHaveAccessibleName("Practice, 153 cards due");

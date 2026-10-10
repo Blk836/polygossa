@@ -36,7 +36,7 @@ export function GoalBar({ stats }: { stats: ReviewStats }) {
       <div className="flex-1 text-sm">
         <p className="font-medium">{stats.goalMet ? "Daily goal reached!" : `${remaining} more to reach today's goal`}</p>
         <p className="text-muted">
-          {stats.dueWords + stats.dueSentences} cards due · goal {stats.dailyGoal}/day (<Link href="/settings" className="underline">change</Link>)
+          {stats.dueWords} cards due · goal {stats.dailyGoal}/day (<Link href="/settings" className="underline">change</Link>)
         </p>
       </div>
       <div className="flex items-center gap-1 text-rubric" title="Day streak">
@@ -48,7 +48,6 @@ export function GoalBar({ stats }: { stats: ReviewStats }) {
 }
 
 function Meaning({ card }: { card: ReviewCard }) {
-  const missingTranslation = card.type === "sentence" && !card.translation;
   return (
     <>
       {card.pronunciation && <p className="text-center text-muted">{card.pronunciation}</p>}
@@ -58,8 +57,6 @@ function Meaning({ card }: { card: ReviewCard }) {
           {card.definition}
         </p>
       )}
-      {card.translation && <p className="text-center text-lg">{card.translation}</p>}
-      {missingTranslation && <p className="text-center text-sm text-muted">No translation saved.</p>}
     </>
   );
 }
@@ -111,11 +108,12 @@ export function Flashcard({ card, remaining, revealed, busy, onReveal, onRate }:
   onRate: (r: Rating) => void;
 }) {
   const locale = languageInfo(card.language)?.speechLocale ?? card.language;
-  const frontSize = card.type === "sentence" ? "text-2xl leading-relaxed" : "text-4xl";
+  const phrase = card.kind === "phrase";
+  const frontSize = phrase ? "text-2xl leading-relaxed" : "text-4xl";
   return (
     <div data-tour="review-card" className="rounded-2xl border border-line bg-card shadow-sm">
       <div className="flex items-center justify-between border-b border-line px-5 py-2 text-xs text-muted">
-        <span>{card.type === "sentence" ? "Sentence" : "Word"} · {remaining} left</span>
+        <span>{phrase ? "Phrase" : "Word"} · {remaining} left</span>
         {canSpeak() && (
           <button onClick={() => speak(card.front, locale)} aria-label="Pronounce" className="p-1 hover:text-ink"><SpeakerIcon className="size-4" /></button>
         )}
