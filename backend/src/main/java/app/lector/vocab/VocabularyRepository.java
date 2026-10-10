@@ -62,6 +62,7 @@ public interface VocabularyRepository extends JpaRepository<VocabularyEntry, Lon
             select v from VocabularyEntry v
             where v.user.id = :userId and v.status = app.lector.vocab.WordStatus.LEARNING
               and (:language is null or v.language = :language) and v.srs.dueAt <= :now
+              and not exists (select 1 from AnkiLink l where l.entry = v)
             order by v.srs.dueAt asc
             """)
     List<VocabularyEntry> findDue(@Param("userId") Long userId, @Param("language") Language language,
@@ -71,8 +72,17 @@ public interface VocabularyRepository extends JpaRepository<VocabularyEntry, Lon
             select count(v) from VocabularyEntry v
             where v.user.id = :userId and v.status = app.lector.vocab.WordStatus.LEARNING
               and (:language is null or v.language = :language) and v.srs.dueAt <= :now
+              and not exists (select 1 from AnkiLink l where l.entry = v)
             """)
     long countDue(@Param("userId") Long userId, @Param("language") Language language, @Param("now") Instant now);
+
+    @Query("""
+            select count(v) from VocabularyEntry v
+            where v.user.id = :userId and v.status = app.lector.vocab.WordStatus.LEARNING
+              and (:language is null or v.language = :language)
+              and exists (select 1 from AnkiLink l where l.entry = v)
+            """)
+    long countLearningInAnki(@Param("userId") Long userId, @Param("language") Language language);
 
     @Query("select v.createdAt from VocabularyEntry v where v.user.id = :userId and v.createdAt >= :since")
     List<Instant> findCreatedSince(@Param("userId") Long userId, @Param("since") Instant since);

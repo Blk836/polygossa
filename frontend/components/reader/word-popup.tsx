@@ -6,6 +6,7 @@ import { withMeaningFirst } from "@/lib/dictionary";
 import type { DictionaryResult, LanguageCode, WordLookup, WordStatus } from "@/lib/types";
 import { useMe } from "../me-context";
 import { UpgradeNote } from "../ui";
+import { AnkiNote } from "./anki-note";
 import type { TextAround } from "./reader-text";
 import { AiExplanation, DictionaryLinks, ExtraActions, Meanings, PopupHeader, StatusButtons, type SentenceState } from "./popup-parts";
 
@@ -172,6 +173,7 @@ export function WordPopup(props: Props) {
         {props.notice && <UpgradeNote message={props.notice} />}
       </div>
       <div className="space-y-2 border-t border-line p-3">
+        <AnkiNote language={language} term={lookupTerm(target)} status={props.status} />
         <StatusButtons status={props.status} kind={target.kind} onStatus={props.onStatus} />
         <ExtraActions
           sentenceState={sentenceState}

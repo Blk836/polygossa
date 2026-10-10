@@ -90,9 +90,16 @@ Feature: A wide, calm reader
     Then every page of text ends above the mini player, still without scrolling
     But on a window wide enough for it to sit in the margin beside the text, pages use the full height
 
+  Scenario: The mini player is as small as YouTube allows
+    Given a video lesson on a wide screen
+    When I press "Mini player"
+    Then the player is 200 × 200 px (YouTube's minimum), in the bottom-right corner above the player bar
+    And the video fits inside it without being cropped, with black bars above and below
+    And it keeps playing without reloading
+
   Scenario: The video is never hidden completely
-    Then the mini player stays at least 200 px tall: YouTube's embedding rules require a visible player of at least
-      200 × 200 px, so "listening only" means the mini player, not a hidden video
+    Then the mini player is never smaller than 200 × 200 px: YouTube's embedding rules require a visible player of
+      at least that size, so "listening only" means the mini player, not a hidden video
 
   Scenario: Phones keep the video above the text
     Given a video lesson on a phone, whatever layout was chosen on a computer
