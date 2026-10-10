@@ -12,12 +12,22 @@ export interface ModelInDeck {
   sample: AnkiCardInfo[];
 }
 
-export interface NoteTypeSetup extends AnkiNoteTypeChoice {
+export interface NoteTypeSetup {
+  modelId: number;
+  name: string;
+  wordField: string;
+  meaningField?: string;
+  skip: boolean;
   cards: number;
   fields: string[];
   sample: AnkiCardInfo[];
   isNew: boolean;
   skipReason: SkipReason;
+}
+
+export function toChoice(setup: NoteTypeSetup): AnkiNoteTypeChoice {
+  const { modelId, name, wordField, meaningField, skip } = setup;
+  return skip ? { modelId, name, wordField: undefined, meaningField: undefined } : { modelId, name, wordField, meaningField };
 }
 
 export interface ReadPlan {
@@ -53,13 +63,12 @@ export function noWrittenWord(sample: AnkiCardInfo[], field: string): boolean {
   return exampleWords(sample, field).length === 0 && sample.some((c) => /<img|\[sound:/i.test(c.fields[field]?.value ?? ""));
 }
 
-function guessed(model: ModelInDeck): Pick<NoteTypeSetup, "wordField" | "meaningField" | "skipReason"> {
+function guessed(model: ModelInDeck): Pick<NoteTypeSetup, "wordField" | "meaningField" | "skip" | "skipReason"> {
   const word = guessWordField(model.fields);
   let skipReason: SkipReason = null;
   if (isCloze(model.name, model.sample)) skipReason = "cloze";
   else if (noWrittenWord(model.sample, word)) skipReason = "no-word";
-  if (skipReason) return { skipReason };
-  return { wordField: word, meaningField: guessMeaningField(model.fields, word), skipReason };
+  return { wordField: word, meaningField: guessMeaningField(model.fields, word), skip: skipReason !== null, skipReason };
 }
 
 function legacyFits(deck: AnkiDeckChoice | undefined, fields: string[]): deck is AnkiDeckChoice {
@@ -69,10 +78,13 @@ function legacyFits(deck: AnkiDeckChoice | undefined, fields: string[]): deck is
 export function setupFor(model: ModelInDeck, deck: AnkiDeckChoice | undefined): NoteTypeSetup {
   const base = { modelId: model.modelId, name: model.name, cards: model.ids.length, fields: model.fields, sample: model.sample };
   const saved = deck?.noteTypes?.find((t) => t.modelId === model.modelId);
-  if (saved) return { ...base, wordField: saved.wordField, meaningField: saved.meaningField, isNew: false, skipReason: null };
+  if (saved) {
+    const wordField = saved.wordField ?? guessWordField(model.fields);
+    return { ...base, wordField, meaningField: saved.meaningField, skip: !saved.wordField, isNew: false, skipReason: null };
+  }
   if (legacyFits(deck, model.fields)) {
     const meaningField = deck.meaningField && model.fields.includes(deck.meaningField) ? deck.meaningField : undefined;
-    return { ...base, wordField: deck.wordField, meaningField, isNew: false, skipReason: null };
+    return { ...base, wordField: deck.wordField, meaningField, skip: false, isNew: false, skipReason: null };
   }
   return { ...base, ...guessed(model), isNew: !!deck };
 }
