@@ -80,9 +80,9 @@ so the checks must prove it is correct.
 End-to-end tests that fail in a full run on a loaded PC but pass alone. Each run usually fails at most one, a
 different one each time; the same commit has gone red then green on a re-run since at least PR #55. Remove a line
 when its test is fixed.
-- `e2e/profile-photo.spec.ts` › "a image/webp image can be uploaded" (and the image/jpeg one): the crop dialog
+- `e2e/profile-photo.spec.ts` › "a image/webp image can be uploaded" (and the jpeg and png ones): the crop dialog
   never opened within 30 s (suspected: the file is picked before the page has hydrated). Seen 2026-10-09, PR #89;
-  the jpeg one 2026-10-10, PR #91.
+  jpeg 2026-10-10, PR #91; png 2026-10-10, PR #93.
 - `e2e/wide-reader.spec.ts` › "where the mini player sits in the margin, pages use the full height". Seen
   2026-10-10, PR #89.
 - `e2e/card-layout.spec.ts` › "a category or search grid follows the layout": Explore showed "This page couldn't
