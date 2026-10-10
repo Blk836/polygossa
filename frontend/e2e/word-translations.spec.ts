@@ -157,10 +157,30 @@ test.describe("the word popup", () => {
     const sent = vocabularyWrites(page);
     await openWord(page, created);
 
-    const line = page.getByTestId("meanings");
-    await expect(line).toContainText("standing, upright");
-    await expect(line).toContainText("in this sentence");
+    await expect(page.getByTestId("meaning-headline")).toHaveText("standing");
+    await expect(page.getByTestId("meaning-also")).toHaveText("also: upright");
+    await expect(page.getByTestId("meaning-source")).toHaveText("in this sentence");
     await expect.poll(() => sent.some((b) => b.meaning === "standing")).toBe(true);
+  });
+
+  test("a meaning picked in one sentence leads when the word is reopened in another", async ({ page }) => {
+    created = await createTextWith(page, (w) => `${w(1)} ${w(2)}. ${w(3)} ${w(1)}.`);
+    await lookupAnswer(page, created, { meanings: ["standing", "upright"], source: "sentence" });
+    vocabularyWrites(page);
+    await openReader(page, `/read/${created.id}`);
+    const copies = article(page).getByText(created.word(1), { exact: true });
+    const headline = page.getByTestId("meaning-headline");
+    await copies.nth(1).click();
+    await expect(headline).toHaveText("standing");
+    await popupClose(page).click();
+
+    await copies.nth(0).click();
+    await page.getByTestId("meaning-also").getByRole("button", { name: "upright" }).click();
+    await expect(headline).toHaveText("upright");
+    await popupClose(page).click();
+
+    await copies.nth(1).click();
+    await expect(headline).toHaveText("upright");
   });
 
   test("asks again when the same word is clicked in another sentence", async ({ page }) => {

@@ -242,6 +242,15 @@ class SentenceMeaningApiTest {
     }
 
     @Test
+    void myOwnSavedMeaningLeadsTheMeaningInThisSentence() throws Exception {
+        String word = fresh();
+        String me = learner("en");
+        api.post(me, "/api/vocabulary", "{\"language\":\"fr\",\"term\":\"" + word + "\",\"meaning\":\"upright\"}", 201);
+        AI.reply(meaning("standing"));
+        assertThat(meanings(lookup(me, word, "si on est ", " sur la table."))).containsExactly("upright", "standing");
+    }
+
+    @Test
     void readingMyOwnLanguageAsksNobody() throws Exception {
         String word = fresh();
         JsonNode result = lookup(learner("fr"), word, "si on est ", " sur la table.");
