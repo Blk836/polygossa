@@ -203,6 +203,53 @@ Feature: Anki progress keeps my known and learning words up to date
     Then my words keep the status they have now
     And the words linked only through it go back to my Review tab, with the schedule they had before
 
+  # --- Explaining it to the learner ---
+
+  Scenario: The Anki tab says how it works, in plain words
+    When I open Settings → Anki
+    Then a "How Anki sync works" section says:
+      | Cards that are mature in Anki (next review 21+ days away) make the word known here.             |
+      | Cards you are still learning in Anki make the word learning here; cards never reviewed don't count. |
+      | Anki only ever moves a word up: forgetting a card in Anki doesn't make a known word unknown.     |
+      | If you change a word yourself here, Anki leaves it alone until that card changes again.          |
+      | Words from your Anki decks that you haven't met here yet are added to your words.                |
+      | Words you review in Anki leave the Review tab here, so you never review the same word twice.     |
+      | Reviews on your phone count once Anki desktop has synced them, and Anki desktop is open here.    |
+    And on the Free plan it adds that new learning words count toward the saved-word limit
+    And once I have synced, the section is folded away under "How it works" and opens on a click
+
+  Scenario: A preview before the first sync changes anything
+    Given I have chosen my decks and never synced them
+    When I click "Preview"
+    Then I see, before anything changes:
+      | how many of my words will become known                                  |
+      | how many words will be added as known, and how many as learning         |
+      | how many are over the Free plan's limit, with a link to the plans       |
+      | how many cards are skipped, and why (empty, too long, image or sound)   |
+      | how many words will leave the Review tab here                           |
+    And a line saying these words count toward my known total, but not as words learned this week, since I
+      learned them before
+    And each number opens the list of its words
+    When I click "Start syncing"
+    Then the first sync runs and later ones run on their own
+    But if I leave without clicking it, nothing has changed
+
+  Scenario: Seeing which words changed
+    When I open the result of a sync
+    Then each count opens the list of its words, so I can see exactly what Anki changed
+
+  Scenario: The word popup says where its status came from
+    Given "perro" is known because of its mature Anki card
+    When I click "perro" in the reader
+    Then the popup says "Known through Anki"
+    When I set it to learning there
+    Then the popup says Anki won't change it back until its card changes in Anki
+
+  Scenario: The Review tab says why words are missing
+    Given 340 of my words are reviewed in Anki
+    Then the Review tab says "340 of your words are reviewed in Anki, so they aren't shown here", linking to
+      Settings → Anki
+
   # --- Privacy ---
 
   Scenario: Only what's needed leaves my computer
