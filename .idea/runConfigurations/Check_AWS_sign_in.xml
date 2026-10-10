@@ -1,0 +1,5 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Check AWS sign-in" type="NodeJSConfigurationType" path-to-js-file="$PROJECT_DIR$/tools/check-aws-signin.mjs" working-dir="$PROJECT_DIR$">
+    <method v="2" />
+  </configuration>
+</component>
