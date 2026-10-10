@@ -329,6 +329,32 @@ class SentenceMeaningApiTest {
     }
 
     @Test
+    void theAiIsToldToTranslateOnlyTheMarkedWordEvenInAnIdiom() throws Exception {
+        String word = fresh();
+        AI.reply(meaning("rug"));
+        lookup(word, "On dit tirer le ", " sous les pieds.");
+        assertThat(AI.requests().getFirst())
+                .contains("Translate only what is inside <b></b>")
+                .contains("never add the translation of unmarked words around it")
+                .contains("give their own meaning, not the idiom's");
+    }
+
+    @Test
+    void aMeaningStoredUnderTheOldInstructionsIsAskedAgain() throws Exception {
+        String word = fresh();
+        String marked = "On dit tirer le <b>" + word + "</b> sous les pieds.";
+        sentenceMeanings.insertIfAbsent("FR", "EN", word, sha256(marked), "pull the rug", Instant.now());
+        AI.reply(meaning("rug"));
+        assertThat(meanings(lookup(word, "On dit tirer le ", " sous les pieds."))).containsExactly("rug");
+        assertThat(AI.requests()).hasSize(1);
+    }
+
+    private static String sha256(String text) throws Exception {
+        return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
+                .digest(text.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+    }
+
+    @Test
     void withNoSentenceTheBareWordAnswerIsShownAndTheAiIsNotAsked() throws Exception {
         String word = fresh();
         TRANSLATE.answer(word, "en", "up");
