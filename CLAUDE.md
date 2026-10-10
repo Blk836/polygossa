@@ -85,6 +85,8 @@ when its test is fixed.
   jpeg 2026-10-10, PR #91; png 2026-10-10, PR #93.
 - `e2e/profile-photo.spec.ts` › "changing the photo replaces it everywhere": timed out at 30 s. Seen 2026-10-10,
   PR #100.
+- `e2e/profile-photo.spec.ts` › "removing the photo brings the initial back, also after reloading": the page closed
+  while clicking "Save photo" in the crop dialog. Seen 2026-10-10, PR #102.
 - `e2e/wide-reader.spec.ts` › "where the mini player sits in the margin, pages use the full height". Seen
   2026-10-10, PR #89.
 - `e2e/wide-reader.spec.ts` › "where the mini player overlaps the text, every page ends above it without
