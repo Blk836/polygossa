@@ -89,6 +89,9 @@ when its test is fixed.
   2026-10-10, PR #89.
 - `e2e/wide-reader.spec.ts` › "where the mini player overlaps the text, every page ends above it without
   scrolling". Seen 2026-10-10, PR #100.
+- `e2e/app-nav-header.spec.ts` › "marking a word known raises the real count after moving page": expects the
+  account-wide known count to rise by exactly one, so a test running beside it that saves a known word breaks it
+  (three copies run in parallel all fail; serially they pass). Seen 2026-10-10, PR #100.
 - `e2e/card-layout.spec.ts` › "a category or search grid follows the layout": Explore showed "This page couldn't
   load" (a failed server render, cause not captured: the e2e servers' logs aren't kept). Seen 2026-10-10, PR #89.
 - `e2e/page-skeletons.spec.ts` › "Classes shows an outline shaped like it, and fills in without moving". Seen
