@@ -4,6 +4,14 @@ export interface FakeCard {
   fields: Record<string, string>;
   type: number;
   interval: number;
+  model?: string;
+}
+
+export function modelOf(card: FakeCard): { id: number; name: string } {
+  const name = card.model ?? Object.keys(card.fields).join("+");
+  let id = 7;
+  for (const ch of name) id = (id * 31 + ch.charCodeAt(0)) % 1_000_000_007;
+  return { id, name };
 }
 
 export interface FakeDeck {
@@ -31,21 +39,29 @@ export class FakeAnki {
   }
 
   private allCards() {
-    return this.decks.flatMap((d) => d.cards.map((c, i) => ({ ...c, deck: d, cardId: d.id * 10_000 + i })));
+    return this.decks.flatMap((d) => d.cards.map((c, i) => ({ ...c, deck: d, cardId: d.id * 10_000 + i, modelInfo: modelOf(c) })));
+  }
+
+  private find(query: string): number[] {
+    const deck = Number(/did:(\d+)/.exec(query)?.[1]);
+    const model = /mid:(\d+)/.exec(query)?.[1];
+    return this.allCards().filter((c) => c.deck.id === deck && (!model || c.modelInfo.id === Number(model))).map((c) => c.cardId);
   }
 
   private result(action: string, params: Record<string, unknown>): unknown {
     switch (action) {
       case "deckNamesAndIds":
         return Object.fromEntries(this.decks.map((d) => [d.name, d.id]));
-      case "findCards": {
-        const id = Number(String(params.query).replace("did:", ""));
-        return this.allCards().filter((c) => c.deck.id === id).map((c) => c.cardId);
-      }
+      case "modelNamesAndIds":
+        return Object.fromEntries(this.allCards().map((c) => [c.modelInfo.name, c.modelInfo.id]));
+      case "modelFieldNames":
+        return Object.keys(this.allCards().find((c) => c.modelInfo.name === params.modelName)?.fields ?? {});
+      case "findCards":
+        return this.find(String(params.query));
       case "cardsInfo": {
         const wanted = new Set(params.cards as number[]);
         return this.allCards().filter((c) => wanted.has(c.cardId)).map((c) => ({
-          cardId: c.cardId, deckName: c.deck.name, modelName: "Basic", type: c.type, interval: c.interval,
+          cardId: c.cardId, deckName: c.deck.name, modelName: c.modelInfo.name, type: c.type, interval: c.interval,
           fields: Object.fromEntries(Object.entries(c.fields).map(([name, value], order) => [name, { value, order }])),
         }));
       }
@@ -83,7 +99,7 @@ export function stamp(): string {
   return `k${Math.floor(Math.random() * 1e9).toString(36)}`;
 }
 
-export async function chooseDecks(page: Page, decks: { ankiDeckId: number; name: string; language: string; wordField: string; meaningField?: string }[]) {
+export async function chooseDecks(page: Page, decks: { ankiDeckId: number; name: string; language: string; wordField: string; meaningField?: string; noteTypes?: { modelId: number; name: string; wordField?: string }[] }[]) {
   const res = await page.request.put("/api/anki/decks", { data: { decks } });
   expect(res.ok(), await res.text()).toBe(true);
 }

@@ -1,12 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
-import { chooseDecks, cleanUpPrefix, deleteWords, FakeAnki, mature, myLanguage, stamp, statusOf, syncByApi, young } from "./anki-helpers";
+import { chooseDecks, cleanUpPrefix, deleteWords, FakeAnki, mature, modelOf, myLanguage, stamp, statusOf, syncByApi, young } from "./anki-helpers";
 import { cleanUp, createTextWith, openReader, wordAt } from "./reader-helpers";
 
 test.describe.configure({ mode: "serial" });
 
 const syncGroup = (page: Page) => page.getByRole("group", { name: "Sync with Anki" });
 const connectGroup = (page: Page) => page.getByRole("group", { name: "Connect to Anki" });
-const findCalls = (anki: FakeAnki, deck: number) => anki.calls.filter((c) => c.action === "findCards" && c.params.query === `did:${deck}`);
+const findCalls = (anki: FakeAnki, deck: number) => anki.calls.filter((c) => c.action === "findCards" && String(c.params.query).startsWith(`did:${deck} mid:`));
 
 async function latestRunId(page: Page): Promise<number> {
   const res = await page.request.get("/api/anki/runs/latest");
@@ -161,6 +161,66 @@ test("the Review tab says how many words are reviewed in Anki", async ({ page })
     const note = page.getByTestId("words-in-anki");
     await expect(note).toContainText("reviewed in Anki, so");
     await expect(note.getByRole("link", { name: "Anki settings" })).toHaveAttribute("href", "/settings/anki");
+  } finally {
+    await cleanUpPrefix(page, language, s);
+  }
+});
+
+test("a mixed deck syncs each note type with its own field, and leaves skipped ones out", async ({ page }) => {
+  const s = stamp();
+  const language = await myLanguage(page);
+  const anki = new FakeAnki();
+  anki.decks = [{ id: 88, name: `Mixed ${s}`, cards: [
+    mature({ Front: "dog", Back: `${s}perro` }),
+    { ...mature({ Sentence: "x", Word: `${s}ladrar` }), model: `Sentences ${s}` },
+    { ...mature({ Text: `{{c1::${s}come}}`, Extra: "" }), model: `Cloze ${s}` },
+    { ...mature({ Text: `{{c1::${s}bebe}}`, Extra: "" }), model: `Cloze ${s}` },
+  ] }];
+  try {
+    await anki.install(page);
+    await page.goto("/settings/anki");
+    await connectGroup(page).getByRole("button", { name: "Connect to Anki" }).click();
+    await connectGroup(page).getByTestId("anki-deck").filter({ hasText: `Mixed ${s}` }).getByRole("checkbox").check();
+    const basic = connectGroup(page).getByTestId("anki-note-type").filter({ hasText: "Front+Back" });
+    await basic.getByLabel("Word field", { exact: true }).selectOption("Back");
+    await connectGroup(page).getByRole("button", { name: "Save decks" }).click();
+    await expect(connectGroup(page).getByRole("status").filter({ hasText: "Saved" })).toBeVisible();
+    const saved = (await (await page.request.get("/api/anki/decks")).json()).decks[0];
+    expect(saved.noteTypes.map((t: { name: string; wordField?: string }) => [t.name, t.wordField ?? null]).sort())
+      .toEqual([["Front+Back", "Back"], [`Cloze ${s}`, null], [`Sentences ${s}`, "Word"]].sort());
+    await syncGroup(page).getByRole("button", { name: "Preview" }).click();
+    const preview = syncGroup(page).getByTestId("anki-preview");
+    await expect(preview).toContainText("2 cards read from Anki");
+    await expect(preview.getByTestId("anki-left-out-skipped")).toHaveText("2 cards left out: their note type is set to skip.");
+    await syncGroup(page).getByRole("button", { name: "Start syncing" }).click();
+    await expect(syncGroup(page).getByTestId("anki-result")).toContainText("Last synced");
+    expect(await statusOf(page, language, `${s}perro`)).toBe("known");
+    expect(await statusOf(page, language, `${s}ladrar`)).toBe("known");
+    expect(await statusOf(page, language, "dog")).toBeNull();
+  } finally {
+    await cleanUpPrefix(page, language, s);
+  }
+});
+
+test("a note type added to a deck later waits until I check its word field", async ({ page }) => {
+  const s = stamp();
+  const language = await myLanguage(page);
+  const anki = new FakeAnki();
+  anki.decks = [{ id: 89, name: `Growing ${s}`, cards: [mature({ Word: `${s}uno` }), { ...mature({ Vocab: `${s}dos` }), model: `Later ${s}` }] }];
+  try {
+    await anki.install(page);
+    const basicId = modelOf(mature({ Word: "" })).id;
+    await chooseDecks(page, [{ ankiDeckId: 89, name: `Growing ${s}`, language, wordField: "Word", noteTypes: [{ modelId: basicId, name: "Word", wordField: "Word" }] }]);
+    await page.goto("/settings/anki");
+    await connectGroup(page).getByRole("button", { name: "Connect to Anki" }).click();
+    const later = connectGroup(page).getByTestId("anki-note-type").filter({ hasText: `Later ${s}` });
+    await expect(later).toContainText("New: check its word field");
+    await syncGroup(page).getByRole("button", { name: "Preview" }).click();
+    await expect(syncGroup(page).getByTestId("anki-left-out-waiting")).toHaveText("1 card waiting: a new note type needs its word field checked.");
+    await syncGroup(page).getByRole("button", { name: "Start syncing" }).click();
+    await expect(syncGroup(page).getByTestId("anki-result")).toContainText("Last synced");
+    expect(await statusOf(page, language, `${s}uno`)).toBe("known");
+    expect(await statusOf(page, language, `${s}dos`)).toBeNull();
   } finally {
     await cleanUpPrefix(page, language, s);
   }
