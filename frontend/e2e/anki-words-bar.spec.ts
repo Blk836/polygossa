@@ -137,7 +137,8 @@ test("when Anki closes in the middle of a sync, the bar says the next sync carri
     await syncNow(page).click();
     await expect(bar(page)).toContainText("synced just now", { timeout: 30_000 });
     await expect(bar(page)).not.toContainText("Sync stopped");
-    expect(await statusOf(page, "es", "medio699")).toBe("known");
+    await expect.poll(() => statusOf(page, "es", "medio699"), { timeout: 30_000 }).toBe("known");
+    await expect(syncNow(page)).toBeEnabled();
   } finally {
     await context.close();
   }
