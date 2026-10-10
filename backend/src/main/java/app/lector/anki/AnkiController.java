@@ -73,7 +73,7 @@ public class AnkiController {
     @PostMapping("/runs/{id}/finish")
     public AnkiSyncService.RunDto finish(@AuthenticationPrincipal AuthUser principal, @PathVariable long id,
                                          @Valid @RequestBody AnkiSyncService.FinishRequest req) {
-        return syncService.finish(currentUser.load(principal), id, req.ankiDeckIds());
+        return syncService.finish(currentUser.load(principal), id, req);
     }
 
     @PostMapping("/runs/{id}/stop")

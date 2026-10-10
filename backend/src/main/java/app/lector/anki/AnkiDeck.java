@@ -1,7 +1,13 @@
 package app.lector.anki;
 
 import app.lector.token.Language;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OrderColumn;
+import java.util.ArrayList;
+import java.util.List;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -40,7 +46,19 @@ public class AnkiDeck {
 
     private Instant firstSyncedAt;
 
+    @ElementCollection
+    @CollectionTable(name = "anki_note_types", joinColumns = @JoinColumn(name = "deck_id"))
+    @OrderColumn(name = "position")
+    private List<AnkiNoteType> noteTypes = new ArrayList<>();
+
     protected AnkiDeck() {}
+
+    void noteTypes(List<AnkiNoteType> chosen) {
+        noteTypes.clear();
+        noteTypes.addAll(chosen);
+    }
+
+    public List<AnkiNoteType> getNoteTypes() { return noteTypes; }
 
     AnkiDeck(Long userId, long ankiDeckId) {
         this.userId = userId;

@@ -28,18 +28,19 @@ public class AnkiSyncService {
 
     public record StartRequest(boolean dryRun) {}
 
-    public record FinishRequest(@NotNull List<@NotNull Long> ankiDeckIds) {}
+    public record FinishRequest(@NotNull List<@NotNull Long> ankiDeckIds, int skippedNoteType, int waitingNoteType) {}
 
     public record WordsDto(List<String> words) {}
 
     public record RunDto(long id, boolean dryRun, String state, Instant startedAt, Instant finishedAt, int cards,
                          int becameKnown, int addedKnown, int addedLearning, int overLimit, int skippedEmpty,
-                         int skippedTooLong, int skippedMedia, int leaveReview) {
+                         int skippedTooLong, int skippedMedia, int leaveReview, int skippedNoteType,
+                         int waitingNoteType) {
         static RunDto of(AnkiSyncRun r) {
             return new RunDto(r.getId(), r.isDryRun(), r.getState().name().toLowerCase(Locale.ROOT), r.getStartedAt(),
                     r.getFinishedAt(), r.getCards(), r.getBecameKnown(), r.getAddedKnown(), r.getAddedLearning(),
                     r.getOverLimit(), r.getSkippedEmpty(), r.getSkippedTooLong(), r.getSkippedMedia(),
-                    r.getLeaveReview());
+                    r.getLeaveReview(), r.getSkippedNoteType(), r.getWaitingNoteType());
         }
     }
 
@@ -87,7 +88,8 @@ public class AnkiSyncService {
     }
 
     @Transactional
-    public RunDto finish(User user, long runId, List<Long> ankiDeckIds) {
+    public RunDto finish(User user, long runId, FinishRequest req) {
+        List<Long> ankiDeckIds = req.ankiDeckIds();
         AnkiSyncRun run = running(user, runId);
         Instant now = clock.instant();
         if (!run.isDryRun()) {
@@ -98,6 +100,7 @@ public class AnkiSyncService {
                 });
             }
         }
+        run.leftOut(req.skippedNoteType(), req.waitingNoteType());
         run.finish(now);
         return RunDto.of(run);
     }
