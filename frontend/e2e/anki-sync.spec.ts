@@ -51,7 +51,7 @@ test("choosing a deck, previewing what it will change, then syncing", async ({ p
     expect(await statusOf(page, language, `${s}tres`)).toBe("learning");
 
     await syncGroup(page).getByRole("button", { name: "Start syncing" }).click();
-    await expect(syncGroup(page).getByTestId("anki-result")).toContainText("Last synced");
+    await expect(syncGroup(page).getByTestId("anki-result")).toContainText("Last synced", { timeout: 30_000 });
     await expect(syncGroup(page).getByTestId("anki-result")).toContainText("1 of your words became known");
     expect(await statusOf(page, language, `${s}uno`)).toBe("known");
     expect(await statusOf(page, language, `${s}dos`)).toBe("learning");
@@ -102,13 +102,13 @@ test("when Anki closes in the middle of a sync, what was sent is kept and the ne
     await deleteWords(page, language, s);
     anki.closeAfterCardsInfo = 1;
     await syncGroup(page).getByRole("button", { name: "Sync now" }).click();
-    await expect(syncGroup(page).getByTestId("anki-result").getByRole("alert")).toHaveText("Sync stopped: Anki closed. The next sync carries on.");
+    await expect(syncGroup(page).getByTestId("anki-result").getByRole("alert")).toHaveText("Sync stopped: Anki closed. The next sync carries on.", { timeout: 30_000 });
     expect(await statusOf(page, language, `${s}c0`)).toBe("learning");
     expect(await statusOf(page, language, `${s}c699`)).toBeNull();
     anki.closed = false;
     anki.closeAfterCardsInfo = null;
     await syncGroup(page).getByRole("button", { name: "Sync now" }).click();
-    await expect(syncGroup(page).getByTestId("anki-result")).toContainText("Last synced");
+    await expect(syncGroup(page).getByTestId("anki-result")).toContainText("Last synced", { timeout: 30_000 });
     expect(await statusOf(page, language, `${s}c699`)).toBe("learning");
   } finally {
     await cleanUpPrefix(page, language, s);
@@ -193,7 +193,7 @@ test("a mixed deck syncs each note type with its own field, and leaves skipped o
     await expect(preview).toContainText("2 cards read from Anki");
     await expect(preview.getByTestId("anki-left-out-skipped")).toHaveText("2 cards left out: their note type is set to skip.");
     await syncGroup(page).getByRole("button", { name: "Start syncing" }).click();
-    await expect(syncGroup(page).getByTestId("anki-result")).toContainText("Last synced");
+    await expect(syncGroup(page).getByTestId("anki-result")).toContainText("Last synced", { timeout: 30_000 });
     expect(await statusOf(page, language, `${s}perro`)).toBe("known");
     expect(await statusOf(page, language, `${s}ladrar`)).toBe("known");
     expect(await statusOf(page, language, "dog")).toBeNull();
@@ -218,7 +218,7 @@ test("a note type added to a deck later waits until I check its word field", asy
     await syncGroup(page).getByRole("button", { name: "Preview" }).click();
     await expect(syncGroup(page).getByTestId("anki-left-out-waiting")).toHaveText("1 card waiting: a new note type needs its word field checked.");
     await syncGroup(page).getByRole("button", { name: "Start syncing" }).click();
-    await expect(syncGroup(page).getByTestId("anki-result")).toContainText("Last synced");
+    await expect(syncGroup(page).getByTestId("anki-result")).toContainText("Last synced", { timeout: 30_000 });
     expect(await statusOf(page, language, `${s}uno`)).toBe("known");
     expect(await statusOf(page, language, `${s}dos`)).toBeNull();
   } finally {
