@@ -136,12 +136,19 @@ export interface DictionaryResult {
   sourceUrl?: string | null;
 }
 
+export interface WordType {
+  partOfSpeech: string;
+  form: string | null;
+  lemma: string | null;
+}
+
 export interface WordLookup {
   term: string;
   language: LanguageCode;
   meanings: string[];
   meaningLanguage: string | null;
   source: "community" | "machine" | "sentence" | null;
+  wordType?: WordType | null;
 }
 
 export interface VocabularyEntry {

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { dictionaryLinks, meaningView } from "@/lib/dictionary";
+import { dictionaryLinks, meaningView, wordTypeLine } from "@/lib/dictionary";
 import { canSpeak, speak } from "@/lib/speech";
 import type { DictionaryResult, WordLookup, WordStatus } from "@/lib/types";
 import { CloseIcon, PlayIcon, SpeakerIcon } from "../icons";
@@ -71,11 +71,13 @@ export function Meanings({ lookup, error, onPick }: {
   const view = meaningView(lookup);
   if (!view) return null;
   if (view.missing) return <p data-testid="meanings" className="text-muted">{view.text}</p>;
+  const type = wordTypeLine(lookup.wordType);
   return (
     <div data-testid="meanings" className="space-y-0.5">
       <p data-testid="meaning-headline" className="text-lg font-semibold leading-snug">
         <MeaningButton meaning={view.headline} current onPick={onPick} className="hover:bg-paper" />
       </p>
+      {type && <p data-testid="meaning-type" className="text-sm italic text-muted">{type}</p>}
       {view.also.length > 0 && (
         <p data-testid="meaning-also" className="text-muted">
           also:{" "}

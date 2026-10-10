@@ -30,9 +30,9 @@ async function savePhrase(page: Page, c: Created, words: number[], status = "lea
 }
 
 async function dragAcross(page: Page, from: number, to: number, release = true) {
-  await wordAt(page, from).scrollIntoViewIfNeeded();
-  const a = (await wordAt(page, from).boundingBox())!;
-  const b = (await wordAt(page, to).boundingBox())!;
+  await word(page, from).scrollIntoViewIfNeeded();
+  const a = (await word(page, from).boundingBox())!;
+  const b = (await word(page, to).boundingBox())!;
   await page.mouse.move(a.x + 3, a.y + a.height / 2);
   await page.mouse.down();
   await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 8 });
@@ -47,8 +47,11 @@ const style = (l: Locator) => l.evaluate((el) => {
 async function expectOneBand(page: Page, parts: number) {
   const band = article(page).locator(".sel");
   await expect(band).toHaveCount(parts);
-  const styles = await Promise.all((await band.all()).map(style));
-  expect(new Set(styles.map((s) => s.bg)).size).toBe(1);
+  let styles: Awaited<ReturnType<typeof style>>[] = [];
+  await expect(async () => {
+    styles = await Promise.all((await band.all()).map(style));
+    expect(new Set(styles.map((s) => s.bg)).size).toBe(1);
+  }).toPass({ timeout: 2000 });
   expect(styles[0].bg).not.toBe("rgba(0, 0, 0, 0)");
   for (const s of styles) expect(s.shadow).toBe("none");
   expect(styles[0].left).toBeGreaterThan(0);
@@ -59,6 +62,7 @@ async function expectOneBand(page: Page, parts: number) {
 }
 
 const header = (page: Page) => page.locator(".font-reading.text-xl").first();
+const word = (page: Page, n: number) => wordAt(page, n - 1);
 
 test.describe("a selected phrase is one band", () => {
   test("dragging across three words highlights them and the spaces between as one band, already while dragging", async ({ page }) => {
@@ -108,7 +112,7 @@ test.describe("a selected phrase is one band", () => {
     created = await createTextWith(page, (w) => `${w(1)} ${w(2)} ${w(3)}.`);
     stubLookups(page, created);
     await openReader(page, `/read/${created.id}`);
-    await wordAt(page, 2).click();
+    await word(page, 2).click();
     const band = article(page).locator(".sel");
     await expect(band).toHaveCount(1);
     const s = await style(band.first());
@@ -125,13 +129,13 @@ test.describe("clicking a saved phrase", () => {
     const asked = stubLookups(page, created);
     await openReader(page, `/read/${created.id}`);
 
-    await wordAt(page, 2).click();
+    await word(page, 2).click();
     await expect(header(page)).toHaveText(phrase);
     await expect(page.getByText("Phrase", { exact: true })).toBeVisible();
     expect(asked).toContain(phrase);
     await expectOneBand(page, 3);
 
-    await wordAt(page, 2).click();
+    await word(page, 2).click();
     await expect(header(page)).toHaveText(created.word(2));
     await expect(page.getByText("Phrase", { exact: true })).toHaveCount(0);
   });
@@ -141,9 +145,9 @@ test.describe("clicking a saved phrase", () => {
     const phrase = await savePhrase(page, created, [2, 3]);
     stubLookups(page, created);
     await openReader(page, `/read/${created.id}`);
-    await wordAt(page, 2).click();
+    await word(page, 2).click();
     await expect(header(page)).toHaveText(phrase);
-    await wordAt(page, 3).click();
+    await word(page, 3).click();
     await expect(header(page)).toHaveText(phrase);
   });
 
@@ -153,7 +157,7 @@ test.describe("clicking a saved phrase", () => {
     const longer = await savePhrase(page, created, [2, 3, 4]);
     stubLookups(page, created);
     await openReader(page, `/read/${created.id}`);
-    await wordAt(page, 3).click();
+    await word(page, 3).click();
     await expect(header(page)).toHaveText(longer);
   });
 
@@ -162,9 +166,9 @@ test.describe("clicking a saved phrase", () => {
     await savePhrase(page, created, [2, 3], "known");
     stubLookups(page, created);
     await openReader(page, `/read/${created.id}`);
-    await wordAt(page, 2).click();
+    await word(page, 2).click();
     await expect(header(page)).toHaveText(created.word(2));
-    await wordAt(page, 4).click();
+    await word(page, 4).click();
     await expect(header(page)).toHaveText(created.word(4));
   });
 

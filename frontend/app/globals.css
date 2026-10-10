@@ -142,6 +142,22 @@ span.s-spoken:not(.w) {
   background: var(--w-active) !important;
   box-shadow: 0 0 0 2px var(--rubric);
 }
+.sel {
+  background: var(--w-active) !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+.sel-start {
+  border-top-left-radius: 0.25rem !important;
+  border-bottom-left-radius: 0.25rem !important;
+}
+.sel-end {
+  border-top-right-radius: 0.25rem !important;
+  border-bottom-right-radius: 0.25rem !important;
+}
+.sel.sel-start.sel-end {
+  box-shadow: 0 0 0 2px var(--rubric) !important;
+}
 .p-learning {
   text-decoration: underline 2px var(--w-learning-line);
   text-underline-offset: 4px;

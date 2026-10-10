@@ -2,10 +2,9 @@
 
 import { useCallback, useState, type RefObject } from "react";
 import type { Token } from "@/lib/types";
-import { normalizePhrase, phraseRange, textAround, type Range } from "./reader-text";
+import { MAX_PHRASE_WORDS, normalizePhrase, phraseRange, textAround, type Range } from "./reader-text";
 import type { PopupTarget } from "./word-popup";
 
-const MAX_PHRASE_WORDS = 12;
 const POPUP_WIDTH = 352;
 
 export function usePopupState(articleRef: RefObject<HTMLDivElement | null>) {

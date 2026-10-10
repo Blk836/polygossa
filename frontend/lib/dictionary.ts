@@ -1,4 +1,4 @@
-import type { WordLookup } from "./types";
+import type { WordLookup, WordType } from "./types";
 
 export interface NativeLanguage {
   code: string;
@@ -62,6 +62,11 @@ export function meaningNote(lookup: WordLookup): string | null {
 
 export function savedMeaning(lookup: WordLookup | null): string | undefined {
   return lookup?.meanings[0];
+}
+
+export function wordTypeLine(type: WordType | null | undefined): string | null {
+  if (!type) return null;
+  return [type.partOfSpeech, type.form, type.lemma && `from ${type.lemma}`].filter(Boolean).join(" · ");
 }
 
 const WORD_REFERENCE_CORE = ["en", "es", "fr", "it", "pt", "de"];

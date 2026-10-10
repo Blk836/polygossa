@@ -20,8 +20,15 @@ export function toParagraphs(tokens: Token[]): Token[][] {
   return out.filter((p) => p.length > 0);
 }
 
-export function phraseMarks(tokens: Token[], phrases: { term: string; status: WordStatus }[]): Map<number, WordStatus> {
-  const marks = new Map<number, WordStatus>();
+export const MAX_PHRASE_WORDS = 12;
+
+export interface PhraseSpan {
+  start: number;
+  end: number;
+  status: WordStatus;
+}
+
+export function phraseSpans(tokens: Token[], phrases: { term: string; status: WordStatus }[]): PhraseSpan[] {
   const starts: number[] = [];
   let offset = 0;
   for (const t of tokens) {
@@ -29,15 +36,52 @@ export function phraseMarks(tokens: Token[], phrases: { term: string; status: Wo
     offset += t.text.length;
   }
   const lower = tokens.map((t) => t.text).join("").toLowerCase().replace(/’/g, "'");
+  const spans: PhraseSpan[] = [];
   for (const p of phrases) {
     for (let at = lower.indexOf(p.term); at >= 0; at = lower.indexOf(p.term, at + p.term.length)) {
-      for (const t of tokens) {
-        const s = starts[t.index];
-        if (t.word && s >= at && s < at + p.term.length) marks.set(t.index, p.status);
-      }
+      const inside = tokens.filter((t) => t.word && starts[t.index] >= at && starts[t.index] < at + p.term.length);
+      if (inside.length) spans.push({ start: inside[0].index, end: inside[inside.length - 1].index, status: p.status });
     }
   }
+  return spans;
+}
+
+export function phraseMarks(tokens: Token[], phrases: { term: string; status: WordStatus }[]): Map<number, WordStatus> {
+  const marks = new Map<number, WordStatus>();
+  for (const s of phraseSpans(tokens, phrases)) {
+    for (let i = s.start; i <= s.end; i++) if (tokens[i].word) marks.set(i, s.status);
+  }
   return marks;
+}
+
+export function learningGaps(tokens: Token[], spans: PhraseSpan[]): Set<number> {
+  const gaps = new Set<number>();
+  for (const s of spans) {
+    if (s.status !== "learning") continue;
+    for (let i = s.start + 1; i < s.end; i++) if (!tokens[i].word) gaps.add(i);
+  }
+  return gaps;
+}
+
+export function savedPhraseAt(spans: PhraseSpan[], i: number): Range | null {
+  let best: PhraseSpan | null = null;
+  for (const s of spans) {
+    if (s.status !== "learning" || s.start === s.end || i < s.start || i > s.end) continue;
+    if (!best || s.end - s.start > best.end - best.start) best = s;
+  }
+  return best && { start: best.start, end: best.end };
+}
+
+export function cappedRange(tokens: Token[], anchor: number, to: number, maxWords = MAX_PHRASE_WORDS): Range {
+  const dir = to >= anchor ? 1 : -1;
+  let words = 0;
+  let last = anchor;
+  for (let k = anchor; dir > 0 ? k <= to : k >= to; k += dir) {
+    if (!tokens[k].word) continue;
+    if (++words > maxWords) break;
+    last = k;
+  }
+  return { start: Math.min(anchor, last), end: Math.max(anchor, last) };
 }
 
 export function sentenceTexts(tokens: Token[]): Map<number, string> {

@@ -3,7 +3,7 @@
 import { useEffect, useRef, type RefObject } from "react";
 import type { Token, WordStatus } from "@/lib/types";
 import { mediaShortcut, type MediaShortcut } from "./media-nav";
-import { nextWord, type Range } from "./reader-text";
+import { cappedRange, nextWord, type Range } from "./reader-text";
 
 interface Options {
   tokens: Token[];
@@ -13,6 +13,7 @@ interface Options {
   phraseMode: boolean;
   openWord: (i: number, autoSave: boolean) => void;
   openPhrase: (a: number, b: number) => void;
+  savedPhraseAt: (i: number) => Range | null;
   setStatus: (status: WordStatus | null) => void;
   close: () => void;
   articleRef: RefObject<HTMLDivElement | null>;
@@ -45,9 +46,27 @@ function handleKey(e: KeyboardEvent, o: Options) {
   if (i !== null) o.openWord(i, false);
 }
 
+function clickSavedPhrase(o: Options, i: number, lastClicked: { current: number | null }): boolean {
+  const saved = o.savedPhraseAt(i);
+  if (!saved) return false;
+  const open = o.popup === "phrase" && o.sel?.start === saved.start && o.sel.end === saved.end;
+  const again = open && lastClicked.current === i;
+  lastClicked.current = i;
+  if (again) return false;
+  if (!open) o.openPhrase(saved.start, saved.end);
+  return true;
+}
+
+function clickWord(o: Options, i: number) {
+  const sameWord = o.popup === "word" && o.sel?.start === i && o.sel.end === i;
+  if (sameWord) return o.close();
+  o.openWord(i, true);
+}
+
 export function useReaderInput(o: Options) {
-  const drag = useRef<{ anchor: number; moved: boolean } | null>(null);
+  const drag = useRef<{ anchor: number; moved: boolean; range: Range | null } | null>(null);
   const suppressClick = useRef(false);
+  const lastClicked = useRef<number | null>(null);
   const latest = useRef(o);
   useEffect(() => {
     latest.current = o;
@@ -59,7 +78,8 @@ export function useReaderInput(o: Options) {
       drag.current = null;
       if (!d?.moved) return;
       suppressClick.current = true;
-      latest.current.openPhrase(d.anchor, wordIndex(e.target) ?? d.anchor);
+      const range = d.range ?? cappedRange(latest.current.tokens, d.anchor, wordIndex(e.target) ?? d.anchor);
+      latest.current.openPhrase(range.start, range.end);
     };
     window.addEventListener("pointerup", onUp);
     return () => window.removeEventListener("pointerup", onUp);
@@ -101,14 +121,15 @@ export function useReaderInput(o: Options) {
       const i = wordIndex(e.target);
       if (i === null || e.pointerType !== "mouse" || e.button !== 0 || e.shiftKey) return;
       e.preventDefault();
-      drag.current = { anchor: i, moved: false };
+      drag.current = { anchor: i, moved: false, range: null };
     },
     onPointerOver(e: React.PointerEvent) {
       const d = drag.current;
       const i = wordIndex(e.target);
       if (!d || i === null || i === d.anchor) return;
       d.moved = true;
-      o.setSel({ start: Math.min(d.anchor, i), end: Math.max(d.anchor, i) });
+      d.range = cappedRange(o.tokens, d.anchor, i);
+      o.setSel(d.range);
     },
     onClick(e: React.MouseEvent) {
       if (suppressClick.current) {
@@ -118,9 +139,7 @@ export function useReaderInput(o: Options) {
       const i = wordIndex(e.target);
       if (i === null) return;
       if ((e.shiftKey || o.phraseMode) && o.sel) return o.openPhrase(o.sel.start, i);
-      const sameWord = o.popup === "word" && o.sel?.start === i && o.sel.end === i;
-      if (sameWord) return o.close();
-      o.openWord(i, true);
+      if (!clickSavedPhrase(o, i, lastClicked)) clickWord(o, i);
     },
   };
 }
