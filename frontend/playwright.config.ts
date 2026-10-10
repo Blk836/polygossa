@@ -40,7 +40,7 @@ export default defineConfig({
         {
           command: "node scripts/e2e-server.mjs",
           env: { ...process.env, E2E_PORT: port, BACKEND_URL: `http://localhost:${backendPort}` },
-          url: `${baseURL}/favicon.ico`,
+          url: `${baseURL}/icon.svg`,
           reuseExistingServer: false,
           timeout: 240_000,
         },

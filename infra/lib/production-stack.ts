@@ -162,7 +162,7 @@ export class ProductionStack extends cdk.Stack {
       port: 3000,
       protocol: elbv2.ApplicationProtocol.HTTP,
       targets: [frontend],
-      healthCheck: { path: "/favicon.ico", healthyHttpCodes: "200" },
+      healthCheck: { path: "/icon.svg", healthyHttpCodes: "200" },
       deregistrationDelay: cdk.Duration.seconds(10),
     });
 
