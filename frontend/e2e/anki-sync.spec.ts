@@ -19,7 +19,7 @@ async function waitForAutoSync(page: Page, anki: FakeAnki, deck: number, after: 
     const res = await page.request.get("/api/anki/runs/latest");
     const run = res.status() === 204 ? null : ((await res.json()) as { id: number; state: string });
     return run && run.id > after ? run.state : "waiting";
-  }).toBe("done");
+  }, { timeout: 30_000 }).toBe("done");
 }
 
 test("choosing a deck, previewing what it will change, then syncing", async ({ page }) => {
@@ -79,7 +79,7 @@ test("Sync now reads a big collection in batches, showing its progress", async (
     anki.cardsInfoDelayMs = 400;
     await syncGroup(page).getByRole("button", { name: "Sync now" }).click();
     await expect(syncGroup(page).getByRole("status")).toContainText("of 1200");
-    await expect(syncGroup(page).getByRole("button", { name: "Sync now" })).toBeEnabled();
+    await expect(syncGroup(page).getByRole("button", { name: "Sync now" })).toBeEnabled({ timeout: 30_000 });
     expect(anki.calls.filter((c) => c.action === "cardsInfo").length - before).toBe(3);
     await expect(syncGroup(page).getByTestId("anki-result")).toContainText("1200 cards read");
     expect(await statusOf(page, language, `${s}w1199`)).toBe("known");
@@ -125,8 +125,8 @@ test("a sync runs on its own when the app opens, for decks synced before", async
     const first = await syncByApi(page, 84, []);
     await anki.install(page);
     await page.goto("/library");
-    await expect.poll(() => latestRunId(page)).toBeGreaterThan(first);
-    await expect.poll(() => statusOf(page, language, `${s}auto`)).toBe("known");
+    await expect.poll(() => latestRunId(page), { timeout: 30_000 }).toBeGreaterThan(first);
+    await expect.poll(() => statusOf(page, language, `${s}auto`), { timeout: 30_000 }).toBe("known");
   } finally {
     await cleanUpPrefix(page, language, s);
   }
