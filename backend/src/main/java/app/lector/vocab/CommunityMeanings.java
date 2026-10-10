@@ -3,6 +3,7 @@ package app.lector.vocab;
 import app.lector.token.Language;
 import app.lector.token.NativeLanguage;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,5 +23,12 @@ public class CommunityMeanings {
     @Transactional(readOnly = true)
     public List<String> top(Language language, String term, NativeLanguage nativeLanguage) {
         return repo.findCommunityMeanings(language, term, nativeLanguage, MIN_LEARNERS, PageRequest.of(0, MAX_MEANINGS));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<String> mine(Long userId, Language language, String term, NativeLanguage nativeLanguage) {
+        return repo.findByUserIdAndLanguageAndTerm(userId, language, term)
+                .filter(e -> e.getMeaning() != null && e.getMeaningLanguage() == nativeLanguage)
+                .map(VocabularyEntry::getMeaning);
     }
 }
