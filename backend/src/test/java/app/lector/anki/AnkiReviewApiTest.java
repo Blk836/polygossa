@@ -115,6 +115,20 @@ class AnkiReviewApiTest {
     }
 
     @Test
+    void theReaderCanAskWhetherAWordIsLinkedToAnki() throws Exception {
+        anki.sync(me, AnkiApi.mature("perro"), young("gato"));
+        var perro = api.get(me, "/api/anki/word?language=es&term=Perro", 200);
+        assertThat(perro.get("state").asString()).isEqualTo("mature");
+        assertThat(perro.get("promoted").asBoolean()).isTrue();
+        var gato = api.get(me, "/api/anki/word?language=es&term=gato", 200);
+        assertThat(gato.get("state").asString()).isEqualTo("young");
+        assertThat(gato.get("promoted").asBoolean()).isFalse();
+        api.get(me, "/api/anki/word?language=es&term=casa", 204);
+        api.get(me, "/api/anki/word?language=fr&term=perro", 204);
+        api.get(api.signupPro(), "/api/anki/word?language=es&term=perro", 204);
+    }
+
+    @Test
     void theWordShowsItsAnkiLink() throws Exception {
         anki.sync(me, AnkiApi.mature("perro"));
         var perro = anki.entry(me, "es", "perro");
