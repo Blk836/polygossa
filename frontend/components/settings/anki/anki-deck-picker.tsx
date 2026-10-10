@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { NoteTypeRow } from "./anki-note-type-row";
 import { useMe } from "@/components/me-context";
 import { Button, ErrorNote, selectClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
-import { cardIds, cardsInfo, deckNames, fieldNames, type AnkiCardInfo } from "@/lib/anki-connect";
-import { exampleWords, suggestSetup } from "@/lib/anki-decks";
+import { cardIds, cardsInfo, deckNames, fieldNames, noteTypesInDeck } from "@/lib/anki-connect";
+import { suggestSetup } from "@/lib/anki-decks";
+import { setupFor, type NoteTypeSetup } from "@/lib/anki-note-types";
 import type { AnkiDeckChoice } from "@/lib/anki-types";
 import { LEARNING_LANGUAGES } from "@/lib/languages";
 import type { LanguageCode } from "@/lib/types";
@@ -13,65 +15,58 @@ import type { LanguageCode } from "@/lib/types";
 interface Row {
   id: number;
   name: string;
+  cards: number;
   ticked: boolean;
-  fields: string[];
-  sample: AnkiCardInfo[];
-  wordField: string;
-  meaningField?: string;
   language: LanguageCode;
   fromExport: boolean;
+  noteTypes: NoteTypeSetup[] | null;
 }
 
-async function sampleOf(deckId: number): Promise<AnkiCardInfo[]> {
-  const ids = await cardIds(deckId);
-  return ids.length ? cardsInfo(ids.slice(0, 3)) : [];
+async function rowOf(deck: { id: number; name: string }, saved: AnkiDeckChoice | undefined, fallback: LanguageCode): Promise<Row> {
+  const ids = await cardIds(deck.id);
+  const suggested = suggestSetup(ids.length ? await cardsInfo(ids.slice(0, 1)) : [], fallback);
+  const language = saved?.language ?? suggested?.language ?? fallback;
+  return { id: deck.id, name: deck.name, cards: ids.length, ticked: !!saved, language, fromExport: suggested?.fromExport ?? false, noteTypes: null };
 }
 
-function rowOf(deck: { id: number; name: string }, sample: AnkiCardInfo[], chosen: AnkiDeckChoice | undefined, fallback: LanguageCode): Row {
-  const base = { id: deck.id, name: deck.name, sample, fields: sample[0] ? fieldNames(sample[0]) : [] };
-  const suggested = suggestSetup(sample, fallback);
-  if (chosen) {
-    const { wordField, meaningField, language } = chosen;
-    return { ...base, ticked: true, wordField, meaningField, language, fromExport: suggested?.fromExport ?? false };
-  }
-  if (suggested) return { ...base, ticked: false, ...suggested };
-  return { ...base, ticked: false, wordField: "", language: fallback, fromExport: false };
+async function noteTypesOf(deckId: number, saved: AnkiDeckChoice | undefined): Promise<NoteTypeSetup[]> {
+  const models = await noteTypesInDeck(deckId);
+  return Promise.all(models.map(async (m) => {
+    const sample = await cardsInfo(m.ids.slice(0, 3));
+    return setupFor({ ...m, sample, fields: sample[0] ? fieldNames(sample[0]) : [] }, saved);
+  }));
 }
 
-async function loadRows(saved: AnkiDeckChoice[], fallback: LanguageCode): Promise<Row[]> {
-  const decks = await deckNames();
-  return Promise.all(decks.map(async (d) => rowOf(d, await sampleOf(d.id), saved.find((s) => s.ankiDeckId === d.id), fallback)));
+function toChoice(row: Row): AnkiDeckChoice {
+  const types = row.noteTypes ?? [];
+  const wordField = types.find((t) => t.wordField)?.wordField ?? types[0]?.fields[0] ?? "Front";
+  return {
+    ankiDeckId: row.id, name: row.name, language: row.language, wordField,
+    noteTypes: types.map(({ modelId, name, wordField: word, meaningField }) => ({ modelId, name, wordField: word, meaningField })),
+  };
 }
 
 function DeckRow({ row, onChange }: { row: Row; onChange: (row: Row) => void }) {
-  const empty = !row.fields.length;
   return (
     <li className="rounded-lg border border-line p-3" data-testid="anki-deck">
       <label className="flex items-center gap-2 font-medium">
-        <input type="checkbox" checked={row.ticked} disabled={empty} onChange={(e) => onChange({ ...row, ticked: e.target.checked })} />
+        <input type="checkbox" checked={row.ticked} disabled={!row.cards} onChange={(e) => onChange({ ...row, ticked: e.target.checked })} />
         {row.name}
         {row.fromExport && <span className="text-xs font-normal text-muted">exported from this app</span>}
-        {empty && <span className="text-xs font-normal text-muted">no cards</span>}
+        {!row.cards && <span className="text-xs font-normal text-muted">no cards</span>}
       </label>
       {row.ticked && (
-        <div className="mt-2 grid gap-2 text-sm sm:grid-cols-3">
-          <label>Word field
-            <select aria-label="Word field" className={selectClass} value={row.wordField} onChange={(e) => onChange({ ...row, wordField: e.target.value })}>
-              {row.fields.map((f) => <option key={f}>{f}</option>)}
-            </select>
-          </label>
-          <label>Meaning field
-            <select aria-label="Meaning field" className={selectClass} value={row.meaningField ?? ""} onChange={(e) => onChange({ ...row, meaningField: e.target.value || undefined })}>
-              <option value="">None</option>
-              {row.fields.map((f) => <option key={f}>{f}</option>)}
-            </select>
-          </label>
-          <label>Language
+        <div className="mt-2 space-y-2 text-sm">
+          <label className="block sm:w-1/2">Language
             <select aria-label="Language" className={selectClass} value={row.language} onChange={(e) => onChange({ ...row, language: e.target.value as LanguageCode })}>
               {LEARNING_LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
             </select>
           </label>
-          <p className="text-muted sm:col-span-3" data-testid="anki-examples">Examples: {exampleWords(row.sample, row.wordField).join(", ") || "none"}</p>
+          {row.noteTypes ? (
+            <ul className="space-y-2">
+              {row.noteTypes.map((t) => <NoteTypeRow key={t.modelId} setup={t} onChange={(next) => onChange({ ...row, noteTypes: row.noteTypes!.map((x) => (x.modelId === next.modelId ? next : x)) })} />)}
+            </ul>
+          ) : <p className="text-muted">Reading its note types…</p>}
         </div>
       )}
     </li>
@@ -87,15 +82,30 @@ export function AnkiDeckPicker({ saved, onSaved }: { saved: AnkiDeckChoice[]; on
 
   useEffect(() => {
     let cancelled = false;
-    loadRows(saved, fallback).then((r) => !cancelled && setRows(r)).catch((e) => !cancelled && setError(errorMessage(e)));
+    deckNames()
+      .then((decks) => Promise.all(decks.map((d) => rowOf(d, saved.find((s) => s.ankiDeckId === d.id), fallback))))
+      .then((r) => !cancelled && setRows(r))
+      .catch((e) => !cancelled && setError(errorMessage(e)));
     return () => {
       cancelled = true;
     };
   }, [saved, fallback]);
 
+  const pending = rows?.find((r) => r.ticked && !r.noteTypes);
+  useEffect(() => {
+    if (!pending) return;
+    let cancelled = false;
+    noteTypesOf(pending.id, saved.find((s) => s.ankiDeckId === pending.id))
+      .then((types) => !cancelled && setRows((all) => all && all.map((r) => (r.id === pending.id ? { ...r, noteTypes: types } : r))))
+      .catch((e) => !cancelled && setError(errorMessage(e)));
+    return () => {
+      cancelled = true;
+    };
+  }, [pending, saved]);
+
   async function save() {
     setError(null);
-    const decks = (rows ?? []).filter((r) => r.ticked).map((r) => ({ ankiDeckId: r.id, name: r.name, language: r.language, wordField: r.wordField, meaningField: r.meaningField }));
+    const decks = (rows ?? []).filter((r) => r.ticked && r.noteTypes).map(toChoice);
     try {
       const result = await api<{ decks: AnkiDeckChoice[] }>("anki/decks", { method: "PUT", body: { decks } });
       setMe({ ...me, ankiConnected: result.decks.length > 0 });
@@ -115,7 +125,7 @@ export function AnkiDeckPicker({ saved, onSaved }: { saved: AnkiDeckChoice[]; on
       </ul>
       <ErrorNote message={error} />
       <div className="flex items-center gap-3">
-        <Button onClick={save}>Save decks</Button>
+        <Button onClick={save} disabled={!!pending}>Save decks</Button>
         {done && <span className="text-sm text-muted" role="status">Saved</span>}
       </div>
     </div>

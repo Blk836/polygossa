@@ -34,12 +34,23 @@ function RunHeader({ run, preview }: { run: AnkiRun; preview: boolean }) {
   return <p className="text-muted">Last synced {when(run)}, {run.cards} cards read.</p>;
 }
 
+function LeftOut({ run }: { run: AnkiRun }) {
+  const cards = (n: number) => `${n} ${n === 1 ? "card" : "cards"}`;
+  return (
+    <>
+      {run.skippedNoteType > 0 && <p data-testid="anki-left-out-skipped">{cards(run.skippedNoteType)} left out: their note type is set to skip.</p>}
+      {run.waitingNoteType > 0 && <p data-testid="anki-left-out-waiting">{cards(run.waitingNoteType)} waiting: a new note type needs its word field checked.</p>}
+    </>
+  );
+}
+
 export function AnkiRunSummary({ run, preview }: { run: AnkiRun; preview: boolean }) {
   const lines = outcomeLines(run, preview);
   return (
     <div className="space-y-2 text-sm" data-testid={preview ? "anki-preview" : "anki-result"}>
       <RunHeader run={run} preview={preview} />
       {lines.length ? <div className="space-y-1">{lines.map((l) => <WordList key={l.outcome} run={run} line={l} />)}</div> : <p>No words change.</p>}
+      <LeftOut run={run} />
       {preview && (run.becameKnown > 0 || run.addedKnown > 0) && (
         <p className="text-muted">These words count toward your known total, but not as words learned this week, since you learned them before.</p>
       )}
