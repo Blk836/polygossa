@@ -69,8 +69,11 @@ public class SentenceMeanings {
                 + "stays a verb, a noun a noun). When the marked words are part of an idiom, give their own meaning, "
                 + "not the idiom's. Examples: \"Tu me casses les <b>pieds</b>.\" gives \"feet\"; \"Elle a "
                 + "<b>pris</b> le train.\" gives \"took\"; \"Il <b>tombe</b> des cordes.\" gives \"is falling\". "
-                + "\"partOfSpeech\" is one of: noun, verb, adjective, adverb, pronoun, preposition, conjunction, "
-                + "determiner, interjection, number, phrase (for several words). \"form\", in English and at most "
+                + "Give the equivalent a bilingual dictionary would list, as few words as possible, never a "
+                + "definition or paraphrase: \"C'est <b>incomparablement</b> mieux.\" gives \"incomparably\", not "
+                + "\"in a way that cannot be compared\". Only when no such equivalent exists, give a short "
+                + "explanation. \"partOfSpeech\" is one of: noun, verb, adjective, adverb, pronoun, preposition, "
+                + "conjunction, determiner, interjection, number, phrase (for several words). \"form\", in English and at most "
                 + "six words, is for a verb its tense, mood or form as used here (such as \"past participle\", "
                 + "\"present, 3rd person singular\", \"infinitive\"), for a noun its gender and number (such as "
                 + "\"masculine plural\"), for an adjective its gender and number, otherwise null. \"lemma\" is the "
@@ -92,7 +95,7 @@ public class SentenceMeanings {
             return Optional.empty();
         }
         String clean = EDGES.matcher(meaning.asString()).replaceAll("");
-        if (clean.isEmpty() || clean.length() > LONGEST || clean.equalsIgnoreCase(word)) {
+        if (clean.isEmpty() || clean.length() > LONGEST) {
             return Optional.empty();
         }
         return Optional.of(new Found(clean, WordType.from(answer, word).orElse(null)));
