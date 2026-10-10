@@ -1,5 +1,12 @@
 import type { LanguageCode } from "./types";
 
+export interface AnkiNoteTypeChoice {
+  modelId: number;
+  name: string;
+  wordField?: string;
+  meaningField?: string;
+}
+
 export interface AnkiDeckChoice {
   ankiDeckId: number;
   name: string;
@@ -7,6 +14,7 @@ export interface AnkiDeckChoice {
   wordField: string;
   meaningField?: string;
   firstSyncedAt?: string;
+  noteTypes?: AnkiNoteTypeChoice[];
 }
 
 export type AnkiOutcome =
@@ -34,6 +42,8 @@ export interface AnkiRun {
   skippedTooLong: number;
   skippedMedia: number;
   leaveReview: number;
+  skippedNoteType: number;
+  waitingNoteType: number;
 }
 
 export interface AnkiCardPayload {

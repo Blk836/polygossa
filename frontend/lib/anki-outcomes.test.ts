@@ -4,7 +4,7 @@ import type { AnkiRun } from "./anki-types";
 
 const run: AnkiRun = {
   id: 1, dryRun: true, state: "done", startedAt: "", cards: 20, becameKnown: 3, addedKnown: 1, addedLearning: 0,
-  overLimit: 2, skippedEmpty: 1, skippedTooLong: 0, skippedMedia: 0, leaveReview: 4,
+  overLimit: 2, skippedEmpty: 1, skippedTooLong: 0, skippedMedia: 0, leaveReview: 4, skippedNoteType: 0, waitingNoteType: 0,
 };
 
 describe("a sync's counts in words", () => {

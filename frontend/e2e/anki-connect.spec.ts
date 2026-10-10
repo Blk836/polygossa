@@ -42,10 +42,41 @@ test("connecting shows my decks: an exported one is recognised, my own is set up
   await expect(decks.nth(1).getByLabel("Language", { exact: true })).toHaveValue("fr");
   await decks.nth(2).getByRole("checkbox").check();
   await expect(decks.nth(2).getByLabel("Word field", { exact: true })).toHaveValue("Front");
-  await expect(decks.nth(2).getByLabel("Meaning field", { exact: true })).toHaveValue("");
+  await expect(decks.nth(2).getByLabel("Meaning field", { exact: true })).toHaveValue("Back");
   await expect(decks.nth(2).getByTestId("anki-examples")).toHaveText("Examples: gato, casa");
   await decks.nth(2).getByLabel("Word field", { exact: true }).selectOption("Back");
   await expect(decks.nth(2).getByTestId("anki-examples")).toHaveText("Examples: cat, house");
+});
+
+test("a deck with many note types lists each with its guess, examples and card count; cloze and pictures start skipped", async ({ page }) => {
+  const anki = new FakeAnki();
+  anki.decks = [{ id: 75, name: "Mixed", cards: [
+    mature({ Front: "dog", Back: "perro" }), mature({ Front: "cat", Back: "gato" }), mature({ Front: "house", Back: "casa" }),
+    { ...mature({ Sentence: "El perro ladra", Word: "ladrar", Translation: "bark" }), model: "Sentence + Word" },
+    { ...mature({ Text: "El {{c1::perro}} come", Extra: "" }), model: "Cloze" },
+    { ...mature({ Picture: "<img src=p.jpg>", Back: "pato" }), model: "Picture" },
+  ] }];
+  await openAnkiTab(page, anki);
+  await connectGroup(page).getByRole("button", { name: "Connect to Anki" }).click();
+  await connectGroup(page).getByTestId("anki-deck").getByRole("checkbox").check();
+  const types = connectGroup(page).getByTestId("anki-note-type");
+  await expect(types).toHaveCount(4);
+  const basic = types.filter({ hasText: "Front+Back" });
+  await expect(basic).toContainText("3 cards");
+  await expect(basic.getByLabel("Word field", { exact: true })).toHaveValue("Front");
+  await expect(basic.getByTestId("anki-examples")).toHaveText("Examples: dog, cat, house");
+  await basic.getByLabel("Word field", { exact: true }).selectOption("Back");
+  await expect(basic.getByTestId("anki-examples")).toHaveText("Examples: perro, gato, casa");
+  const sentence = types.filter({ hasText: "Sentence + Word" });
+  await expect(sentence.getByLabel("Word field", { exact: true })).toHaveValue("Word");
+  await expect(sentence.getByTestId("anki-examples")).toHaveText("Examples: ladrar");
+  const cloze = types.filter({ hasText: "Cloze" });
+  await expect(cloze.getByLabel("Word field", { exact: true })).toHaveValue("");
+  await expect(cloze.getByTestId("anki-skip-reason")).toHaveText("Cloze cards test sentences, not single words.");
+  const picture = types.filter({ hasText: "Picture" });
+  await expect(picture.getByTestId("anki-skip-reason")).toHaveText("Its cards show no written word.");
+  await picture.getByLabel("Word field", { exact: true }).selectOption("Back");
+  await expect(picture.getByTestId("anki-examples")).toHaveText("Examples: pato");
 });
 
 test("when Anki refuses, the config line for this site is shown and nothing is saved", async ({ page }) => {

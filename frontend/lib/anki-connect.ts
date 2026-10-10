@@ -84,8 +84,26 @@ export async function deckNames(): Promise<{ id: number; name: string }[]> {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export function cardIds(deckId: number): Promise<number[]> {
-  return invoke<number[]>("findCards", { query: `did:${deckId}` });
+export function cardIds(deckId: number, modelId?: number): Promise<number[]> {
+  return invoke<number[]>("findCards", { query: modelId === undefined ? `did:${deckId}` : `did:${deckId} mid:${modelId}` });
+}
+
+export async function noteTypes(): Promise<{ id: number; name: string }[]> {
+  const models = await invoke<Record<string, number>>("modelNamesAndIds");
+  return Object.entries(models).map(([name, id]) => ({ id, name }));
+}
+
+export function modelFieldNames(modelName: string): Promise<string[]> {
+  return invoke<string[]>("modelFieldNames", { modelName });
+}
+
+export async function noteTypesInDeck(deckId: number): Promise<{ modelId: number; name: string; ids: number[] }[]> {
+  const found = [];
+  for (const model of await noteTypes()) {
+    const ids = await cardIds(deckId, model.id);
+    if (ids.length) found.push({ modelId: model.id, name: model.name, ids });
+  }
+  return found.sort((a, b) => b.ids.length - a.ids.length);
 }
 
 export function cardsInfo(cards: number[]): Promise<AnkiCardInfo[]> {

@@ -49,8 +49,18 @@ public class AnkiSyncRun {
     private int skippedTooLong;
     private int skippedMedia;
     private int leaveReview;
+    private int skippedNoteType;
+    private int waitingNoteType;
 
     protected AnkiSyncRun() {}
+
+    void leftOut(int skipped, int waiting) {
+        skippedNoteType = Math.max(0, skipped);
+        waitingNoteType = Math.max(0, waiting);
+    }
+
+    public int getSkippedNoteType() { return skippedNoteType; }
+    public int getWaitingNoteType() { return waitingNoteType; }
 
     AnkiSyncRun(Long userId, boolean dryRun, Instant now) {
         this.userId = userId;
