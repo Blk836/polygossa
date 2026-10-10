@@ -57,6 +57,58 @@ class AnkiRunsApiTest {
     }
 
     @Test
+    void eachNoteTypesChoiceIsKeptWithItsDeck() throws Exception {
+        Map<String, Object> mixed = new java.util.LinkedHashMap<>(deck(DECK, "es"));
+        mixed.put("noteTypes", List.of(
+                Map.of("modelId", 1_600_000_000_001L, "name", "Basic", "wordField", "Back", "meaningField", "Front"),
+                Map.of("modelId", 1_600_000_000_002L, "name", "Cloze")));
+        anki.chooseDecks(me, List.of(mixed), 200);
+        JsonNode types = api.get(me, "/api/anki/decks", 200).get("decks").get(0).get("noteTypes");
+        assertThat(types).hasSize(2);
+        assertThat(types.get(0).get("modelId").asLong()).isEqualTo(1_600_000_000_001L);
+        assertThat(types.get(0).get("name").asString()).isEqualTo("Basic");
+        assertThat(types.get(0).get("wordField").asString()).isEqualTo("Back");
+        assertThat(types.get(0).get("meaningField").asString()).isEqualTo("Front");
+        assertThat(types.get(1).get("name").asString()).isEqualTo("Cloze");
+        assertThat(types.get(1).has("wordField")).isFalse();
+        mixed.put("noteTypes", List.of(Map.of("modelId", 1_600_000_000_003L, "name", "Vocab", "wordField", "Word")));
+        anki.chooseDecks(me, List.of(mixed), 200);
+        types = api.get(me, "/api/anki/decks", 200).get("decks").get(0).get("noteTypes");
+        assertThat(types).extracting(t -> t.get("name").asString()).containsExactly("Vocab");
+    }
+
+    @Test
+    void aDeckSavedWithoutNoteTypesListsNone() throws Exception {
+        assertThat(api.get(me, "/api/anki/decks", 200).get("decks").get(0).get("noteTypes")).isEmpty();
+    }
+
+    @Test
+    void invalidNoteTypeChoicesAreRejected() throws Exception {
+        Map<String, Object> twice = new java.util.LinkedHashMap<>(deck(DECK, "es"));
+        twice.put("noteTypes", List.of(Map.of("modelId", 5, "name", "A"), Map.of("modelId", 5, "name", "B")));
+        anki.chooseDecks(me, List.of(twice), 400);
+        Map<String, Object> noName = new java.util.LinkedHashMap<>(deck(DECK, "es"));
+        noName.put("noteTypes", List.of(Map.of("modelId", 5, "name", " ")));
+        anki.chooseDecks(me, List.of(noName), 400);
+        Map<String, Object> longField = new java.util.LinkedHashMap<>(deck(DECK, "es"));
+        longField.put("noteTypes", List.of(Map.of("modelId", 5, "name", "A", "wordField", "x".repeat(101))));
+        anki.chooseDecks(me, List.of(longField), 400);
+    }
+
+    @Test
+    void theResultCountsCardsLeftOutByTheirNoteType() throws Exception {
+        long run = anki.start(me, true);
+        anki.send(me, run, DECK, List.of(mature("perro")), 200);
+        JsonNode done = api.post(me, "/api/anki/runs/" + run + "/finish",
+                "{\"ankiDeckIds\":[" + DECK + "],\"skippedNoteType\":40,\"waitingNoteType\":7}", 200);
+        assertThat(done.get("skippedNoteType").asInt()).isEqualTo(40);
+        assertThat(done.get("waitingNoteType").asInt()).isEqualTo(7);
+        JsonNode plain = anki.sync(me, mature("gato"));
+        assertThat(plain.get("skippedNoteType").asInt()).isZero();
+        assertThat(plain.get("waitingNoteType").asInt()).isZero();
+    }
+
+    @Test
     void invalidDeckChoicesAreRejected() throws Exception {
         Map<String, Object> blank = new java.util.LinkedHashMap<>(deck(1, "es"));
         blank.put("wordField", " ");
