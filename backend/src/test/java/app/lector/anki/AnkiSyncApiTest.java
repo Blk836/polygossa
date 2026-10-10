@@ -153,17 +153,6 @@ class AnkiSyncApiTest {
     }
 
     @Test
-    void anUnfinishedFirstSyncIsStillTheFirst() throws Exception {
-        long run = anki.start(me, false);
-        anki.send(me, run, AnkiApi.DECK, java.util.List.of(mature("perro")), 200);
-        anki.sync(me, mature("gato"));
-        long id = myId();
-        Instant joined = users.findById(id).orElseThrow().getCreatedAt();
-        assertThat(vocabulary.findByUserIdAndLanguageAndTerm(id, Language.ES, "gato").orElseThrow().getKnownAt())
-                .isEqualTo(joined);
-    }
-
-    @Test
     void theFreePlansLimitStopsLearningWordsButNotKnownOnes() throws Exception {
         String free = api.signup();
         anki.chooseSpanish(free);

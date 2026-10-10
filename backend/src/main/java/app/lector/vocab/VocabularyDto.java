@@ -26,9 +26,19 @@ public record VocabularyDto(
         SourceText sourceText,
         Instant createdAt,
         Instant updatedAt,
-        Instant dueAt) {
+        Instant dueAt,
+        Anki anki) {
 
     public record SourceText(Long id, String title) {}
+
+    public record Anki(String state, boolean promoted) {
+        private static final List<String> STATES = List.of("new", "young", "mature");
+
+        static Anki of(VocabularyEntry e) {
+            Integer rank = e.getAnkiRank();
+            return rank == null ? null : new Anki(STATES.get(rank - 1), e.isAnkiPromoted());
+        }
+    }
 
     public static VocabularyDto of(VocabularyEntry e) {
         Text t = e.getSourceText();
@@ -37,6 +47,6 @@ public record VocabularyDto(
                 e.getMeaningLanguage() == null ? null : e.getMeaningLanguage().code(), e.getPartOfSpeech(), e.getPronunciation(), e.getExample(),
                 e.getContextSentence(), e.getNote(), e.getTags(), t == null ? null : new SourceText(t.getId(), t.getTitle()),
                 e.getCreatedAt(), e.getUpdatedAt(),
-                e.getStatus() == WordStatus.LEARNING ? e.getSrs().getDueAt() : null);
+                e.getStatus() == WordStatus.LEARNING ? e.getSrs().getDueAt() : null, Anki.of(e));
     }
 }

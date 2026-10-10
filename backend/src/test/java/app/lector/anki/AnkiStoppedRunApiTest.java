@@ -8,6 +8,7 @@ import app.lector.ClockApiTest;
 import app.lector.TestApi;
 import app.lector.TestClock;
 import app.lector.token.Language;
+import app.lector.user.UserRepository;
 import app.lector.vocab.VocabularyRepository;
 import java.time.Duration;
 import java.util.List;
@@ -29,6 +30,9 @@ class AnkiStoppedRunApiTest {
 
     @Autowired
     VocabularyRepository vocabulary;
+
+    @Autowired
+    UserRepository users;
 
     TestApi api;
     AnkiApi anki;
@@ -65,6 +69,17 @@ class AnkiStoppedRunApiTest {
         TestClock.CLOCK.advance(Duration.ofSeconds(100));
         anki.send(me, run, DECK, List.of(mature("gato")), 200);
         assertThat(anki.finish(me, run, List.of(DECK)).get("state").asString()).isEqualTo("done");
+    }
+
+    @Test
+    void aFirstSyncThatStoppedLeavesTheNextOneFirst() throws Exception {
+        long run = anki.start(me, false);
+        anki.send(me, run, DECK, List.of(mature("perro")), 200);
+        TestClock.CLOCK.advance(Duration.ofMinutes(3));
+        anki.sync(me, mature("gato"));
+        long id = api.get(me, "/api/me", 200).get("id").asLong();
+        assertThat(vocabulary.findByUserIdAndLanguageAndTerm(id, Language.ES, "gato").orElseThrow().getKnownAt())
+                .isEqualTo(users.findById(id).orElseThrow().getCreatedAt());
     }
 
     @Test

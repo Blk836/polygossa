@@ -16,8 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class AccountDeletion {
 
     static final List<String> OWN_ROWS = List.of(
-            "ai_usage", "playlist_bookmarks", "reading_progress", "reading_sessions", "recommendation_events",
-            "review_logs", "sentence_cards", "text_dismissals", "text_reactions", "user_days", "user_interests",
+            "ai_usage", "anki_links", "anki_sync_runs", "anki_decks", "playlist_bookmarks", "reading_progress",
+            "reading_sessions", "recommendation_events", "review_logs", "sentence_cards", "text_dismissals", "text_reactions", "user_days", "user_interests",
             "vocabulary_entries", "word_imports", "words_read", "writing_submissions", "writing_tests",
             "subscriptions");
 

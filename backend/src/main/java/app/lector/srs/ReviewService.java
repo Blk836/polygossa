@@ -45,7 +45,7 @@ public class ReviewService {
     public record DayCount(LocalDate day, long count) {}
 
     public record Stats(long dueWords, long dueSentences, long reviewedToday, int dailyGoal, boolean goalMet,
-                        int streak, List<DayCount> history) {}
+                        int streak, List<DayCount> history, long wordsInAnki) {}
 
     public record ReviewResult(Instant nextDueAt, double intervalDays, boolean graduated, Stats stats) {}
 
@@ -139,7 +139,8 @@ public class ReviewService {
         return new Stats(
                 vocabulary.countDue(user.getId(), language, now),
                 sentences.countDue(user.getId(), language, now),
-                reviewedToday, goal, reviewedToday >= goal, streak(perDay, today, goal), history);
+                reviewedToday, goal, reviewedToday >= goal, streak(perDay, today, goal), history,
+                vocabulary.countLearningInAnki(user.getId(), language));
     }
 
     static int streak(Map<LocalDate, Long> perDay, LocalDate today, int goal) {

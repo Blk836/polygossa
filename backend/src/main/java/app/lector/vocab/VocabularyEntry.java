@@ -21,6 +21,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 import java.util.List;
+import org.hibernate.annotations.Formula;
 
 @Entity
 @Table(name = "vocabulary_entries",
@@ -94,6 +95,13 @@ public class VocabularyEntry {
 
     private Instant knownAt;
 
+    @Formula("(select max(case l.state when 'MATURE' then 3 when 'YOUNG' then 2 else 1 end) "
+            + "from anki_links l where l.entry_id = id)")
+    private Integer ankiRank;
+
+    @Formula("(select bool_or(l.promoted) from anki_links l where l.entry_id = id)")
+    private Boolean ankiPromoted;
+
     protected VocabularyEntry() {}
 
     public VocabularyEntry(User user, Language language, String term, String displayTerm, EntryKind kind) {
@@ -159,4 +167,6 @@ public class VocabularyEntry {
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
     public Instant getKnownAt() { return knownAt; }
+    public Integer getAnkiRank() { return ankiRank; }
+    public boolean isAnkiPromoted() { return Boolean.TRUE.equals(ankiPromoted); }
 }
