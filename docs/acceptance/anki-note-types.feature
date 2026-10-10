@@ -64,3 +64,26 @@ Feature: Anki decks with many note types
     Given I chose fields for a deck's note types on one computer
     When I sign in on another computer with Anki
     Then the same choices are used
+
+  # --- Changes after trying it with a real deck ---
+
+  Scenario: Each note type counts only its own cards
+    Given a deck of 7,803 cards holds a Cloze note type and three other note types
+    When I tick it
+    Then each note type shows the number of its own cards in that deck, and they add up to 7,803
+    And each shows examples from its own cards
+
+  Scenario: Skipping is its own choice, outside the word field
+    Then each note type has a "Skip these cards" checkbox beside its word field
+    When I tick it
+    Then the word and meaning fields and the examples are greyed out, and its cards are left out
+    When I untick it
+    Then the word field I had chosen before comes back
+    And a cloze or picture-only note type starts with the box ticked
+
+  Scenario: Preview is always there
+    Given my decks have synced before
+    Then the Sync panel offers "Sync now" and "Preview"
+    When I change my deck choices and click "Save decks"
+    Then any preview shown before is cleared, so it can't be taken for the new choices
+    And clicking "Preview" shows what a sync with the new choices would change, then "Start syncing" applies it

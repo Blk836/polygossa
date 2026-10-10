@@ -37,12 +37,13 @@ interface ButtonsProps {
 
 function SyncButtons({ needsPreview, previewed, progress, onRun }: ButtonsProps) {
   const busy = progress !== null;
-  let button = <Button onClick={() => onRun(false)} disabled={busy}>Sync now</Button>;
-  if (previewed) button = <Button onClick={() => onRun(false)} disabled={busy}>Start syncing</Button>;
-  else if (needsPreview) button = <Button onClick={() => onRun(true)} disabled={busy}>Preview</Button>;
+  const preview = <Button variant={needsPreview ? "primary" : "secondary"} onClick={() => onRun(true)} disabled={busy}>Preview</Button>;
+  let buttons = <><Button onClick={() => onRun(false)} disabled={busy}>Sync now</Button>{preview}</>;
+  if (previewed) buttons = <Button onClick={() => onRun(false)} disabled={busy}>Start syncing</Button>;
+  else if (needsPreview) buttons = preview;
   return (
     <div className="flex flex-wrap items-center gap-3">
-      {button}
+      {buttons}
       {progress && <span className="text-sm text-muted" role="status">Reading cards: {progress.done} of {progress.total}</span>}
     </div>
   );

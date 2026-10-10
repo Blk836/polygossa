@@ -17,6 +17,7 @@ export function AnkiSettings() {
   const { me, setMe } = useMe();
   const [connection, setConnection] = useState<Connection>("idle");
   const [decks, setDecks] = useState<AnkiDeckChoice[] | null>(null);
+  const [saves, setSaves] = useState(0);
 
   const loadDecks = useCallback(() => api<{ decks: AnkiDeckChoice[] }>("anki/decks").then((r) => setDecks(r.decks)), []);
   useEffect(() => {
@@ -46,11 +47,11 @@ export function AnkiSettings() {
       <div role="group" aria-label="Connect to Anki" className={box}>
         <h2 className="font-semibold">Anki</h2>
         <AnkiConnectStep connection={connection} onConnect={connectToAnki} onConnected={() => setConnection("granted")} />
-        {connection === "granted" && <AnkiDeckPicker saved={decks} onSaved={setDecks} />}
+        {connection === "granted" && <AnkiDeckPicker saved={decks} onSaved={(next) => { setDecks(next); setSaves((n) => n + 1); }} />}
       </div>
       {decks.length > 0 && (
         <div role="group" aria-label="Sync with Anki" className={box}>
-          <AnkiSyncPanel decks={decks} onSynced={() => void loadDecks()} />
+          <AnkiSyncPanel key={saves} decks={decks} onSynced={() => void loadDecks()} />
           <Button variant="secondary" onClick={disconnect}>Disconnect Anki</Button>
         </div>
       )}

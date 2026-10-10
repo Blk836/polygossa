@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { AnkiCardInfo } from "./anki-connect";
-import { guessMeaningField, guessWordField, isCloze, noWrittenWord, planDeck, setupFor, type ModelInDeck } from "./anki-note-types";
+import { guessMeaningField, guessWordField, isCloze, noWrittenWord, planDeck, setupFor, toChoice, type ModelInDeck } from "./anki-note-types";
 import type { AnkiDeckChoice } from "./anki-types";
 
 function card(fields: Record<string, string>): AnkiCardInfo {
@@ -50,9 +50,9 @@ describe("note types that start skipped", () => {
 
   it("are set to skip with their reason", () => {
     const cloze = setupFor(model("Cloze", { Text: "{{c1::x}}", Extra: "" }), undefined);
-    expect([cloze.wordField, cloze.skipReason]).toEqual([undefined, "cloze"]);
+    expect([cloze.skip, cloze.skipReason, cloze.wordField]).toEqual([true, "cloze", "Text"]);
     const pictures = setupFor(model("Pictures", { Picture: "<img src=a.jpg>", Back: "perro" }), undefined);
-    expect([pictures.wordField, pictures.skipReason]).toEqual([undefined, "no-word"]);
+    expect([pictures.skip, pictures.skipReason, pictures.wordField]).toEqual([true, "no-word", "Picture"]);
   });
 });
 
@@ -70,7 +70,9 @@ describe("a note type's setup", () => {
 
   it("keeps a skip that was saved", () => {
     const saved = deck({ noteTypes: [{ modelId: 1, name: "Basic" }] });
-    expect(setupFor(model("Basic", { Front: "dog" }), saved).wordField).toBeUndefined();
+    const setup = setupFor(model("Basic", { Front: "dog" }), saved);
+    expect([setup.skip, setup.wordField]).toEqual([true, "Front"]);
+    expect(toChoice(setup)).toEqual({ modelId: 1, name: "Basic", wordField: undefined, meaningField: undefined });
   });
 
   it("added to a saved deck later is a guess marked new", () => {

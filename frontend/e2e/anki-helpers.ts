@@ -44,7 +44,7 @@ export class FakeAnki {
 
   private find(query: string): number[] {
     const deck = Number(/did:(\d+)/.exec(query)?.[1]);
-    const model = /mid:(\d+)/.exec(query)?.[1];
+    const model = /^did:\d+ /.test(query) ? undefined : /mid:(\d+)/.exec(query)?.[1];
     return this.allCards().filter((c) => c.deck.id === deck && (!model || c.modelInfo.id === Number(model))).map((c) => c.cardId);
   }
 

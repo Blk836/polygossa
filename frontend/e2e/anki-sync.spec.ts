@@ -6,7 +6,7 @@ test.describe.configure({ mode: "serial" });
 
 const syncGroup = (page: Page) => page.getByRole("group", { name: "Sync with Anki" });
 const connectGroup = (page: Page) => page.getByRole("group", { name: "Connect to Anki" });
-const findCalls = (anki: FakeAnki, deck: number) => anki.calls.filter((c) => c.action === "findCards" && String(c.params.query).startsWith(`did:${deck} mid:`));
+const findCalls = (anki: FakeAnki, deck: number) => anki.calls.filter((c) => c.action === "findCards" && String(c.params.query).startsWith(`(did:${deck}) (mid:`));
 
 async function latestRunId(page: Page): Promise<number> {
   const res = await page.request.get("/api/anki/runs/latest");
@@ -59,6 +59,16 @@ test("choosing a deck, previewing what it will change, then syncing", async ({ p
     await expect(syncGroup(page).getByRole("button", { name: "Sync now" })).toBeVisible();
     await expect(page.getByTestId("anki-how-it-works").locator("summary")).toHaveText("How it works");
     await expect(page.getByTestId("anki-how-it-works")).not.toHaveAttribute("open");
+
+    await syncGroup(page).getByRole("button", { name: "Preview" }).click();
+    await expect(syncGroup(page).getByTestId("anki-preview")).toContainText("Nothing has changed yet.");
+    await connectGroup(page).getByTestId("anki-note-type").getByRole("checkbox", { name: "Skip these cards" }).check();
+    await connectGroup(page).getByRole("button", { name: "Save decks" }).click();
+    await expect(syncGroup(page).getByTestId("anki-preview")).toHaveCount(0);
+    await expect(syncGroup(page).getByRole("button", { name: "Sync now" })).toBeVisible();
+    await syncGroup(page).getByRole("button", { name: "Preview" }).click();
+    await expect(syncGroup(page).getByTestId("anki-left-out-skipped")).toHaveText("4 cards left out: their note type is set to skip.", { timeout: 30_000 });
+    await expect(syncGroup(page).getByRole("button", { name: "Start syncing" })).toBeVisible();
   } finally {
     await cleanUpPrefix(page, language, s);
   }
@@ -153,7 +163,6 @@ test("the Review tab says how many words are reviewed in Anki", async ({ page })
   const s = stamp();
   const language = await myLanguage(page);
   try {
-    expect((await page.request.post("/api/me/plan", { data: { tier: "PRO" } })).ok()).toBe(true);
     await page.request.post("/api/vocabulary", { data: { language, term: `${s}rev`, status: "learning" } });
     await chooseDecks(page, [{ ankiDeckId: 86, name: "Review", language, wordField: "Word" }]);
     await syncByApi(page, 86, [{ word: `${s}rev`, type: 2, interval: 3 }]);

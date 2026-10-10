@@ -7,7 +7,7 @@ import { Button, ErrorNote, selectClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import { cardIds, cardsInfo, deckNames, fieldNames, noteTypesInDeck } from "@/lib/anki-connect";
 import { suggestSetup } from "@/lib/anki-decks";
-import { setupFor, type NoteTypeSetup } from "@/lib/anki-note-types";
+import { setupFor, toChoice as toNoteTypeChoice, type NoteTypeSetup } from "@/lib/anki-note-types";
 import type { AnkiDeckChoice } from "@/lib/anki-types";
 import { LEARNING_LANGUAGES } from "@/lib/languages";
 import type { LanguageCode } from "@/lib/types";
@@ -39,10 +39,10 @@ async function noteTypesOf(deckId: number, saved: AnkiDeckChoice | undefined): P
 
 function toChoice(row: Row): AnkiDeckChoice {
   const types = row.noteTypes ?? [];
-  const wordField = types.find((t) => t.wordField)?.wordField ?? types[0]?.fields[0] ?? "Front";
+  const wordField = types.find((t) => !t.skip)?.wordField ?? types[0]?.wordField ?? "Front";
   return {
     ankiDeckId: row.id, name: row.name, language: row.language, wordField,
-    noteTypes: types.map(({ modelId, name, wordField: word, meaningField }) => ({ modelId, name, wordField: word, meaningField })),
+    noteTypes: types.map(toNoteTypeChoice),
   };
 }
 
