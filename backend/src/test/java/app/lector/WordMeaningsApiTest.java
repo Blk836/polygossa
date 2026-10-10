@@ -1,11 +1,13 @@
 package app.lector;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 import app.lector.token.Language;
 import app.lector.token.NativeLanguage;
 import app.lector.translation.TranslationClient;
 import app.lector.vocab.CommunityMeanings;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -159,6 +161,43 @@ class WordMeaningsApiTest {
             api.patch(token, "/api/vocabulary/" + id, "{\"note\":\"my secret\"}", 200);
         }
         assertThat(community.top(Language.DE, word, NativeLanguage.ES)).isEmpty();
+    }
+
+    private JsonNode lookUp(String token, String language, String term) throws Exception {
+        return api.send(get("/api/dictionary").param("language", language).param("term", term), token, 200);
+    }
+
+    private static List<String> meanings(JsonNode lookup) {
+        return lookup.get("meanings").valueStream().map(JsonNode::asString).toList();
+    }
+
+    @Test
+    void mySavedMeaningLeadsMyLookup() throws Exception {
+        for (int i = 0; i < 3; i++) save(learner("es"), "de", word, "can");
+        save(learner("es"), "de", word, "perro");
+        String ana = learner("es");
+        save(ana, "de", word, "perro");
+        assertThat(meanings(lookUp(learner("es"), "de", word))).containsExactly("can", "perro");
+        JsonNode mine = lookUp(ana, "de", word);
+        assertThat(meanings(mine)).containsExactly("perro", "can");
+        assertThat(mine.get("source").asString()).isEqualTo("community");
+    }
+
+    @Test
+    void myOwnMeaningShowsEvenWhenNobodyElseSavedIt() throws Exception {
+        String ana = learner("es");
+        save(ana, "de", word, "perrito");
+        JsonNode mine = lookUp(ana, "de", word);
+        assertThat(meanings(mine)).containsExactly("perrito");
+        assertThat(mine.hasNonNull("source")).isFalse();
+    }
+
+    @Test
+    void myMeaningInAnotherNativeLanguageDoesNotLead() throws Exception {
+        String ana = learner("es");
+        save(ana, "de", word, "perro");
+        api.patch(ana, "/api/me", "{\"nativeLanguage\":\"fr\"}", 200);
+        assertThat(meanings(lookUp(ana, "de", word))).isEmpty();
     }
 
     @Test
