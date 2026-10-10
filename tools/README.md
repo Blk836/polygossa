@@ -135,3 +135,14 @@ subtitles comes in as German. Check that the video is actually spoken in the lan
 Tests: `node --test "tools/**/*.test.mjs"`. Mutation testing uses the frontend's Stryker:
 `frontend/node_modules/.bin/stryker run tools/stryker.config.mjs`, run from the repo root (in Git Bash, append
 `/c/Windows/System32` to `PATH` first, as for `npm run mutate`).
+
+## check-aws-signin.mjs: the AWS sign-in before the local backend starts
+
+IntelliJ's Backend run configuration runs it first ("Check AWS sign-in", `docs/acceptance/aws-signin-before-launch.feature`):
+when the `polygossa` profile isn't signed in, it opens the AWS sign-in in the browser and lets the backend start once
+it succeeds. To add the step to your own Backend run configuration (git doesn't track that file's changes): Edit
+Configurations → Backend → Before launch → + → Run Another Configuration → Check AWS sign-in.
+
+```bash
+node tools/check-aws-signin.mjs
+```
