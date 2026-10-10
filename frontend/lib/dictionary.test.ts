@@ -1,25 +1,52 @@
 import { describe, expect, it } from "vitest";
-import { browserNativeLanguage, dictionaryLinks, meaningLine, meaningNote, NATIVE_LANGUAGES, savedMeaning } from "./dictionary";
+import { browserNativeLanguage, dictionaryLinks, meaningNote, meaningView, NATIVE_LANGUAGES, savedMeaning, withMeaningFirst } from "./dictionary";
 import type { WordLookup } from "./types";
 
 const base: WordLookup = { term: "maison", language: "fr", meanings: ["house", "home"], meaningLanguage: "en", source: "machine" };
 
-describe("meaningLine", () => {
-  it("names the language and lists the meanings", () => {
-    expect(meaningLine(base)).toEqual({ label: "English", text: "house, home", missing: false });
-    expect(meaningLine({ ...base, meaningLanguage: "es", meanings: ["casa"] })).toEqual({ label: "Spanish", text: "casa", missing: false });
+describe("meaningView", () => {
+  it("leads with the first meaning, lists the rest under it, and says where they came from, with no language label", () => {
+    expect(meaningView({ ...base, meanings: ["dog", "hound", "cur"] })).toEqual({
+      missing: false, headline: "dog", also: ["hound", "cur"], note: "machine translation",
+    });
+    expect(meaningView({ ...base, meanings: ["casa"], meaningLanguage: "es", source: "community" })).toEqual({
+      missing: false, headline: "casa", also: [], note: "saved by other learners",
+    });
   });
 
-  it("says when there is no meaning yet", () => {
-    expect(meaningLine({ ...base, meanings: [], source: null })).toEqual({ label: "English", text: "No English meaning yet", missing: true });
+  it("has no note when the source is unknown", () => {
+    expect(meaningView({ ...base, source: null })).toEqual({ missing: false, headline: "house", also: ["home"], note: null });
+  });
+
+  it("says when there is no meaning yet, naming the language", () => {
+    expect(meaningView({ ...base, meanings: [], source: null })).toEqual({ missing: true, text: "No English meaning yet" });
+    expect(meaningView({ ...base, meanings: [], meaningLanguage: "es", source: "machine" })).toEqual({ missing: true, text: "No Spanish meaning yet" });
   });
 
   it("is nothing when reading my own language", () => {
-    expect(meaningLine({ ...base, meanings: [], meaningLanguage: null, source: null })).toBeNull();
+    expect(meaningView({ ...base, meanings: [], meaningLanguage: null, source: null })).toBeNull();
   });
 
   it("falls back to the code for a language it doesn't know", () => {
-    expect(meaningLine({ ...base, meaningLanguage: "zz" })?.label).toBe("zz");
+    expect(meaningView({ ...base, meanings: [], meaningLanguage: "zz" })).toEqual({ missing: true, text: "No zz meaning yet" });
+  });
+});
+
+describe("withMeaningFirst", () => {
+  const dog = { ...base, meanings: ["dog", "hound", "cur"] };
+
+  it("moves the picked meaning to the front and keeps the others in order", () => {
+    expect(withMeaningFirst(dog, "cur").meanings).toEqual(["cur", "dog", "hound"]);
+    expect(withMeaningFirst(dog, "hound")).toEqual({ ...dog, meanings: ["hound", "dog", "cur"] });
+  });
+
+  it("changes nothing when the headline is picked again", () => {
+    expect(withMeaningFirst(dog, "dog")).toEqual(dog);
+  });
+
+  it("leaves the lookup it was given alone", () => {
+    withMeaningFirst(dog, "cur");
+    expect(dog.meanings).toEqual(["dog", "hound", "cur"]);
   });
 });
 

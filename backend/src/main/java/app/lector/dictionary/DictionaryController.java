@@ -52,7 +52,8 @@ public class DictionaryController {
                              @RequestParam(required = false) String after) {
         String surface = checked(term);
         User user = currentUser.load(principal);
-        return meanings.lookup(language, user.getNativeLanguage(), TokenizationService.normalize(surface, language),
+        return meanings.lookup(user.getId(), language, user.getNativeLanguage(),
+                TokenizationService.normalize(surface, language),
                 surface, InContext.of(before, surface, after));
     }
 

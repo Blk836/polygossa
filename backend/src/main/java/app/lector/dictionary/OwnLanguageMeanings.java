@@ -23,11 +23,17 @@ public class OwnLanguageMeanings {
         this.machine = machine;
     }
 
-    public WordLookup lookup(Language language, NativeLanguage nativeLanguage, String key, String surface,
+    public WordLookup lookup(Long userId, Language language, NativeLanguage nativeLanguage, String key, String surface,
                              Optional<InContext> context) {
         if (nativeLanguage.code().equals(language.code())) {
             return new WordLookup(key, language.code(), List.of(), null, null);
         }
+        WordLookup found = shared(language, nativeLanguage, key, surface, context);
+        return community.mine(userId, language, key, nativeLanguage).map(mine -> leadingWith(found, mine)).orElse(found);
+    }
+
+    private WordLookup shared(Language language, NativeLanguage nativeLanguage, String key, String surface,
+                              Optional<InContext> context) {
         List<String> shared = community.top(language, key, nativeLanguage);
         Optional<String> inSentence = context.flatMap(c -> sentences.meaning(language, nativeLanguage, key, c));
         if (inSentence.isPresent()) {
@@ -41,6 +47,11 @@ public class OwnLanguageMeanings {
         return translated
                 .map(t -> new WordLookup(key, language.code(), List.of(t), nativeLanguage.code(), WordLookup.MACHINE))
                 .orElseGet(() -> new WordLookup(key, language.code(), List.of(), nativeLanguage.code(), null));
+    }
+
+    private static WordLookup leadingWith(WordLookup found, String mine) {
+        return new WordLookup(found.term(), found.language(), firstThen(mine, found.meanings()),
+                found.meaningLanguage(), found.source());
     }
 
     private static List<String> firstThen(String first, List<String> others) {

@@ -27,27 +27,84 @@ test.describe("the word popup", () => {
     created = null;
   });
 
-  test("shows meanings other learners saved, saves the first, and a click picks another", async ({ page }) => {
+  test("leads with the first meaning other learners saved, saves it, and a click on another makes it the headline", async ({ page }) => {
     created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
-    await lookupAnswer(page, created, { meanings: ["home", "house"], source: "community" });
+    await lookupAnswer(page, created, { meanings: ["home", "house", "dwelling"], source: "community" });
     const sent = vocabularyWrites(page);
     await openWord(page, created);
 
     const line = page.getByTestId("meanings");
-    await expect(line).toContainText("English");
-    await expect(line).toContainText("home, house");
-    await expect(line).toContainText("saved by other learners");
-    await expect(line.getByRole("button", { name: "home" })).toHaveAttribute("aria-pressed", "true");
+    const headline = page.getByTestId("meaning-headline");
+    await expect(headline).toHaveText("home");
+    await expect(page.getByTestId("meaning-also")).toHaveText("also: house · dwelling");
+    await expect(page.getByTestId("meaning-source")).toHaveText("saved by other learners");
+    await expect(line).not.toContainText("English");
+    await expect(headline.getByRole("button", { name: "home" })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("meaning-also").getByRole("button", { name: "house" })).toHaveAttribute("aria-pressed", "false");
     await expect.poll(() => sent.some((b) => b.meaning === "home" && b.definition === "home")).toBe(true);
 
-    await line.getByRole("button", { name: "house" }).click();
-    await expect(line.getByRole("button", { name: "house" })).toHaveAttribute("aria-pressed", "true");
-    await expect(line.getByRole("button", { name: "home" })).toHaveAttribute("aria-pressed", "false");
+    await page.getByTestId("meaning-also").getByRole("button", { name: "house" }).click();
+    await expect(headline).toHaveText("house");
+    await expect(headline.getByRole("button", { name: "house" })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("meaning-also")).toHaveText("also: home · dwelling");
     const word = created.word(1);
     await expect.poll(async () => (await (await page.request.get(`/api/vocabulary?q=${word}`)).json()).items
       .filter((e: { term: string }) => e.term === word)
       .map((e: { meaning?: string; definition?: string }) => `${e.meaning}/${e.definition}`))
       .toEqual(["house/house"]);
+
+    await headline.getByRole("button", { name: "house" }).click();
+    await expect(headline).toHaveText("house");
+    await expect(page.getByTestId("meaning-also")).toHaveText("also: home · dwelling");
+
+    await popupClose(page).click();
+    await article(page).getByText(created.word(1), { exact: true }).click();
+    await expect(headline).toHaveText("house");
+    await expect(page.getByTestId("meaning-also")).toHaveText("also: home · dwelling");
+  });
+
+  test("a single machine translation is the headline alone, with a small source note", async ({ page }) => {
+    created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
+    await lookupAnswer(page, created, { meanings: ["attainment"], source: "machine" });
+    await openWord(page, created);
+    await expect(page.getByTestId("meaning-headline")).toHaveText("attainment");
+    await expect(page.getByTestId("meaning-also")).toHaveCount(0);
+    await expect(page.getByTestId("meaning-source")).toHaveText("machine translation");
+    await expect(page.getByTestId("meanings")).not.toContainText("English");
+    const size = (id: string) => page.getByTestId(id).evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    expect(await size("meaning-headline")).toBeGreaterThan(await size("meaning-source"));
+  });
+
+  test("a meaning with no known source has no note", async ({ page }) => {
+    created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
+    await lookupAnswer(page, created, { meanings: ["perrito"], source: null });
+    await openWord(page, created);
+    await expect(page.getByTestId("meaning-headline")).toHaveText("perrito");
+    await expect(page.getByTestId("meaning-source")).toHaveCount(0);
+  });
+
+  test("a long meaning wraps inside the popup on a phone", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 740 });
+    created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
+    const long = "the state of having reached a particular level of achievement after a long effort";
+    await lookupAnswer(page, created, { meanings: [long], source: "machine" });
+    await openWord(page, created);
+    const headline = page.getByTestId("meaning-headline");
+    await expect(headline).toHaveText(long);
+    const box = await headline.boundingBox();
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(375);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+  });
+
+  test("a phrase leads with its first meaning the same way", async ({ page }) => {
+    created = await createTextWith(page, (w) => `${w(1)} ${w(2)} ${w(3)}.`);
+    await lookupAnswer(page, created, { meanings: ["however", "nevertheless"], source: "machine" });
+    await openWord(page, created);
+    await article(page).getByText(created.word(2), { exact: true }).click({ modifiers: ["Shift"] });
+    await expect(page.getByText("Phrase", { exact: true })).toBeVisible();
+    await expect(page.getByTestId("meaning-headline")).toHaveText("however");
+    await expect(page.getByTestId("meaning-also")).toHaveText("also: nevertheless");
   });
 
   test("labels a machine translation and links out to dictionaries in a new tab", async ({ page }) => {
@@ -72,6 +129,8 @@ test.describe("the word popup", () => {
     await lookupAnswer(page, created, { meanings: [], source: null });
     await openWord(page, created);
     await expect(page.getByTestId("meanings")).toHaveText("No English meaning yet");
+    await expect(page.getByTestId("meaning-headline")).toHaveCount(0);
+    await expect(page.getByTestId("meaning-source")).toHaveCount(0);
     await expect(page.getByTestId("dictionary-links").getByRole("link")).toHaveCount(3);
   });
 
