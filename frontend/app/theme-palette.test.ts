@@ -37,7 +37,24 @@ const TEXT_ON: [fg: string, bg: string][] = [
     .flatMap((c): [string, string][] => [["ink", `cover-${c}`], ["muted", `cover-${c}`]]),
 ];
 
-const MARK_ON: [mark: string, bg: string][] = [["w-marker", "paper"], ["w-marker", "w-sentence"]];
+const MARK_ON: [mark: string, bg: string][] = [
+  ["w-marker", "paper"], ["w-marker", "w-sentence"], ["accent", "tile-known"],
+  ["polly-line", "paper"], ["polly-line", "card"], ["w-known-line", "line"],
+];
+
+const KNOWN_AND_LEARNING: [known: string, learning: string][] = [
+  ["w-known", "w-learning"], ["tile-known", "tile-learning"], ["w-known-line", "w-learning-line"],
+];
+
+function hueAndSaturation(hex: string): [number, number] {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const max = Math.max(r, g, b);
+  const d = max - Math.min(r, g, b);
+  if (d === 0) return [0, 0];
+  const l = (max + Math.min(r, g, b)) / 2;
+  const hue = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [(hue * 60 + 360) % 360, d / (1 - Math.abs(2 * l - 1))];
+}
 
 describe("theme tokens", () => {
   const t = tokens();
@@ -74,6 +91,29 @@ describe("theme tokens", () => {
       expect(against("tile-next")).toBeLessThan(against("tile-new"));
       expect(against("tile-later")).toBeLessThan(against("tile-next"));
     }
+  });
+
+  it.each(["honey", ...KNOWN_AND_LEARNING.map(([known]) => known)])("makes %s honey-coloured in light and dark", (name) => {
+    for (const hex of t.get(name)!) {
+      const [hue, saturation] = hueAndSaturation(hex);
+      expect(hue, hex).toBeGreaterThanOrEqual(30);
+      expect(hue, hex).toBeLessThanOrEqual(50);
+      expect(saturation, hex).toBeGreaterThanOrEqual(0.6);
+    }
+  });
+
+  it.each(KNOWN_AND_LEARNING)("keeps %s and %s apart by lightness in light and dark", (known, learning) => {
+    for (const mode of [0, 1]) expect(contrast(t.get(known)![mode], t.get(learning)![mode])).toBeGreaterThanOrEqual(1.4);
+  });
+
+  it.each(KNOWN_AND_LEARNING)("makes %s a deeper honey than %s in the light theme", (known, learning) => {
+    expect(luminance(t.get(known)![0])).toBeLessThan(luminance(t.get(learning)![0]));
+  });
+
+  it("lightens honey for the dark theme, where it stands out against the page", () => {
+    const [light, dark] = t.get("honey")!;
+    expect(luminance(dark)).toBeGreaterThan(luminance(light));
+    expect(contrast(dark, t.get("paper")![1])).toBeGreaterThanOrEqual(3);
   });
 
   it("lets an explicit choice override the OS setting", () => {
