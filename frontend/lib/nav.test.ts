@@ -125,11 +125,12 @@ describe("group keys", () => {
 });
 
 describe("settings sections", () => {
-  it("are Profile, Appearance, Subscription and Privacy", () => {
+  it("are Profile, Appearance, Subscription, Anki and Privacy", () => {
     expect(SETTINGS_SECTIONS.map((s) => [s.label, s.href])).toEqual([
       ["Profile", "/settings"],
       ["Appearance", "/settings/appearance"],
       ["Subscription", "/settings/subscription"],
+      ["Anki", "/settings/anki"],
       ["Privacy", "/settings/privacy"],
     ]);
   });
@@ -138,6 +139,7 @@ describe("settings sections", () => {
     ["/settings", "Profile"],
     ["/settings/appearance", "Appearance"],
     ["/settings/subscription", "Subscription"],
+    ["/settings/anki", "Anki"],
     ["/settings/privacy", "Privacy"],
   ])("%s shows the %s settings sub-tab", (path, label) => {
     expect(settingsSection(path)?.label).toBe(label);
