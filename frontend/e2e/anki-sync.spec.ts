@@ -163,7 +163,6 @@ test("the Review tab says how many words are reviewed in Anki", async ({ page })
   const s = stamp();
   const language = await myLanguage(page);
   try {
-    expect((await page.request.post("/api/me/plan", { data: { tier: "PRO" } })).ok()).toBe(true);
     await page.request.post("/api/vocabulary", { data: { language, term: `${s}rev`, status: "learning" } });
     await chooseDecks(page, [{ ankiDeckId: 86, name: "Review", language, wordField: "Word" }]);
     await syncByApi(page, 86, [{ word: `${s}rev`, type: 2, interval: 3 }]);
