@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { article, cleanUp, createTextWith, openReader, type Created } from "./reader-helpers";
+import { article, cleanUp, createTextWith, openReader, popupClose, type Created } from "./reader-helpers";
 
 function lookupAnswer(page: Page, created: Created, extra: Record<string, unknown>) {
   return page.route("**/api/dictionary?*", (route) =>
@@ -90,6 +90,39 @@ test.describe("the word popup", () => {
     expect(asked[0].get("term")).toBe(created.word(1));
     expect(asked[0].get("before")).toBe(`${created.word(2)} ${created.word(1)} ${created.word(3)} `);
     expect(asked[0].get("after")).toBe(` ${created.word(4)}.`);
+  });
+
+  test("labels a meaning found in this sentence, and saves it", async ({ page }) => {
+    created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
+    await lookupAnswer(page, created, { meanings: ["standing", "upright"], source: "sentence" });
+    const sent = vocabularyWrites(page);
+    await openWord(page, created);
+
+    const line = page.getByTestId("meanings");
+    await expect(line).toContainText("standing, upright");
+    await expect(line).toContainText("in this sentence");
+    await expect.poll(() => sent.some((b) => b.meaning === "standing")).toBe(true);
+  });
+
+  test("asks again when the same word is clicked in another sentence", async ({ page }) => {
+    created = await createTextWith(page, (w) => `${w(1)} ${w(2)}. ${w(3)} ${w(1)}.`);
+    const asked: URLSearchParams[] = [];
+    await page.route("**/api/dictionary?*", (route) => {
+      const params = new URL(route.request().url()).searchParams;
+      asked.push(params);
+      const meaning = params.get("before") ? "get up" : "standing";
+      return route.fulfill({ json: { term: created!.word(1), language: created!.language, meaningLanguage: "en", meanings: [meaning], source: "sentence" } });
+    });
+    await openReader(page, `/read/${created.id}`);
+    const copies = article(page).getByText(created.word(1), { exact: true });
+    await copies.nth(0).click();
+    await expect(page.getByTestId("meanings")).toContainText("standing");
+    await popupClose(page).click();
+
+    await copies.nth(1).click();
+    await expect(page.getByTestId("meanings")).toContainText("get up");
+    expect(asked).toHaveLength(2);
+    expect(asked[1].get("before")).toBe(`${created.word(3)} `);
   });
 
   test("shows no dictionary definitions, and the AI explains only when asked", async ({ page }) => {
