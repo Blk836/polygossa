@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { FlameIcon } from "./icons";
+import { HoneyJar } from "./polly";
 import { flame, knownWords, type HeaderStats as Stats } from "@/lib/header-stats";
 
 const MIN_SCALE = 0.45;
@@ -15,9 +17,16 @@ function flameClass(state: "lit" | "fading" | "out", fuel: number): string {
 export function HeaderStats({ stats }: { stats: Stats }) {
   const f = flame(stats);
   const known = knownWords(stats.knownWords);
+  const [seen, setSeen] = useState(stats.knownWords);
+  const [wobbles, setWobbles] = useState(0);
+  if (stats.knownWords !== seen) {
+    setSeen(stats.knownWords);
+    if (stats.knownWords > seen) setWobbles((w) => w + 1);
+  }
   const scale = f.state === "fading" ? MIN_SCALE + (1 - MIN_SCALE) * f.fuel : 1;
   return (
     <div className="flex items-center gap-1">
+      <HoneyJar key={wobbles} wobbles={wobbles} />
       <Link
         href="/vocabulary"
         data-testid="known-words"

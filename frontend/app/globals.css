@@ -24,8 +24,8 @@
   --w-new: light-dark(#d4e6fa, #1d3a5f);
   --w-learning: light-dark(#fbe3a4, #574319);
   --w-learning-line: light-dark(#c48612, #e8b04a);
-  --w-known: light-dark(#dcebd6, #213d2c);
-  --w-known-line: light-dark(#4f8a4a, #7fbf7a);
+  --w-known: light-dark(#e8a020, #7a5b14);
+  --w-known-line: light-dark(#9a6a0c, #b07d18);
   --w-ignored: light-dark(#dde4f2, #26335a);
   --w-ignored-line: light-dark(#4767a8, #8fa8de);
   --w-active: light-dark(#f8d8ca, #5a2e2a);
@@ -37,11 +37,17 @@
   --sea-glow: light-dark(#e6f1f0, #1c3048);
   --map-shadow: light-dark(#a3c1cc, #070d18);
   --tile-grout: light-dark(#fbf6ea, #1c2036);
-  --tile-known: light-dark(#79ad69, #2f6b3e);
-  --tile-learning: light-dark(#ecc053, #7a5a1c);
+  --tile-known: light-dark(#d48a10, #7a5b14);
+  --tile-learning: light-dark(#f2cf6e, #4d3d18);
   --tile-new: light-dark(#ece2c7, #3a3d4f);
   --tile-next: light-dark(#f4eddb, #2c3044);
   --tile-later: light-dark(#f8f3e7, #24283c);
+
+  --honey: light-dark(#f2b33d, #f5c35c);
+  --polly-line: light-dark(#26336b, #aab6f2);
+  --polly-wing: light-dark(#eef2ff, #283063);
+  --polly-face: light-dark(#1d2033, #1d2033);
+  --polly-cheek: light-dark(#e8846a, #e8846a);
 
   --cover-learners: light-dark(#e4e7f6, #252b52);
   --cover-daily-life: light-dark(#f3e6d3, #3a2f22);
@@ -263,6 +269,22 @@ main:has(> [data-reader]) {
 }
 @media (prefers-reduced-motion: reduce) {
   .streak-flicker {
+    animation: none;
+  }
+}
+
+@keyframes jar-wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-14deg); }
+  50% { transform: rotate(10deg); }
+  75% { transform: rotate(-5deg); }
+}
+.jar-wobble {
+  transform-origin: 50% 90%;
+  animation: jar-wobble 0.6s ease-in-out 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .jar-wobble {
     animation: none;
   }
 }

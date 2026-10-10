@@ -80,11 +80,14 @@ test.describe("in the reader", () => {
   let created: Created | null = null;
   test.afterEach(async ({ page }) => cleanUp(page, created));
 
-  test("the Known button in the word popup is honey", async ({ page }) => {
+  test("the Known button in the word popup is honey once picked", async ({ page }) => {
     created = await createTextWith(page, (w) => `${w(0)} ${w(1)}.`);
     await openReader(page, `/read/${created.id}`);
     await wordAt(page, 0).click();
-    await expectHoney(page.getByRole("button", { name: "Known", exact: true }));
+    const knownButton = page.getByRole("button", { name: "Known", exact: true });
+    await knownButton.click();
+    await expect(knownButton).toHaveClass(/bg-known/);
+    await expectHoney(knownButton);
   });
 });
 
