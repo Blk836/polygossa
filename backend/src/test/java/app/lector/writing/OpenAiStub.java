@@ -30,6 +30,7 @@ public final class OpenAiStub implements AutoCloseable {
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/chat/completions", this::handle);
         server.createContext("/embeddings", this::handleEmbedding);
+        server.setExecutor(java.util.concurrent.Executors.newCachedThreadPool());
         server.start();
     }
 

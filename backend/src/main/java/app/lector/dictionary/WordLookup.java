@@ -11,4 +11,5 @@ public record WordLookup(
 
     public static final String COMMUNITY = "community";
     public static final String MACHINE = "machine";
+    public static final String SENTENCE = "sentence";
 }

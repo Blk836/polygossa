@@ -11,7 +11,7 @@ import { AiExplanation, DictionaryLinks, ExtraActions, Meanings, PopupHeader, St
 const lookupCache = new Map<string, Promise<WordLookup>>();
 
 function lookup(language: LanguageCode, term: string, nativeLanguage: string, around: TextAround): Promise<WordLookup> {
-  const key = `${nativeLanguage}:${language}:${term}`;
+  const key = JSON.stringify([nativeLanguage, language, term, around.before, around.after]);
   let p = lookupCache.get(key);
   if (!p) {
     const params = new URLSearchParams({ language, term });

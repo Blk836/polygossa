@@ -3,10 +3,10 @@ package app.lector;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
+import app.lector.dictionary.SentenceMeaningRepository;
 import app.lector.token.Language;
 import app.lector.token.NativeLanguage;
 import app.lector.translation.MachineTranslationRepository;
-import app.lector.translation.SentenceMeaningRepository;
 import app.lector.translation.TranslateStub;
 import app.lector.writing.OpenAiStub;
 import java.time.Duration;
