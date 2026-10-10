@@ -157,6 +157,30 @@ class AnkiRunsApiTest {
     }
 
     @Test
+    void aSyncCutOffByAnkiClosingStopsAtOnceAndKeepsWhatItSent() throws Exception {
+        long run = anki.start(me, false);
+        anki.send(me, run, DECK, List.of(mature("perro")), 200);
+        JsonNode stopped = api.post(me, "/api/anki/runs/" + run + "/stop", "", 200);
+        assertThat(stopped.get("state").asString()).isEqualTo("stopped");
+        assertThat(api.get(me, "/api/anki/runs/latest", 200).get("state").asString()).isEqualTo("stopped");
+        assertThat(anki.statuses(me, "es")).containsEntry("perro", "known");
+        anki.send(me, run, DECK, List.of(mature("gato")), 409);
+        api.post(me, "/api/anki/runs/" + run + "/stop", "", 409);
+        anki.start(me, false);
+        api.post(api.signupPro(), "/api/anki/runs/" + run + "/stop", "", 404);
+    }
+
+    @Test
+    void myAccountSaysWhetherAnkiIsConnected() throws Exception {
+        assertThat(api.get(me, "/api/me", 200).get("ankiConnected").asBoolean()).isTrue();
+        api.delete(me, "/api/anki/decks", 204);
+        assertThat(api.get(me, "/api/me", 200).get("ankiConnected").asBoolean()).isFalse();
+        anki.chooseDecks(me, List.of(deck(3, "fr")), 200);
+        assertThat(api.get(me, "/api/me", 200).get("ankiConnected").asBoolean()).isTrue();
+        assertThat(api.get(api.signupPro(), "/api/me", 200).get("ankiConnected").asBoolean()).isFalse();
+    }
+
+    @Test
     void aSyncWithoutDecksIsRejected() throws Exception {
         String other = api.signupPro();
         api.post(other, "/api/anki/runs", "{\"dryRun\":false}", 400);
