@@ -37,11 +37,19 @@ function languageLabel(code: string): string {
   return NATIVE_LANGUAGES.find((l) => l.code === code)?.name ?? code;
 }
 
-export function meaningLine(lookup: WordLookup): { label: string; text: string; missing: boolean } | null {
+export type MeaningView =
+  | { missing: true; text: string }
+  | { missing: false; headline: string; also: string[]; note: string | null };
+
+export function meaningView(lookup: WordLookup): MeaningView | null {
   if (!lookup.meaningLanguage) return null;
-  const label = languageLabel(lookup.meaningLanguage);
-  if (lookup.meanings.length === 0) return { label, text: `No ${label} meaning yet`, missing: true };
-  return { label, text: lookup.meanings.join(", "), missing: false };
+  const [headline, ...also] = lookup.meanings;
+  if (headline === undefined) return { missing: true, text: `No ${languageLabel(lookup.meaningLanguage)} meaning yet` };
+  return { missing: false, headline, also, note: meaningNote(lookup) };
+}
+
+export function withMeaningFirst(lookup: WordLookup, meaning: string): WordLookup {
+  return { ...lookup, meanings: [meaning, ...lookup.meanings.filter((m) => m !== meaning)] };
 }
 
 export function meaningNote(lookup: WordLookup): string | null {

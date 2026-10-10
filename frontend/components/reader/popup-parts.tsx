@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { dictionaryLinks, meaningLine, meaningNote, savedMeaning } from "@/lib/dictionary";
+import { dictionaryLinks, meaningView } from "@/lib/dictionary";
 import { canSpeak, speak } from "@/lib/speech";
 import type { DictionaryResult, WordLookup, WordStatus } from "@/lib/types";
 import { CloseIcon, PlayIcon, SpeakerIcon } from "../icons";
@@ -43,40 +42,53 @@ export function PopupHeader({ target, speechLocale, onClose }: {
   );
 }
 
+function MeaningButton({ meaning, current, onPick, className }: {
+  meaning: string;
+  current: boolean;
+  onPick: (meaning: string) => void;
+  className: string;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={current}
+      title="Keep this meaning with the word"
+      onClick={() => onPick(meaning)}
+      className={`rounded px-0.5 text-left break-words ${className}`}
+    >
+      {meaning}
+    </button>
+  );
+}
+
 export function Meanings({ lookup, error, onPick }: {
   lookup: WordLookup | null;
   error: string | null;
   onPick: (meaning: string) => void;
 }) {
-  const [chosen, setChosen] = useState(savedMeaning(lookup));
   if (error) return <p className="text-danger">{error}</p>;
   if (!lookup) return <Spinner className="text-muted" />;
-  const line = meaningLine(lookup);
-  if (!line) return null;
-  if (line.missing) return <p data-testid="meanings" className="text-muted">{line.text}</p>;
-  const note = meaningNote(lookup);
+  const view = meaningView(lookup);
+  if (!view) return null;
+  if (view.missing) return <p data-testid="meanings" className="text-muted">{view.text}</p>;
   return (
-    <p data-testid="meanings" className="font-medium">
-      <span className="mr-1.5 text-xs font-normal text-muted">{line.label}</span>
-      {lookup.meanings.map((meaning, i) => (
-        <span key={meaning}>
-          {i > 0 && ", "}
-          <button
-            type="button"
-            aria-pressed={meaning === (chosen ?? savedMeaning(lookup))}
-            title="Keep this meaning with the word"
-            onClick={() => {
-              setChosen(meaning);
-              onPick(meaning);
-            }}
-            className={`rounded px-0.5 ${meaning === (chosen ?? savedMeaning(lookup)) ? "bg-accent-soft text-ink" : "hover:bg-paper"}`}
-          >
-            {meaning}
-          </button>
-        </span>
-      ))}
-      {note && <span className="ml-1.5 text-xs font-normal text-muted">· {note}</span>}
-    </p>
+    <div data-testid="meanings" className="space-y-0.5">
+      <p data-testid="meaning-headline" className="text-lg font-semibold leading-snug">
+        <MeaningButton meaning={view.headline} current onPick={onPick} className="hover:bg-paper" />
+      </p>
+      {view.also.length > 0 && (
+        <p data-testid="meaning-also" className="text-muted">
+          also:{" "}
+          {view.also.map((meaning, i) => (
+            <span key={meaning}>
+              {i > 0 && " · "}
+              <MeaningButton meaning={meaning} current={false} onPick={onPick} className="text-ink hover:bg-paper" />
+            </span>
+          ))}
+        </p>
+      )}
+      {view.note && <p data-testid="meaning-source" className="text-xs text-muted">{view.note}</p>}
+    </div>
   );
 }
 

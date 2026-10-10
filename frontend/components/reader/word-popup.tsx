@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api, errorMessage } from "@/lib/api";
+import { withMeaningFirst } from "@/lib/dictionary";
 import type { DictionaryResult, LanguageCode, WordLookup, WordStatus } from "@/lib/types";
 import { useMe } from "../me-context";
 import { UpgradeNote } from "../ui";
@@ -10,8 +11,12 @@ import { AiExplanation, DictionaryLinks, ExtraActions, Meanings, PopupHeader, St
 
 const lookupCache = new Map<string, Promise<WordLookup>>();
 
+function cacheKey(language: LanguageCode, term: string, nativeLanguage: string): string {
+  return `${nativeLanguage}:${language}:${term}`;
+}
+
 function lookup(language: LanguageCode, term: string, nativeLanguage: string, around: TextAround): Promise<WordLookup> {
-  const key = `${nativeLanguage}:${language}:${term}`;
+  const key = cacheKey(language, term, nativeLanguage);
   let p = lookupCache.get(key);
   if (!p) {
     const params = new URLSearchParams({ language, term });
@@ -22,6 +27,10 @@ function lookup(language: LanguageCode, term: string, nativeLanguage: string, ar
     lookupCache.set(key, p);
   }
   return p;
+}
+
+function lookupTerm(target: PopupTarget): string {
+  return target.kind === "word" ? target.display : target.term;
 }
 
 export interface PopupTarget {
@@ -80,7 +89,7 @@ export function WordPopup(props: Props) {
 
   useEffect(() => {
     let cancelled = false;
-    lookup(language, target.kind === "word" ? target.display : target.term, me.nativeLanguage, target.around)
+    lookup(language, lookupTerm(target), me.nativeLanguage, target.around)
       .then((r) => {
         if (cancelled) return;
         setResult(r);
@@ -91,6 +100,14 @@ export function WordPopup(props: Props) {
       cancelled = true;
     };
   }, [language, target, onLookup, me.nativeLanguage]);
+
+  function pickMeaning(meaning: string) {
+    if (!result) return;
+    const picked = withMeaningFirst(result, meaning);
+    setResult(picked);
+    lookupCache.set(cacheKey(language, lookupTerm(target), me.nativeLanguage), Promise.resolve(picked));
+    props.onPickMeaning(meaning);
+  }
 
   function explain() {
     const params = new URLSearchParams({ language, term: target.display, context: target.sentence.slice(0, 300) });
@@ -125,7 +142,7 @@ export function WordPopup(props: Props) {
     <div className="flex max-h-[70vh] flex-col overflow-hidden rounded-t-2xl border border-line bg-card shadow-xl sm:max-h-[28rem] sm:rounded-2xl">
       <PopupHeader target={target} speechLocale={props.speechLocale} onClose={props.onClose} />
       <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
-        <Meanings lookup={result} error={error} onPick={props.onPickMeaning} />
+        <Meanings lookup={result} error={error} onPick={pickMeaning} />
         <DictionaryLinks language={language} nativeLanguage={me.nativeLanguage} term={target.display} />
         {explanation && <AiExplanation result={explanation} />}
         {aiExample && (
