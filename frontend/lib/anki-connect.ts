@@ -85,7 +85,7 @@ export async function deckNames(): Promise<{ id: number; name: string }[]> {
 }
 
 export function cardIds(deckId: number, modelId?: number): Promise<number[]> {
-  return invoke<number[]>("findCards", { query: modelId === undefined ? `did:${deckId}` : `did:${deckId} mid:${modelId}` });
+  return invoke<number[]>("findCards", { query: modelId === undefined ? `did:${deckId}` : `(did:${deckId}) (mid:${modelId})` });
 }
 
 export async function noteTypes(): Promise<{ id: number; name: string }[]> {
