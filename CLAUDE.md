@@ -83,8 +83,12 @@ when its test is fixed.
 - `e2e/profile-photo.spec.ts` › "a image/webp image can be uploaded" (and the jpeg and png ones): the crop dialog
   never opened within 30 s (suspected: the file is picked before the page has hydrated). Seen 2026-10-09, PR #89;
   jpeg 2026-10-10, PR #91; png 2026-10-10, PR #93.
+- `e2e/profile-photo.spec.ts` › "changing the photo replaces it everywhere": timed out at 30 s. Seen 2026-10-10,
+  PR #100.
 - `e2e/wide-reader.spec.ts` › "where the mini player sits in the margin, pages use the full height". Seen
   2026-10-10, PR #89.
+- `e2e/wide-reader.spec.ts` › "where the mini player overlaps the text, every page ends above it without
+  scrolling". Seen 2026-10-10, PR #100.
 - `e2e/card-layout.spec.ts` › "a category or search grid follows the layout": Explore showed "This page couldn't
   load" (a failed server render, cause not captured: the e2e servers' logs aren't kept). Seen 2026-10-10, PR #89.
 - `e2e/page-skeletons.spec.ts` › "Classes shows an outline shaped like it, and fills in without moving". Seen
