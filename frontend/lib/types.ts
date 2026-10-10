@@ -171,6 +171,7 @@ export interface VocabularyEntry {
   createdAt: string;
   updatedAt: string;
   dueAt?: string;
+  anki?: { state: "new" | "young" | "mature"; promoted: boolean };
 }
 
 export interface Page<T> {
@@ -218,6 +219,7 @@ export interface ReviewStats {
   goalMet: boolean;
   streak: number;
   history: { day: string; count: number }[];
+  wordsInAnki: number;
 }
 
 export type { Activity, ActivityDay, ActivityPeriod, Dashboard, GoalKind, GoalToday, PeriodStats, Streak } from "./dashboard-types";
