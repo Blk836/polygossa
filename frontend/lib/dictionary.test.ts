@@ -54,6 +54,7 @@ describe("meaningNote", () => {
   it("says where the meanings came from", () => {
     expect(meaningNote({ ...base, source: "community" })).toBe("saved by other learners");
     expect(meaningNote({ ...base, source: "machine" })).toBe("machine translation");
+    expect(meaningNote({ ...base, source: "sentence" })).toBe("in this sentence");
   });
 
   it("is nothing without meanings", () => {

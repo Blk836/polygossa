@@ -14,10 +14,12 @@ import org.springframework.stereotype.Component;
 public class OwnLanguageMeanings {
 
     private final CommunityMeanings community;
+    private final SentenceMeanings sentences;
     private final MachineTranslations machine;
 
-    public OwnLanguageMeanings(CommunityMeanings community, MachineTranslations machine) {
+    public OwnLanguageMeanings(CommunityMeanings community, SentenceMeanings sentences, MachineTranslations machine) {
         this.community = community;
+        this.sentences = sentences;
         this.machine = machine;
     }
 
@@ -33,6 +35,11 @@ public class OwnLanguageMeanings {
     private WordLookup shared(Language language, NativeLanguage nativeLanguage, String key, String surface,
                               Optional<InContext> context) {
         List<String> shared = community.top(language, key, nativeLanguage);
+        Optional<String> inSentence = context.flatMap(c -> sentences.meaning(language, nativeLanguage, key, c));
+        if (inSentence.isPresent()) {
+            return new WordLookup(key, language.code(), firstThen(inSentence.get(), shared), nativeLanguage.code(),
+                    WordLookup.SENTENCE);
+        }
         if (!shared.isEmpty()) {
             return new WordLookup(key, language.code(), shared, nativeLanguage.code(), WordLookup.COMMUNITY);
         }
@@ -43,8 +50,13 @@ public class OwnLanguageMeanings {
     }
 
     private static WordLookup leadingWith(WordLookup found, String mine) {
-        List<String> meanings = new ArrayList<>(List.of(mine));
-        found.meanings().stream().filter(m -> !m.equalsIgnoreCase(mine)).forEach(meanings::add);
-        return new WordLookup(found.term(), found.language(), meanings, found.meaningLanguage(), found.source());
+        return new WordLookup(found.term(), found.language(), firstThen(mine, found.meanings()),
+                found.meaningLanguage(), found.source());
+    }
+
+    private static List<String> firstThen(String first, List<String> others) {
+        List<String> all = new ArrayList<>(List.of(first));
+        others.stream().filter(o -> !o.equalsIgnoreCase(first)).forEach(all::add);
+        return all;
     }
 }

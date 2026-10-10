@@ -11,12 +11,23 @@ import { AiExplanation, DictionaryLinks, ExtraActions, Meanings, PopupHeader, St
 
 const lookupCache = new Map<string, Promise<WordLookup>>();
 
-function cacheKey(language: LanguageCode, term: string, nativeLanguage: string): string {
-  return `${nativeLanguage}:${language}:${term}`;
+function wordKey(language: LanguageCode, term: string, nativeLanguage: string): string {
+  return JSON.stringify([nativeLanguage, language, term]);
+}
+
+function cacheKey(language: LanguageCode, term: string, nativeLanguage: string, around: TextAround): string {
+  return JSON.stringify([wordKey(language, term, nativeLanguage), around.before, around.after]);
+}
+
+function pickEverywhere(language: LanguageCode, term: string, nativeLanguage: string, meaning: string) {
+  const prefix = JSON.stringify([wordKey(language, term, nativeLanguage)]).slice(0, -1) + ",";
+  for (const [key, p] of lookupCache) {
+    if (key.startsWith(prefix)) lookupCache.set(key, p.then((r) => withMeaningFirst(r, meaning)));
+  }
 }
 
 function lookup(language: LanguageCode, term: string, nativeLanguage: string, around: TextAround): Promise<WordLookup> {
-  const key = cacheKey(language, term, nativeLanguage);
+  const key = cacheKey(language, term, nativeLanguage, around);
   let p = lookupCache.get(key);
   if (!p) {
     const params = new URLSearchParams({ language, term });
@@ -105,7 +116,8 @@ export function WordPopup(props: Props) {
     if (!result) return;
     const picked = withMeaningFirst(result, meaning);
     setResult(picked);
-    lookupCache.set(cacheKey(language, lookupTerm(target), me.nativeLanguage), Promise.resolve(picked));
+    pickEverywhere(language, lookupTerm(target), me.nativeLanguage, meaning);
+    lookupCache.set(cacheKey(language, lookupTerm(target), me.nativeLanguage, target.around), Promise.resolve(picked));
     props.onPickMeaning(meaning);
   }
 

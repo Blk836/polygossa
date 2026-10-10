@@ -141,7 +141,7 @@ export interface WordLookup {
   language: LanguageCode;
   meanings: string[];
   meaningLanguage: string | null;
-  source: "community" | "machine" | null;
+  source: "community" | "machine" | "sentence" | null;
 }
 
 export interface VocabularyEntry {

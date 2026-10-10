@@ -151,6 +151,59 @@ test.describe("the word popup", () => {
     expect(asked[0].get("after")).toBe(` ${created.word(4)}.`);
   });
 
+  test("labels a meaning found in this sentence, and saves it", async ({ page }) => {
+    created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
+    await lookupAnswer(page, created, { meanings: ["standing", "upright"], source: "sentence" });
+    const sent = vocabularyWrites(page);
+    await openWord(page, created);
+
+    await expect(page.getByTestId("meaning-headline")).toHaveText("standing");
+    await expect(page.getByTestId("meaning-also")).toHaveText("also: upright");
+    await expect(page.getByTestId("meaning-source")).toHaveText("in this sentence");
+    await expect.poll(() => sent.some((b) => b.meaning === "standing")).toBe(true);
+  });
+
+  test("a meaning picked in one sentence leads when the word is reopened in another", async ({ page }) => {
+    created = await createTextWith(page, (w) => `${w(1)} ${w(2)}. ${w(3)} ${w(1)}.`);
+    await lookupAnswer(page, created, { meanings: ["standing", "upright"], source: "sentence" });
+    vocabularyWrites(page);
+    await openReader(page, `/read/${created.id}`);
+    const copies = article(page).getByText(created.word(1), { exact: true });
+    const headline = page.getByTestId("meaning-headline");
+    await copies.nth(1).click();
+    await expect(headline).toHaveText("standing");
+    await popupClose(page).click();
+
+    await copies.nth(0).click();
+    await page.getByTestId("meaning-also").getByRole("button", { name: "upright" }).click();
+    await expect(headline).toHaveText("upright");
+    await popupClose(page).click();
+
+    await copies.nth(1).click();
+    await expect(headline).toHaveText("upright");
+  });
+
+  test("asks again when the same word is clicked in another sentence", async ({ page }) => {
+    created = await createTextWith(page, (w) => `${w(1)} ${w(2)}. ${w(3)} ${w(1)}.`);
+    const asked: URLSearchParams[] = [];
+    await page.route("**/api/dictionary?*", (route) => {
+      const params = new URL(route.request().url()).searchParams;
+      asked.push(params);
+      const meaning = params.get("before") ? "get up" : "standing";
+      return route.fulfill({ json: { term: created!.word(1), language: created!.language, meaningLanguage: "en", meanings: [meaning], source: "sentence" } });
+    });
+    await openReader(page, `/read/${created.id}`);
+    const copies = article(page).getByText(created.word(1), { exact: true });
+    await copies.nth(0).click();
+    await expect(page.getByTestId("meanings")).toContainText("standing");
+    await popupClose(page).click();
+
+    await copies.nth(1).click();
+    await expect(page.getByTestId("meanings")).toContainText("get up");
+    expect(asked).toHaveLength(2);
+    expect(asked[1].get("before")).toBe(`${created.word(3)} `);
+  });
+
   test("shows no dictionary definitions, and the AI explains only when asked", async ({ page }) => {
     created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
     await lookupAnswer(page, created, { meanings: ["house"], source: "machine" });

@@ -30,7 +30,8 @@ public record AppProperties(
             @DefaultValue("gpt-4o-mini") String model,
             @DefaultValue("30s") Duration timeout,
             @DefaultValue("30") int dailyLimit,
-            @DefaultValue("text-embedding-3-small") String embeddingModel) {
+            @DefaultValue("text-embedding-3-small") String embeddingModel,
+            @DefaultValue("5s") Duration meaningTimeout) {
 
         public boolean enabled() {
             return apiKey != null && !apiKey.isBlank();

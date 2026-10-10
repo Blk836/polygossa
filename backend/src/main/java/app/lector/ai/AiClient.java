@@ -2,6 +2,7 @@ package app.lector.ai;
 
 import app.lector.common.ApiException;
 import app.lector.config.AppProperties;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -24,15 +25,21 @@ public class AiClient {
 
     private final AppProperties.OpenAi config;
     private final RestClient http;
+    private final RestClient quick;
     private final ObjectMapper json;
 
     public AiClient(AppProperties props, RestClient.Builder builder, ObjectMapper json) {
         this.config = props.openai();
         this.json = json;
+        this.http = client(builder, config.timeout());
+        this.quick = client(builder, config.meaningTimeout());
+    }
+
+    private RestClient client(RestClient.Builder builder, Duration timeout) {
         var factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(config.timeout());
-        factory.setReadTimeout(config.timeout());
-        this.http = builder.clone()
+        factory.setConnectTimeout(timeout);
+        factory.setReadTimeout(timeout);
+        return builder.clone()
                 .baseUrl(config.baseUrl())
                 .defaultHeader("Authorization", "Bearer " + config.apiKey())
                 .requestFactory(factory)
@@ -52,6 +59,14 @@ public class AiClient {
     }
 
     public JsonNode completeJson(String system, String user, double temperature) {
+        return complete(http, system, user, temperature);
+    }
+
+    public JsonNode quickJson(String system, String user) {
+        return complete(quick, system, user, 0);
+    }
+
+    private JsonNode complete(RestClient client, String system, String user, double temperature) {
         if (!enabled()) {
             throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "ai_disabled",
                     "AI features are not configured on this server (set OPENAI_API_KEY)");
@@ -64,7 +79,7 @@ public class AiClient {
                         Map.of("role", "system", "content", system),
                         Map.of("role", "user", "content", user)));
         try {
-            JsonNode response = http.post()
+            JsonNode response = client.post()
                     .uri("/chat/completions")
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(request)
