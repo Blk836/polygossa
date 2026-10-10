@@ -75,6 +75,6 @@ test.describe("other pages with segmented controls", () => {
 
   test("Vocabulary's Words / Sentences is one line high", async ({ page }) => {
     await page.goto("/vocabulary");
-    await expectOneLineButtons(page.getByRole("group", { name: "Vocabulary section" }), ["Words", "Sentences"]);
+    await expectOneLineButtons(page.getByRole("group", { name: "Vocabulary section" }), ["Words", "Phrases"]);
   });
 });

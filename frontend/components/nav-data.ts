@@ -13,7 +13,7 @@ export function useDueCount(language: string, pathname: string, refreshed: unkno
   useEffect(() => {
     let cancelled = false;
     api<ReviewStats>(`review/stats${query(language)}`)
-      .then((s) => !cancelled && setDue(s.dueWords + s.dueSentences))
+      .then((s) => !cancelled && setDue(s.dueWords))
       .catch(() => !cancelled && setDue(null));
     return () => {
       cancelled = true;

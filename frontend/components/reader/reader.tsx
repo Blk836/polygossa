@@ -139,9 +139,10 @@ export function Reader({ initial, initialSettings, playlist }: {
   const saveSentence = useCallback(
     async (translation?: string) => {
       if (!target) return;
-      await api("sentences", { body: { language, sentence: target.sentence, translation, textId: text.id } });
+      await api("vocabulary", { body: { language, term: target.sentence, kind: "phrase", definition: translation, textId: text.id } });
+      void refresh();
     },
-    [target, language, text.id],
+    [target, language, text.id, refresh],
   );
 
   const shown = onPage(target, pages, page);

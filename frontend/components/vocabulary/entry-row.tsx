@@ -70,8 +70,11 @@ function MeaningEditor({ entry, onSave }: { entry: VocabularyEntry; onSave: (val
 }
 
 function Context({ entry }: { entry: VocabularyEntry }) {
-  if (!entry.contextSentence) return null;
   const source = entry.sourceText;
+  if (!entry.contextSentence) {
+    if (!source || entry.kind !== "phrase") return null;
+    return <p className="mt-2 text-sm text-muted">from <Link href={`/read/${source.id}`} className="underline">{source.title}</Link></p>;
+  }
   return (
     <p className="mt-2 border-l-2 border-line pl-2 font-reading text-sm text-muted">
       {entry.contextSentence}
