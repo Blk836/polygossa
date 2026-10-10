@@ -394,4 +394,114 @@ class SentenceMeaningApiTest {
         assertThat(sentenceMeanings.countBySourceLanguageAndTargetLanguageAndTerm(Language.FR, NativeLanguage.EN,
                 word)).isEqualTo(1);
     }
+
+    private static String typed(String meaning, String partOfSpeech, String form, String lemma) {
+        return "{\"meaning\":\"" + meaning + "\",\"partOfSpeech\":\"" + partOfSpeech + "\",\"form\":"
+                + (form == null ? "null" : "\"" + form + "\"") + ",\"lemma\":"
+                + (lemma == null ? "null" : "\"" + lemma + "\"") + "}";
+    }
+
+    private static JsonNode type(JsonNode result) {
+        return result.path("wordType");
+    }
+
+    @Test
+    void aVerbComesWithItsTenseAndDictionaryForm() throws Exception {
+        String word = fresh();
+        AI.reply(typed("will go", "verb", "future, 1st person plural", "aller"));
+        JsonNode result = lookup(word, "Nous ", " demain.");
+        assertThat(meanings(result)).containsExactly("will go");
+        assertThat(type(result).path("partOfSpeech").asString()).isEqualTo("verb");
+        assertThat(type(result).path("form").asString()).isEqualTo("future, 1st person plural");
+        assertThat(type(result).path("lemma").asString()).isEqualTo("aller");
+    }
+
+    @Test
+    void theAiIsAskedForTheTypeFormAndDictionaryFormWithTheStrongerModel() throws Exception {
+        String word = fresh();
+        AI.reply(meaning("rug"));
+        lookup(word, "On dit tirer le ", ".");
+        assertThat(AI.requests().getFirst()).contains("\"partOfSpeech\"").contains("\"form\"").contains("\"lemma\"")
+                .contains("gpt-4.1-mini");
+    }
+
+    @Test
+    void aWordWithNoFormHasOnlyItsType() throws Exception {
+        String word = fresh();
+        AI.reply(typed("slowly", "adverb", null, null));
+        JsonNode result = lookup(word, "Il parle ", ".");
+        assertThat(type(result).path("partOfSpeech").asString()).isEqualTo("adverb");
+        assertThat(type(result).path("form").isNull()).isTrue();
+        assertThat(type(result).path("lemma").isNull()).isTrue();
+    }
+
+    @Test
+    void aSelectedPhraseIsAPhrase() throws Exception {
+        String phrase = "en " + fresh();
+        AI.reply(typed("in the process of", "phrase", null, null));
+        assertThat(type(lookup(phrase, "Il est ", " manger.")).path("partOfSpeech").asString()).isEqualTo("phrase");
+    }
+
+    @Test
+    void theDictionaryFormIsLeftOutWhenItIsTheWordItself() throws Exception {
+        String word = fresh();
+        AI.reply(typed("carpet", "noun", "masculine singular", word.toUpperCase()));
+        assertThat(type(lookup(word, "On dit tirer le ", ".")).path("lemma").isNull()).isTrue();
+    }
+
+    @Test
+    void anUnknownTypeLeavesTheTypeOutButKeepsTheMeaning() throws Exception {
+        String word = fresh();
+        AI.reply(typed("carpet", "thing", "masculine singular", null));
+        JsonNode result = lookup(word, "On dit tirer le ", ".");
+        assertThat(meanings(result)).containsExactly("carpet");
+        assertThat(type(result).isNull()).isTrue();
+    }
+
+    @Test
+    void anOverlongFormOrDictionaryFormIsLeftOut() throws Exception {
+        String word = fresh();
+        AI.reply(typed("will go", "verb", "x".repeat(41), "aller"));
+        JsonNode first = type(lookup(word, "Nous ", " demain."));
+        assertThat(first.path("form").isNull()).isTrue();
+        assertThat(first.path("lemma").asString()).isEqualTo("aller");
+        String other = fresh();
+        AI.reply(typed("will go", "verb", "future", "y".repeat(41)));
+        JsonNode second = type(lookup(other, "Nous ", " demain."));
+        assertThat(second.path("form").asString()).isEqualTo("future");
+        assertThat(second.path("lemma").isNull()).isTrue();
+    }
+
+    @Test
+    void meaningsFromElsewhereHaveNoType() throws Exception {
+        String word = fresh();
+        AI.setFailing(true);
+        TRANSLATE.answer(word, "en", "up");
+        JsonNode result = lookup(word, "si on est ", " sur la table.");
+        assertThat(meanings(result)).containsExactly("up");
+        assertThat(type(result).isNull()).isTrue();
+    }
+
+    @Test
+    void myOwnMeaningLeadsAndTheTypeStays() throws Exception {
+        String word = fresh();
+        String me = learner("en");
+        api.post(me, "/api/vocabulary", "{\"language\":\"fr\",\"term\":\"" + word + "\",\"meaning\":\"go\"}", 201);
+        AI.reply(typed("will go", "verb", "future, 1st person plural", "aller"));
+        JsonNode result = lookup(me, word, "Nous ", " demain.");
+        assertThat(meanings(result)).containsExactly("go", "will go");
+        assertThat(type(result).path("partOfSpeech").asString()).isEqualTo("verb");
+    }
+
+    @Test
+    void theTypeIsStoredWithTheMeaningAndShared() throws Exception {
+        String word = fresh();
+        AI.reply(typed("will go", "verb", "future, 1st person plural", "aller"));
+        lookup(word, "Nous ", " demain.");
+        AI.reset();
+        JsonNode again = lookup(word, "Nous ", " demain.");
+        assertThat(AI.requests()).isEmpty();
+        assertThat(type(again).path("form").asString()).isEqualTo("future, 1st person plural");
+        assertThat(type(again).path("lemma").asString()).isEqualTo("aller");
+    }
 }
