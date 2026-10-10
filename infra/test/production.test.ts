@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { before, describe, it } from "node:test";
 import * as cdk from "aws-cdk-lib";
 import { Match, Template } from "aws-cdk-lib/assertions";
@@ -105,6 +107,13 @@ describe("production stack", () => {
     assert.equal(backend.Properties.LoadBalancers, undefined);
     assert.ok(backend.Properties.ServiceRegistries?.length === 1);
     assert.equal(envOf(container("frontend")).BACKEND_URL, "http://backend.polygossa.internal:8080");
+  });
+
+  it("checks the frontend's health on a file the frontend serves without signing in", () => {
+    const groups = Object.values(template.findResources("AWS::ElasticLoadBalancingV2::TargetGroup"));
+    const paths = groups.map((g) => g.Properties.HealthCheckPath as string);
+    assert.deepEqual(paths, ["/icon.svg"]);
+    assert.ok(existsSync(join(import.meta.dirname, "..", "..", "frontend", "app", "icon.svg")));
   });
 
   it("opens the load balancer to CloudFront only", () => {

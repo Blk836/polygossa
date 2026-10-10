@@ -3,6 +3,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { ApiError } from "@/lib/api";
 import { BRAND } from "@/lib/brand";
 import type { CefrLevel } from "@/lib/types";
+import { Polly, type PollyMood } from "./polly";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 
@@ -36,7 +37,7 @@ export function LinkButton({
 export function Logo({ className = "" }: { className?: string }) {
   return (
     <span className={`font-display font-semibold tracking-tight ${className}`}>
-      {BRAND}<span className="text-rubric">.</span>
+      <Polly label="Polly the bee" className="mr-[0.2em] inline-block size-[1.2em] align-[-0.22em]" />{BRAND}<span className="text-rubric">.</span>
     </span>
   );
 }
@@ -108,9 +109,10 @@ export function UpgradeNote({ message }: { message: string }) {
   );
 }
 
-export function Empty({ title, children }: { title: string; children?: ReactNode }) {
+export function Empty({ title, children, polly = "sleepy" }: { title: string; children?: ReactNode; polly?: PollyMood }) {
   return (
-    <div className="rounded-xl border border-dashed border-line px-6 py-12 text-center">
+    <div data-testid="empty" className="rounded-xl border border-dashed border-line px-6 py-10 text-center">
+      <Polly mood={polly} className="mx-auto mb-3 size-16 sm:size-20" />
       <p className="font-medium">{title}</p>
       {children && <div className="mt-2 text-sm text-muted">{children}</div>}
     </div>

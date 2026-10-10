@@ -41,7 +41,9 @@ so the checks must prove it is correct.
    something pass. If a test seems wrong, stop and tell me why.
 4. **The full suites run on this PC, one run at a time, through `node tools/local-checks.mjs`** ("cheap mode":
    GitHub runs nothing by default, to save Actions minutes). Before opening or merging a pull request, commit, push,
-   and run it from your worktree: it picks the suites your branch's changes need (`--all` runs everything), waits its
+   and run it from your worktree. **Always merge the latest main in first** (`git fetch`, `git merge origin/main`,
+   push), before any run of the local checks, so conflicts surface now and the run tests what will land, not a
+   stale branch that has to go round again at merge time. The tool: it picks the suites your branch's changes need (`--all` runs everything), waits its
    turn if another session's run is going, and puts a green or red **"local checks"** mark on the commit on GitHub.
    Its green mark is the proof. Never start a whole suite directly: two at once overload the machine and the
    end-to-end suite's fixed ports collide. For TDD's red and green, run only the individual tests you are writing or

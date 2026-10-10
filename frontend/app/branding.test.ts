@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { DEFAULT_BRAND } from "@/lib/brand";
@@ -29,6 +29,17 @@ describe("branding", () => {
 
   it("titles every page with the brand", () => {
     expect(read("layout.tsx")).toContain("title: { default: `${BRAND} — learn languages by reading`, template: `%s · ${BRAND}` }");
+  });
+
+  it("uses the hive mark, not the default favicon, as the tab icon", () => {
+    expect(existsSync(join(__dirname, "favicon.ico"))).toBe(false);
+    const icon = read("icon.svg");
+    expect(icon).toContain("<polygon");
+    expect(icon).not.toContain(DEFAULT_BRAND);
+  });
+
+  it("puts Polly before the brand name in the logo, whatever the brand is called", () => {
+    expect(readFileSync(join(root, "components", "ui.tsx"), "utf8")).toMatch(/<Polly [^>]*\/>\s*\{BRAND\}/);
   });
 
   it("names the brand on the landing, login and signup pages", () => {
