@@ -70,3 +70,8 @@ Feature: A selected phrase is highlighted as one band
   Scenario: Selecting a new phrase across a saved one still works
     When I drag across words that include part of a saved phrase
     Then the new selection is opened as a phrase, as before
+
+  Scenario: A phrase stops at 12 words
+    When I drag across more than 12 words
+    Then the band stops growing at the 12th word from where I started
+    And releasing opens those 12 words as the phrase

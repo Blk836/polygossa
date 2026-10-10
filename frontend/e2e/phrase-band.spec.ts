@@ -92,6 +92,18 @@ test.describe("a selected phrase is one band", () => {
     await expectOneBand(page, 15);
   });
 
+  test("the band stops at 12 words, and releasing opens those 12 as the phrase", async ({ page }) => {
+    created = await createTextWith(page, (w) => Array.from({ length: 16 }, (_, i) => w(i + 1)).join(" ") + ".");
+    const asked = stubLookups(page, created);
+    await openReader(page, `/read/${created.id}`);
+    await dragAcross(page, 2, 15, false);
+    await expect(article(page).locator(".w.sel")).toHaveCount(12);
+    await page.mouse.up();
+    const twelve = Array.from({ length: 12 }, (_, i) => created!.word(i + 2)).join(" ");
+    await expect(header(page)).toHaveText(twelve);
+    await expect.poll(() => asked.at(-1)).toBe(twelve.toLowerCase());
+  });
+
   test("a single clicked word is one rounded, outlined box as before", async ({ page }) => {
     created = await createTextWith(page, (w) => `${w(1)} ${w(2)} ${w(3)}.`);
     stubLookups(page, created);
