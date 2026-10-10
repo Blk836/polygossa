@@ -6,7 +6,7 @@ test.describe.configure({ mode: "serial" });
 
 const syncGroup = (page: Page) => page.getByRole("group", { name: "Sync with Anki" });
 const connectGroup = (page: Page) => page.getByRole("group", { name: "Connect to Anki" });
-const findCalls = (anki: FakeAnki, deck: number) => anki.calls.filter((c) => c.action === "findCards" && String(c.params.query).startsWith(`did:${deck} mid:`));
+const findCalls = (anki: FakeAnki, deck: number) => anki.calls.filter((c) => c.action === "findCards" && String(c.params.query).startsWith(`(did:${deck}) (mid:`));
 
 async function latestRunId(page: Page): Promise<number> {
   const res = await page.request.get("/api/anki/runs/latest");
