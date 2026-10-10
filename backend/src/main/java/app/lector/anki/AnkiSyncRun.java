@@ -67,6 +67,11 @@ public class AnkiSyncRun {
         return false;
     }
 
+    void stop(Instant now) {
+        state = State.STOPPED;
+        lastActivityAt = now;
+    }
+
     void active(Instant now) {
         lastActivityAt = now;
     }

@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import org.hibernate.annotations.Formula;
 
 @Entity
 @Table(name = "users")
@@ -73,7 +74,14 @@ public class User {
     @Column(length = 1300)
     private String toursSeen;
 
+    @Formula("(select count(d.id) from anki_decks d where d.user_id = id)")
+    private Long ankiDecks;
+
     protected User() {}
+
+    public boolean isAnkiConnected() {
+        return ankiDecks != null && ankiDecks > 0;
+    }
 
     public User(String email, String passwordHash, String displayName) {
         this.email = email;

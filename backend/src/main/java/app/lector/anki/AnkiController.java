@@ -67,6 +67,11 @@ public class AnkiController {
         return syncService.finish(currentUser.load(principal), id, req.ankiDeckIds());
     }
 
+    @PostMapping("/runs/{id}/stop")
+    public AnkiSyncService.RunDto stop(@AuthenticationPrincipal AuthUser principal, @PathVariable long id) {
+        return syncService.stop(currentUser.load(principal), id);
+    }
+
     @GetMapping("/runs/latest")
     public ResponseEntity<AnkiSyncService.RunDto> latest(@AuthenticationPrincipal AuthUser principal) {
         return syncService.latest(currentUser.load(principal)).map(ResponseEntity::ok)

@@ -103,6 +103,13 @@ public class AnkiSyncService {
     }
 
     @Transactional
+    public RunDto stop(User user, long runId) {
+        AnkiSyncRun run = running(user, runId);
+        run.stop(clock.instant());
+        return RunDto.of(run);
+    }
+
+    @Transactional
     public Optional<RunDto> latest(User user) {
         return runs.findFirstByUserIdAndDryRunFalseOrderByIdDesc(user.getId()).map(run -> {
             run.stopIfQuiet(clock.instant());
