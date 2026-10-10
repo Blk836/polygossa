@@ -26,7 +26,6 @@ export function HeaderStats({ stats }: { stats: Stats }) {
   const scale = f.state === "fading" ? MIN_SCALE + (1 - MIN_SCALE) * f.fuel : 1;
   return (
     <div className="flex items-center gap-1">
-      <HoneyJar key={wobbles} wobbles={wobbles} />
       <Link
         href="/vocabulary"
         data-testid="known-words"
@@ -34,6 +33,7 @@ export function HeaderStats({ stats }: { stats: Stats }) {
         title={known.label}
         className="flex items-center gap-1 rounded-lg px-1.5 py-1 text-sm font-semibold tabular-nums hover:bg-card"
       >
+        <HoneyJar key={wobbles} wobbles={wobbles} />
         <span>{known.text}</span>{" "}
         <span className="font-normal text-muted">known</span>
       </Link>

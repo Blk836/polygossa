@@ -91,7 +91,7 @@ function startCued(yt: YTPlayer, cue: Cue) {
 
 function dockClass(mini: boolean): string {
   const base = "sticky top-14 z-20 -mx-4 mb-6 bg-paper/95 px-4 pt-2 pb-3 backdrop-blur sm:mx-0 sm:px-0 lg:mb-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none";
-  if (mini) return `${base} lg:fixed lg:top-auto lg:right-6 lg:bottom-[5.5rem] lg:z-30 lg:w-[200px]`;
+  if (mini) return `${base} lg:fixed lg:top-auto lg:right-6 lg:bottom-[5.5rem] lg:z-30 lg:w-[22.5rem]`;
   return `${base} lg:top-20`;
 }
 
@@ -166,7 +166,7 @@ const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video,
         {failed ? (
           <PlayerFailed videoId={video.videoId} />
         ) : (
-          <div className={`mx-auto aspect-video max-h-[42vh] overflow-hidden rounded-xl bg-black lg:max-h-none ${mini ? "lg:aspect-square lg:shadow-2xl lg:ring-1 lg:ring-line" : ""}`}>
+          <div className={`mx-auto aspect-video max-h-[42vh] overflow-hidden rounded-xl bg-black lg:max-h-none ${mini ? "lg:shadow-2xl lg:ring-1 lg:ring-line" : ""}`}>
             <div ref={host} className="size-full" />
           </div>
         )}
