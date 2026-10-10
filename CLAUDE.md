@@ -64,7 +64,9 @@ so the checks must prove it is correct.
    yourself (`gh pr merge --merge --delete-branch`, keeping the commits) only when that commit has a green "local
    checks" mark (`gh pr checks`). If main moved since the checks ran, merge main into the branch, push, and run the
    checks again first. Keep few branches finishing at the same time, since each merge sends the others round again.
-   If a check fails, fix it on the branch; never merge red. (`gh pr merge` can't merge a change to a workflow file
+   If a check fails, fix it on the branch; never merge red, **except for a flaky test**: one that fails in a full
+   run but passes when run alone (`--repeat-each=3`) and that the branch's changes don't touch. Then merge anyway,
+   add it to "Flaky tests (tech debt)" below, and say so in the report. (`gh pr merge` can't merge a change to a workflow file
    without the CLI's `workflow` scope; merge locally with `git merge --no-ff` and push instead.) "Green before
    merging" is our rule, not GitHub's (branch protection needs GitHub Pro). Don't batch unrelated work into one
    commit, and list the commits in the final report.
@@ -73,6 +75,17 @@ so the checks must prove it is correct.
    is already live (`--again` forces it), checks the site answers, and marks main's commit "deploy production". It
    needs Docker Desktop running and the `polygossa` AWS sign-in. A failed deploy is fixed forward on a new branch.
    GitHub deploys only when asked (a hand-started `deploy_only` run, or `DEPLOY_ON_GITHUB=true`).
+
+### Flaky tests (tech debt)
+End-to-end tests that fail in a full run on a loaded PC but pass alone. Each run usually fails at most one, a
+different one each time; the same commit has gone red then green on a re-run since at least PR #55. Remove a line
+when its test is fixed.
+- `e2e/profile-photo.spec.ts` › "a image/webp image can be uploaded": the crop dialog never opened within 30 s
+  (suspected: the file is picked before the page has hydrated). Seen 2026-10-09, PR #89.
+- `e2e/wide-reader.spec.ts` › "where the mini player sits in the margin, pages use the full height". Seen
+  2026-10-10, PR #89.
+- `e2e/card-layout.spec.ts` › "a category or search grid follows the layout": Explore showed "This page couldn't
+  load" (a failed server render, cause not captured: the e2e servers' logs aren't kept). Seen 2026-10-10, PR #89.
 
 ### One worktree per session
 Several Claude sessions often work on this repository at once, and in one shared folder they switch branches under
