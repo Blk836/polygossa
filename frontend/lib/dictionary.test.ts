@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { browserNativeLanguage, dictionaryLinks, meaningNote, meaningView, NATIVE_LANGUAGES, savedMeaning, withMeaningFirst } from "./dictionary";
+import { browserNativeLanguage, dictionaryLinks, meaningNote, meaningView, NATIVE_LANGUAGES, savedMeaning, withMeaningFirst, wordTypeLine } from "./dictionary";
 import type { WordLookup } from "./types";
 
 const base: WordLookup = { term: "maison", language: "fr", meanings: ["house", "home"], meaningLanguage: "en", source: "machine" };
@@ -145,5 +145,19 @@ describe("NATIVE_LANGUAGES (kept in step with the backend's NativeLanguage)", ()
     for (const code of ["es", "fr", "de", "it", "pt", "ja", "zh", "ko", "ru", "ar"]) {
       expect(NATIVE_LANGUAGES.map((l) => l.code)).toContain(code);
     }
+  });
+});
+
+describe("wordTypeLine", () => {
+  it("joins the type, the form and the dictionary form", () => {
+    expect(wordTypeLine({ partOfSpeech: "verb", form: "future, 1st person plural", lemma: "aller" }))
+      .toBe("verb · future, 1st person plural · from aller");
+    expect(wordTypeLine({ partOfSpeech: "noun", form: "masculine singular", lemma: null })).toBe("noun · masculine singular");
+    expect(wordTypeLine({ partOfSpeech: "adverb", form: null, lemma: null })).toBe("adverb");
+  });
+
+  it("is nothing without a type", () => {
+    expect(wordTypeLine(null)).toBeNull();
+    expect(wordTypeLine(undefined)).toBeNull();
   });
 });

@@ -163,6 +163,43 @@ test.describe("the word popup", () => {
     await expect.poll(() => sent.some((b) => b.meaning === "standing")).toBe(true);
   });
 
+  test("shows the word's type, form and dictionary form under the meaning, and saves the type with the word", async ({ page }) => {
+    created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
+    await lookupAnswer(page, created, { meanings: ["will go"], source: "sentence",
+      wordType: { partOfSpeech: "verb", form: "future, 1st person plural", lemma: "aller" } });
+    const sent = vocabularyWrites(page);
+    await openWord(page, created);
+
+    await expect(page.getByTestId("meaning-headline")).toHaveText("will go");
+    await expect(page.getByTestId("meaning-type")).toHaveText("verb · future, 1st person plural · from aller");
+    await expect.poll(() => sent.some((b) => b.partOfSpeech === "verb · future, 1st person plural · from aller")).toBe(true);
+  });
+
+  test("shows no type line when the meaning has no type", async ({ page }) => {
+    created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
+    await lookupAnswer(page, created, { meanings: ["refrigerator"], source: "machine", wordType: null });
+    const sent = vocabularyWrites(page);
+    await openWord(page, created);
+    await expect(page.getByTestId("meaning-headline")).toHaveText("refrigerator");
+    await expect(page.getByTestId("meaning-type")).toHaveCount(0);
+    await expect.poll(() => sent.some((b) => b.meaning === "refrigerator")).toBe(true);
+    expect(sent.some((b) => "partOfSpeech" in b)).toBe(false);
+  });
+
+  test("picking another meaning doesn't send the type again", async ({ page }) => {
+    created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
+    await lookupAnswer(page, created, { meanings: ["will go", "go"], source: "sentence",
+      wordType: { partOfSpeech: "verb", form: null, lemma: null } });
+    const sent = vocabularyWrites(page);
+    await openWord(page, created);
+    await expect(page.getByTestId("meaning-type")).toHaveText("verb");
+    await expect.poll(() => sent.some((b) => b.partOfSpeech === "verb")).toBe(true);
+    const before = sent.length;
+    await page.getByTestId("meaning-also").getByRole("button", { name: "go", exact: true }).click();
+    await expect.poll(() => sent.length).toBeGreaterThan(before);
+    expect(sent.slice(before).some((b) => "partOfSpeech" in b)).toBe(false);
+  });
+
   test("a meaning picked in one sentence leads when the word is reopened in another", async ({ page }) => {
     created = await createTextWith(page, (w) => `${w(1)} ${w(2)}. ${w(3)} ${w(1)}.`);
     await lookupAnswer(page, created, { meanings: ["standing", "upright"], source: "sentence" });

@@ -21,11 +21,13 @@ public interface SentenceMeaningRepository extends JpaRepository<SentenceMeaning
     @Modifying
     @Transactional
     @Query(value = """
-            insert into sentence_meanings (source_language, target_language, term, context_hash, meaning, created_at)
-            values (:source, :target, :term, :contextHash, :meaning, :createdAt)
+            insert into sentence_meanings (source_language, target_language, term, context_hash, meaning, created_at,
+                                           part_of_speech, form, lemma)
+            values (:source, :target, :term, :contextHash, :meaning, :createdAt, :partOfSpeech, :form, :lemma)
             on conflict (source_language, target_language, term, context_hash) do nothing
             """, nativeQuery = true)
     int insertIfAbsent(@Param("source") String source, @Param("target") String target, @Param("term") String term,
                        @Param("contextHash") String contextHash, @Param("meaning") String meaning,
-                       @Param("createdAt") Instant createdAt);
+                       @Param("createdAt") Instant createdAt, @Param("partOfSpeech") String partOfSpeech,
+                       @Param("form") String form, @Param("lemma") String lemma);
 }

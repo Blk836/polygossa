@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, api, errorMessage } from "@/lib/api";
-import { savedMeaning } from "@/lib/dictionary";
+import { savedMeaning, wordTypeLine } from "@/lib/dictionary";
 import type { LanguageCode, TextDetail, Token, WordLookup, WordStatus } from "@/lib/types";
 import type { PopupTarget } from "./word-popup";
 
@@ -25,9 +25,11 @@ function withStatus(map: Record<string, WordStatus>, term: string, status: WordS
   return copy;
 }
 
-function meaningFields(lookup: WordLookup | null): { meaning?: string; definition?: string } {
+function meaningFields(lookup: WordLookup | null): { meaning?: string; definition?: string; partOfSpeech?: string } {
   const meaning = savedMeaning(lookup);
-  return meaning ? { meaning, definition: meaning } : {};
+  if (!meaning) return {};
+  const partOfSpeech = wordTypeLine(lookup?.wordType);
+  return partOfSpeech ? { meaning, definition: meaning, partOfSpeech } : { meaning, definition: meaning };
 }
 
 export function useVocabularyStatus(opts: Options) {
