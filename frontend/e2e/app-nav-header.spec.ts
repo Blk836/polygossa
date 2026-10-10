@@ -93,7 +93,8 @@ test("known words show in the header as \"<count> known\", with thousands separa
   await expect(known(page)).toHaveAccessibleName("1,234 known words");
   await expect(known(page)).toHaveAttribute("title", "1,234 known words");
   await expect(known(page)).toHaveAttribute("href", "/vocabulary");
-  await expect(known(page).locator("svg")).toHaveCount(0);
+  await expect(known(page).locator("svg")).toHaveCount(1);
+  await expect(known(page).getByTestId("honey-jar")).toHaveCount(1);
 });
 
 test("the count is bold and the word \"known\" is muted", async ({ page }) => {
