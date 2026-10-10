@@ -90,11 +90,11 @@ Feature: A wide, calm reader
     Then every page of text ends above the mini player, still without scrolling
     But on a window wide enough for it to sit in the margin beside the text, pages use the full height
 
-  Scenario: The mini player is as small as YouTube allows
+  Scenario: The mini player is 360 × 203 px
     Given a video lesson on a wide screen
     When I press "Mini player"
-    Then the player is 200 × 200 px (YouTube's minimum), in the bottom-right corner above the player bar
-    And the video fits inside it without being cropped, with black bars above and below
+    Then the player is 360 px wide and 16:9 (about 203 px tall), in the bottom-right corner above the player bar
+    And the video fills it with no black bars
     And it keeps playing without reloading
 
   Scenario: The video is never hidden completely
