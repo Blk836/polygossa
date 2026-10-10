@@ -1,4 +1,4 @@
-Feature: The meaning is the headline of the word popup (see docs/architecture/reading.md)
+Feature: The meaning is the headline of the word popup
   The popup used to show the meaning in one line with a language label and a source note around it
   ("English attainment · machine translation"), all at the same size, so the meaning itself got lost. The language
   label goes, since the popup always answers in the learner's own language. The first meaning becomes large and stands
