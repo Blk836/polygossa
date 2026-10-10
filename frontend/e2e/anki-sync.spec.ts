@@ -59,6 +59,16 @@ test("choosing a deck, previewing what it will change, then syncing", async ({ p
     await expect(syncGroup(page).getByRole("button", { name: "Sync now" })).toBeVisible();
     await expect(page.getByTestId("anki-how-it-works").locator("summary")).toHaveText("How it works");
     await expect(page.getByTestId("anki-how-it-works")).not.toHaveAttribute("open");
+
+    await syncGroup(page).getByRole("button", { name: "Preview" }).click();
+    await expect(syncGroup(page).getByTestId("anki-preview")).toContainText("Nothing has changed yet.");
+    await connectGroup(page).getByTestId("anki-note-type").getByRole("checkbox", { name: "Skip these cards" }).check();
+    await connectGroup(page).getByRole("button", { name: "Save decks" }).click();
+    await expect(syncGroup(page).getByTestId("anki-preview")).toHaveCount(0);
+    await expect(syncGroup(page).getByRole("button", { name: "Sync now" })).toBeVisible();
+    await syncGroup(page).getByRole("button", { name: "Preview" }).click();
+    await expect(syncGroup(page).getByTestId("anki-left-out-skipped")).toHaveText("4 cards left out: their note type is set to skip.", { timeout: 30_000 });
+    await expect(syncGroup(page).getByRole("button", { name: "Start syncing" })).toBeVisible();
   } finally {
     await cleanUpPrefix(page, language, s);
   }

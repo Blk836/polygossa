@@ -70,13 +70,21 @@ test("a deck with many note types lists each with its guess, examples and card c
   const sentence = types.filter({ hasText: "Sentence + Word" });
   await expect(sentence.getByLabel("Word field", { exact: true })).toHaveValue("Word");
   await expect(sentence.getByTestId("anki-examples")).toHaveText("Examples: ladrar");
+  await expect(basic.getByRole("checkbox", { name: "Skip these cards" })).not.toBeChecked();
   const cloze = types.filter({ hasText: "Cloze" });
-  await expect(cloze.getByLabel("Word field", { exact: true })).toHaveValue("");
+  await expect(cloze.getByRole("checkbox", { name: "Skip these cards" })).toBeChecked();
+  await expect(cloze.getByLabel("Word field", { exact: true })).toBeDisabled();
   await expect(cloze.getByTestId("anki-skip-reason")).toHaveText("Cloze cards test sentences, not single words.");
   const picture = types.filter({ hasText: "Picture" });
   await expect(picture.getByTestId("anki-skip-reason")).toHaveText("Its cards show no written word.");
+  await picture.getByRole("checkbox", { name: "Skip these cards" }).uncheck();
+  await expect(picture.getByLabel("Word field", { exact: true })).toBeEnabled();
   await picture.getByLabel("Word field", { exact: true }).selectOption("Back");
   await expect(picture.getByTestId("anki-examples")).toHaveText("Examples: pato");
+  await picture.getByRole("checkbox", { name: "Skip these cards" }).check();
+  await expect(picture.getByLabel("Meaning field", { exact: true })).toBeDisabled();
+  await picture.getByRole("checkbox", { name: "Skip these cards" }).uncheck();
+  await expect(picture.getByLabel("Word field", { exact: true })).toHaveValue("Back");
 });
 
 test("when Anki refuses, the config line for this site is shown and nothing is saved", async ({ page }) => {
