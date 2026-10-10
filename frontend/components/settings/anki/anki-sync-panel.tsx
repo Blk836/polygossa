@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useState } from "react";
 import { AnkiRunSummary } from "./anki-run-summary";
-import { ANKI_SYNCED_EVENT } from "@/components/anki-auto-sync";
+import { AnkiSyncTimes, useLatestAnkiRun } from "@/components/anki-sync-times";
 import { Button, ErrorNote } from "@/components/ui";
-import { api, errorMessage } from "@/lib/api";
+import { errorMessage } from "@/lib/api";
 import { syncWithAnki, type SyncResult } from "@/lib/anki-sync";
 import type { AnkiDeckChoice, AnkiRun } from "@/lib/anki-types";
 
@@ -12,21 +13,6 @@ const MESSAGES: Partial<Record<SyncResult["kind"], string>> = {
   unreachable: "Can't reach Anki. Open Anki desktop on this computer and try again.",
   busy: "A sync is already running, perhaps in another tab. Try again in a moment.",
 };
-
-function useLatestRun(): [AnkiRun | null, (run: AnkiRun | null) => void] {
-  const [latest, setLatest] = useState<AnkiRun | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    const load = () => api<AnkiRun | null>("anki/runs/latest").then((r) => !cancelled && setLatest(r)).catch(() => undefined);
-    load();
-    window.addEventListener(ANKI_SYNCED_EVENT, load);
-    return () => {
-      cancelled = true;
-      window.removeEventListener(ANKI_SYNCED_EVENT, load);
-    };
-  }, []);
-  return [latest, setLatest];
-}
 
 interface ButtonsProps {
   needsPreview: boolean;
@@ -38,7 +24,8 @@ interface ButtonsProps {
 function SyncButtons({ needsPreview, previewed, progress, onRun }: ButtonsProps) {
   const busy = progress !== null;
   const preview = <Button variant={needsPreview ? "primary" : "secondary"} onClick={() => onRun(true)} disabled={busy}>Preview</Button>;
-  let buttons = <><Button onClick={() => onRun(false)} disabled={busy}>Sync now</Button>{preview}</>;
+  const elsewhere = <span className="text-sm text-muted">Syncing happens on <Link href="/vocabulary" className="underline">Practice → Words</Link>.</span>;
+  let buttons = <>{preview}{elsewhere}</>;
   if (previewed) buttons = <Button onClick={() => onRun(false)} disabled={busy}>Start syncing</Button>;
   else if (needsPreview) buttons = preview;
   return (
@@ -50,7 +37,7 @@ function SyncButtons({ needsPreview, previewed, progress, onRun }: ButtonsProps)
 }
 
 export function AnkiSyncPanel({ decks, onSynced }: { decks: AnkiDeckChoice[]; onSynced: () => void }) {
-  const [latest, setLatest] = useLatestRun();
+  const [latest, setLatest] = useLatestAnkiRun();
   const [preview, setPreview] = useState<AnkiRun | null>(null);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -77,6 +64,7 @@ export function AnkiSyncPanel({ decks, onSynced }: { decks: AnkiDeckChoice[]; on
   return (
     <div className="space-y-3">
       <h3 className="font-semibold">Sync</h3>
+      {latest && !needsPreview && <p className="text-sm text-muted">Anki · <AnkiSyncTimes run={latest} /></p>}
       {needsPreview && !preview && <p className="text-sm text-muted">Before the first sync of a deck, see what it will change.</p>}
       {preview && <AnkiRunSummary run={preview} preview />}
       <SyncButtons needsPreview={needsPreview} previewed={preview !== null} progress={progress} onRun={run} />
