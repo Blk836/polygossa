@@ -287,11 +287,39 @@ class SentenceMeaningApiTest {
     }
 
     @Test
+    void aWordSpelledTheSameInBothLanguagesGetsItsMeaning() throws Exception {
+        String word = fresh();
+        AI.reply(typed(word, "noun", "feminine singular", null));
+        JsonNode result = lookup(word, "Quelle ", " de finir ce livre !");
+        assertThat(meanings(result)).containsExactly(word);
+        assertThat(type(result).path("partOfSpeech").asString()).isEqualTo("noun");
+        assertThat(type(result).path("form").asString()).isEqualTo("feminine singular");
+        AI.reset();
+        assertThat(meanings(lookup(word, "Quelle ", " de finir ce livre !"))).containsExactly(word);
+        assertThat(AI.requests()).isEmpty();
+    }
+
+    @Test
+    void theAiAnsweringTheWordInOtherCapitalsIsShown() throws Exception {
+        String word = fresh();
+        AI.reply(meaning(word.toUpperCase()));
+        assertThat(meanings(lookup(word, "Quelle ", " de finir ce livre !"))).containsExactly(word.toUpperCase());
+    }
+
+    @Test
+    void amazonSendingTheWordBackStillCountsAsNoAnswer() throws Exception {
+        String word = fresh();
+        AI.delay(Duration.ofMillis(2500));
+        AI.reply(meaning(word));
+        TRANSLATE.answer(word, "en", word);
+        assertThat(meanings(lookup(word, "Quelle ", " de finir ce livre !"))).isEmpty();
+    }
+
+    @Test
     void anUnusableAiAnswerFallsBackToTheBareWord() throws Exception {
         String word = fresh();
         TRANSLATE.answer(word, "en", "up");
-        for (String answer : List.of(meaning(""), meaning("  "), "{}", "{\"meaning\":42}", meaning(word.toUpperCase()),
-                meaning("x".repeat(101)))) {
+        for (String answer : List.of(meaning(""), meaning("  "), "{}", "{\"meaning\":42}", meaning("x".repeat(101)))) {
             AI.reset();
             AI.reply(answer);
             assertThat(meanings(lookup(word, "si on est ", " sur la table."))).as(answer).containsExactly("up");

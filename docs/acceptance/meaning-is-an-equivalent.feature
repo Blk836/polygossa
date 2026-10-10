@@ -20,6 +20,22 @@ Feature: The popup meaning is a dictionary equivalent, not a definition
     When anyone clicks it after the change
     Then the AI is asked again and the new answer is shown
 
+  Scenario: A word spelled the same in both languages gets its meaning
+    Given the sentence "Quelle satisfaction de finir ce livre !"
+    And the AI answers "satisfaction", noun, feminine singular
+    When I click "satisfaction"
+    Then the popup shows "satisfaction" with "noun · feminine singular"
+    And that answer is cached for everyone like any other
+
+  Scenario: Case doesn't matter
+    Given the AI answers "Satisfaction" for "satisfaction"
+    Then the popup shows it
+
+  Scenario: Amazon sending the word back unchanged still counts as no answer
+    Given the AI doesn't answer in time
+    And Amazon Translate returns "satisfaction" unchanged
+    Then the popup says no translation was found, as today
+
   Scenario: A meaning already saved to Words is kept
     Given I saved "incomparablement" with "in a way that cannot be compared"
     Then my saved meaning is not changed
