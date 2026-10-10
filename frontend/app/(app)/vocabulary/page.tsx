@@ -1,8 +1,10 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { ANKI_SYNCED_EVENT } from "@/components/anki-auto-sync";
 import { useMe } from "@/components/me-context";
+import { AnkiBar } from "@/components/vocabulary/anki-bar";
 import { PageHeader, Spinner } from "@/components/ui";
 import { FilterBar } from "@/components/vocabulary/filters";
 import { exportParams, initialStatus, type Filters } from "@/components/vocabulary/search";
@@ -49,6 +51,10 @@ function VocabularyView() {
     setReload((r) => r + 1);
     void refresh();
   }, [refresh]);
+  useEffect(() => {
+    window.addEventListener(ANKI_SYNCED_EVENT, imported);
+    return () => window.removeEventListener(ANKI_SYNCED_EVENT, imported);
+  }, [imported]);
 
   return (
     <div>
@@ -73,6 +79,7 @@ function VocabularyView() {
         ))}
       </div>
       <div data-tour="words-filters"><FilterBar filters={filters} onChange={update} /></div>
+      <AnkiBar />
       <WordList key={reload} filters={filters} onPage={(page) => update({ page })} onTag={(tag) => update({ tag, page: 0 })} onChanged={() => void refresh()} />
     </div>
   );

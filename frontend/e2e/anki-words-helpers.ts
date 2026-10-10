@@ -37,6 +37,12 @@ export function deck(id: number, cards: FakeCard[]) {
   return { id, name: `Deck ${id}`, cards };
 }
 
+export async function openAllWords(page: Page) {
+  await page.goto("/vocabulary");
+  await page.locator("[data-tour=words-filters]").getByRole("combobox", { name: "Status" }).selectOption({ label: "Any status" });
+}
+
 export const bar = (page: Page) => page.getByTestId("anki-bar");
+export const changesSummary = (page: Page) => bar(page).getByTestId("anki-changes").locator("> summary");
 export const syncNow = (page: Page) => bar(page).getByRole("button", { name: "Sync now" });
 export const wordRow = (page: Page, term: string) => page.getByRole("main").getByRole("listitem").filter({ hasText: term });

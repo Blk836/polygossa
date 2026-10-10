@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { outcomeLines, type OutcomeLine } from "@/lib/anki-outcomes";
 import type { AnkiRun } from "@/lib/anki-types";
 
-function WordList({ run, line }: { run: AnkiRun; line: OutcomeLine }) {
+export function AnkiOutcomeWords({ run, line }: { run: AnkiRun; line: OutcomeLine }) {
   const [words, setWords] = useState<string[] | null>(null);
   function toggle(open: boolean) {
     if (!open || words) return;
@@ -49,7 +49,7 @@ export function AnkiRunSummary({ run, preview }: { run: AnkiRun; preview: boolea
   return (
     <div className="space-y-2 text-sm" data-testid={preview ? "anki-preview" : "anki-result"}>
       <RunHeader run={run} preview={preview} />
-      {lines.length ? <div className="space-y-1">{lines.map((l) => <WordList key={l.outcome} run={run} line={l} />)}</div> : <p>No words change.</p>}
+      {lines.length ? <div className="space-y-1">{lines.map((l) => <AnkiOutcomeWords key={l.outcome} run={run} line={l} />)}</div> : <p>No words change.</p>}
       <LeftOut run={run} />
       {preview && (run.becameKnown > 0 || run.addedKnown > 0) && (
         <p className="text-muted">These words count toward your known total, but not as words learned this week, since you learned them before.</p>

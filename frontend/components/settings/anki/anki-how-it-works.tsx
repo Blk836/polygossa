@@ -6,6 +6,7 @@ const RULES = [
   "Words from your Anki decks that you haven't met here yet are added to your words.",
   "Words you review in Anki leave the Review tab here, so you never review the same word twice.",
   "Reviews on your phone count once Anki desktop has synced them, and Anki desktop is open here.",
+  "Sync runs when the app opens, then every 15 minutes while it's open on a computer. Practice → Words shows it, with Sync now.",
 ];
 
 export function AnkiHowItWorks({ open, freePlan }: { open: boolean; freePlan: boolean }) {

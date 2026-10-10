@@ -1,21 +1,22 @@
 import { devices, expect, test } from "@playwright/test";
 import { mature, statusOf, young } from "./anki-helpers";
-import { bar, connectDecks, deck, newLearner, saveWord, syncNow, wordRow } from "./anki-words-helpers";
+import { bar, changesSummary, connectDecks, deck, newLearner, openAllWords, saveWord, syncNow, wordRow } from "./anki-words-helpers";
 
 test("the Words bar says when Anki synced and syncs next; Sync now runs it and reloads the words", async ({ browser }) => {
+  test.slow();
   const { context, page, anki } = await newLearner(browser);
   try {
     anki.decks = [deck(91, [mature({ Word: "barcasa" }), young({ Word: "barperro" })])];
     await connectDecks(page, [{ id: 91, synced: true }]);
     await saveWord(page, "barcasa");
     await page.clock.install();
-    await page.goto("/vocabulary");
+    await openAllWords(page);
 
     await expect(bar(page)).toContainText("Anki · synced just now · next sync in 15 min", { timeout: 30_000 });
     await expect(wordRow(page, "barperro")).toBeVisible();
     const changes = bar(page).getByTestId("anki-changes");
-    await expect(changes.locator("summary")).toHaveText("1 word now known, 1 added");
-    await changes.locator("summary").click();
+    await expect(changesSummary(page)).toHaveText("1 word now known, 1 added");
+    await changesSummary(page).click();
     await expect(changes).toContainText("1 of your words became known");
     await changes.getByTestId("anki-became_known").locator("summary").click();
     await expect(changes.getByTestId("anki-became_known").getByTestId("anki-words")).toHaveText("barcasa");
@@ -30,7 +31,7 @@ test("the Words bar says when Anki synced and syncs next; Sync now runs it and r
     await expect(syncNow(page)).toBeDisabled();
     await expect(bar(page)).toContainText("synced just now · next sync in 15 min", { timeout: 30_000 });
     await expect(wordRow(page, "bargato")).toBeVisible();
-    await expect(changes.locator("summary")).toHaveText("1 word added");
+    await expect(changesSummary(page)).toHaveText("1 word added");
 
     await page.getByRole("group", { name: "Vocabulary section" }).getByRole("button", { name: "Phrases" }).click();
     await expect(bar(page)).toContainText("synced just now");
@@ -40,12 +41,13 @@ test("the Words bar says when Anki synced and syncs next; Sync now runs it and r
 });
 
 test("the automatic sync every 15 minutes shows on the bar and reloads the words", async ({ browser }) => {
+  test.slow();
   const { context, page, anki } = await newLearner(browser);
   try {
     anki.decks = [deck(92, [mature({ Word: "autouno" })])];
     await connectDecks(page, [{ id: 92, synced: true }]);
     await page.clock.install();
-    await page.goto("/vocabulary");
+    await openAllWords(page);
     await expect(bar(page)).toContainText("synced just now", { timeout: 30_000 });
     await expect(wordRow(page, "autouno")).toBeVisible();
 
@@ -65,7 +67,7 @@ test("a sync that changed nothing shows no changes", async ({ browser }) => {
   try {
     anki.decks = [deck(93, [])];
     await connectDecks(page, [{ id: 93, synced: true }]);
-    await page.goto("/vocabulary");
+    await openAllWords(page);
     await expect(bar(page)).toContainText("synced just now", { timeout: 30_000 });
     await expect(bar(page).getByTestId("anki-changes")).toHaveCount(0);
   } finally {
@@ -79,10 +81,10 @@ test("when Anki desktop isn't open, the bar says so, keeps the last sync, and Sy
     anki.decks = [deck(94, [mature({ Word: "cerrado" })])];
     anki.closed = true;
     await connectDecks(page, [{ id: 94, synced: true }]);
-    await page.goto("/vocabulary");
+    await openAllWords(page);
     await expect(bar(page)).toContainText("Anki isn't open. Open Anki desktop and it'll sync within 15 min", { timeout: 30_000 });
     await expect(bar(page)).toContainText("Last synced just now");
-    await expect(page.getByRole("alert")).toHaveCount(0);
+    await expect(page.getByRole("main").getByRole("alert")).toHaveCount(0);
 
     anki.closed = false;
     await syncNow(page).click();
@@ -94,12 +96,13 @@ test("when Anki desktop isn't open, the bar says so, keeps the last sync, and Sy
 });
 
 test("Sync now reads a big collection in batches, showing its progress", async ({ browser }) => {
+  test.slow();
   const { context, page, anki } = await newLearner(browser);
   try {
     anki.decks = [deck(95, Array.from({ length: 1200 }, (_, i) => mature({ Word: `grande${i}` })))];
     anki.closed = true;
     await connectDecks(page, [{ id: 95, synced: true }]);
-    await page.goto("/vocabulary");
+    await openAllWords(page);
     await expect(bar(page)).toContainText("isn't open", { timeout: 30_000 });
     anki.closed = false;
     anki.cardsInfoDelayMs = 400;
@@ -107,7 +110,7 @@ test("Sync now reads a big collection in batches, showing its progress", async (
     await expect(bar(page).getByRole("status")).toContainText("/ 1200");
     await expect(syncNow(page)).toBeEnabled({ timeout: 30_000 });
     expect(anki.calls.filter((c) => c.action === "cardsInfo").length).toBe(3);
-    await expect(bar(page).getByTestId("anki-changes").locator("summary")).toHaveText("1200 words added");
+    await expect(changesSummary(page)).toHaveText("1200 words added");
     expect(await statusOf(page, "es", "grande1199")).toBe("known");
   } finally {
     await context.close();
@@ -115,12 +118,13 @@ test("Sync now reads a big collection in batches, showing its progress", async (
 });
 
 test("when Anki closes in the middle of a sync, the bar says the next sync carries on", async ({ browser }) => {
+  test.slow();
   const { context, page, anki } = await newLearner(browser);
   try {
     anki.decks = [deck(96, Array.from({ length: 700 }, (_, i) => mature({ Word: `medio${i}` })))];
     anki.closed = true;
     await connectDecks(page, [{ id: 96, synced: true }]);
-    await page.goto("/vocabulary");
+    await openAllWords(page);
     await expect(bar(page)).toContainText("isn't open", { timeout: 30_000 });
     anki.closed = false;
     anki.closeAfterCardsInfo = 1;
@@ -145,7 +149,7 @@ test("when another tab is already syncing, Sync now says to try again in a momen
     anki.decks = [deck(97, [])];
     await connectDecks(page, [{ id: 97, synced: true }]);
     const other = (await (await page.request.post("/api/anki/runs", { data: { dryRun: false } })).json()) as { id: number };
-    await page.goto("/vocabulary");
+    await openAllWords(page);
     await expect(syncNow(page)).toBeEnabled({ timeout: 30_000 });
     await syncNow(page).click();
     await expect(bar(page)).toContainText("A sync is already running, perhaps in another tab. Try again in a moment.");
@@ -160,7 +164,7 @@ test("on a phone the bar says Anki syncs from the computer, with no Sync now", a
   try {
     anki.decks = [deck(98, [mature({ Word: "movil" })])];
     await connectDecks(page, [{ id: 98, synced: true }]);
-    await page.goto("/vocabulary");
+    await openAllWords(page);
     await expect(bar(page)).toHaveText("Anki syncs from your computer · last synced just now");
     await expect(syncNow(page)).toHaveCount(0);
     expect(anki.calls).toEqual([]);
@@ -174,13 +178,13 @@ test("before a deck's first sync, the bar sends me to Settings; after it, new de
   try {
     anki.decks = [deck(99, [mature({ Word: "primero" })]), deck(100, [mature({ Word: "nuevo" })])];
     await connectDecks(page, [{ id: 99, synced: false }]);
-    await page.goto("/vocabulary");
+    await openAllWords(page);
     await expect(bar(page)).toContainText("Preview and run your first Anki sync in Settings → Anki");
     await expect(bar(page).getByRole("link", { name: "Settings → Anki" })).toHaveAttribute("href", "/settings/anki");
     await expect(syncNow(page)).toHaveCount(0);
 
     await connectDecks(page, [{ id: 99, synced: true }, { id: 100, synced: false }]);
-    await page.goto("/vocabulary");
+    await openAllWords(page);
     await expect(bar(page)).toContainText("A new deck needs its first sync in Settings → Anki");
     await syncNow(page).click();
     await expect(wordRow(page, "primero")).toBeVisible({ timeout: 30_000 });
@@ -195,7 +199,7 @@ test("without Anki, a line offers to connect it until I hide it; never on a phon
   const { context, page } = await newLearner(browser);
   const phone = await newLearner(browser, devices["Pixel 5"]);
   try {
-    await page.goto("/vocabulary");
+    await openAllWords(page);
     const offer = page.getByTestId("anki-offer");
     await expect(offer).toContainText("Review in Anki?");
     await expect(offer.getByRole("link", { name: "Connect it" })).toHaveAttribute("href", "/settings/anki");

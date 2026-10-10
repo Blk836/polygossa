@@ -1,17 +1,15 @@
 import { expect, test } from "@playwright/test";
-import { bar, connectDecks, newLearner, saveWord, syncDeck, wordRow } from "./anki-words-helpers";
+import { mature, young } from "./anki-helpers";
+import { bar, connectDecks, deck, newLearner, openAllWords, saveWord, wordRow } from "./anki-words-helpers";
 
 test("words with an Anki card show a badge saying what state the card is in", async ({ browser }) => {
-  const { context, page } = await newLearner(browser);
+  const { context, page, anki } = await newLearner(browser);
   try {
     for (const term of ["badgato", "badcasa", "badmesa"]) await saveWord(page, term);
-    await connectDecks(page, [{ id: 61, synced: false }]);
-    await syncDeck(page, 61, [
-      { word: "badcasa", type: 2, interval: 30 },
-      { word: "badperro", type: 2, interval: 3 },
-      { word: "badgato", type: 0, interval: 0 },
-    ]);
-    await page.goto("/vocabulary");
+    anki.decks = [deck(61, [mature({ Word: "badcasa" }), young({ Word: "badperro" }), { fields: { Word: "badgato" }, type: 0, interval: 0 }])];
+    await connectDecks(page, [{ id: 61, synced: true }]);
+    await openAllWords(page);
+    await expect(bar(page)).toContainText("next sync in 15 min", { timeout: 30_000 });
 
     const expected: [string, string][] = [
       ["badcasa", "In Anki: mature card (next review 21+ days). Known through Anki"],
@@ -33,7 +31,7 @@ test("words with an Anki card show a badge saying what state the card is in", as
     await page.goto("/settings/anki");
     await page.getByRole("button", { name: "Disconnect Anki" }).click();
     await expect(page.getByRole("group", { name: "Sync with Anki" })).toHaveCount(0);
-    await page.goto("/vocabulary");
+    await openAllWords(page);
     await expect(wordRow(page, "badcasa")).toBeVisible();
     await expect(page.getByTestId("anki-badge")).toHaveCount(0);
     await expect(bar(page)).toHaveCount(0);
