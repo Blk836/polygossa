@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { ApiError, api, errorMessage } from "@/lib/api";
+import { ankiBadgeText } from "@/lib/anki-sync-status";
 import { NATIVE_LANGUAGES } from "@/lib/dictionary";
 import { useMe } from "../me-context";
 import type { VocabularyEntry, WordStatus } from "@/lib/types";
@@ -15,13 +16,29 @@ const STATUS_STYLE: Record<WordStatus, string> = {
   ignored: "bg-ignored",
 };
 
+function AnkiBadge({ entry }: { entry: VocabularyEntry }) {
+  const tip = useId();
+  if (!entry.anki) return null;
+  return (
+    <span tabIndex={0} data-testid="anki-badge" aria-describedby={tip} className="group relative rounded bg-line px-1.5 text-xs">
+      Anki
+      <span role="tooltip" id={tip}
+        className="pointer-events-none invisible absolute left-0 top-full z-10 mt-1 w-max max-w-64 rounded-md border border-line bg-card px-2 py-1 shadow group-hover:visible group-focus:visible">
+        {ankiBadgeText(entry.anki, entry.status)}
+      </span>
+    </span>
+  );
+}
+
 function TermLine({ entry }: { entry: VocabularyEntry }) {
+  const { me } = useMe();
   return (
     <div className="flex flex-wrap items-baseline gap-2">
       <span className="font-reading text-lg font-semibold">{entry.displayTerm}</span>
       {entry.pronunciation && <span className="text-sm text-muted">{entry.pronunciation}</span>}
       {entry.partOfSpeech && <em className="text-sm text-muted">{entry.partOfSpeech}</em>}
       {entry.kind === "phrase" && <span className="rounded bg-line px-1.5 text-xs">phrase</span>}
+      {me.ankiConnected && <AnkiBadge entry={entry} />}
     </div>
   );
 }

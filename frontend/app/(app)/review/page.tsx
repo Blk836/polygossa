@@ -31,7 +31,7 @@ function WordsInAnki({ count }: { count: number }) {
   return (
     <p className="mb-4 text-sm text-muted" data-testid="words-in-anki">
       {count} of your {one ? "words is" : "words are"} reviewed in Anki, so {one ? "it isn't" : "they aren't"} shown here.{" "}
-      <Link href="/settings/anki" className="underline">Anki settings</Link>
+      <Link href="/vocabulary" className="underline">Anki sync</Link>
     </p>
   );
 }
