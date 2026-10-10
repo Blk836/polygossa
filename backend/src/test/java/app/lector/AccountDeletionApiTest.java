@@ -82,6 +82,12 @@ class AccountDeletionApiTest {
                 .file(new MockMultipartFile("file", "a.mp3", "audio/mpeg", new byte[] {1, 2, 3})), ana, 200);
         api.post(ana, "/api/vocabulary", "{\"language\":\"es\",\"term\":\"hola\",\"textId\":" + shared + "}", 201);
         api.post(ana, "/api/texts/" + shared + "/progress", "{\"position\":1}", 200);
+        api.put(ana, "/api/anki/decks",
+                "{\"decks\":[{\"ankiDeckId\":1,\"name\":\"D\",\"language\":\"es\",\"wordField\":\"Word\"}]}", 200);
+        long ankiRun = api.post(ana, "/api/anki/runs", "{\"dryRun\":false}", 201).get("id").asLong();
+        api.post(ana, "/api/anki/runs/" + ankiRun + "/cards",
+                "{\"ankiDeckId\":1,\"cards\":[{\"word\":\"hola\",\"type\":2,\"interval\":30}]}", 200);
+        api.post(ana, "/api/anki/runs/" + ankiRun + "/finish", "{\"ankiDeckIds\":[1]}", 200);
         long playlist = api.post(ana, "/api/playlists", "{\"title\":\"Mine\",\"language\":\"es\"}", 201).get("id").asLong();
         api.put(ana, "/api/playlists/" + playlist + "/items/" + shared, "", 204);
         api.patch(ana, "/api/playlists/" + playlist, "{\"isPublic\":true}", 200);
