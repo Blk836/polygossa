@@ -157,6 +157,9 @@ span.s-spoken:not(.w) {
   background: var(--w-learning) !important;
   border-radius: 0;
 }
+.p-hover {
+  box-shadow: inset 0 -2px 0 var(--rubric);
+}
 .p-start {
   border-top-left-radius: 0.25rem;
   border-bottom-left-radius: 0.25rem;

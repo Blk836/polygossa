@@ -177,3 +177,44 @@ test.describe("the words of a phrase stay reachable", () => {
     await expect(page.getByText("Phrase", { exact: true })).toHaveCount(0);
   });
 });
+
+test.describe("hovering a learning phrase shows what a click opens", () => {
+  const lined = (page: Page) => article(page).locator("span").evaluateAll((els) =>
+    els.filter((e) => getComputedStyle(e).boxShadow.includes("inset")).map((e) => e.textContent));
+
+  async function sixWords(page: Page) {
+    const c = await createTextWith(page, (w) => `${w(1)} ${w(2)} ${w(3)} ${w(4)} ${w(5)} ${w(6)}.`);
+    created = c;
+    await save(page, c, [2, 3, 4], "learning");
+    await openReader(page, `/read/${c.id}`);
+    return c;
+  }
+
+  test("hovering any word of the phrase underlines the whole phrase, spaces included", async ({ page }) => {
+    const c = await sixWords(page);
+    await word(page, 3).hover();
+    await expect.poll(() => lined(page)).toEqual([c.word(2), " ", c.word(3), " ", c.word(4)]);
+  });
+
+  test("moving off the phrase clears it, leaving only the hovered word", async ({ page }) => {
+    const c = await sixWords(page);
+    await word(page, 3).hover();
+    await expect.poll(() => lined(page)).toHaveLength(5);
+    await word(page, 6).hover();
+    await expect.poll(() => lined(page)).toEqual([c.word(6)]);
+  });
+
+  test("with overlapping phrases, the one a click opens is underlined", async ({ page }) => {
+    const c = await sixWords(page);
+    await save(page, c, [3, 4, 5], "learning");
+    await page.reload();
+    await word(page, 5).hover();
+    await expect.poll(() => lined(page)).toEqual([c.word(3), " ", c.word(4), " ", c.word(5)]);
+  });
+
+  test("hovering an ordinary word underlines only that word", async ({ page }) => {
+    const c = await sixWords(page);
+    await word(page, 1).hover();
+    await expect.poll(() => lined(page)).toEqual([c.word(1)]);
+  });
+});
