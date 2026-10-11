@@ -102,6 +102,8 @@ when its test is fixed.
   2026-10-10, PR #90.
 - `e2e/reader-colours.spec.ts` › "the word being spoken still shows, quiet or not": after "]" the word never got
   `w-speaking` within 5 s. Seen 2026-10-10, PR #90.
+- `e2e/reader-playback-known.spec.ts` › "stepping with ] across the page end marks it known, and stepping back with [
+  marks nothing": after the `]` presses the pager still said "Page 1 of 4" within 5 s. Seen 2026-10-10, PR #110.
 - `e2e/reader-media-resume.spec.ts` › "pressing Play twice while the video is still starting keeps the bar at the
   page's start". Seen 2026-10-10, PR #94.
 

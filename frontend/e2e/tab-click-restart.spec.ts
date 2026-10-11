@@ -23,7 +23,7 @@ test.describe("clicking the tab you are on", () => {
     await subTab(page, "Write").click();
     await expect(page.locator("[data-tour=writing-start]")).toBeVisible();
     await expect(results(page)).toHaveCount(0);
-    await expect(page.getByText(t.prompt, { exact: true })).toHaveCount(0);
+    await expect(page.getByText(`Situation · ${t.level}`, { exact: true })).toHaveCount(0);
     await context.close();
   });
 
