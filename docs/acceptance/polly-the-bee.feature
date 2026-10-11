@@ -39,8 +39,10 @@ Feature: Polly the bee branding
 
   # Honey jar
   Scenario: The known count in the top bar has a honey jar
-    Then a small honey jar sits before the known-word count
-    And the count still links to the Words list and reads the same to screen readers
+    Then a small honey jar sits just before the known-word count, inside the same link
+    And clicking the jar opens the Words list, like clicking the count
+    And the link still reads "<count> known words" to screen readers (the jar is silent)
+    And the link's visible text is still "<count> known"
 
   Scenario: The jar reacts when I learn a word
     Given I am in the reader

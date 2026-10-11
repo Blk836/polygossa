@@ -235,14 +235,13 @@ test.describe("video: beside the text, or a mini player", () => {
     expect((await box(dock(page))).x).toBeGreaterThanOrEqual(text.x + text.width);
   });
 
-  test("the mini player is 200 × 200 px, YouTube's minimum, and the video player fills it", async ({ page }) => {
+  test("the mini player is 360 px wide and 16:9, and the video player fills it", async ({ page }) => {
     await page.setViewportSize(DESKTOP);
     created = await createVideo(page);
     await openReader(page, `/read/${created.id}`);
     await player(page).getByRole("button", { name: "Mini player" }).click();
-    await expect.poll(async () => (await box(dock(page))).width).toBe(200);
-    expect((await box(dock(page))).height).toBe(200);
-    expect(await box(dock(page).locator("iframe"))).toMatchObject({ width: 200, height: 200 });
+    await expect.poll(async () => (await box(dock(page))).width).toBe(360);
+    for (const b of [await box(dock(page)), await box(dock(page).locator("iframe"))]) expect([b.width, b.height / 202.5]).toEqual([360, expect.closeTo(1, 2)]);
     expect(await page.evaluate(() => (window as unknown as { __players: number }).__players)).toBe(1);
   });
 

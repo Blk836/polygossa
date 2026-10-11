@@ -99,18 +99,26 @@ test("the vocabulary map's key shows known as deep honey and learning paler", as
   expect(luminance(await colour("Known"))).toBeLessThan(luminance(await colour("Learning")));
 });
 
-test("a honey jar sits before the known count, which reads and links as before", async ({ page }) => {
+test("a honey jar sits just before the count, inside its link, which reads as before", async ({ page }) => {
   await stubHeader(page, { value: 1234 });
   await page.goto("/library");
   await expect(known(page)).toHaveText("1,234 known");
   await expect(known(page)).toHaveAccessibleName("1,234 known words");
   await expect(known(page)).toHaveAttribute("href", "/vocabulary");
-  await expect(jar(page)).toBeVisible();
+  await expect(known(page).getByTestId("honey-jar")).toBeVisible();
   await expect(jar(page)).toHaveAttribute("aria-hidden", "true");
-  const [jarBox, countBox] = [(await jar(page).boundingBox())!, (await known(page).boundingBox())!];
+  const [jarBox, countBox] = [(await jar(page).boundingBox())!, (await known(page).getByText("1,234", { exact: true }).boundingBox())!];
   expect(jarBox.x + jarBox.width).toBeLessThanOrEqual(countBox.x + 1);
+  expect(countBox.x - (jarBox.x + jarBox.width)).toBeLessThan(10);
   expect(Math.abs(jarBox.y + jarBox.height / 2 - (countBox.y + countBox.height / 2))).toBeLessThan(4);
   await expect(jar(page)).toHaveAttribute("data-wobbles", "0");
+});
+
+test("clicking the honey jar opens the Words list", async ({ page }) => {
+  await stubHeader(page, { value: 5 });
+  await page.goto("/library");
+  await jar(page).click();
+  await page.waitForURL("**/vocabulary");
 });
 
 test("the jar wobbles once when the known count goes up", async ({ page }) => {
