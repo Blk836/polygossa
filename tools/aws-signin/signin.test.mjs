@@ -30,7 +30,7 @@ test("missing or expired: opens the sign-in, and passes once it succeeds", async
   assert.equal(await checkSignIn(w.deps), 0);
   assert.equal(w.calls.login, 1);
   assert.match(w.text(), /missing or expired/);
-  assert.match(w.text(), /dream it ship it/);
+  assert.match(w.text(), /polygossa-app/);
   assert.match(w.text(), /signed in to account 788826923437/);
 });
 

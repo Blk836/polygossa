@@ -152,13 +152,13 @@ There is no cloud staging: treat main as releasable. What is live is the latest 
 commits.
 
 AWS is our own Organization: a management account (`322126339607`, the user's: region policy, new accounts,
-organization budgets) and the app account **"dream it ship it"** (`788826923437`), the only one Claude works in.
+organization budgets) and the app account **"polygossa-app"** (`788826923437`), the only one Claude works in.
 
 Tools on the dev machine (not on PATH in every shell, so use the full paths):
 - **AWS CLI** `C:\Program Files\Amazon\AWSCLIV2\aws.exe`, profile `polygossa` (`788826923437`, `eu-west-1`).
   Sessions last 12 hours; when one expires, the user runs
   `& "C:\Program Files\Amazon\AWSCLIV2\aws.exe" login --profile polygossa` in PowerShell and picks
-  **"dream it ship it"** in the browser. If the CLI asks to overwrite the profile with any other account ID, the
+  **"polygossa-app"** in the browser. If the CLI asks to overwrite the profile with any other account ID, the
   answer is **n**. Check with `aws sts get-caller-identity --profile polygossa`. The **AWS Agent Toolkit** gives
   Claude the MCP server `aws-mcp` (via `uvx` in `~/.local/bin`) and AWS skills.
 - **GitHub CLI** `C:\Program Files\GitHub CLI\gh.exe`, signed in as the owner (`Blk836/polygossa`, private).
