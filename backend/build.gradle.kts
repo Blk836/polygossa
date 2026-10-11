@@ -59,10 +59,19 @@ dependencies {
 }
 
 tasks.test {
-    useJUnitPlatform()
+    useJUnitPlatform { excludeTags("live") }
     maxParallelForks = (findProperty("test.forks") as String?)?.toInt()
         ?: (Runtime.getRuntime().availableProcessors() - 2).coerceIn(1, 4)
     jvmArgs("-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC")
+}
+
+val liveTest by tasks.registering(Test::class) {
+    description = "Checks the real external services (needs AWS credentials); never part of the ordinary suites."
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform { includeTags("live") }
+    outputs.upToDateWhen { false }
 }
 
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
