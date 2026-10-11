@@ -89,6 +89,9 @@ when its test is fixed.
   PR #100.
 - `e2e/profile-photo.spec.ts` › "removing the photo brings the initial back, also after reloading": the page closed
   while clicking "Save photo" in the crop dialog. Seen 2026-10-10, PR #102.
+- `e2e/profile-photo.spec.ts` › "dragging moves the image, stopping at its edge, and the saved photo is what was in
+  the frame": the crop frame never appeared within 30 s (likely the same picked-before-hydration cause). Seen
+  2026-10-11, PR #122.
 - `e2e/profile-photo-errors.spec.ts` › "a file that isn't an image is refused before any crop or upload": the
   alert never appeared within 5 s (likely the same picked-before-hydration cause). Seen 2026-10-11, PR #113.
 - `e2e/wide-reader.spec.ts` › "where the mini player sits in the margin, pages use the full height". Seen
