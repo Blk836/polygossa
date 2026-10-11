@@ -23,7 +23,7 @@ const permissionAsks = (anki: FakeAnki) => anki.calls.filter((c) => c.action ===
 async function expectConnected(page: Page) {
   await expect(connectGroup(page).getByRole("status")).toHaveText("Connected to Anki");
   await expect(connectGroup(page).getByTestId("anki-deck")).toHaveCount(1);
-  await expect(connectGroup(page).getByTestId("anki-deck").getByRole("checkbox")).toBeChecked();
+  await expect(connectGroup(page).getByTestId("anki-deck").getByRole("checkbox", { name: "Spanish" })).toBeChecked();
   await expect(connectGroup(page).getByRole("button", { name: /Connect to Anki/ })).toHaveCount(0);
 }
 
