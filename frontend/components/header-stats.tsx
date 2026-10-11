@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FlameIcon } from "./icons";
 import { HoneyJar } from "./polly";
 import { PollyFlight, usePollyFlights } from "./polly-flight";
-import { MilestoneDialog, StreakToast, useMilestone, useStreakNews } from "./polly-moments";
+import { MilestoneCard, StreakToast, useMilestone, useStreakNews } from "./polly-moments";
 import { flame, knownWords, type HeaderStats as Stats } from "@/lib/header-stats";
 
 const MIN_SCALE = 0.45;
@@ -81,7 +81,7 @@ function KnownWords({ server, language }: { server: number; language: string }) 
         <span className="font-normal text-muted">known</span>
       </Link>
       {flight && <PollyFlight key={flight.id} flight={flight} onLand={land} />}
-      {milestone !== null && <MilestoneDialog words={milestone} onClose={closeMilestone} />}
+      {milestone !== null && <MilestoneCard words={milestone} onClose={closeMilestone} />}
     </>
   );
 }

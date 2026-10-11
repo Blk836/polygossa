@@ -5,7 +5,7 @@ const HOUR = 3600;
 const banner = (page: Page) => page.getByRole("banner");
 const known = (page: Page) => banner(page).getByTestId("known-words");
 const jar = (page: Page) => banner(page).getByTestId("honey-jar");
-const milestone = (page: Page) => page.getByRole("dialog");
+const milestone = (page: Page) => page.getByTestId("milestone");
 
 interface Header { knownWords: number; current: number; activeToday: boolean; calls: number; language: string | null }
 
@@ -36,7 +36,7 @@ async function recordFlights(page: Page) {
 }
 
 test.describe("known-word milestones", () => {
-  test("reaching 100 known words shows a proud Polly once, and Keep reading puts me back where I was", async ({ page }) => {
+  test("reaching 100 known words shows a proud Polly once, without blocking the page, and Keep reading closes it", async ({ page }) => {
     const h = await stubHeader(page, { knownWords: 99 });
     await page.goto("/library");
     await expect(known(page)).toHaveText("99 known");
@@ -44,7 +44,12 @@ test.describe("known-word milestones", () => {
     await moveSection(page);
     await expect(milestone(page)).toHaveAccessibleName("100 words known");
     await expect(milestone(page).locator('svg[data-polly="proud"]')).toBeVisible();
-    await expect(milestone(page).getByRole("button", { name: "Keep reading" })).toBeFocused();
+    await expect(milestone(page).getByRole("button", { name: "Keep reading" })).not.toBeFocused();
+    const search = page.getByRole("searchbox", { name: "Search titles" });
+    await search.click();
+    await search.fill("still works");
+    await expect(search).toHaveValue("still works");
+    await expect(milestone(page)).toBeVisible();
     await milestone(page).getByRole("button", { name: "Keep reading" }).click();
     await expect(milestone(page)).toHaveCount(0);
     await expect(page).toHaveURL(/\/community/);
@@ -76,7 +81,7 @@ test.describe("known-word milestones", () => {
     h.knownWords = 1020;
     await moveSection(page);
     await expect(milestone(page)).toHaveAccessibleName("1,000 words known");
-    await expect(page.getByRole("dialog")).toHaveCount(1);
+    await expect(milestone(page)).toHaveCount(1);
   });
 
   test("a milestone seen in another language still shows in this one, but not one seen in this one", async ({ page }) => {
@@ -92,6 +97,17 @@ test.describe("known-word milestones", () => {
     await moveSection(page);
     await expect(milestone(page)).toHaveAccessibleName("1,000 words known");
     await expect.poll(() => page.evaluate((lang) => JSON.parse(localStorage.getItem(`polly-milestones:${lang}`)!), language)).toEqual([100, 500, 1000]);
+  });
+
+  test("the close button closes the milestone", async ({ page }) => {
+    const h = await stubHeader(page, { knownWords: 4990 });
+    await page.goto("/library");
+    await expect(known(page)).toHaveText("4,990 known");
+    h.knownWords = 5010;
+    await moveSection(page);
+    await expect(milestone(page)).toHaveAccessibleName("5,000 words known");
+    await milestone(page).getByRole("button", { name: "Close" }).click();
+    await expect(milestone(page)).toHaveCount(0);
   });
 
   test("with reduce motion on, the milestone still shows", async ({ page }) => {

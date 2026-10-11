@@ -27,27 +27,33 @@ export function useMilestone(language: string, count: number): [number | null, (
   return [shown, () => setShown(null)];
 }
 
-export function MilestoneDialog({ words, onClose }: { words: number; onClose: () => void }) {
-  const ref = useRef<HTMLDialogElement>(null);
+export function MilestoneCard({ words, onClose }: { words: number; onClose: () => void }) {
   const title = useId();
+  const close = useRef(onClose);
   useEffect(() => {
-    const dialog = ref.current!;
-    dialog.showModal();
-    return () => dialog.close();
+    close.current = onClose;
+  }, [onClose]);
+  useEffect(() => {
+    const escape = (e: KeyboardEvent) => e.key === "Escape" && close.current();
+    window.addEventListener("keydown", escape);
+    return () => window.removeEventListener("keydown", escape);
   }, []);
-  return (
-    <dialog
-      ref={ref}
+  return createPortal(
+    <section
+      role="status"
       aria-labelledby={title}
-      onClose={onClose}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-      className="polly-pop m-auto w-[min(24rem,calc(100vw-2rem))] rounded-2xl border border-line bg-card p-7 text-center text-ink backdrop:bg-ink/40"
+      data-testid="milestone"
+      className="polly-pop fixed inset-x-4 bottom-24 z-50 mx-auto max-w-sm rounded-2xl md:inset-x-auto md:bottom-6 md:right-6 md:w-96 border border-line bg-card p-6 text-center text-ink shadow-xl"
     >
-      <Polly mood="proud" className="mx-auto size-28" />
+      <button type="button" aria-label="Close" onClick={onClose} className="absolute right-3 top-3 rounded-lg p-2 text-muted hover:bg-paper">
+        <CloseIcon className="size-4" />
+      </button>
+      <Polly mood="proud" className="mx-auto size-24" />
       <h2 id={title} className="mt-2 font-display text-3xl font-semibold tracking-tight">{words.toLocaleString("en-US")} words known</h2>
       <p className="mt-2 text-muted">That&apos;s a full jar. Keep reading to fill the next one.</p>
-      <Button autoFocus className="mt-5" onClick={onClose}>Keep reading</Button>
-    </dialog>
+      <Button className="mt-4" onClick={onClose}>Keep reading</Button>
+    </section>,
+    document.body,
   );
 }
 
