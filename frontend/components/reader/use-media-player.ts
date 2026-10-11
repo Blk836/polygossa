@@ -36,7 +36,12 @@ export const NOTHING_SPOKEN: Spoken = { token: null, sentence: null };
 
 export function useMediaPlayer({ media, timings, tokens, duration, playing, onSpoken, onJumpToToken, cueToken }: Options) {
   const [time, setTime] = useState(0);
-  const [touched, setTouched] = useState(false);
+  const [touched, setTouchedState] = useState(false);
+  const moved = useRef(false);
+  const setTouched = useCallback((value: true) => {
+    moved.current = value;
+    setTouchedState(value);
+  }, []);
   const cue = useMemo(() => cueMs(timings, cueToken), [timings, cueToken]);
   const [rate, setRateState] = useState(1);
   const [looped, setLooped] = useState<Segment | null>(null);
@@ -74,10 +79,10 @@ export function useMediaPlayer({ media, timings, tokens, duration, playing, onSp
     if (playing) setTouched(true);
     if (playing || touched) follow(ms);
     else setTime(ms);
-  }, [media, looped, playing, touched, follow]);
+  }, [media, looped, playing, touched, follow, setTouched]);
 
   useEffect(() => {
-    if (!touched && duration > 0) media.seek(cue);
+    if (!touched && !moved.current && duration > 0) media.seek(cue);
   }, [media, cue, touched, duration]);
 
   useEffect(() => {
@@ -100,7 +105,7 @@ export function useMediaPlayer({ media, timings, tokens, duration, playing, onSp
       if (play) m.play();
       follow(ms);
     },
-    [media, follow],
+    [media, follow, setTouched],
   );
 
   const goToSentence = useCallback(
@@ -129,7 +134,7 @@ export function useMediaPlayer({ media, timings, tokens, duration, playing, onSp
     if (playing) return media.pause();
     if (pageStart.current !== null) seek(pageStart.current);
     media.play();
-  }, [media, playing, touched, cue, seek]);
+  }, [media, playing, touched, cue, seek, setTouched]);
 
   const toggleLoop = useCallback(() => {
     const k = segmentAt(segments, media.currentMs() ?? time);
@@ -159,7 +164,7 @@ export function useMediaPlayer({ media, timings, tokens, duration, playing, onSp
       setTouched(true);
       media.play();
     },
-    [timings, seek, media],
+    [timings, seek, media, setTouched],
   );
 
   const startPage = useCallback(
