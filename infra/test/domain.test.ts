@@ -6,12 +6,11 @@ import { Match, Template } from "aws-cdk-lib/assertions";
 import { defineApp } from "../lib/app.ts";
 import { redirectSource } from "../lib/domain.ts";
 
-const OLD_SITE = "https://old.cloudfront.example";
 const DOMAIN = "polygossa.com";
 
 function production(context: Record<string, unknown>): Template {
   const app = new cdk.App({
-    context: { "github-repo": "owner/repo", "github-subject": "repo:owner/repo", "site-url": OLD_SITE, ...context },
+    context: { "github-repo": "owner/repo", "github-subject": "repo:owner/repo", ...context },
   });
   return Template.fromStack(defineApp(app, { account: "111111111111", region: "eu-west-1" }, "pl-cloudfront").production);
 }
@@ -28,6 +27,11 @@ const appUrl = (template: Template, name: string) =>
   (container(template, name).Environment as { Name: string; Value: unknown }[]).find((e) => e.Name === "APP_URL")?.Value;
 
 const siteUrlOutput = (template: Template) => template.findOutputs("SiteUrl").SiteUrl.Value;
+
+function ownAddress(template: Template) {
+  const [id] = Object.keys(template.findResources("AWS::CloudFront::Distribution"));
+  return { "Fn::Join": ["", ["https://", { "Fn::GetAtt": [id, "DomainName"] }]] };
+}
 
 const certificates = (template: Template) =>
   Object.values(template.findResources("AWS::CloudFormation::CustomResource"))
@@ -55,14 +59,16 @@ describe("stage 1: AWS answers for the domain", () => {
     assert.match(value, /NameServers/);
   });
 
-  it("changes nothing for learners: same address, same sign-in returns, no certificate or aliases", () => {
-    assert.equal(siteUrlOutput(template).toString().includes(DOMAIN), false);
-    assert.equal(appUrl(template, "backend"), OLD_SITE);
-    assert.equal(appUrl(template, "frontend"), OLD_SITE);
+  it("uses the distribution's own address for the site, the app's links and sign-in, with no certificate or aliases", () => {
+    const own = ownAddress(template);
+    assert.deepEqual(siteUrlOutput(template), own);
+    assert.deepEqual(appUrl(template, "backend"), own);
+    assert.deepEqual(appUrl(template, "frontend"), own);
     template.hasResourceProperties("AWS::Cognito::UserPoolClient", {
-      CallbackURLs: [`${OLD_SITE}/api/auth/callback`],
-      LogoutURLs: [`${OLD_SITE}/`],
+      CallbackURLs: [{ "Fn::Join": ["", [...own["Fn::Join"][1], "/api/auth/callback"]] }],
+      LogoutURLs: [{ "Fn::Join": ["", [...own["Fn::Join"][1], "/"]] }],
     });
+    assert.doesNotMatch(JSON.stringify(template.toJSON()), /site\.invalid/);
     assert.equal(certificates(template).length, 0);
     template.resourceCountIs("AWS::Route53::RecordSet", 0);
     template.resourceCountIs("AWS::CloudFront::Function", 0);
@@ -124,10 +130,10 @@ describe("stage 2: the site moves to the domain", () => {
     assert.equal(siteUrlOutput(template), `https://${DOMAIN}`);
   });
 
-  it("returns sign-in and sign-out to the domain, still accepting the old address", () => {
+  it("returns sign-in and sign-out to the domain only", () => {
     template.hasResourceProperties("AWS::Cognito::UserPoolClient", {
-      CallbackURLs: [`https://${DOMAIN}/api/auth/callback`, `${OLD_SITE}/api/auth/callback`],
-      LogoutURLs: [`https://${DOMAIN}/`, `${OLD_SITE}/`],
+      CallbackURLs: [`https://${DOMAIN}/api/auth/callback`],
+      LogoutURLs: [`https://${DOMAIN}/`],
     });
   });
 });
@@ -137,6 +143,12 @@ describe("production's settings", () => {
     const { context } = JSON.parse(readFileSync(new URL("../cdk.json", import.meta.url), "utf8"));
     assert.equal(context.domain, DOMAIN);
     assert.equal(context["domain-live"], true);
+  });
+
+  it("no longer name the old cloudfront.net address", () => {
+    const settings = readFileSync(new URL("../cdk.json", import.meta.url), "utf8");
+    assert.equal("site-url" in JSON.parse(settings).context, false);
+    assert.doesNotMatch(settings, /cloudfront\.net/);
   });
 });
 
@@ -150,7 +162,7 @@ describe("the redirect to the domain", () => {
     });
   });
 
-  it("sends the old cloudfront.net address to the domain, keeping the path and every query value as sent", () => {
+  it("sends any other host name, the old cloudfront.net address included, to the domain, keeping the path and every query value as sent", () => {
     const answer = viewer("d3pd9mue4v7won.cloudfront.net", "/reader/42", {
       page: { value: "3" },
       tag: { value: "a", multiValue: [{ value: "a" }, { value: "b" }] },
