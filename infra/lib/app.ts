@@ -12,6 +12,8 @@ export function defineApp(app: cdk.App, env: cdk.Environment, cloudFrontPrefixLi
     tags: { ...tags, environment: "production" },
     cloudFrontPrefixListId,
     siteUrl: app.node.tryGetContext("site-url") as string,
+    domain: app.node.tryGetContext("domain") as string | undefined,
+    domainLive: app.node.tryGetContext("domain-live") === true,
     googleClientId,
     alertEmail: app.node.tryGetContext("alert-email") as string | undefined,
   });

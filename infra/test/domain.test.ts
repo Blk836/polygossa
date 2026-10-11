@@ -141,11 +141,11 @@ describe("the redirect to the domain", () => {
     });
   });
 
-  it("sends the old cloudfront.net address to the domain, keeping the path and every query value", () => {
+  it("sends the old cloudfront.net address to the domain, keeping the path and every query value as sent", () => {
     const answer = viewer("d3pd9mue4v7won.cloudfront.net", "/reader/42", {
       page: { value: "3" },
-      tag: { value: "b", multiValue: [{ value: "a" }, { value: "b" }] },
-      q: { value: "a b&c" },
+      tag: { value: "a", multiValue: [{ value: "a" }, { value: "b" }] },
+      q: { value: "a%20b%26c" },
     });
     assert.equal("statusCode" in answer && answer.statusCode, 301);
     assert.equal("headers" in answer && answer.headers.location.value,

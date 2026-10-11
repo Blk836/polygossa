@@ -8,6 +8,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import type { Construct } from "constructs";
 import { appDatabase } from "./database.ts";
+import { hostedZone, siteDomain } from "./domain.ts";
 import { backendImage, frontendImage } from "./images.ts";
 import { appLogs, BACKEND_NAME, NAMESPACE } from "./services.ts";
 import { userPool } from "./login.ts";
@@ -23,6 +24,8 @@ export const STRIPE_WEBHOOK_SECRET_ARN_SUFFIX = "jABTGF";
 export interface ProductionProps extends cdk.StackProps {
   readonly cloudFrontPrefixListId?: string;
   readonly siteUrl?: string;
+  readonly domain?: string;
+  readonly domainLive?: boolean;
   readonly googleClientId?: string;
   readonly alertEmail?: string;
 }
@@ -60,10 +63,14 @@ export class ProductionStack extends cdk.Stack {
     });
     const publicTasks = { assignPublicIp: true, vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC } };
 
-    const siteUrl = props.siteUrl ?? "https://site.invalid";
+    const zone = props.domain ? hostedZone(this, props.domain) : undefined;
+    const domain = zone && props.domainLive ? siteDomain(this, zone, props.domain!) : undefined;
+    const previousUrl = props.siteUrl ?? "https://site.invalid";
+    const siteUrl = domain ? `https://${props.domain}` : previousUrl;
     const login = userPool(this, {
       domainPrefix: "polygossa",
       siteUrl,
+      previousSiteUrls: domain ? [previousUrl] : [],
       keep: true,
       googleClientId: props.googleClientId ?? "unset.apps.googleusercontent.com",
     });
@@ -169,7 +176,10 @@ export class ProductionStack extends cdk.Stack {
     const distribution = new cloudfront.Distribution(this, "Site", {
       comment: "Polygossa production",
       priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
+      domainNames: domain?.names,
+      certificate: domain?.certificate,
       defaultBehavior: {
+        functionAssociations: domain ? [domain.redirect] : undefined,
         origin: new origins.LoadBalancerV2Origin(balancer, {
           protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
           readTimeout: cdk.Duration.seconds(60),
@@ -183,7 +193,8 @@ export class ProductionStack extends cdk.Stack {
 
     if (props.alertEmail) monitoring(this, { email: props.alertEmail, frontendTargets, backend, database });
 
-    this.siteUrl = `https://${distribution.distributionDomainName}`;
+    domain?.pointAt(distribution);
+    this.siteUrl = domain ? siteUrl : `https://${distribution.distributionDomainName}`;
     new cdk.CfnOutput(this, "SiteUrl", { value: this.siteUrl, description: "The production site" });
   }
 }

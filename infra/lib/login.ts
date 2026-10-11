@@ -15,7 +15,7 @@ const BRAND = process.env.BRAND_NAME?.trim() || "Polygossa";
 
 export function userPool(
   scope: Construct,
-  opts: { domainPrefix: string; siteUrl: string; keep: boolean; googleClientId: string },
+  opts: { domainPrefix: string; siteUrl: string; previousSiteUrls?: string[]; keep: boolean; googleClientId: string },
 ): Login {
   const pool = new cognito.UserPool(scope, "Users", {
     featurePlan: cognito.FeaturePlan.ESSENTIALS,
@@ -49,14 +49,15 @@ export function userPool(
       emailVerified: cognito.ProviderAttribute.GOOGLE_EMAIL_VERIFIED,
     },
   });
+  const siteUrls = [opts.siteUrl, ...(opts.previousSiteUrls ?? [])];
   const client = pool.addClient("Site", {
     generateSecret: false,
     authFlows: { userSrp: true },
     oAuth: {
       flows: { authorizationCodeGrant: true },
       scopes: [cognito.OAuthScope.OPENID, cognito.OAuthScope.EMAIL, cognito.OAuthScope.COGNITO_ADMIN],
-      callbackUrls: [`${opts.siteUrl}/api/auth/callback`],
-      logoutUrls: [`${opts.siteUrl}/`],
+      callbackUrls: siteUrls.map((url) => `${url}/api/auth/callback`),
+      logoutUrls: siteUrls.map((url) => `${url}/`),
     },
     supportedIdentityProviders: [
       cognito.UserPoolClientIdentityProvider.COGNITO,
