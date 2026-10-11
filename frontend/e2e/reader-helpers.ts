@@ -137,3 +137,25 @@ export async function addSyncedAudio(page: Page, id: number, seconds = 60) {
   const align = await page.request.post(`/api/texts/${id}/timings/auto`, { data: { durationMs: seconds * 1000 } });
   expect(align.ok(), await align.text()).toBe(true);
 }
+
+const FAKE_YOUTUBE = `
+window.__players = 0;
+window.YT = { Player: class {
+  constructor(el, o) {
+    window.__players++;
+    const frame = document.createElement("iframe");
+    frame.style.width = "100%"; frame.style.height = "100%"; frame.style.border = "0";
+    el.replaceWith(frame);
+    window.__frame = frame;
+    setTimeout(() => o.events.onReady({ target: this }));
+  }
+  playVideo() {} pauseVideo() {} seekTo() {}
+  getCurrentTime() { return 0; }
+  getDuration() { return 600; }
+  setPlaybackRate() {} destroy() {}
+} };
+window.onYouTubeIframeAPIReady?.();
+`;
+export const fakeYouTube = (page: Page) =>
+  page.route("https://www.youtube.com/iframe_api", (route) => route.fulfill({ contentType: "text/javascript", body: FAKE_YOUTUBE }));
+

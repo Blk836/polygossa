@@ -5,6 +5,7 @@ import {
   cleanUp,
   createText,
   createVideo,
+  fakeYouTube,
   openReader,
   pager,
   player,
@@ -23,27 +24,6 @@ test.afterEach(async ({ page }) => {
 const DESKTOP = { width: 1440, height: 900 };
 const LAPTOP = { width: 1280, height: 720 };
 const PHONE = { width: 390, height: 844 };
-
-const FAKE_YOUTUBE = `
-window.__players = 0;
-window.YT = { Player: class {
-  constructor(el, o) {
-    window.__players++;
-    const frame = document.createElement("iframe");
-    frame.style.width = "100%"; frame.style.height = "100%"; frame.style.border = "0";
-    el.replaceWith(frame);
-    window.__frame = frame;
-    setTimeout(() => o.events.onReady({ target: this }));
-  }
-  playVideo() {} pauseVideo() {} seekTo() {}
-  getCurrentTime() { return 0; }
-  getDuration() { return 600; }
-  setPlaybackRate() {} destroy() {}
-} };
-window.onYouTubeIframeAPIReady?.();
-`;
-const fakeYouTube = (page: Page) =>
-  page.route("https://www.youtube.com/iframe_api", (route) => route.fulfill({ contentType: "text/javascript", body: FAKE_YOUTUBE }));
 
 async function box(locator: Locator) {
   const b = await locator.boundingBox();
