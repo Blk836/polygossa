@@ -202,16 +202,15 @@ test.describe("page turns and phrases", () => {
     await expectBackground(page, wordAt(page, 5), "--w-learning");
   });
 
-  test("only phrases being learned are underlined", async ({ page }) => {
+  test("only phrases being learned are boxed in the learning colour", async ({ page }) => {
     created = await createText(page, 120);
     const pair = (n: number) => `${created!.word(n)} ${created!.word(n + 1)}`;
     await saveStatus(page, created, pair(1), "learning", "phrase");
     await saveStatus(page, created, pair(3), "known", "phrase");
     await saveStatus(page, created, pair(5), "ignored", "phrase");
     await openReader(page, `/read/${created.id}`);
-    const line = (n: number) => wordAt(page, n).evaluate((el) => getComputedStyle(el).textDecorationLine);
-    expect(await line(1)).toBe("underline");
-    expect(await line(3)).toBe("none");
-    expect(await line(5)).toBe("none");
+    await expectBackground(page, wordAt(page, 1), "--w-learning");
+    await expectBackground(page, wordAt(page, 3), "--w-new");
+    await expectBackground(page, wordAt(page, 5), "--w-new");
   });
 });

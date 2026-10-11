@@ -18,7 +18,7 @@ import { PageArrows, ReaderPager } from "./reader-pager";
 import { articleClass, audioToggle, layoutProps, mediaState, onPage, pageNote, PhraseHint, showsMarker } from "./reader-parts";
 import { ReaderPopup } from "./reader-popup";
 import { followsSentence, followsWord, type ReaderSettings } from "./reader-settings";
-import { learningGaps, nextWord, overlapping, phraseMarks, phraseSpans, readerStats, savedPhraseAt, sentenceHere, sentenceTexts, toParagraphs } from "./reader-text";
+import { learningEdges, learningGaps, nextWord, overlapping, phraseMarks, phraseSpans, readerStats, savedPhraseAt, sentenceHere, sentenceTexts, toParagraphs } from "./reader-text";
 import { transcriptParagraphs } from "./reader-transcript";
 import { TextMeasure } from "./text-measure";
 import { NOTHING_SPOKEN, type MediaHandle } from "./use-media-player";
@@ -81,6 +81,7 @@ export function Reader({ initial, initialSettings, playlist }: {
   const spans = useMemo(() => phraseSpans(tokens, vocab.phrases), [tokens, vocab.phrases]);
   const marks = useMemo(() => phraseMarks(tokens, vocab.phrases), [tokens, vocab.phrases]);
   const gaps = useMemo(() => learningGaps(tokens, spans), [tokens, spans]);
+  const edges = useMemo(() => learningEdges(spans), [spans]);
   const phraseAt = useCallback((i: number) => savedPhraseAt(spans, i), [spans]);
   const stats = useMemo(() => readerStats(tokens, vocab.statuses), [tokens, vocab.statuses]);
   const unseenHere = useMemo(() => unseenOnPage(paging.paragraphs, vocab.statuses), [paging.paragraphs, vocab.statuses]);
@@ -116,7 +117,7 @@ export function Reader({ initial, initialSettings, playlist }: {
     if (settings.pauseOnLookup) mediaRef.current?.pause();
   }, [settings.pauseOnLookup]);
   const revealPopup = useCallback((i: number) => reveal(i, "nearest", true), [reveal]);
-  const { openWord, openPhrase } = usePopupOpeners({ tokens, sentences, popup, reveal: revealPopup, autoSave, onError: setError, onOpen });
+  const { openWord, openPhrase, openWordOfPhrase, backToPhrase } = usePopupOpeners({ tokens, sentences, popup, reveal: revealPopup, autoSave, onError: setError, onOpen });
 
   const setStatus = useCallback(
     (status: WordStatus | null) => {
@@ -211,7 +212,7 @@ export function Reader({ initial, initialSettings, playlist }: {
             onClick={input.onClick}
           >
             {paging.paragraphs.map((p, k) => (
-              <Paragraph key={k} tokens={p} statuses={vocab.statuses} phrases={marks} gaps={gaps} sentence={followsSentence(settings.follow) ? sentenceHere(p, spoken.sentence) : null} {...overlapping(p, sel, active)} />
+              <Paragraph key={k} tokens={p} statuses={vocab.statuses} phrases={marks} gaps={gaps} edges={edges} sentence={followsSentence(settings.follow) ? sentenceHere(p, spoken.sentence) : null} {...overlapping(p, sel, active)} />
             ))}
           </article>
           <PageArrows page={page} count={paging.count} onPage={changePage} />
@@ -226,6 +227,9 @@ export function Reader({ initial, initialSettings, playlist }: {
               language={language}
               speechLocale={initial.speechLocale}
               status={vocab.statusOf(shown)}
+              statuses={vocab.statuses}
+              onOpenWord={openWordOfPhrase}
+              onBack={backToPhrase}
               isPro={isPro}
               notice={popup.notice}
               hasAudio={media.synced}

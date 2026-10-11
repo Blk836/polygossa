@@ -172,14 +172,17 @@ test.describe("clicking a saved phrase", () => {
     await expect(header(page)).toHaveText(created.word(4));
   });
 
-  test("a saved phrase I'm learning is underlined without a gap at the space", async ({ page }) => {
+  test("a saved phrase I'm learning is boxed without a gap at the space", async ({ page }) => {
     created = await createTextWith(page, (w) => `${w(1)} ${w(2)} ${w(3)} ${w(4)}.`);
     await savePhrase(page, created, [2, 3]);
     await openReader(page, `/read/${created.id}`);
-    const underlined = article(page).locator(".p-learning");
-    await expect(underlined).toHaveCount(3);
-    await expect(underlined.nth(1)).toHaveText(" ");
-    expect((await style(underlined.nth(1))).line).toContain("underline");
+    const boxed = article(page).locator(".p-learning");
+    await expect(boxed).toHaveCount(3);
+    await expect(boxed.nth(1)).toHaveText(" ");
+    const parts = await Promise.all((await boxed.all()).map(style));
+    expect(new Set(parts.map((s) => s.bg)).size).toBe(1);
+    expect(parts[1].bg).not.toBe("rgba(0, 0, 0, 0)");
+    for (const s of parts) expect(s.line).toBe("none");
   });
 
   test("dragging across part of a saved phrase still selects a new phrase", async ({ page }) => {
