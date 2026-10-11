@@ -4,23 +4,27 @@ import * as cloudwatch from "aws-cdk-lib/aws-cloudwatch";
 import * as actions from "aws-cdk-lib/aws-cloudwatch-actions";
 import type * as ecs from "aws-cdk-lib/aws-ecs";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
-import type * as rds from "aws-cdk-lib/aws-rds";
 import * as sns from "aws-cdk-lib/aws-sns";
 import * as subscriptions from "aws-cdk-lib/aws-sns-subscriptions";
 import type { Construct } from "constructs";
+import type { AppDatabase } from "./database.ts";
 
 export const MONTHLY_BUDGET = 100;
 
 export interface Watched {
-  readonly email: string;
   readonly frontendTargets: elbv2.ApplicationTargetGroup;
   readonly backend: ecs.FargateService;
-  readonly database: rds.DatabaseInstance;
+  readonly database: AppDatabase;
 }
 
-export function monitoring(scope: Construct, watched: Watched): void {
+export function monitoring(scope: Construct, email: string, watched?: Watched): void {
+  if (watched) alarms(scope, email, watched);
+  monthlyBudget(scope, email);
+}
+
+function alarms(scope: Construct, email: string, watched: Watched): void {
   const topic = new sns.Topic(scope, "Alerts", { displayName: "Polygossa production alerts" });
-  topic.addSubscription(new subscriptions.EmailSubscription(watched.email));
+  topic.addSubscription(new subscriptions.EmailSubscription(email));
   const notify = new actions.SnsAction(topic);
   const alarm = (id: string, props: cloudwatch.AlarmProps, recovery = false) => {
     const a = new cloudwatch.Alarm(scope, id, props);
@@ -76,8 +80,10 @@ export function monitoring(scope: Construct, watched: Watched): void {
     evaluationPeriods: 1,
     treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
   });
+}
 
-  const subscribers = [{ subscriptionType: "EMAIL", address: watched.email }];
+function monthlyBudget(scope: Construct, email: string): void {
+  const subscribers = [{ subscriptionType: "EMAIL", address: email }];
   new budgets.CfnBudget(scope, "MonthlyBudget", {
     budget: {
       budgetName: "polygossa-monthly",
