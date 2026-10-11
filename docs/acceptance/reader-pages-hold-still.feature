@@ -41,8 +41,8 @@ Feature: Reader pages hold still
   Scenario: A scrollbar appearing doesn't move the text sideways
     Given a page that does not scroll
     When something makes it scroll
-    Then the text column keeps its width and position, because space for the scrollbar is always kept
-    And this holds on every page of the app, so nothing shifts sideways between pages that scroll and pages that don't
+    Then the text column keeps its width and position, because the reader always keeps space for the scrollbar
+    And phones keep no such space, since their scrollbars float over the page, and other pages are unchanged
 
   Scenario: Playing across the end of a page turns once and stays
     Given an audio lesson on a window too short for the text, with playback on the last sentence of a page

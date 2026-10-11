@@ -121,7 +121,7 @@ test("opening a word whose popup reaches below the window keeps the page", async
   expect(await firstWord(page)).toBe(first);
 });
 
-test("a scrollbar appearing doesn't move the reader's text or any other page sideways", async ({ page }) => {
+test("a scrollbar appearing doesn't move the reader's text sideways", async ({ page }) => {
   await page.setViewportSize({ width: 930, height: 1100 });
   created = await createText(page, 40);
   await openReader(page, `/read/${created.id}`);
@@ -132,16 +132,6 @@ test("a scrollbar appearing doesn't move the reader's text or any other page sid
   expect(await overflow(page)).toBeGreaterThan(0);
   const after = (await article(page).boundingBox())!;
   expect([after.x, after.width]).toEqual([before.x, before.width]);
-
-  await page.setViewportSize({ width: 930, height: 2500 });
-  await page.goto("/settings");
-  const main = page.locator("main").first();
-  await expect(main).toBeVisible();
-  expect(await overflow(page)).toBeLessThanOrEqual(0);
-  const width = (await main.boundingBox())!.width;
-  await grow();
-  expect(await overflow(page)).toBeGreaterThan(0);
-  expect((await main.boundingBox())!.width).toBe(width);
 });
 
 test("playing across the end of a page turns once and stays", async ({ page }) => {

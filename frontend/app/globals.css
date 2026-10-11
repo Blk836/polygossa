@@ -97,8 +97,10 @@
   --font-reading: var(--font-literata), Georgia, "Noto Serif", "Noto Serif CJK JP", serif;
 }
 
-html {
-  scrollbar-gutter: stable;
+@media (min-width: 40rem) {
+  html:has([data-reader]) {
+    scrollbar-gutter: stable;
+  }
 }
 
 body {
