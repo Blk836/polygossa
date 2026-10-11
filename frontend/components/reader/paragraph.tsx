@@ -14,35 +14,39 @@ interface Props {
   phrases: Map<number, WordStatus>;
   gaps: Set<number>;
   edges: Edges;
+  hover: Range | null;
 }
+
+const inside = (i: number, r: Range | null) => r !== null && i >= r.start && i <= r.end;
 
 function bandClass(i: number, sel: Range | null): string {
-  if (!sel || i < sel.start || i > sel.end) return "";
-  return ["sel", i === sel.start && "sel-start", i === sel.end && "sel-end"].filter(Boolean).join(" ");
+  if (!inside(i, sel)) return "";
+  return ["sel", i === sel!.start && "sel-start", i === sel!.end && "sel-end"].filter(Boolean).join(" ");
 }
 
-function extraClass(i: number, sel: Range | null, edges: Edges): string {
-  return [edges.starts.has(i) && "p-start", edges.ends.has(i) && "p-end", bandClass(i, sel)].filter(Boolean).join(" ");
-}
-
-function gapClass(t: Token, { sel, sentence, gaps }: Pick<Props, "sel" | "sentence" | "gaps">): string {
-  return [t.sentence === sentence && "s-spoken", gaps.has(t.index) && "p-learning", bandClass(t.index, sel)]
+function extraClass(i: number, sel: Range | null, edges: Edges, hover: Range | null): string {
+  return [edges.starts.has(i) && "p-start", edges.ends.has(i) && "p-end", inside(i, hover) && "p-hover", bandClass(i, sel)]
     .filter(Boolean).join(" ");
 }
 
-export const Paragraph = memo(function Paragraph({ tokens, gaps, edges, ...rest }: Props) {
+function gapClass(t: Token, { sel, sentence, gaps, hover }: Pick<Props, "sel" | "sentence" | "gaps" | "hover">): string {
+  return [t.sentence === sentence && "s-spoken", gaps.has(t.index) && "p-learning", inside(t.index, hover) && "p-hover", bandClass(t.index, sel)]
+    .filter(Boolean).join(" ");
+}
+
+export const Paragraph = memo(function Paragraph({ tokens, gaps, edges, hover, ...rest }: Props) {
   return (
     <p className="mb-5">
       {tokens.map((t) => {
         if (t.word) {
-          const extra = extraClass(t.index, rest.sel, edges);
+          const extra = extraClass(t.index, rest.sel, edges, hover);
           return (
             <span key={t.index} data-i={t.index} className={extra ? `${wordClass(t, rest)} ${extra}` : wordClass(t, rest)}>
               {t.text}
             </span>
           );
         }
-        const cls = gapClass(t, { sel: rest.sel, sentence: rest.sentence, gaps });
+        const cls = gapClass(t, { sel: rest.sel, sentence: rest.sentence, gaps, hover });
         return cls ? <span key={t.index} className={cls}>{t.text}</span> : t.text;
       })}
     </p>

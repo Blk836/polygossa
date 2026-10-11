@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import type { Token, WordStatus } from "@/lib/types";
 import { mediaShortcut, type MediaShortcut } from "./media-nav";
 import { cappedRange, nextWord, type Range } from "./reader-text";
@@ -57,6 +57,15 @@ function clickSavedPhrase(o: Options, i: number, lastClicked: { current: number 
   return true;
 }
 
+function hoveredPhrase(o: Options, target: EventTarget | null, current: Range | null): Range | null {
+  const i = wordIndex(target);
+  if (i !== null) {
+    const saved = o.savedPhraseAt(i);
+    return saved && current && saved.start === current.start && saved.end === current.end ? current : saved;
+  }
+  return (target as HTMLElement | null)?.classList?.contains("p-hover") ? current : null;
+}
+
 function clickWord(o: Options, i: number) {
   const sameWord = o.popup === "word" && o.sel?.start === i && o.sel.end === i;
   if (sameWord) return o.close();
@@ -67,6 +76,7 @@ export function useReaderInput(o: Options) {
   const drag = useRef<{ anchor: number; moved: boolean; range: Range | null } | null>(null);
   const suppressClick = useRef(false);
   const lastClicked = useRef<number | null>(null);
+  const [hover, setHover] = useState<Range | null>(null);
   const latest = useRef(o);
   useEffect(() => {
     latest.current = o;
@@ -117,6 +127,10 @@ export function useReaderInput(o: Options) {
   }, [hasPopup]);
 
   return {
+    hover,
+    onPointerLeave() {
+      setHover(null);
+    },
     onPointerDown(e: React.PointerEvent) {
       const i = wordIndex(e.target);
       if (i === null || e.pointerType !== "mouse" || e.button !== 0 || e.shiftKey) return;
@@ -125,6 +139,7 @@ export function useReaderInput(o: Options) {
     },
     onPointerOver(e: React.PointerEvent) {
       const d = drag.current;
+      if (e.pointerType === "mouse" && !d) setHover((current) => hoveredPhrase(o, e.target, current));
       const i = wordIndex(e.target);
       if (!d || i === null || i === d.anchor) return;
       d.moved = true;
