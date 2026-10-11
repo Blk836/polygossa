@@ -4,6 +4,7 @@ import Link from "next/link";
 import { playlistReadHref } from "@/lib/playlists";
 import type { ReaderPlaylist } from "@/lib/playlist-types";
 import type { LanguageCode } from "@/lib/types";
+import { Polly } from "../polly";
 import { Button } from "../ui";
 import { WritingTutor } from "./writing-tutor";
 
@@ -38,7 +39,7 @@ export function FinishPanel({ visible, textId, language, isPro, unseen, learning
   return (
     <div data-finish="summary" className="mt-10 space-y-6">
       <div className="rounded-xl border border-accent/40 bg-accent-soft/40 p-5">
-        <p className="text-lg font-semibold">Lesson complete 🎉</p>
+        <p className="flex items-center gap-2 text-lg font-semibold"><Polly mood="cheering" className="size-12 shrink-0" />Lesson complete</p>
         <p className="mt-1 text-sm">
           {finished} new words marked as known. You&apos;re learning {learning} words from this text.
         </p>

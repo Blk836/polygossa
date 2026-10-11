@@ -14,7 +14,7 @@ import { HOME } from "@/lib/nav";
 function CaughtUp({ ahead, onPractiseAhead }: { ahead: boolean; onPractiseAhead: () => void }) {
   return (
     <div data-tour="review-card">
-      <Empty title={ahead ? "Nothing left to practise" : "All caught up!"} polly="cheering">
+      <Empty title={ahead ? "Nothing left to practise" : "All caught up!"} polly="cheering" prop="flashcards">
         <p>{ahead ? "You've reviewed everything you're learning." : "No cards are due right now."}</p>
         <div className="mt-3 flex justify-center gap-2">
           {!ahead && <Button variant="secondary" onClick={onPractiseAhead}>Practise ahead</Button>}

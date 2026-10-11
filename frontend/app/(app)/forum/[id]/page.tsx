@@ -34,7 +34,7 @@ export default function ThreadView() {
 
   if (missing) {
     return (
-      <Empty title="Thread not found">
+      <Empty title="Thread not found" polly="sorry">
         It may have been deleted. <LinkButton href="/forum" variant="secondary" className="mt-3">Back to the forum</LinkButton>
       </Empty>
     );

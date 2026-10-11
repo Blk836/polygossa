@@ -33,7 +33,7 @@ export default function PlaylistPage() {
 
   if (missing) {
     return (
-      <Empty title="Playlist not found">
+      <Empty title="Playlist not found" polly="sorry">
         It may have been deleted or made private. <LinkButton href="/playlists" variant="secondary" className="mt-3">Your playlists</LinkButton>
       </Empty>
     );

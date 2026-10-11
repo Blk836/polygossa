@@ -170,7 +170,7 @@ export default function ClassPage() {
         <section>
           <h2 className="mb-3 font-medium">Assignments</h2>
           {detail.assignments.length === 0 ? (
-            <Empty title="No assignments yet" />
+            <Empty title="No assignments yet" polly="sleepy" />
           ) : (
             <ul className="space-y-2">
               {detail.assignments.map((a) => (
