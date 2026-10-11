@@ -8,6 +8,9 @@ import { PAGE_WORDS, SINGLE_PAGE_MAX_WORDS, type ReaderPage } from "./reader-pag
 const FINISH_ESTIMATE = 96;
 const MIN_LINES = 3;
 const SLACK = 4;
+const MIN_VIDEO = 180;
+const VIDEO_SHARE = 0.42;
+const VIDEO_BESIDE = "(min-width: 64rem)";
 
 const px = (value: string) => parseFloat(value) || 0;
 
@@ -41,6 +44,13 @@ function room(text: HTMLElement): { height: number; finish: number | null } {
   return { height: window.innerHeight - above - below - SLACK, finish: finish?.dataset.finish === "prompt" ? finishHeight : null };
 }
 
+function videoHeight(spare: number): number | null {
+  const frame = document.querySelector<HTMLElement>("[data-video-frame]");
+  if (!frame || window.matchMedia(VIDEO_BESIDE).matches) return null;
+  const usual = VIDEO_SHARE * window.innerHeight;
+  return Math.floor(Math.max(Math.min(MIN_VIDEO, usual), Math.min(usual, frame.getBoundingClientRect().height + spare)));
+}
+
 const noSubscribe = () => () => {};
 
 export function useMeasuring(): boolean {
@@ -55,8 +65,9 @@ export function useFitPages(
   textRef: RefObject<HTMLDivElement | null>,
   measuring: boolean,
   layout: unknown,
-): ReaderPage[] | null {
+): { pages: ReaderPage[] | null; videoMax: number | null } {
   const [starts, setStarts] = useState<number[] | null>(null);
+  const [videoMax, setVideoMax] = useState<number | null>(null);
   const finish = useRef(FINISH_ESTIMATE);
   const breaks = useMemo(() => wordBreaks(paragraphs), [paragraphs]);
 
@@ -68,7 +79,9 @@ export function useFitPages(
       if (!text.isConnected || !measure.isConnected) return;
       const space = room(text);
       if (space.finish !== null) finish.current = space.finish;
-      const minHeight = MIN_LINES * px(getComputedStyle(measure).lineHeight);
+      const line = px(getComputedStyle(measure).lineHeight);
+      const minHeight = MIN_LINES * line;
+      setVideoMax(videoHeight(space.height - Math.max(minHeight, line + finish.current)));
       const next = fitPages(wordBoxes(measure, breaks), {
         height: Math.max(space.height, minHeight),
         maxWords: PAGE_WORDS,
@@ -89,5 +102,6 @@ export function useFitPages(
     };
   }, [breaks, measureRef, textRef, measuring, layout]);
 
-  return useMemo(() => (starts ? splitPages(paragraphs, starts) : null), [paragraphs, starts]);
+  const pages = useMemo(() => (starts ? splitPages(paragraphs, starts) : null), [paragraphs, starts]);
+  return { pages, videoMax };
 }

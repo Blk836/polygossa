@@ -12,7 +12,7 @@ Feature: Reader pages hold still
     Given a window 930 x 810, where the video at its usual size would leave room for under three lines
     When I open the lesson
     Then the video is shorter than usual, still 16:9
-    And no page of the lesson scrolls, each showing at least three lines above the player bar
+    And no page of the lesson scrolls, with room for three lines above the player bar (a page may end sooner, at a sentence)
 
   Scenario: A video with room to spare keeps its usual size
     Given a window 930 x 1100

@@ -18,6 +18,7 @@ interface Props {
   onSpoken: (spoken: Spoken) => void;
   onJumpToToken: (tokenIndex: number) => void;
   cueToken: number | null;
+  maxHeight: number | null;
   layout: VideoLayout;
   onLayout: (layout: VideoLayout) => void;
 }
@@ -111,7 +112,7 @@ function LayoutButton({ layout, onLayout }: { layout: VideoLayout; onLayout: (la
   );
 }
 
-const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video, tokens, onSpoken, onJumpToToken, cueToken, layout, onLayout }, ref) {
+const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video, tokens, onSpoken, onJumpToToken, cueToken, maxHeight, layout, onLayout }, ref) {
   const host = useRef<HTMLDivElement>(null);
   const yt = useRef<YTPlayer | null>(null);
   const [smooth] = useState(createMediaClock);
@@ -166,7 +167,11 @@ const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video,
         {failed ? (
           <PlayerFailed videoId={video.videoId} />
         ) : (
-          <div className={`mx-auto aspect-video max-h-[42vh] overflow-hidden rounded-xl bg-black lg:max-h-none ${mini ? "lg:shadow-2xl lg:ring-1 lg:ring-line" : ""}`}>
+          <div
+            data-video-frame
+            style={maxHeight === null ? undefined : { maxHeight }}
+            className={`mx-auto aspect-video max-h-[42vh] overflow-hidden rounded-xl bg-black lg:max-h-none ${mini ? "lg:shadow-2xl lg:ring-1 lg:ring-line" : ""}`}
+          >
             <div ref={host} className="size-full" />
           </div>
         )}
