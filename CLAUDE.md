@@ -112,7 +112,7 @@ when its test is fixed.
   pressed before the card's keydown listener is attached in its effect). Failed 1 of 3 alone too. Seen 2026-10-11,
   PR #126.
 - `e2e/reader-pages-hold-still.spec.ts` › "the video gives way so three lines of text fit, and no page scrolls".
-  Seen 2026-10-11, PR #128; passed 12 of 12 alone.
+  Seen 2026-10-11, PR #128 and PR #135; passed 12 of 12 alone.
 - `e2e/reader-media-resume.spec.ts` › "pressing Play twice while the video is still starting keeps the bar at the
   page's start". Seen 2026-10-10, PR #94.
 
