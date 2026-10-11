@@ -39,6 +39,11 @@ Feature: Settings → Anki keeps deck setup folded away once connected
     When I press "Disconnect Anki" and connect again
     Then the deck settings show open, as for a first-time setup
 
+  Scenario: A note type waiting for its word field opens the section
+    Given my account has a deck saved, and a new note type has since appeared in it in Anki
+    When I open Settings → Anki
+    Then "Your decks" opens by itself, showing "New: check its word field" on that note type
+
   Scenario: After the first sync both sections start closed
     Given my decks have synced at least once
     When I open Settings → Anki
