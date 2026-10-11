@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Avatar } from "./avatar";
 import { useMe } from "./me-context";
 import { useDismiss } from "./use-dismiss";
@@ -43,6 +43,10 @@ export function AccountMenu() {
 
   const items = me.admin ? [...ITEMS, { href: "/admin", label: "Admin" }] : ITEMS;
   const here = items.some((i) => isUnder(pathname, i.href));
+  const hrefs = items.map((i) => i.href).join(" ");
+  useEffect(() => {
+    for (const href of hrefs.split(" ")) router.prefetch(href);
+  }, [router, hrefs]);
 
   async function logout() {
     const res = await fetch("/api/auth/logout", { method: "POST" });

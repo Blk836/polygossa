@@ -84,7 +84,8 @@ different one each time; the same commit has gone red then green on a re-run sin
 when its test is fixed.
 - `e2e/profile-photo.spec.ts` › "a image/webp image can be uploaded" (and the jpeg and png ones): the crop dialog
   never opened within 30 s (suspected: the file is picked before the page has hydrated). Seen 2026-10-09, PR #89;
-  jpeg 2026-10-10, PR #91; png 2026-10-10, PR #93.
+  jpeg 2026-10-10, PR #91; png 2026-10-10, PR #93. Also "uploading a photo shows it on Profile and in the account
+  menu…" (the crop dialog never opened within 5 s), 2026-10-11, PR #136; the spec passed 45 of 45 alone.
 - `e2e/profile-photo.spec.ts` › "changing the photo replaces it everywhere": timed out at 30 s. Seen 2026-10-10,
   PR #100.
 - `e2e/profile-photo.spec.ts` › "removing the photo brings the initial back, also after reloading": the page closed
@@ -103,9 +104,6 @@ when its test is fixed.
   (three copies run in parallel all fail; serially they pass). Seen 2026-10-10, PR #100.
 - `e2e/card-layout.spec.ts` › "a category or search grid follows the layout": Explore showed "This page couldn't
   load" (a failed server render, cause not captured: the e2e servers' logs aren't kept). Seen 2026-10-10, PR #89.
-- `e2e/page-skeletons.spec.ts` › "Classes shows an outline shaped like it, and fills in without moving". Seen
-  2026-10-10, PR #90; 2026-10-11, PR #113, PR #127, PR #130 and PR #134. Failed 3 of 3 alone on PR #130's branch and 2 of 3
-  alone on main (aa17d3c), so it may be broken rather than flaky: #132.
 - `e2e/reader-colours.spec.ts` › "the word being spoken still shows, quiet or not": after "]" the word never got
   `w-speaking` within 5 s. Seen 2026-10-10, PR #90.
 - `e2e/polly-moments.spec.ts` › "Escape closes the milestone": the card stayed after Escape (suspected: Escape

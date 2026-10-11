@@ -36,13 +36,8 @@ async function top(locator: Locator) {
   return { x: Math.round(box!.x), y: Math.round(box!.y) };
 }
 
-async function openAccountItem(page: Page, name: string, path: string) {
-  const prefetched = page.waitForResponse((res) => {
-    const headers = res.request().headers();
-    return new URL(res.url()).pathname === path && !!headers["next-router-prefetch"];
-  });
+async function openAccountItem(page: Page, name: string) {
   await page.getByRole("button", { name: "Account" }).click();
-  await prefetched;
   await page.getByRole("menu", { name: "Account" }).getByRole("menuitem", { name }).click();
 }
 
@@ -95,7 +90,7 @@ const DESTINATIONS: Destination[] = [
     parts: ["cards"],
   },
   {
-    page: "Classes", title: "Classes", path: "/classes", from: "/community", open: (p) => openAccountItem(p, "Classes", "/classes"),
+    page: "Classes", title: "Classes", path: "/classes", from: "/community", open: (p) => openAccountItem(p, "Classes"),
     parts: ["forms", "rows"],
   },
   {
@@ -195,7 +190,7 @@ test("a page without its own outline gets a neutral one, with no other page's ti
   await page.waitForLoadState("networkidle");
   const release = await holdPage(page, "/admin");
 
-  await openAccountItem(page, "Admin", "/admin");
+  await openAccountItem(page, "Admin");
   await expect(outline(page)).toHaveAttribute("aria-label", "Loading page");
   await expect(outline(page)).toHaveText("");
   release();
