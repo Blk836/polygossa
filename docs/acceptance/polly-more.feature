@@ -86,7 +86,13 @@ Feature: Polly does more — winning moments, moods tied to real states, props, 
     Given I know <before> words in the language I'm learning
     When marking words known takes me to <after>
     Then a proud Polly says "<milestone> words known" with a "Keep reading" button
-    And "Keep reading" (or Escape, or clicking outside) closes it and leaves me where I was
+    And "Keep reading", its close button or Escape closes it and leaves me where I was
+    And it doesn't block the page: I can keep clicking and typing underneath while it shows
+
+  Scenario: A big jump, such as an Anki sync, also reaches a milestone
+    Given I know 450 words
+    When an Anki sync adds 700 known words
+    Then "1,000 words known" shows without interrupting the sync bar or its buttons
 
     Examples:
       | before | after | milestone |
@@ -152,7 +158,7 @@ Feature: Polly does more — winning moments, moods tied to real states, props, 
   Scenario: Polly is decoration everywhere except the logo
     Then screen readers skip every Polly except the logo's
     And the milestone and streak messages are read out as text
-    And keyboard focus moves into the milestone message and back where it was after closing
+    And the milestone message doesn't take keyboard focus away from what I was doing
 
   Scenario: Dark theme
     Given the dark theme
