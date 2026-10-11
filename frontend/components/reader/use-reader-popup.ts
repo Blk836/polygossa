@@ -50,7 +50,7 @@ interface OpenerOptions {
 }
 
 export function usePopupOpeners({ tokens, sentences, popup, reveal, autoSave, onError, onOpen }: OpenerOptions) {
-  const { setSel, setNotice, setPhraseMode, setTarget } = popup;
+  const { setSel, setNotice, setPhraseMode, setTarget, target, sel } = popup;
 
   const open = useCallback(
     (next: PopupTarget, range: Range) => {
@@ -65,12 +65,12 @@ export function usePopupOpeners({ tokens, sentences, popup, reveal, autoSave, on
   );
 
   const openWord = useCallback(
-    (i: number, autoSaveWord: boolean) => {
+    (i: number, autoSaveWord: boolean, back?: PopupTarget["back"]) => {
       const t = tokens[i];
       if (!t?.word) return;
       const sentence = sentences.get(t.sentence) ?? "";
       const around = textAround(tokens, i, i);
-      open({ kind: "word", term: t.normalized!, display: t.text, reading: t.reading, sentence, around, startToken: i }, { start: i, end: i });
+      open({ kind: "word", term: t.normalized!, display: t.text, reading: t.reading, sentence, around, startToken: i, back }, { start: i, end: i });
       if (autoSaveWord) autoSave(t, sentence);
     },
     [tokens, sentences, open, autoSave],
@@ -89,10 +89,22 @@ export function usePopupOpeners({ tokens, sentences, popup, reveal, autoSave, on
       const display = slice.map((t) => t.text).join("").replace(/\s+/g, " ").trim();
       const sentence = sentences.get(tokens[range.start].sentence) ?? "";
       const around = textAround(tokens, range.start, range.end);
-      open({ kind: "phrase", term: normalizePhrase(display), display, sentence, around, startToken: range.start }, range);
+      const words = slice.filter((t) => t.word).map((t) => ({ index: t.index, text: t.text, term: t.normalized! }));
+      open({ kind: "phrase", term: normalizePhrase(display), display, sentence, around, startToken: range.start, words }, range);
     },
     [tokens, sentences, openWord, open, onError],
   );
 
-  return { openWord, openPhrase };
+  const openWordOfPhrase = useCallback(
+    (i: number) => {
+      if (target?.kind === "phrase" && sel) openWord(i, false, { display: target.display, range: sel });
+    },
+    [target, sel, openWord],
+  );
+
+  const backToPhrase = useCallback(() => {
+    if (target?.back) openPhrase(target.back.range.start, target.back.range.end);
+  }, [target, openPhrase]);
+
+  return { openWord, openPhrase, openWordOfPhrase, backToPhrase };
 }

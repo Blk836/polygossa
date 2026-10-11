@@ -63,9 +63,26 @@ export function learningGaps(tokens: Token[], spans: PhraseSpan[]): Set<number> 
   return gaps;
 }
 
-export function learningEdges(spans: PhraseSpan[]): { starts: Set<number>; ends: Set<number> } {
-  void spans;
-  return { starts: new Set(), ends: new Set() };
+export interface Edges {
+  starts: Set<number>;
+  ends: Set<number>;
+}
+
+export function learningEdges(spans: PhraseSpan[]): Edges {
+  const edges: Edges = { starts: new Set(), ends: new Set() };
+  const learning = spans.filter((s) => s.status === "learning").sort((a, b) => a.start - b.start);
+  let run: Range | null = null;
+  for (const s of learning) {
+    if (run && s.start <= run.end) {
+      run.end = Math.max(run.end, s.end);
+      continue;
+    }
+    if (run) edges.ends.add(run.end);
+    edges.starts.add(s.start);
+    run = { start: s.start, end: s.end };
+  }
+  if (run) edges.ends.add(run.end);
+  return edges;
 }
 
 export function savedPhraseAt(spans: PhraseSpan[], i: number): Range | null {

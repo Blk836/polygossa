@@ -9,7 +9,7 @@ test.afterEach(async ({ page }) => {
 });
 
 const word = (page: Page, n: number) => wordAt(page, n - 1);
-const gapAfter = (page: Page, n: number) => article(page).locator(`[data-i="${2 * (n - 1) + 1}"]`);
+const gapAfter = (page: Page, n: number) => word(page, n).locator("xpath=following-sibling::span[1]");
 const header = (page: Page) => page.locator(".font-reading.text-xl").first();
 const chips = (page: Page) => page.getByRole("group", { name: "Words in this phrase" });
 const chip = (page: Page, text: string) => chips(page).getByRole("button", { name: text, exact: true });
@@ -151,6 +151,8 @@ test.describe("the words of a phrase stay reachable", () => {
     await page.getByRole("button", { name: `Back to ${phrase}` }).click();
     await expect(chip(page, c.word(2))).toHaveAttribute("data-status", "learning");
     await expectBackground(page, word(page, 6), "--w-learning");
+    await page.keyboard.press("Escape");
+    await expect(chips(page)).toHaveCount(0);
     await expectBackground(page, gapAfter(page, 2), "--w-learning");
   });
 
