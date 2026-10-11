@@ -29,7 +29,7 @@ test("her stripes are cut off at her outline, on every Polly on the page", async
       const clip = id ? el.ownerDocument.getElementById(id)?.querySelector("ellipse") : null;
       const body = el.querySelector("[data-part=body]")!;
       const attrs = (e: Element | null | undefined) => ["cx", "cy", "rx", "ry"].map((a) => e?.getAttribute(a)).join(",");
-      return { clip: attrs(clip), body: attrs(body), outlineOnTop: !!stripes.compareDocumentPosition(el.querySelector("[data-part=outline]")!) };
+      return { clip: attrs(clip), body: attrs(body), outlineOnTop: !!(stripes.compareDocumentPosition(el.querySelector("[data-part=outline]")!) & Node.DOCUMENT_POSITION_FOLLOWING) };
     });
     expect(check.clip).toBe(check.body);
     expect(check.outlineOnTop).toBe(true);
