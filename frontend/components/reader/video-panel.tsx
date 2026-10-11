@@ -8,7 +8,9 @@ import { createMediaClock, type MediaClock } from "./media-clock";
 import { PlayerBar } from "./player-bar";
 import type { Spoken } from "./media-nav";
 import type { VideoLayout } from "./reader-settings";
+import { VIDEO_BESIDE } from "./use-media-query";
 import { useMediaPlayer, type MediaElement, type MediaHandle } from "./use-media-player";
+import { ShowVideoTab, TuckHandle, useSwipe } from "./video-tuck";
 import { loadYouTubeApi, type YTPlayer } from "./youtube-api";
 import { playbackOf, YT_STATE } from "./youtube-playback";
 
@@ -21,7 +23,13 @@ interface Props {
   maxHeight: number | null;
   layout: VideoLayout;
   onLayout: (layout: VideoLayout) => void;
+  tucked: boolean;
+  onTucked: (tucked: boolean) => void;
 }
+
+const tuckable = () => !window.matchMedia(VIDEO_BESIDE).matches;
+
+const afterPaint = (run: () => void) => requestAnimationFrame(() => requestAnimationFrame(run));
 
 function PlayerFailed({ videoId }: { videoId: string }) {
   return (
@@ -90,10 +98,33 @@ function startCued(yt: YTPlayer, cue: Cue) {
   yt.seekTo(ms / 1000, true);
 }
 
-function dockClass(mini: boolean): string {
-  const base = "sticky top-14 z-20 -mx-4 mb-6 bg-paper/95 px-4 pt-2 pb-3 backdrop-blur sm:mx-0 sm:px-0 lg:mb-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none";
+function dockClass(mini: boolean, tucked: boolean): string {
+  const base = `sticky top-14 z-20 -mx-4 mb-6 bg-paper/95 px-4 pt-2 backdrop-blur sm:mx-0 sm:px-0 lg:mb-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none max-lg:overflow-x-clip ${tucked ? "max-lg:hidden" : ""}`;
   if (mini) return `${base} lg:fixed lg:top-auto lg:right-6 lg:bottom-[5.5rem] lg:z-30 lg:w-[22.5rem]`;
   return `${base} lg:top-20`;
+}
+
+function frameStyle(maxHeight: number | null, offset: number): React.CSSProperties {
+  const style: React.CSSProperties = maxHeight === null ? {} : { maxHeight };
+  if (offset === 0) return style;
+  return { ...style, transform: `translateX(${offset}px)`, opacity: 1 - Math.min(Math.abs(offset) / 300, 0.6) };
+}
+
+function useTuck(tucked: boolean, onTucked: (tucked: boolean) => void, yt: React.RefObject<YTPlayer | null>) {
+  const state = useRef({ tucked, onTucked });
+  useEffect(() => {
+    state.current = { tucked, onTucked };
+  }, [tucked, onTucked]);
+  const [tuck] = useState(() => () => {
+    yt.current?.pauseVideo();
+    state.current.onTucked(true);
+  });
+  const [showFirst] = useState(() => (play: () => void) => {
+    if (!state.current.tucked || !tuckable()) return play();
+    state.current.onTucked(false);
+    afterPaint(play);
+  });
+  return { tuck, showFirst };
 }
 
 function LayoutButton({ layout, onLayout }: { layout: VideoLayout; onLayout: (layout: VideoLayout) => void }) {
@@ -112,18 +143,21 @@ function LayoutButton({ layout, onLayout }: { layout: VideoLayout; onLayout: (la
   );
 }
 
-const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video, tokens, onSpoken, onJumpToToken, cueToken, maxHeight, layout, onLayout }, ref) {
+const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video, tokens, onSpoken, onJumpToToken, cueToken, maxHeight, layout, onLayout, tucked, onTucked }, ref) {
   const host = useRef<HTMLDivElement>(null);
   const yt = useRef<YTPlayer | null>(null);
   const [smooth] = useState(createMediaClock);
   const clock = useRef({ playing: false, rate: 1 });
   const cue = useRef<Cue>({ started: false, pending: null, clock: smooth });
+  const { tuck, showFirst } = useTuck(tucked, onTucked, yt);
+  const swipe = useSwipe(tuck);
   const media = useMemo<MediaElement>(
     () => ({
-      play: () => {
-        if (yt.current) startCued(yt.current, cue.current);
-        yt.current?.playVideo();
-      },
+      play: () =>
+        showFirst(() => {
+          if (yt.current) startCued(yt.current, cue.current);
+          yt.current?.playVideo();
+        }),
       pause: () => yt.current?.pauseVideo(),
       seek: (ms) => {
         smooth.seek(ms, performance.now());
@@ -140,7 +174,7 @@ const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video,
         yt.current?.setPlaybackRate(rate);
       },
     }),
-    [smooth],
+    [smooth, showFirst],
   );
   const { failed, playing, buffering, seconds } = useYouTube(video.videoId, host, yt, cue);
   useEffect(() => {
@@ -164,19 +198,23 @@ const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video,
 
   return (
     <>
-      <div className={dockClass(mini)} data-testid="video-dock" data-floating-player={mini || undefined}>
+      <div className={dockClass(mini, tucked && !failed)} data-testid="video-dock" data-floating-player={mini || undefined}>
         {failed ? (
           <PlayerFailed videoId={video.videoId} />
         ) : (
-          <div
-            data-video-frame
-            style={maxHeight === null ? undefined : { maxHeight }}
-            className={`mx-auto aspect-video max-h-[42vh] overflow-hidden rounded-xl bg-black lg:max-h-none ${mini ? "lg:shadow-2xl lg:ring-1 lg:ring-line" : ""}`}
-          >
-            <div ref={host} className="size-full" />
-          </div>
+          <>
+            <div
+              data-video-frame
+              style={frameStyle(maxHeight, swipe.offset)}
+              className={`mx-auto aspect-video max-h-[42vh] overflow-hidden rounded-xl bg-black lg:max-h-none ${mini ? "lg:shadow-2xl lg:ring-1 lg:ring-line" : ""}`}
+            >
+              <div ref={host} className="size-full" />
+            </div>
+            <TuckHandle onTuck={tuck} handlers={swipe.handlers} />
+          </>
         )}
       </div>
+      {!failed && <ShowVideoTab shown={tucked} onShow={() => onTucked(false)} />}
       {!failed && <PlayerBar player={player} playing={playing} duration={duration} onClose={null} extra={<LayoutButton layout={layout} onLayout={onLayout} />} />}
     </>
   );

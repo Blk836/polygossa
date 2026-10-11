@@ -12,11 +12,12 @@ export interface ReaderSettings {
   follow: Follow;
   width: TextWidth;
   video: VideoLayout;
+  tucked: boolean;
 }
 
 export const READER_SETTINGS_COOKIE = "lector_reader";
 export const TEXT_SIZES = 4;
-export const DEFAULT_READER_SETTINGS: ReaderSettings = { size: 1, quiet: false, pauseOnLookup: true, pageKnown: true, follow: "word", width: "wide", video: "beside" };
+export const DEFAULT_READER_SETTINGS: ReaderSettings = { size: 1, quiet: false, pauseOnLookup: true, pageKnown: true, follow: "word", width: "wide", video: "beside", tucked: false };
 
 const ONE_YEAR_SECONDS = 365 * 24 * 60 * 60;
 
@@ -72,6 +73,7 @@ export function parseReaderSettings(value: string | null | undefined): ReaderSet
     follow: follow(params.get("follow"), params.get("word")),
     width: oneOf(params.get("width"), WIDTHS, d.width),
     video: oneOf(params.get("video"), VIDEO_LAYOUTS, d.video),
+    tucked: flag(params.get("tuck"), d.tucked),
   };
   return Object.values(parsed).includes(null) ? DEFAULT_READER_SETTINGS : (parsed as ReaderSettings);
 }
@@ -86,6 +88,7 @@ export function readerSettingsCookie(settings: ReaderSettings): string {
   if (settings.follow !== d.follow) params.set("follow", settings.follow);
   if (settings.width !== d.width) params.set("width", settings.width);
   if (settings.video !== d.video) params.set("video", settings.video);
+  if (settings.tucked !== d.tucked) params.set("tuck", "1");
   const value = params.toString();
   const maxAge = value ? ONE_YEAR_SECONDS : 0;
   return `${READER_SETTINGS_COOKIE}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;

@@ -30,7 +30,7 @@ Feature: Reading on a phone (#141)
 
   Scenario: An audio lesson gets the same bar, with Close in the menu
     Given a text with synced audio
-    When I open the audio player
+    When I open it, and its player opens with it
     Then Play is centred on the screen
     And "Close player" is in "More player controls" and closes the player
 

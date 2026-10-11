@@ -49,7 +49,7 @@ async function openVideo(page: Page, viewport = PHONE) {
 }
 
 const frame = (page: Page) => page.getByTestId("video-dock").locator("iframe");
-const play = (page: Page) => player(page).getByRole("button", { name: "Play" });
+const play = (page: Page) => player(page).getByRole("button", { name: "Play", exact: true });
 const more = (page: Page) => player(page).getByRole("button", { name: "More player controls" });
 const tuck = (page: Page) => page.getByRole("button", { name: "Tuck video away" });
 const showVideo = (page: Page) => page.getByRole("button", { name: "Show video" });
@@ -106,13 +106,12 @@ test("replay, loop and speed are in the More menu, which Escape and a tap outsid
   await expect(page.getByRole("combobox", { name: "Speed" })).toBeHidden();
 });
 
-test("an audio lesson gets the same bar, with Close player in the menu", async ({ page }) => {
+test("an audio lesson opens with the same bar, with Close player in the menu", async ({ page }) => {
   await page.setViewportSize(PHONE);
   const text = await createText(page, 200);
   created.push(text);
   await addSyncedAudio(page, text.id);
   await openReader(page, `/read/${text.id}`);
-  await page.getByRole("button", { name: "Audio" }).click();
   await expect(player(page)).toBeVisible();
   await expectCentred(page);
   await expect(page.getByRole("button", { name: "Close player" })).toBeHidden();
@@ -175,7 +174,7 @@ test("tucking a playing video pauses it, and Play brings it back before it plays
   await play(page).click();
   await expect(player(page).getByRole("button", { name: "Pause" })).toBeVisible();
   await tuck(page).click();
-  await expect(player(page).getByRole("button", { name: "Play" })).toBeVisible();
+  await expect(player(page).getByRole("button", { name: "Play", exact: true })).toBeVisible();
   expect((await calls(page)).at(-1)?.[0]).toBe("pause");
   await play(page).click();
   await expect(frame(page)).toBeVisible();
