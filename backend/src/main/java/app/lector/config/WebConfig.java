@@ -1,5 +1,6 @@
 package app.lector.config;
 
+import app.lector.common.RateLimiter;
 import app.lector.dashboard.StatsPeriod;
 import app.lector.text.Category;
 import app.lector.text.MediaKind;
@@ -9,10 +10,17 @@ import app.lector.vocab.WordStatus;
 import java.util.Locale;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
+    private final RateLimiter limiter;
+
+    public WebConfig(RateLimiter limiter) {
+        this.limiter = limiter;
+    }
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
@@ -22,5 +30,12 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addConverter(String.class, MediaKind.class, MediaKind::parse);
         registry.addConverter(String.class, Category.class, Category::parse);
         registry.addConverter(String.class, StatsPeriod.class, StatsPeriod::parse);
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new RateLimitInterceptor(limiter))
+                .addPathPatterns(RateLimitInterceptor.LOOKUP_PATHS)
+                .addPathPatterns(RateLimitInterceptor.IMPORT_PATHS);
     }
 }
