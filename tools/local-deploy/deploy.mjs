@@ -56,6 +56,9 @@ async function deployMain(again, deps) {
 
 async function deployAndCheck(sha, deps) {
   if (!(await deps.prepare(sha))) return { problem: "the deploy copy of main could not be prepared" };
+  if (!(await deps.liveChecks())) {
+    return { problem: "the live translation check failed against Amazon Translate; production wasn't touched" };
+  }
   const { ok, siteUrl } = await deps.deploy();
   if (!ok) return { problem: "cdk deploy failed (CloudFormation rolls production back by itself)" };
   if (!(await probe(`${siteUrl}/login`, () => true, deps))) return { problem: "the sign-in page never answered" };

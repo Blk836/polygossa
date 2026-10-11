@@ -49,6 +49,13 @@ async function prepare(sha) {
   return fresh || (await exec("npm ci", join(copy, "infra"))) === 0;
 }
 
+async function liveChecks() {
+  const jdk = join(homedir(), ".jdks", "openjdk-26.0.1");
+  const env = { ...process.env, ...credentials(), AWS_REGION: "eu-west-1" };
+  if (!env.JAVA_HOME && existsSync(jdk)) env.JAVA_HOME = jdk;
+  return (await exec(`${WIN ? ".\\gradlew.bat" : "./gradlew"} --no-daemon :backend:liveTest`, copy, env)) === 0;
+}
+
 async function deploy() {
   const env = { ...process.env, ...credentials(), PATH, AWS_REGION: "eu-west-1", CDK_DEFAULT_REGION: "eu-west-1",
     CDK_DEFAULT_ACCOUNT: signedInAccount };
@@ -109,6 +116,7 @@ process.exitCode = await runDeploy(process.argv.slice(2), {
     return release;
   },
   prepare,
+  liveChecks,
   deploy,
   fetch: (url) => fetch(url, { signal: AbortSignal.timeout(20_000) }),
   sleep: () => new Promise((wake) => setTimeout(wake, 15_000)),
