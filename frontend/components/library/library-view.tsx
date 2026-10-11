@@ -5,7 +5,7 @@ import { CardLayoutPicker } from "../card-layout-picker";
 import { useCardLayout } from "../card-layout-context";
 import { useMe } from "../me-context";
 import { AddToPlaylist } from "../playlists/add-to-playlist";
-import { PlaylistShelf } from "../playlists/playlist-shelf";
+import { PlaylistShelfRow, useShelfPlaylists } from "../playlists/playlist-shelf";
 import { TextCard } from "../text-card";
 import { useRemembered } from "../use-remembered";
 import { CardsLoading } from "../skeletons/card-pages";
@@ -32,10 +32,13 @@ function importHref(language: string): string {
   return language ? `/import?language=${language}` : "/import";
 }
 
-function EmptyLibrary({ filters, language, onClear }: { filters: LibraryFilters; language: string; onClear: () => void }) {
+function EmptyLibrary({ filters, language, hasPlaylists, onClear }: { filters: LibraryFilters; language: string; hasPlaylists: boolean; onClear: () => void }) {
   const title = emptyTitle(filters, language);
   if (hasFilters(filters)) {
     return <Empty title={title}><Button variant="secondary" className="mt-2" onClick={onClear}>Clear filters</Button></Empty>;
+  }
+  if (hasPlaylists) {
+    return <Empty title="Nothing saved outside your playlists">Bookmark a text or video to keep it here.</Empty>;
   }
   return (
     <Empty title={title}>
@@ -76,17 +79,18 @@ function UnsaveButton({ text, onUnsaved, onError }: { text: TextSummary; onUnsav
   );
 }
 
-function Results({ shown, filters, language, onClear, onChanged, onRemoved, onError }: {
+function Results({ shown, filters, language, hasPlaylists, onClear, onChanged, onRemoved, onError }: {
   shown: TextSummary[];
   filters: LibraryFilters;
   language: string;
+  hasPlaylists: boolean;
   onClear: () => void;
   onChanged: (t: TextSummary) => void;
   onRemoved: (t: TextSummary) => void;
   onError: (message: string) => void;
 }) {
   const { layout } = useCardLayout();
-  if (shown.length === 0) return <EmptyLibrary filters={filters} language={language} onClear={onClear} />;
+  if (shown.length === 0) return <EmptyLibrary filters={filters} language={language} hasPlaylists={hasPlaylists} onClear={onClear} />;
   return (
     <div className={cardGridClass(layout)} data-testid="card-grid">
       {shown.map((t) => (
@@ -115,6 +119,7 @@ function Library({ source, language }: { source: SourceFilter; language: string 
   const { me, refresh } = useMe();
   const [filters, setFilters] = useState<LibraryFilters>({ ...NO_FILTERS, source });
   const { texts, setTexts, error, setError } = useLibraryTexts(filters.kind, language);
+  const { lists: playlists } = useShelfPlaylists("yours", language);
 
   const replace = (t: TextSummary) => setTexts((list) => list?.map((x) => (x.id === t.id ? { ...x, ...t } : x)) ?? null);
   const removed = (t: TextSummary) => {
@@ -130,11 +135,11 @@ function Library({ source, language }: { source: SourceFilter; language: string 
         subtitle={librarySubtitle(me.plan.usage.texts, me.plan.limits.texts, language)}
         actions={<><CardLayoutPicker /><LinkButton href="/playlists" variant="secondary">Playlists</LinkButton><LinkButton href={importHref(language)} data-tour="import">+ Import</LinkButton></>}
       />
-      <PlaylistShelf source="yours" language={language} />
+      <PlaylistShelfRow source="yours" lists={playlists} />
       <FilterBar categories={texts ? categoriesIn(texts) : []} filters={filters} onChange={setFilters} count={shown?.length ?? 0} />
       <ErrorNote message={error} />
       {shown ? (
-        <Results shown={shown} filters={filters} language={language} onClear={() => setFilters(NO_FILTERS)}
+        <Results shown={shown} filters={filters} language={language} hasPlaylists={playlists.length > 0} onClear={() => setFilters(NO_FILTERS)}
           onChanged={replace} onRemoved={removed} onError={setError} />
       ) : (
         !error && <CardsLoading label="your library" />
