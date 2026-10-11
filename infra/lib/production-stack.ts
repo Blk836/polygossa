@@ -23,7 +23,6 @@ export const STRIPE_WEBHOOK_SECRET_ARN_SUFFIX = "jABTGF";
 
 export interface ProductionProps extends cdk.StackProps {
   readonly cloudFrontPrefixListId?: string;
-  readonly siteUrl?: string;
   readonly domain?: string;
   readonly domainLive?: boolean;
   readonly googleClientId?: string;
@@ -65,12 +64,47 @@ export class ProductionStack extends cdk.Stack {
 
     const zone = props.domain ? hostedZone(this, props.domain) : undefined;
     const domain = zone && props.domainLive ? siteDomain(this, zone, props.domain!) : undefined;
-    const previousUrl = props.siteUrl ?? "https://site.invalid";
-    const siteUrl = domain ? `https://${props.domain}` : previousUrl;
+
+    const balancerGroup = new ec2.SecurityGroup(this, "BalancerSecurity", {
+      vpc,
+      description: "The load balancer: reachable from CloudFront only",
+      allowAllOutbound: true,
+    });
+    const cloudFront = props.cloudFrontPrefixListId
+      ?? ec2.PrefixList.fromLookup(this, "CloudFrontOrigins", {
+        prefixListName: "com.amazonaws.global.cloudfront.origin-facing",
+      }).prefixListId;
+    balancerGroup.addIngressRule(ec2.Peer.prefixList(cloudFront), ec2.Port.tcp(80), "CloudFront");
+    const balancer = new elbv2.ApplicationLoadBalancer(this, "Balancer", {
+      vpc,
+      internetFacing: true,
+      securityGroup: balancerGroup,
+    });
+    const listener = balancer.addListener("Http", { port: 80, open: false });
+
+    const distribution = new cloudfront.Distribution(this, "Site", {
+      comment: "Polygossa production",
+      priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
+      domainNames: domain?.names,
+      certificate: domain?.certificate,
+      defaultBehavior: {
+        functionAssociations: domain ? [domain.redirect] : undefined,
+        origin: new origins.LoadBalancerV2Origin(balancer, {
+          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
+          readTimeout: cdk.Duration.seconds(60),
+        }),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+        cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+        originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
+      },
+    });
+    this.siteUrl = domain ? `https://${props.domain}` : `https://${distribution.distributionDomainName}`;
+    const siteUrl = this.siteUrl;
+
     const login = userPool(this, {
       domainPrefix: "polygossa",
       siteUrl,
-      previousSiteUrls: domain ? [previousUrl] : [],
       keep: true,
       googleClientId: props.googleClientId ?? "unset.apps.googleusercontent.com",
     });
@@ -150,22 +184,7 @@ export class ProductionStack extends cdk.Stack {
     });
     backend.connections.allowFrom(frontend, ec2.Port.tcp(8080), "the frontend");
 
-    const balancerGroup = new ec2.SecurityGroup(this, "BalancerSecurity", {
-      vpc,
-      description: "The load balancer: reachable from CloudFront only",
-      allowAllOutbound: true,
-    });
-    const cloudFront = props.cloudFrontPrefixListId
-      ?? ec2.PrefixList.fromLookup(this, "CloudFrontOrigins", {
-        prefixListName: "com.amazonaws.global.cloudfront.origin-facing",
-      }).prefixListId;
-    balancerGroup.addIngressRule(ec2.Peer.prefixList(cloudFront), ec2.Port.tcp(80), "CloudFront");
-    const balancer = new elbv2.ApplicationLoadBalancer(this, "Balancer", {
-      vpc,
-      internetFacing: true,
-      securityGroup: balancerGroup,
-    });
-    const frontendTargets = balancer.addListener("Http", { port: 80, open: false }).addTargets("Frontend", {
+    const frontendTargets = listener.addTargets("Frontend", {
       port: 3000,
       protocol: elbv2.ApplicationProtocol.HTTP,
       targets: [frontend],
@@ -173,28 +192,9 @@ export class ProductionStack extends cdk.Stack {
       deregistrationDelay: cdk.Duration.seconds(10),
     });
 
-    const distribution = new cloudfront.Distribution(this, "Site", {
-      comment: "Polygossa production",
-      priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
-      domainNames: domain?.names,
-      certificate: domain?.certificate,
-      defaultBehavior: {
-        functionAssociations: domain ? [domain.redirect] : undefined,
-        origin: new origins.LoadBalancerV2Origin(balancer, {
-          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
-          readTimeout: cdk.Duration.seconds(60),
-        }),
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-        cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
-        originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
-      },
-    });
-
     if (props.alertEmail) monitoring(this, { email: props.alertEmail, frontendTargets, backend, database });
 
     domain?.pointAt(distribution);
-    this.siteUrl = domain ? siteUrl : `https://${distribution.distributionDomainName}`;
     new cdk.CfnOutput(this, "SiteUrl", { value: this.siteUrl, description: "The production site" });
   }
 }

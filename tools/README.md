@@ -118,7 +118,7 @@ AWS CLI so it is never shown:
 ```bash
 SOURCE_CURATOR_TOKEN=local-secret \
 CURATOR_TOKEN="$(aws secretsmanager get-secret-value --profile polygossa --secret-id polygossa/curator-token --query SecretString --output text)" \
-node tools/import-videos.mjs list.txt --copy-from http://localhost:8080 --backend https://d3pd9mue4v7won.cloudfront.net --dry-run
+node tools/import-videos.mjs list.txt --copy-from http://localhost:8080 --backend https://polygossa.com --dry-run
 ```
 
 **Playlist mode** (`docs/acceptance/copy-playlist.feature`). `--playlist "<title>"` (with an optional

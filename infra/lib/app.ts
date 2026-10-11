@@ -11,7 +11,6 @@ export function defineApp(app: cdk.App, env: cdk.Environment, cloudFrontPrefixLi
     description: "Production: Polygossa's site",
     tags: { ...tags, environment: "production" },
     cloudFrontPrefixListId,
-    siteUrl: app.node.tryGetContext("site-url") as string,
     domain: app.node.tryGetContext("domain") as string | undefined,
     domainLive: app.node.tryGetContext("domain-live") === true,
     googleClientId,
