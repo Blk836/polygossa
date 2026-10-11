@@ -57,6 +57,13 @@ the sign-in page and the languages list through the site, and marks main's commi
 (pending, then green or red); a green mark is how it knows main is already live. `AWS_CLI` and `GH` override where the
 AWS and GitHub CLIs are.
 
+**Pausing production** (`docs/acceptance/pause-production.feature`): merge `"paused": true` in `infra/cdk.json` and
+deploy. The site becomes a coming-soon page, checked instead of the sign-in page. The database leaves a final snapshot:
+find its name with `aws rds describe-db-snapshots --profile polygossa --snapshot-type manual`. To unpause, set
+`"paused": false` and `"database-snapshot"` to that name, deploy, and leave the setting in place afterwards. The tool
+refuses an unpause with no new snapshot named, and a changed snapshot under a running database, before touching
+anything.
+
 ## import-videos.mjs: bulk-import curated YouTube videos
 
 Fills Explore (and so the recommendations) with videos found across YouTube. Each video is imported into the

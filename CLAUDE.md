@@ -158,7 +158,8 @@ If it can't be reproduced, say so and ask instead of guessing. Pick the browser 
 built as staging, and renaming a stack rebuilds everything). No real users yet. Test accounts made there use
 `@example.com` addresses. **QA** is the local app, signing in through the QA Cognito user pool (stack `PolygossaQa`).
 There is no cloud staging: treat main as releasable. What is live is the latest "deploy production" mark on main's
-commits.
+commits. Production can be paused behind a coming-soon page (`paused` in `infra/cdk.json`; the stack's `Paused`
+output says which): only the owner decides that, and unpausing names the database snapshot (tools/README.md).
 
 AWS is our own Organization: a management account (`322126339607`, the user's: region policy, new accounts,
 organization budgets) and the app account **"polygossa-app"** (`788826923437`), the only one Claude works in.
