@@ -1,4 +1,6 @@
-const ORDER = ["tools", "infra", "frontend", "backend", "e2e"];
+const ORDER = ["tools", "infra", "frontend", "backend", "images", "e2e"];
+
+const DOCKER_BUILD = "docker build --platform linux/amd64";
 
 const PACKAGES = { tools: "frontend", infra: "infra", frontend: "frontend", e2e: "frontend" };
 
@@ -25,6 +27,9 @@ function stepsOf(name, { win, cdkAccount }) {
     case "backend":
       return [{ cwd: ".", command: `${program(win ? "./gradlew.bat" : "./gradlew", win)}`
         + " :backend:compileJava :backend:checkstyleMain :backend:test -Ptest.forks=2" }];
+    case "images":
+      return [{ command: `${DOCKER_BUILD} -f backend/Dockerfile -t polygossa-check-backend .`, cwd: "." },
+        { command: `${DOCKER_BUILD} -t polygossa-check-frontend frontend`, cwd: "." }];
     default:
       return [{ command: "npm run e2e", cwd: "frontend" }];
   }

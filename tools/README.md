@@ -21,7 +21,8 @@ Only one run holds the PC at a time, across every worktree: the lock file is `po
 checkout's `.git` folder and names its holder, so a waiting run says whom it waits for. A lock whose process has died is
 taken over. Backend and end-to-end runs need `JAVA_HOME`; missing or outdated `node_modules` are installed with
 `npm ci` first; infra's synth gets the AWS account from the `AWS_ACCOUNT_ID` repository variable (or
-`CDK_DEFAULT_ACCOUNT`). `GH` overrides where the GitHub CLI is.
+`CDK_DEFAULT_ACCOUNT`). `GH` overrides where the GitHub CLI is. The images suite (production's Docker images, run
+when a Dockerfile, ignore file or dependency manifest changes) needs Docker Desktop running.
 
 ## stripe-setup.mjs: the prices and the webhook in Stripe
 

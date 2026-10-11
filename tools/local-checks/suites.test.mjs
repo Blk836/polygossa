@@ -2,8 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { suitesFor } from "./suites.mjs";
 
-const none = { backend: false, e2e: false, frontend: false, infra: false, tools: false };
-const all = { backend: true, e2e: true, frontend: true, infra: true, tools: true };
+const none = { backend: false, e2e: false, frontend: false, images: false, infra: false, tools: false };
+const all = { backend: true, e2e: true, frontend: true, images: true, infra: true, tools: true };
 const installed = { win: false, needsInstall: () => false, cdkAccount: "123456789012" };
 const names = (plan) => plan.map((suite) => suite.name);
 const commands = (suite) => suite.steps.map((step) => step.command);
@@ -13,7 +13,20 @@ test("nothing picked, nothing to run", () => {
 });
 
 test("every suite, quick ones first and the end-to-end suite last", () => {
-  assert.deepEqual(names(suitesFor(all, installed)), ["tools", "infra", "frontend", "backend", "e2e"]);
+  assert.deepEqual(names(suitesFor(all, installed)), ["tools", "infra", "frontend", "backend", "images", "e2e"]);
+});
+
+test("the images suite builds both production images for linux/amd64 from the contexts the deploy uses", () => {
+  const [images] = suitesFor({ ...none, images: true }, installed);
+  assert.deepEqual(images.steps.map((s) => [s.command, s.cwd]), [
+    ["docker build --platform linux/amd64 -f backend/Dockerfile -t polygossa-check-backend .", "."],
+    ["docker build --platform linux/amd64 -t polygossa-check-frontend frontend", "."],
+  ]);
+});
+
+test("the images suite needs no npm packages", () => {
+  const [images] = suitesFor({ ...none, images: true }, { ...installed, needsInstall: () => true });
+  assert.ok(images.steps.every((s) => s.command !== "npm ci"));
 });
 
 test("only the picked suites run", () => {

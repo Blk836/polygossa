@@ -1,11 +1,15 @@
-export const ALL = ["backend", "e2e", "frontend", "infra", "tools"];
+export const ALL = ["backend", "e2e", "frontend", "images", "infra", "tools"];
 
 const RULES = [
   [/^\.github\//, null],
   [/^tools\/ci-checks(\/|\.mjs$)/, null],
   [/^docs\/|\.md$/, []],
-  [/^(backend\/|gradle\/|config\/checkstyle\/|build\.gradle\.kts$|settings\.gradle\.kts$|gradlew(\.bat)?$)/,
-    ["backend", "e2e", "tools"]],
+  [/^(backend\/Dockerfile|frontend\/Dockerfile$|frontend\/\.dockerignore$)/, ["images"]],
+  [/^infra\/lib\/images\.ts$/, ["infra", "tools", "images"]],
+  [/^(gradle\/|build\.gradle\.kts$|settings\.gradle\.kts$|gradlew(\.bat)?$|backend\/build\.gradle\.kts$)/,
+    ["backend", "e2e", "tools", "images"]],
+  [/^(backend\/|config\/checkstyle\/)/, ["backend", "e2e", "tools"]],
+  [/^frontend\/(package(-lock)?\.json|next\.config\.ts)$/, ["frontend", "tools", "e2e", "images"]],
   [/^frontend\//, ["frontend", "tools", "e2e"]],
   [/^infra\//, ["infra", "tools"]],
   [/^tools\//, ["tools"]],
