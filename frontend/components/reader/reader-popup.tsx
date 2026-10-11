@@ -10,6 +10,9 @@ interface Props {
   language: LanguageCode;
   speechLocale: string;
   status: WordStatus | undefined;
+  statuses: Record<string, WordStatus>;
+  onOpenWord: (index: number) => void;
+  onBack: () => void;
   isPro: boolean;
   notice: string | null;
   hasAudio: boolean;

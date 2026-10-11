@@ -89,6 +89,8 @@ when its test is fixed.
   PR #100.
 - `e2e/profile-photo.spec.ts` › "removing the photo brings the initial back, also after reloading": the page closed
   while clicking "Save photo" in the crop dialog. Seen 2026-10-10, PR #102.
+- `e2e/profile-photo-errors.spec.ts` › "a file that isn't an image is refused before any crop or upload": the
+  alert never appeared within 5 s (likely the same picked-before-hydration cause). Seen 2026-10-11, PR #113.
 - `e2e/wide-reader.spec.ts` › "where the mini player sits in the margin, pages use the full height". Seen
   2026-10-10, PR #89.
 - `e2e/wide-reader.spec.ts` › "where the mini player overlaps the text, every page ends above it without
@@ -99,7 +101,7 @@ when its test is fixed.
 - `e2e/card-layout.spec.ts` › "a category or search grid follows the layout": Explore showed "This page couldn't
   load" (a failed server render, cause not captured: the e2e servers' logs aren't kept). Seen 2026-10-10, PR #89.
 - `e2e/page-skeletons.spec.ts` › "Classes shows an outline shaped like it, and fills in without moving". Seen
-  2026-10-10, PR #90.
+  2026-10-10, PR #90; 2026-10-11, PR #113.
 - `e2e/reader-colours.spec.ts` › "the word being spoken still shows, quiet or not": after "]" the word never got
   `w-speaking` within 5 s. Seen 2026-10-10, PR #90.
 - `e2e/reader-playback-known.spec.ts` › "stepping with ] across the page end marks it known, and stepping back with [

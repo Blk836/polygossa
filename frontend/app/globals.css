@@ -87,6 +87,7 @@
   --color-warn-soft: var(--warn-soft);
   --color-bad: var(--bad);
   --color-bad-soft: var(--bad-soft);
+  --color-new: var(--w-new);
   --color-learning: var(--w-learning);
   --color-known: var(--w-known);
   --color-ignored: var(--w-ignored);
@@ -144,6 +145,18 @@ span.s-spoken:not(.w) {
 .reader-quiet .w-new.s-spoken {
   background: var(--w-sentence);
 }
+.p-learning {
+  background: var(--w-learning) !important;
+  border-radius: 0;
+}
+.p-start {
+  border-top-left-radius: 0.25rem;
+  border-bottom-left-radius: 0.25rem;
+}
+.p-end {
+  border-top-right-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+}
 .w-selected {
   background: var(--w-active) !important;
   box-shadow: 0 0 0 2px var(--rubric);
@@ -163,10 +176,6 @@ span.s-spoken:not(.w) {
 }
 .sel.sel-start.sel-end {
   box-shadow: 0 0 0 2px var(--rubric) !important;
-}
-.p-learning {
-  text-decoration: underline 2px var(--w-learning-line);
-  text-underline-offset: 4px;
 }
 
 .reading {

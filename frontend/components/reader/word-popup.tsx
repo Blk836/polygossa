@@ -7,7 +7,8 @@ import type { DictionaryResult, LanguageCode, WordLookup, WordStatus } from "@/l
 import { useMe } from "../me-context";
 import { UpgradeNote } from "../ui";
 import { AnkiNote } from "./anki-note";
-import type { TextAround } from "./reader-text";
+import { BackToPhrase, PhraseWords } from "./phrase-words";
+import type { Range, TextAround } from "./reader-text";
 import { AiExplanation, DictionaryLinks, ExtraActions, Meanings, PopupHeader, StatusButtons, type SentenceState } from "./popup-parts";
 
 const lookupCache = new Map<string, Promise<WordLookup>>();
@@ -45,6 +46,12 @@ function lookupTerm(target: PopupTarget): string {
   return target.kind === "word" ? target.display : target.term;
 }
 
+export interface PhraseWord {
+  index: number;
+  text: string;
+  term: string;
+}
+
 export interface PopupTarget {
   kind: "word" | "phrase";
   term: string;
@@ -53,6 +60,8 @@ export interface PopupTarget {
   sentence: string;
   around: TextAround;
   startToken: number;
+  words?: PhraseWord[];
+  back?: { display: string; range: Range };
 }
 
 interface Props {
@@ -60,6 +69,9 @@ interface Props {
   language: LanguageCode;
   speechLocale: string;
   status: WordStatus | undefined;
+  statuses: Record<string, WordStatus>;
+  onOpenWord: (index: number) => void;
+  onBack: () => void;
   isPro: boolean;
   notice: string | null;
   hasAudio: boolean;
@@ -155,7 +167,9 @@ export function WordPopup(props: Props) {
     <div className="flex max-h-[70vh] flex-col overflow-hidden rounded-t-2xl border border-line bg-card shadow-xl sm:max-h-[28rem] sm:rounded-2xl">
       <PopupHeader target={target} speechLocale={props.speechLocale} onClose={props.onClose} />
       <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
+        {target.back && <BackToPhrase display={target.back.display} onBack={props.onBack} />}
         <Meanings lookup={result} error={error} onPick={pickMeaning} />
+        {target.words && <PhraseWords words={target.words} statuses={props.statuses} onOpen={props.onOpenWord} />}
         <DictionaryLinks language={language} nativeLanguage={me.nativeLanguage} term={target.display} />
         {explanation && <AiExplanation result={explanation} />}
         {aiExample && (

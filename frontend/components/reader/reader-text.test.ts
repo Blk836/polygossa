@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Token } from "@/lib/types";
-import { normalizePhrase, overlapping, sentenceHere, phraseMarks, phraseRange, readerStats, sentenceTexts, textAround, toParagraphs } from "./reader-text";
+import { learningEdges, normalizePhrase, overlapping, sentenceHere, phraseMarks, phraseRange, readerStats, sentenceTexts, textAround, toParagraphs } from "./reader-text";
 
 function tokens(...parts: (string | [string, number])[]): Token[] {
   return parts.map((p, index) => {
@@ -77,6 +77,27 @@ describe("phraseMarks", () => {
   it("stops a match at its last character", () => {
     const t = tokens("ab", " ", "c");
     expect([...phraseMarks(t, [{ term: "ab", status: "known" }]).keys()]).toEqual([0]);
+  });
+});
+
+describe("learningEdges", () => {
+  const learning = (start: number, end: number) => ({ start, end, status: "learning" as const });
+
+  it("rounds a learning phrase at its first and last word", () => {
+    expect(learningEdges([learning(2, 6)])).toEqual({ starts: new Set([2]), ends: new Set([6]) });
+  });
+
+  it("merges overlapping learning phrases into one box", () => {
+    expect(learningEdges([learning(4, 8), learning(2, 4)])).toEqual({ starts: new Set([2]), ends: new Set([8]) });
+  });
+
+  it("keeps phrases that only sit side by side as separate boxes", () => {
+    expect(learningEdges([learning(0, 2), learning(4, 6)])).toEqual({ starts: new Set([0, 4]), ends: new Set([2, 6]) });
+  });
+
+  it("ignores known and ignored phrases", () => {
+    const spans = [{ start: 0, end: 2, status: "known" as const }, { start: 4, end: 6, status: "ignored" as const }];
+    expect(learningEdges(spans)).toEqual({ starts: new Set(), ends: new Set() });
   });
 });
 
