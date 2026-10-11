@@ -1,77 +1,76 @@
-export type PollyMood = "happy" | "sleepy" | "cheering";
+import { useId } from "react";
+import { Antennae, Extras, Face, Wings, type PollyMood } from "./polly-face";
+import { Holding, type PollyProp } from "./polly-props";
 
-const LINE = { fill: "none", stroke: "var(--polly-line)", strokeWidth: 3, strokeLinecap: "round" } as const;
-const FACE = { fill: "none", stroke: "var(--polly-face)", strokeWidth: 3, strokeLinecap: "round" } as const;
-const WING = { fill: "var(--polly-wing)", stroke: "var(--polly-line)", strokeWidth: 3 } as const;
+export type { PollyMood } from "./polly-face";
+export type { PollyProp } from "./polly-props";
 
-function Wings({ mood }: { mood: PollyMood }) {
-  const up = mood === "cheering";
-  const [tilt, y, x] = up ? [55, 40, 22] : [35, 50, 24];
+const OUTLINE = { fill: "none", stroke: "var(--polly-line)" } as const;
+
+function useClipId(): string {
+  return `polly${useId().replace(/[^\w-]/g, "")}`;
+}
+
+function Body({ cy, rx, outline, stripes, stripeWidth }: { cy: number; rx: number; outline: number; stripes: string[]; stripeWidth: number }) {
+  const clip = useClipId();
   return (
     <>
-      <ellipse cx={x} cy={y} rx="15" ry="22" transform={`rotate(-${tilt} ${x} ${y})`} {...WING} />
-      <ellipse cx={120 - x} cy={y} rx="15" ry="22" transform={`rotate(${tilt} ${120 - x} ${y})`} {...WING} />
+      <defs>
+        <clipPath id={clip}><ellipse cx="60" cy={cy} rx={rx} ry="32" /></clipPath>
+      </defs>
+      <ellipse data-part="body" cx="60" cy={cy} rx={rx} ry="32" fill="var(--honey)" />
+      <g data-part="stripes" clipPath={`url(#${clip})`} fill="none" stroke="var(--polly-line)" strokeWidth={stripeWidth}>
+        {stripes.map((d) => <path key={d} d={d} />)}
+      </g>
+      <ellipse data-part="outline" cx="60" cy={cy} rx={rx} ry="32" {...OUTLINE} strokeWidth={outline} />
     </>
   );
 }
 
-function Antennae() {
+function SmallPolly() {
   return (
     <>
-      <path d="M50 44 Q46 28 38 22" {...LINE} />
-      <path d="M70 44 Q74 28 82 22" {...LINE} />
-      <circle cx="38" cy="22" r="4.5" fill="var(--polly-line)" />
-      <circle cx="82" cy="22" r="4.5" fill="var(--polly-line)" />
+      <ellipse data-part="wing" cx="26" cy="54" rx="16" ry="20" transform="rotate(-35 26 54)" fill="var(--polly-wing)" stroke="var(--polly-line)" strokeWidth="6" />
+      <ellipse data-part="wing" cx="94" cy="54" rx="16" ry="20" transform="rotate(35 94 54)" fill="var(--polly-wing)" stroke="var(--polly-line)" strokeWidth="6" />
+      <Body cy={78} rx={40} outline={6} stripes={["M14 92 Q60 108 106 92"]} stripeWidth={9} />
+      <circle data-part="eye" cx="46" cy="72" r="7" fill="var(--polly-face)" />
+      <circle data-part="eye" cx="74" cy="72" r="7" fill="var(--polly-face)" />
     </>
   );
 }
 
-function Face({ mood }: { mood: PollyMood }) {
-  if (mood === "sleepy") {
-    return (
-      <>
-        <path d="M42 65 Q47 69 52 65" {...FACE} />
-        <path d="M68 65 Q73 69 78 65" {...FACE} />
-        <ellipse cx="60" cy="76" rx="3" ry="2.5" fill="var(--polly-face)" />
-      </>
-    );
-  }
-  if (mood === "cheering") {
-    return (
-      <>
-        <path d="M42 67 Q47 60 52 67" {...FACE} />
-        <path d="M68 67 Q73 60 78 67" {...FACE} />
-        <path d="M52 72 Q60 84 68 72 Z" fill="var(--polly-face)" stroke="var(--polly-face)" strokeWidth="2" strokeLinejoin="round" />
-      </>
-    );
-  }
+function FullPolly({ mood, prop }: { mood: PollyMood; prop?: PollyProp }) {
+  const held = prop ?? (mood === "proud" ? "drop" : null);
   return (
-    <>
-      <circle cx="47" cy="66" r="4.5" fill="var(--polly-face)" />
-      <circle cx="73" cy="66" r="4.5" fill="var(--polly-face)" />
-      <circle cx="48.5" cy="64.5" r="1.5" fill="var(--polly-wing)" />
-      <circle cx="74.5" cy="64.5" r="1.5" fill="var(--polly-wing)" />
-      <path d="M54 74 Q60 79 66 74" {...FACE} strokeWidth="2.5" />
-    </>
+    <g transform={mood === "curious" ? "rotate(-10 60 74)" : undefined}>
+      <Wings mood={mood} />
+      <Antennae mood={mood} />
+      <Body cy={74} rx={38} outline={3} stripes={["M16 79 Q60 95 104 79", "M16 90 Q60 106 104 90"]} stripeWidth={6} />
+      <Face mood={mood} />
+      {held && <Holding held={held} />}
+      <Extras mood={mood} />
+    </g>
   );
 }
 
-export function Polly({ mood = "happy", label, className = "" }: { mood?: PollyMood; label?: string; className?: string }) {
+export function Polly({ mood = "happy", prop, size, label, className = "" }: {
+  mood?: PollyMood;
+  prop?: PollyProp;
+  size?: "small";
+  label?: string;
+  className?: string;
+}) {
   const name = label ? { role: "img", "aria-label": label } : { "aria-hidden": true };
   return (
-    <svg viewBox="0 0 120 120" data-polly={mood} className={className} {...name}>
-      <Wings mood={mood} />
-      <Antennae />
-      <ellipse cx="60" cy="74" rx="38" ry="32" fill="var(--honey)" stroke="var(--polly-line)" strokeWidth="3" />
-      <path d="M26 86 Q60 97 94 86" {...LINE} strokeWidth="7" />
-      <path d="M37 98 Q60 106 83 98" {...LINE} strokeWidth="7" />
-      {mood !== "sleepy" && (
-        <>
-          <ellipse cx="39" cy="76" rx="5" ry="3" fill="var(--polly-cheek)" opacity="0.6" />
-          <ellipse cx="81" cy="76" rx="5" ry="3" fill="var(--polly-cheek)" opacity="0.6" />
-        </>
-      )}
-      <Face mood={mood} />
+    <svg
+      viewBox={size ? "0 17 120 110" : "0 0 120 120"}
+      data-polly={mood}
+      data-polly-prop={size ? undefined : prop}
+      data-polly-size={size}
+      className={className}
+      {...name}
+    >
+      {size ? <SmallPolly /> : <FullPolly mood={mood} prop={prop} />}
     </svg>
   );
 }
