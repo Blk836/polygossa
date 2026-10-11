@@ -121,7 +121,7 @@ test("a failed cdk deploy: no site checks, red mark, error exit, turn given back
   assert.equal(calls.released, 1);
 });
 
-test("a failed live translation check: production untouched, red mark naming it, turn given back", async () => {
+test("failed live checks against AWS: production untouched, red mark naming them, turn given back", async () => {
   let deployed = false;
   const { deps, calls, output } = world({
     liveChecks: async () => { calls.order.push("live"); return false; },
@@ -131,7 +131,7 @@ test("a failed live translation check: production untouched, red mark naming it,
   assert.equal(deployed, false);
   assert.deepEqual(calls.fetched, []);
   assert.deepEqual(states(calls), ["pending", "failure"]);
-  assert.match(calls.status[1].description, /live translation check/i);
+  assert.match(calls.status[1].description, /live checks against AWS \(Translate, S3\)/i);
   assert.match(output(), /production wasn't touched/i);
   assert.equal(calls.released, 1);
 });
