@@ -11,7 +11,7 @@ let qa: Template;
 
 before(() => {
   const app = new cdk.App({
-    context: { "github-repo": "owner/repo", "github-subject": "repo:owner/repo", "site-url": SITE,
+    context: { "github-repo": "owner/repo", "github-subject": "repo:owner/repo", domain: "site.example", "domain-live": true,
       "google-client-id": GOOGLE_CLIENT },
   });
   const stacks = defineApp(app, { account: "111111111111", region: "eu-west-1" }, "pl-cloudfront");
