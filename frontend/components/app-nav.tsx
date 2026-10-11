@@ -8,6 +8,7 @@ import { HeaderStats } from "./header-stats";
 import { BookIcon, CardsIcon, ChartIcon, ChatIcon } from "./icons";
 import { LanguageSwitcher } from "./language-switcher";
 import { useMe } from "./me-context";
+import { useRestartOnSamePage } from "./page-restart";
 import { useDueCount, useHeaderStats } from "./nav-data";
 import { Logo } from "./ui";
 import { BRAND } from "@/lib/brand";
@@ -47,6 +48,7 @@ function TabLabel({ group, due }: { group: NavGroup; due: number | null }) {
 }
 
 function SubTabs({ label, sections, current }: { label: string; sections: NavSection[]; current: NavSection }) {
+  const restartOn = useRestartOnSamePage();
   return (
     <nav aria-label={label} className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4">
       {sections.map((s) => {
@@ -55,6 +57,7 @@ function SubTabs({ label, sections, current }: { label: string; sections: NavSec
           <Link
             key={s.href}
             href={s.href}
+            onClick={restartOn(s.href)}
             data-tour={sectionTourName(s.label)}
             aria-current={here ? "page" : undefined}
             className={`relative shrink-0 px-3 py-2 text-sm transition ${
@@ -85,12 +88,13 @@ export function AppNav() {
   const due = useDueCount(language, pathname, me);
   const stats = useHeaderStats(language, pathname, me);
   const active = activeGroup(pathname);
+  const restartOn = useRestartOnSamePage();
 
   return (
     <>
       <header className="sticky top-0 z-30 border-b border-line bg-paper/90 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:gap-4">
-          <Link href={HOME} aria-label={`${BRAND} home`} className="min-w-0 truncate">
+          <Link href={HOME} onClick={restartOn(HOME)} aria-label={`${BRAND} home`} className="min-w-0 truncate">
             <Logo className="text-xl sm:text-2xl" />
           </Link>
           <nav className="hidden flex-1 items-center gap-1 md:flex" aria-label="Main">
@@ -98,6 +102,7 @@ export function AppNav() {
               <Link
                 key={g.key}
                 href={g.href}
+                onClick={restartOn(g.href)}
                 aria-label={tabName(g, due)}
                 aria-current={g === active ? "page" : undefined}
                 className={`rounded-lg px-3 py-1.5 text-sm transition ${g === active ? "bg-card font-medium text-ink" : "text-muted hover:text-ink"}`}
@@ -125,6 +130,7 @@ export function AppNav() {
             <Link
               key={g.key}
               href={g.href}
+              onClick={restartOn(g.href)}
               aria-label={tabName(g, due)}
               aria-current={g === active ? "page" : undefined}
               className={`flex flex-1 flex-col items-center gap-0.5 py-1 text-xs ${g === active ? "font-medium text-rubric" : "text-muted"}`}
