@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 import { execFileSync, spawn } from "node:child_process";
 import { existsSync, statSync } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import { homedir } from "node:os";
+import { delimiter, join, relative, resolve } from "node:path";
 import { acquire } from "./local-checks/lock.mjs";
 import { runChecks } from "./local-checks/run.mjs";
 import { suitesFor } from "./local-checks/suites.mjs";
 
 const WIN = process.platform === "win32";
 const GH_WINDOWS = "C:\\Program Files\\GitHub CLI\\gh.exe";
-const GH = process.env.GH ?? (WIN && existsSync(GH_WINDOWS) ? GH_WINDOWS : "gh");
+const DOCKER_BIN = join(homedir(), "AppData", "Local", "Programs", "DockerDesktop", "resources", "bin");
+const GH = process.env.GH ??(WIN && existsSync(GH_WINDOWS) ? GH_WINDOWS : "gh");
 
 const git = (...args) => execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
 const succeeds = (fn) => { try { fn(); return true; } catch { return false; } };
@@ -55,6 +57,8 @@ function isAlive(pid) {
 
 function exec(step) {
   const env = { ...process.env };
+  const pathKey = Object.keys(env).find((key) => key.toUpperCase() === "PATH") ?? "PATH";
+  if (existsSync(DOCKER_BIN)) env[pathKey] = `${env[pathKey] ?? ""}${delimiter}${DOCKER_BIN}`;
   for (const [key, value] of Object.entries(step.env ?? {})) if (value !== undefined) env[key] = value;
   console.log(`\n> ${step.cwd === "." ? "" : `(${step.cwd}) `}${step.command}`);
   return new Promise((done, fail) => {

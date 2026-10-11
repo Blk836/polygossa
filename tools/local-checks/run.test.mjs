@@ -39,14 +39,14 @@ test("uncommitted changes: refuses, says why, and runs nothing", async () => {
 test("the checks are picked from the branch's changes against main", async () => {
   const { deps, calls } = world({ git: { changedFiles: () => ["infra/lib/x.ts"] } });
   await runChecks([], deps);
-  assert.deepEqual(calls.plan[0], { backend: false, e2e: false, frontend: false, infra: true, tools: true });
+  assert.deepEqual(calls.plan[0], { backend: false, e2e: false, frontend: false, images: false, infra: true, tools: true });
 });
 
 test("--all, or changes that can't be listed, pick every check", async () => {
   for (const [args, files] of [[["--all"], ["infra/x.ts"]], [[], null]]) {
     const { deps, calls } = world({ git: { changedFiles: () => files } });
     await runChecks(args, deps);
-    assert.deepEqual(calls.plan[0], { backend: true, e2e: true, frontend: true, infra: true, tools: true });
+    assert.deepEqual(calls.plan[0], { backend: true, e2e: true, frontend: true, images: true, infra: true, tools: true });
   }
 });
 
