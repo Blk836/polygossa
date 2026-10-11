@@ -16,6 +16,7 @@ export interface MediaElement {
 
 export interface MediaHandle {
   playFromToken(tokenIndex: number): void;
+  startPage(tokenIndex: number | null): void;
   pause(): void;
   shortcut(action: MediaShortcut): void;
 }
@@ -40,6 +41,7 @@ export function useMediaPlayer({ media, timings, tokens, duration, playing, onSp
   const [rate, setRateState] = useState(1);
   const [looped, setLooped] = useState<Segment | null>(null);
   const lastSpoken = useRef<Spoken>(NOTHING_SPOKEN);
+  const pageStart = useRef<number | null>(null);
   const segments = useMemo(() => sentenceSegments(tokens, timings, duration), [tokens, timings, duration]);
   const firstWords = useMemo(() => firstWordOfSentence(tokens), [tokens]);
   const listen = useContext(ListenContext);
@@ -92,6 +94,7 @@ export function useMediaPlayer({ media, timings, tokens, duration, playing, onSp
   const seek = useCallback(
     (ms: number, play = false) => {
       const m = media;
+      pageStart.current = null;
       setTouched(true);
       m.seek(ms);
       if (play) m.play();
@@ -123,9 +126,10 @@ export function useMediaPlayer({ media, timings, tokens, duration, playing, onSp
   const toggle = useCallback(() => {
     if (!touched) setTime(cue);
     setTouched(true);
-    if (playing) media.pause();
-    else media.play();
-  }, [media, playing, touched, cue]);
+    if (playing) return media.pause();
+    if (pageStart.current !== null) seek(pageStart.current);
+    media.play();
+  }, [media, playing, touched, cue, seek]);
 
   const toggleLoop = useCallback(() => {
     const k = segmentAt(segments, media.currentMs() ?? time);
@@ -158,7 +162,18 @@ export function useMediaPlayer({ media, timings, tokens, duration, playing, onSp
     [timings, seek, media],
   );
 
-  return { time: touched ? time : cue, rate, setRate, looped: looped !== null, toggleLoop, segments, seek, toggle, step, shortcut, playFromToken, tick };
+  const startPage = useCallback(
+    (tokenIndex: number | null) => {
+      pageStart.current = null;
+      if (!touched || tokenIndex === null) return;
+      const ms = cueMs(timings, tokenIndex);
+      if (playing) seek(ms);
+      else pageStart.current = ms;
+    },
+    [touched, timings, playing, seek],
+  );
+
+  return { startPage, time: touched ? time : cue, rate, setRate, looped: looped !== null, toggleLoop, segments, seek, toggle, step, shortcut, playFromToken, tick };
 }
 
 export type MediaPlayer = ReturnType<typeof useMediaPlayer>;

@@ -65,6 +65,7 @@ export const AudioPanel = forwardRef<MediaHandle, Props>(function AudioPanel(pro
 
   useImperativeHandle(ref, () => ({
     playFromToken: player.playFromToken,
+    startPage: player.startPage,
     pause: () => el.current?.pause(),
     shortcut: player.shortcut,
   }));

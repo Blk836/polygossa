@@ -1,6 +1,6 @@
 import { fieldNames, type AnkiCardInfo } from "./anki-connect";
 import type { AnkiCardPayload, AnkiDeckChoice } from "./anki-types";
-import { LANGUAGES } from "./languages";
+import { LANGUAGES, languageName } from "./languages";
 import type { LanguageCode } from "./types";
 
 export interface DeckSetup {
@@ -50,4 +50,10 @@ export function chunks<T>(items: T[], size: number): T[][] {
   const out: T[][] = [];
   for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
   return out;
+}
+
+export function decksTitle(decks: AnkiDeckChoice[]): string {
+  if (decks.length === 0) return "Your decks";
+  const languages = [...new Set(decks.map((d) => d.language))].map(languageName);
+  return `Your decks · ${decks.length} ${decks.length === 1 ? "deck" : "decks"} · ${languages.join(", ")}`;
 }
