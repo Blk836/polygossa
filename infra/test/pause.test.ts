@@ -138,6 +138,10 @@ describe("paused production", () => {
     assert.equal(output(template, "Paused"), "true");
     assert.equal(output(template, "SiteUrl"), `https://${DOMAIN}`);
   });
+
+  it("can be previewed from the command line (cdk diff -c paused=true)", () => {
+    assert.equal(output(production({ paused: "true" }), "Paused"), "true");
+  });
 });
 
 describe("production unpaused from a snapshot", () => {
