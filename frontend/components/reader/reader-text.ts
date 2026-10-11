@@ -63,6 +63,11 @@ export function learningGaps(tokens: Token[], spans: PhraseSpan[]): Set<number> 
   return gaps;
 }
 
+export function learningEdges(spans: PhraseSpan[]): { starts: Set<number>; ends: Set<number> } {
+  void spans;
+  return { starts: new Set(), ends: new Set() };
+}
+
 export function savedPhraseAt(spans: PhraseSpan[], i: number): Range | null {
   let best: PhraseSpan | null = null;
   for (const s of spans) {
