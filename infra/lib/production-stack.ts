@@ -2,24 +2,20 @@ import * as cdk from "aws-cdk-lib";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
-import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
-import * as iam from "aws-cdk-lib/aws-iam";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import type { Construct } from "constructs";
+import { appServices } from "./app-services.ts";
+import { comingSoonSite } from "./coming-soon.ts";
 import { appDatabase } from "./database.ts";
 import { hostedZone, siteDomain } from "./domain.ts";
-import { backendImage, frontendImage } from "./images.ts";
-import { appLogs, BACKEND_NAME, NAMESPACE } from "./services.ts";
 import { userPool } from "./login.ts";
-import { monitoring } from "./monitoring.ts";
+import { monitoring, type Watched } from "./monitoring.ts";
 import { uploadsBucket } from "./uploads.ts";
 
-export const OPENAI_SECRET = "polygossa/openai-api-key";
-
-export const STRIPE_SECRET = "polygossa/stripe-secret-key";
-export const STRIPE_WEBHOOK_SECRET = "polygossa/stripe-webhook-secret";
-export const STRIPE_WEBHOOK_SECRET_ARN_SUFFIX = "jABTGF";
+export {
+  OPENAI_SECRET, STRIPE_SECRET, STRIPE_WEBHOOK_SECRET, STRIPE_WEBHOOK_SECRET_ARN_SUFFIX,
+} from "./app-services.ts";
 
 export interface ProductionProps extends cdk.StackProps {
   readonly cloudFrontPrefixListId?: string;
@@ -27,6 +23,8 @@ export interface ProductionProps extends cdk.StackProps {
   readonly domainLive?: boolean;
   readonly googleClientId?: string;
   readonly alertEmail?: string;
+  readonly paused?: boolean;
+  readonly databaseSnapshot?: string;
 }
 
 export class ProductionStack extends cdk.Stack {
@@ -44,8 +42,6 @@ export class ProductionStack extends cdk.Stack {
       ],
     });
 
-    const database = appDatabase(this, vpc, "small");
-
     const jwtSecret = new secretsmanager.Secret(this, "LoginTokenSecret", {
       description: "Signs the app's login tokens (JWT_SECRET).",
       generateSecretString: { passwordLength: 64, excludePunctuation: true },
@@ -55,22 +51,65 @@ export class ProductionStack extends cdk.Stack {
       description: "Lets the team's video import tool use the curator endpoints (CURATOR_TOKEN).",
       generateSecretString: { passwordLength: 64, excludePunctuation: true },
     });
-
-    const cluster = new ecs.Cluster(this, "Cluster", {
-      vpc,
-      defaultCloudMapNamespace: { name: NAMESPACE, useForServiceConnect: false },
-    });
-    const publicTasks = { assignPublicIp: true, vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC } };
+    const uploads = uploadsBucket(this, vpc);
 
     const zone = props.domain ? hostedZone(this, props.domain) : undefined;
     const domain = zone && props.domainLive ? siteDomain(this, zone, props.domain!) : undefined;
+    const listener = props.paused ? undefined : this.balancer(vpc, props.cloudFrontPrefixListId);
+    const page = listener ? undefined : comingSoonSite(this);
 
+    const distribution = new cloudfront.Distribution(this, "Site", {
+      comment: "Polygossa production",
+      priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
+      domainNames: domain?.names,
+      certificate: domain?.certificate,
+      defaultRootObject: page?.defaultRootObject,
+      errorResponses: page?.errorResponses,
+      defaultBehavior: {
+        functionAssociations: domain ? [domain.redirect] : undefined,
+        ...(page ? { origin: page.origin } : this.appBehavior(listener!)),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+      },
+    });
+    this.siteUrl = domain ? `https://${props.domain}` : `https://${distribution.distributionDomainName}`;
+
+    const login = userPool(this, {
+      domainPrefix: "polygossa",
+      siteUrl: this.siteUrl,
+      keep: true,
+      googleClientId: props.googleClientId ?? "unset.apps.googleusercontent.com",
+    });
+
+    let watched: Watched | undefined;
+    if (listener) {
+      const database = appDatabase(this, vpc, "small", props.databaseSnapshot);
+      const app = appServices(this, {
+        vpc, listener, database, login, siteUrl: this.siteUrl, uploads, jwtSecret, curatorToken,
+      });
+      watched = { ...app, database };
+    }
+    if (props.alertEmail) monitoring(this, props.alertEmail, watched);
+
+    domain?.pointAt(distribution);
+    new cdk.CfnOutput(this, "SiteUrl", { value: this.siteUrl, description: "The production site" });
+    new cdk.CfnOutput(this, "Paused", {
+      value: String(Boolean(props.paused)),
+      description: "Whether production is paused behind its coming-soon page",
+    });
+    new cdk.CfnOutput(this, "DatabaseSnapshot", {
+      value: props.databaseSnapshot ?? "none",
+      description: "The snapshot the database was created from (none: created new)",
+    });
+  }
+
+  private balancer(vpc: ec2.IVpc, cloudFrontPrefixListId?: string): elbv2.ApplicationListener {
     const balancerGroup = new ec2.SecurityGroup(this, "BalancerSecurity", {
       vpc,
       description: "The load balancer: reachable from CloudFront only",
       allowAllOutbound: true,
     });
-    const cloudFront = props.cloudFrontPrefixListId
+    const cloudFront = cloudFrontPrefixListId
       ?? ec2.PrefixList.fromLookup(this, "CloudFrontOrigins", {
         prefixListName: "com.amazonaws.global.cloudfront.origin-facing",
       }).prefixListId;
@@ -80,121 +119,17 @@ export class ProductionStack extends cdk.Stack {
       internetFacing: true,
       securityGroup: balancerGroup,
     });
-    const listener = balancer.addListener("Http", { port: 80, open: false });
+    return balancer.addListener("Http", { port: 80, open: false });
+  }
 
-    const distribution = new cloudfront.Distribution(this, "Site", {
-      comment: "Polygossa production",
-      priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
-      domainNames: domain?.names,
-      certificate: domain?.certificate,
-      defaultBehavior: {
-        functionAssociations: domain ? [domain.redirect] : undefined,
-        origin: new origins.LoadBalancerV2Origin(balancer, {
-          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
-          readTimeout: cdk.Duration.seconds(60),
-        }),
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-        cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
-        originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
-      },
-    });
-    this.siteUrl = domain ? `https://${props.domain}` : `https://${distribution.distributionDomainName}`;
-    const siteUrl = this.siteUrl;
-
-    const login = userPool(this, {
-      domainPrefix: "polygossa",
-      siteUrl,
-      keep: true,
-      googleClientId: props.googleClientId ?? "unset.apps.googleusercontent.com",
-    });
-
-    const backendTask = new ecs.FargateTaskDefinition(this, "BackendTask", { cpu: 512, memoryLimitMiB: 1024 });
-    const uploads = uploadsBucket(this, vpc, backendTask.taskRole);
-    backendTask.addContainer("backend", {
-      image: backendImage(),
-      portMappings: [{ containerPort: 8080 }],
-      logging: appLogs(this, "backend"),
-      environment: {
-        SPRING_PROFILES_ACTIVE: "prod",
-        DATABASE_URL: `jdbc:postgresql://${database.dbInstanceEndpointAddress}:${database.dbInstanceEndpointPort}/lector`,
-        SPRING_CACHE_TYPE: "simple",
-        MANAGEMENT_HEALTH_REDIS_ENABLED: "false",
-        JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75",
-        STORAGE_S3_BUCKET: uploads.bucketName,
-        STORAGE_S3_REGION: this.region,
-        COGNITO_ISSUER: login.issuer,
-        COGNITO_CLIENT_ID: login.clientId,
-        FORUM_ADMINS: "owner@example.com",
-        APP_URL: siteUrl,
-        TRANSLATION_ENABLED: "true",
-        TRANSLATION_REGION: this.region,
-        TRANSLATION_MONTHLY_CHARACTER_CAP: "1333333",
-      },
-      secrets: {
-        DATABASE_USER: ecs.Secret.fromSecretsManager(database.secret!, "username"),
-        DATABASE_PASSWORD: ecs.Secret.fromSecretsManager(database.secret!, "password"),
-        JWT_SECRET: ecs.Secret.fromSecretsManager(jwtSecret),
-        CURATOR_TOKEN: ecs.Secret.fromSecretsManager(curatorToken),
-        OPENAI_API_KEY: ecs.Secret.fromSecretsManager(
-          secretsmanager.Secret.fromSecretNameV2(this, "OpenAiKey", OPENAI_SECRET)),
-        STRIPE_SECRET_KEY: ecs.Secret.fromSecretsManager(
-          secretsmanager.Secret.fromSecretNameV2(this, "StripeKey", STRIPE_SECRET)),
-        STRIPE_WEBHOOK_SECRET: ecs.Secret.fromSecretsManager(
-          secretsmanager.Secret.fromSecretCompleteArn(this, "StripeWebhookSecret", this.formatArn({
-            service: "secretsmanager", resource: "secret", arnFormat: cdk.ArnFormat.COLON_RESOURCE_NAME,
-            resourceName: `${STRIPE_WEBHOOK_SECRET}-${STRIPE_WEBHOOK_SECRET_ARN_SUFFIX}`,
-          }))),
-      },
-    });
-    backendTask.addToTaskRolePolicy(new iam.PolicyStatement({
-      actions: ["translate:TranslateText"],
-      resources: ["*"],
-      conditions: { StringEquals: { "aws:RequestedRegion": this.region } },
-    }));
-    const backend = new ecs.FargateService(this, "Backend", {
-      cluster,
-      taskDefinition: backendTask,
-      desiredCount: 1,
-      ...publicTasks,
-      cloudMapOptions: { name: BACKEND_NAME },
-      circuitBreaker: { rollback: true },
-    });
-    database.connections.allowDefaultPortFrom(backend, "the backend");
-
-    const frontendTask = new ecs.FargateTaskDefinition(this, "FrontendTask", { cpu: 256, memoryLimitMiB: 512 });
-    frontendTask.addContainer("frontend", {
-      image: frontendImage(),
-      portMappings: [{ containerPort: 3000 }],
-      logging: appLogs(this, "frontend"),
-      environment: {
-        BACKEND_URL: `http://${BACKEND_NAME}.${NAMESPACE}:8080`,
-        AUTO_LOGIN: "false",
-        COGNITO_DOMAIN: login.domain,
-        COGNITO_CLIENT_ID: login.clientId,
-        APP_URL: siteUrl,
-      },
-    });
-    const frontend = new ecs.FargateService(this, "Frontend", {
-      cluster,
-      taskDefinition: frontendTask,
-      desiredCount: 1,
-      ...publicTasks,
-      circuitBreaker: { rollback: true },
-    });
-    backend.connections.allowFrom(frontend, ec2.Port.tcp(8080), "the frontend");
-
-    const frontendTargets = listener.addTargets("Frontend", {
-      port: 3000,
-      protocol: elbv2.ApplicationProtocol.HTTP,
-      targets: [frontend],
-      healthCheck: { path: "/icon.svg", healthyHttpCodes: "200" },
-      deregistrationDelay: cdk.Duration.seconds(10),
-    });
-
-    if (props.alertEmail) monitoring(this, { email: props.alertEmail, frontendTargets, backend, database });
-
-    domain?.pointAt(distribution);
-    new cdk.CfnOutput(this, "SiteUrl", { value: this.siteUrl, description: "The production site" });
+  private appBehavior(listener: elbv2.ApplicationListener) {
+    return {
+      origin: new origins.LoadBalancerV2Origin(listener.loadBalancer, {
+        protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
+        readTimeout: cdk.Duration.seconds(60),
+      }),
+      allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+      originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
+    };
   }
 }

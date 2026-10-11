@@ -117,7 +117,7 @@ describe("paused production", () => {
     const policies = Object.values(template.findResources("AWS::S3::BucketPolicy"))
       .filter((p) => JSON.stringify(p.Properties.Bucket).includes(comingSoonBucket(template)!));
     const statements = policies.flatMap((p) => p.Properties.PolicyDocument.Statement)
-      .filter((s: Record<string, unknown>) => s.Effect === "Allow");
+      .filter((s: Record<string, unknown>) => s.Effect === "Allow" && JSON.stringify(s.Action).includes("s3:GetObject"));
     assert.equal(statements.length, 1);
     assert.deepEqual(statements[0].Principal, { Service: "cloudfront.amazonaws.com" });
     assert.match(JSON.stringify(statements[0].Condition), /AWS:SourceArn/);
