@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Bone, ButtonBone, CardFrame, SectionLoading } from "@/components/skeletons/parts";
 import { Button, FailureNote } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
 import type { WritingGrade, WritingTest } from "@/lib/types";
@@ -20,12 +21,47 @@ export function GradeView({ test, onChanged, onNew }: {
 }) {
   return (
     <div className="space-y-5">
-      <div className="rounded-xl border border-line bg-card p-5">
-        <p className="text-xs font-semibold tracking-wide text-rubric uppercase">Situation · {test.level}</p>
-        <p className="mt-2 font-reading leading-relaxed">{test.prompt}</p>
-      </div>
+      <Situation test={test} />
       {test.grade ? <Grade grade={test.grade} test={test} /> : <Ungraded test={test} onChanged={onChanged} />}
       <Button onClick={onNew}>Take another test</Button>
+    </div>
+  );
+}
+
+function Situation({ test }: { test: WritingTest }) {
+  return (
+    <div className="rounded-xl border border-line bg-card p-5">
+      <p className="text-xs font-semibold tracking-wide text-rubric uppercase">Situation · {test.level}</p>
+      <p className="mt-2 font-reading leading-relaxed">{test.prompt}</p>
+    </div>
+  );
+}
+
+export function GradingOutline({ test }: { test: WritingTest }) {
+  return (
+    <div className="space-y-5">
+      <Situation test={test} />
+      <SectionLoading label="results">
+        <div className="space-y-5">
+          <CardFrame part="score" className="flex flex-wrap items-center gap-6">
+            <div className="flex flex-col items-center gap-2"><Bone className="h-14 w-20" /><Bone className="h-3.5 w-16" /></div>
+            <div className="flex-1 space-y-2"><Bone className="h-7 w-32" /><Bone className="h-3.5 w-56" /><Bone className="h-4 w-3/4" /></div>
+          </CardFrame>
+          <div data-skeleton="rubric" className="grid gap-3 sm:grid-cols-2">
+            {Object.keys(CRITERIA).map((c) => (
+              <div key={c} className="rounded-xl border border-line bg-card p-4">
+                <div className="flex justify-between"><Bone className="h-4 w-24" /><Bone className="h-3.5 w-10" /></div>
+                <Bone className="mt-2 h-1.5 w-full rounded-full" />
+                <Bone className="mt-2 h-3.5 w-3/4" />
+              </div>
+            ))}
+          </div>
+          <div data-skeleton="texts" className="grid gap-3 md:grid-cols-2">
+            {[0, 1].map((i) => <CardFrame key={i}><Bone className="h-3.5 w-28" /><div className="mt-3 space-y-2"><Bone className="h-4 w-full" /><Bone className="h-4 w-5/6" /><Bone className="h-4 w-2/3" /></div></CardFrame>)}
+          </div>
+          <ButtonBone className="w-40" />
+        </div>
+      </SectionLoading>
     </div>
   );
 }

@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useEffectEvent, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useHoldPage } from "@/components/page-restart";
 import { Button, FailureNote, inputClass } from "@/components/ui";
+import { GradingOutline } from "@/components/writing/grade-view";
 import { ApiError, api } from "@/lib/api";
 import { languageInfo } from "@/lib/languages";
 import type { WritingTest } from "@/lib/types";
@@ -13,6 +15,8 @@ export function TestSession({ test, onDone }: { test: WritingTest; onDone: (t: W
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<ApiError | string | null>(null);
   const [pasteBlocked, setPasteBlocked] = useState(false);
+  const timeUpHandled = useRef(false);
+  useHoldPage();
   const count = countWriting(text, test.language);
 
   async function handIn() {
@@ -29,12 +33,12 @@ export function TestSession({ test, onDone }: { test: WritingTest; onDone: (t: W
 
   const onTimeUp = useEffectEvent(() => void handIn());
   useEffect(() => {
-    let done = false;
+    if (busy) return;
     const tick = () => {
       const left = secondsLeft(test.deadline, Date.now());
       setRemaining(left);
-      if (left === 0 && !done) {
-        done = true;
+      if (left === 0 && !timeUpHandled.current) {
+        timeUpHandled.current = true;
         onTimeUp();
       }
     };
@@ -44,7 +48,9 @@ export function TestSession({ test, onDone }: { test: WritingTest; onDone: (t: W
       clearTimeout(first);
       clearInterval(timer);
     };
-  }, [test.deadline]);
+  }, [test.deadline, busy]);
+
+  if (busy) return <GradingOutline test={test} />;
 
   const enough = count >= test.minWords;
   const urgent = remaining <= 30;
@@ -70,7 +76,7 @@ export function TestSession({ test, onDone }: { test: WritingTest; onDone: (t: W
         autoFocus
         spellCheck={false}
         autoCorrect="off"
-        disabled={busy || remaining === 0}
+        disabled={remaining === 0}
         onChange={(e) => setText(e.target.value)}
         onPaste={(e) => {
           e.preventDefault();
@@ -79,8 +85,8 @@ export function TestSession({ test, onDone }: { test: WritingTest; onDone: (t: W
         aria-label="Your answer"
       />
       <div className="flex flex-wrap items-center gap-3">
-        <Button onClick={() => void handIn()} disabled={busy || !canHandIn(count, test.minWords, remaining)}>
-          {busy ? "Grading…" : "Hand in"}
+        <Button onClick={() => void handIn()} disabled={!canHandIn(count, test.minWords, remaining)}>
+          Hand in
         </Button>
         <span className={`text-sm tabular-nums ${enough ? "text-good" : "text-muted"}`}>
           {count} / {test.minWords} {test.unit}
