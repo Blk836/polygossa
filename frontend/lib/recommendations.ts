@@ -1,4 +1,5 @@
 import { categoryLabel } from "./categories";
+import type { KindFilter } from "./media";
 import type { Category, TextSummary } from "./types";
 
 export type ShelfId = "continue" | "for-you" | "because" | "topic" | "just-right" | "stretch";
@@ -54,8 +55,18 @@ export interface RecommendationEvent {
 
 export const INTEREST_MINIMUM = 3;
 
-export function recommendationsPath(language: string): string {
-  return language ? `recommendations?language=${language}` : "recommendations";
+export interface RecommendationFilters {
+  kind: KindFilter;
+  level: string;
+}
+
+export function recommendationsPath(language: string, filters?: RecommendationFilters): string {
+  const params = new URLSearchParams();
+  if (language) params.set("language", language);
+  if (filters && filters.kind !== "all") params.set("kind", filters.kind);
+  if (filters?.level) params.set("level", filters.level);
+  const qs = params.toString();
+  return qs ? `recommendations?${qs}` : "recommendations";
 }
 
 const SUBTITLES: Record<ShelfId, string> = {
