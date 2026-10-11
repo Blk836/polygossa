@@ -83,7 +83,7 @@ test.describe("known-word milestones", () => {
     const h = await stubHeader(page, { knownWords: 999 });
     await page.goto("/library");
     await expect(known(page)).toHaveText("999 known");
-    const language = h.language!;
+    const language = h.language ?? "";
     await page.evaluate((lang) => {
       localStorage.setItem("polly-milestones:zz", JSON.stringify([100, 500, 1000]));
       localStorage.setItem(`polly-milestones:${lang}`, JSON.stringify([100, 500]));
@@ -91,8 +91,7 @@ test.describe("known-word milestones", () => {
     h.knownWords = 1000;
     await moveSection(page);
     await expect(milestone(page)).toHaveAccessibleName("1,000 words known");
-    const seen = await page.evaluate((lang) => localStorage.getItem(`polly-milestones:${lang}`), language);
-    expect(JSON.parse(seen!)).toEqual([100, 500, 1000]);
+    await expect.poll(() => page.evaluate((lang) => JSON.parse(localStorage.getItem(`polly-milestones:${lang}`)!), language)).toEqual([100, 500, 1000]);
   });
 
   test("with reduce motion on, the milestone still shows", async ({ page }) => {

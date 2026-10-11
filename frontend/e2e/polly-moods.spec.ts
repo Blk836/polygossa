@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { cleanUp, createText, createTextWith, openReader, wordAt, type Created } from "./reader-helpers";
+import { cleanUp, createText, createTextWith, openReader, TALL, wordAt, type Created } from "./reader-helpers";
 import { answerBox, answerFor, handIn, holdSubmit, ok, proLearner, results, resultsOutline, startTest } from "./writing-helpers";
 
 const polly = (scope: Locator | Page, mood: string) => scope.locator(`svg[data-polly="${mood}"]`);
@@ -20,7 +20,7 @@ test("her stripes are cut off at her outline, on every Polly on the page", async
   await nothingDue(page);
   await page.goto("/review");
   const all = page.locator("svg[data-polly]");
-  await expect(all.first()).toBeVisible();
+  await expect(page.getByTestId("empty").locator("svg[data-polly]")).toBeVisible();
   expect(await all.count()).toBeGreaterThanOrEqual(2);
   for (const svg of await all.all()) {
     const check = await svg.evaluate((el) => {
@@ -69,6 +69,8 @@ test("Explore filtered to videos with no results shows a curious Polly in headph
       ? route.fulfill({ json: { items: [], total: 0, page: 0, size: 24 } })
       : route.fallback());
   await page.goto("/community");
+  await page.getByRole("searchbox", { name: "Search titles" }).fill("zzqx");
+  await page.getByRole("searchbox", { name: "Search titles" }).press("Enter");
   await page.getByRole("group", { name: "Show" }).getByRole("button", { name: "Videos" }).click();
   const p = polly(page.getByTestId("empty").filter({ hasText: "Nothing matches" }), "curious");
   await expect(p).toHaveAttribute("data-polly-prop", "headphones");
@@ -129,6 +131,7 @@ test.describe("thinking", () => {
   });
 
   test("finishing a lesson shows a cheering Polly instead of the party emoji", async ({ page }) => {
+    await page.setViewportSize(TALL);
     created = await createText(page);
     await openReader(page, `/read/${created.id}?page=4`);
     await page.getByRole("button", { name: "Finish lesson" }).click();
