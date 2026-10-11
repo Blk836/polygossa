@@ -209,10 +209,11 @@ export function Reader({ initial, initialSettings, playlist }: {
             lang={language}
             onPointerDown={input.onPointerDown}
             onPointerOver={input.onPointerOver}
+            onPointerLeave={input.onPointerLeave}
             onClick={input.onClick}
           >
             {paging.paragraphs.map((p, k) => (
-              <Paragraph key={k} tokens={p} statuses={vocab.statuses} phrases={marks} gaps={gaps} edges={edges} sentence={followsSentence(settings.follow) ? sentenceHere(p, spoken.sentence) : null} {...overlapping(p, sel, active)} />
+              <Paragraph key={k} tokens={p} statuses={vocab.statuses} phrases={marks} gaps={gaps} edges={edges} hover={overlapping(p, input.hover, null).sel} sentence={followsSentence(settings.follow) ? sentenceHere(p, spoken.sentence) : null} {...overlapping(p, sel, active)} />
             ))}
           </article>
           <PageArrows page={page} count={paging.count} onPage={changePage} />
