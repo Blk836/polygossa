@@ -11,19 +11,19 @@ export async function checkSignIn({ cliPath, cliExists, account, login, expected
   if (first.account) return verdict(first.account, { expectedAccount, profile, log });
 
   log(`AWS sign-in for profile "${profile}" is missing or expired.`);
-  log(`Opening the AWS sign-in in your browser: pick the account "dream it ship it" (${expectedAccount}).`);
+  log(`Opening the AWS sign-in in your browser: pick the account "polygossa-app" (${expectedAccount}).`);
   const signedIn = await login();
   const second = signedIn.timedOut ? {} : await account();
   if (second.account) return verdict(second.account, { expectedAccount, profile, log });
   log(`The AWS sign-in didn't complete${signedIn.timedOut ? " within 5 minutes" : ""}. Start Backend again to retry,`);
-  log(`or run: aws login --profile ${profile}   and pick "dream it ship it" (${expectedAccount}).`);
+  log(`or run: aws login --profile ${profile}   and pick "polygossa-app" (${expectedAccount}).`);
   return 1;
 }
 
 function verdict(found, { expectedAccount, profile, log }) {
   if (found !== expectedAccount) {
-    log(`AWS profile "${profile}" is signed in to account ${found}, not ${expectedAccount} ("dream it ship it").`);
-    log(`Run: aws login --profile ${profile}   and pick "dream it ship it"; answer n if asked to switch accounts.`);
+    log(`AWS profile "${profile}" is signed in to account ${found}, not ${expectedAccount} ("polygossa-app").`);
+    log(`Run: aws login --profile ${profile}   and pick "polygossa-app"; answer n if asked to switch accounts.`);
     return 1;
   }
   log(`AWS sign-in OK: profile "${profile}" is signed in to account ${found}.`);
