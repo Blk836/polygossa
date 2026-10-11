@@ -8,7 +8,7 @@ import { AnkiSyncPanel } from "./anki-sync-panel";
 import { useMe } from "@/components/me-context";
 import { Button } from "@/components/ui";
 import { api } from "@/lib/api";
-import { connect } from "@/lib/anki-connect";
+import { alreadyConnected, connect } from "@/lib/anki-connect";
 import type { AnkiDeckChoice } from "@/lib/anki-types";
 
 const box = "space-y-3 rounded-xl border border-line bg-card p-5";
@@ -22,7 +22,15 @@ export function AnkiSettings() {
   const loadDecks = useCallback(() => api<{ decks: AnkiDeckChoice[] }>("anki/decks").then((r) => setDecks(r.decks)), []);
   useEffect(() => {
     let cancelled = false;
-    api<{ decks: AnkiDeckChoice[] }>("anki/decks").then((r) => !cancelled && setDecks(r.decks)).catch(() => !cancelled && setDecks([]));
+    api<{ decks: AnkiDeckChoice[] }>("anki/decks")
+      .then((r) => {
+        if (cancelled) return;
+        setDecks(r.decks);
+        if (r.decks.length === 0) return;
+        setConnection("checking");
+        void alreadyConnected().then((yes) => !cancelled && setConnection(yes ? "granted" : "away"));
+      })
+      .catch(() => !cancelled && setDecks([]));
     return () => {
       cancelled = true;
     };
@@ -37,6 +45,7 @@ export function AnkiSettings() {
     await api("anki/decks", { method: "DELETE" });
     setMe({ ...me, ankiConnected: false });
     setDecks([]);
+    setConnection("idle");
   }
 
   if (!decks) return <p className="text-sm text-muted">Loading…</p>;
@@ -46,7 +55,7 @@ export function AnkiSettings() {
       <AnkiHowItWorks open={!synced} freePlan={me.plan.limits.savedWords !== null} />
       <div role="group" aria-label="Connect to Anki" className={box}>
         <h2 className="font-semibold">Anki</h2>
-        <AnkiConnectStep connection={connection} onConnect={connectToAnki} onConnected={() => setConnection("granted")} />
+        <AnkiConnectStep connection={connection} accountConnected={decks.length > 0} onConnect={connectToAnki} onConnected={() => setConnection("granted")} />
         {connection === "granted" && <AnkiDeckPicker saved={decks} onSaved={(next) => { setDecks(next); setSaves((n) => n + 1); }} />}
       </div>
       {decks.length > 0 && (

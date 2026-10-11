@@ -67,6 +67,15 @@ export async function connect(): Promise<ConnectResult> {
   }
 }
 
+export async function alreadyConnected(): Promise<boolean> {
+  try {
+    await invoke("version");
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function keyWorks(key: string | null): Promise<boolean> {
   if (!key) return false;
   try {

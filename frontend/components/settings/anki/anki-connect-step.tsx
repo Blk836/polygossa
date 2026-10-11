@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import { Button, inputClass } from "@/components/ui";
 import { ANKI_CONNECT_CODE, keyWorks, saveKey, type ConnectResult } from "@/lib/anki-connect";
 
-export type Connection = ConnectResult["kind"] | "idle" | "connecting";
+export type Connection = ConnectResult["kind"] | "idle" | "connecting" | "checking" | "away";
 
 function corsLine(): string {
   return `"webCorsOriginList": ["${typeof window === "undefined" ? "" : window.location.origin}"]`;
@@ -61,10 +61,18 @@ function KeyForm({ onConnected }: { onConnected: () => void }) {
   );
 }
 
-export function AnkiConnectStep({ connection, onConnect, onConnected }: { connection: Connection; onConnect: () => void; onConnected: () => void }) {
+export function AnkiConnectStep({ connection, accountConnected, onConnect, onConnected }: {
+  connection: Connection;
+  accountConnected: boolean;
+  onConnect: () => void;
+  onConnected: () => void;
+}) {
   if (connection === "granted") return <p className="text-sm font-medium text-good" role="status">Connected to Anki</p>;
+  if (connection === "checking") return <p className="text-sm text-muted" role="status">Checking Anki…</p>;
+  const label = accountConnected ? "Reconnect to Anki" : "Connect to Anki";
   return (
     <div className="space-y-3">
+      {accountConnected && <p className="text-sm font-medium">Your account is connected to Anki, but this browser can&apos;t reach it right now.</p>}
       <ol className="list-decimal space-y-1 pl-5 text-sm">
         <li>Install Anki desktop on this computer (it&apos;s free).</li>
         <li>In Anki, choose Tools → Add-ons → Get Add-ons and enter <strong>{ANKI_CONNECT_CODE}</strong> (AnkiConnect).</li>
@@ -72,7 +80,7 @@ export function AnkiConnectStep({ connection, onConnect, onConnected }: { connec
       </ol>
       <p className="text-xs text-muted">Syncing needs Anki desktop on a computer. Reviews on your phone count once Anki desktop has synced them.</p>
       {connection === "needs-key" ? <KeyForm onConnected={onConnected} /> : (
-        <Button onClick={onConnect} disabled={connection === "connecting"}>{connection === "connecting" ? "Connecting…" : "Connect to Anki"}</Button>
+        <Button onClick={onConnect} disabled={connection === "connecting"}>{connection === "connecting" ? "Connecting…" : label}</Button>
       )}
       <Problem connection={connection} />
     </div>

@@ -160,7 +160,7 @@ test("a note type added to a deck later waits until I check its word field", asy
     const basicId = modelOf(mature({ Word: "" })).id;
     await chooseDecks(page, [{ ankiDeckId: 89, name: `Growing ${s}`, language, wordField: "Word", noteTypes: [{ modelId: basicId, name: "Word", wordField: "Word" }] }]);
     await page.goto("/settings/anki");
-    await connectGroup(page).getByRole("button", { name: "Connect to Anki" }).click();
+    await expect(connectGroup(page).getByRole("status")).toHaveText("Connected to Anki");
     const later = connectGroup(page).getByTestId("anki-note-type").filter({ hasText: `Later ${s}` });
     await expect(later).toContainText("New: check its word field");
     await syncGroup(page).getByRole("button", { name: "Preview" }).click();
