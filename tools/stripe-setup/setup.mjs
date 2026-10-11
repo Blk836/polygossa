@@ -1,3 +1,5 @@
+export const DEFAULT_SITE = "https://polygossa.com";
+
 export const PRICES = [
   { lookupKey: "pro_monthly", product: "Pro", amount: 800, interval: "month" },
   { lookupKey: "pro_yearly", product: "Pro", amount: 6000, interval: "year" },
