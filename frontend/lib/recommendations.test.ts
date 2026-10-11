@@ -19,6 +19,13 @@ describe("recommendationsPath", () => {
     expect(recommendationsPath("fr")).toBe("recommendations?language=fr");
     expect(recommendationsPath("")).toBe("recommendations");
   });
+
+  it("carries Explore's kind and level when one is picked", () => {
+    expect(recommendationsPath("fr", { kind: "video", level: "" })).toBe("recommendations?language=fr&kind=video");
+    expect(recommendationsPath("fr", { kind: "all", level: "B1" })).toBe("recommendations?language=fr&level=B1");
+    expect(recommendationsPath("", { kind: "text", level: "A2" })).toBe("recommendations?kind=text&level=A2");
+    expect(recommendationsPath("fr", { kind: "all", level: "" })).toBe("recommendations?language=fr");
+  });
 });
 
 describe("shelfHeading", () => {

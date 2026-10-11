@@ -46,7 +46,7 @@ function useExploreData(f: ExploreFilters) {
 function Explore({ language }: { language: string }) {
   const [f, setF] = useState<ExploreFilters>({ language, category: null, level: "", kind: "all", sort: "new", query: "", page: 0, topic: null });
   const [failure, setError] = useState<string | null>(null);
-  const recs = useRecommendations(language, setError);
+  const recs = useRecommendations(language, { kind: f.kind, level: f.level }, setError);
 
   const set = (patch: Partial<ExploreFilters>) => setF((prev) => ({ ...prev, page: 0, ...patch }));
   const { showShelves, shelves, setShelves, grid, setGrid, error: loadError } = useExploreData(f);
