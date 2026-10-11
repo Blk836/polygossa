@@ -14,7 +14,7 @@ interface Options {
   initialStatuses: Record<string, WordStatus>;
   initialPhrases: Phrase[];
   onSaved: () => void;
-  onKnownWord?: (target: PopupTarget) => void;
+  onKnownWord?: (target: PopupTarget, saved: boolean) => void;
   onNotice: (message: string | null) => void;
   onError: (message: string) => void;
 }
@@ -153,10 +153,12 @@ export function useVocabularyStatus(opts: Options) {
     async (target: PopupTarget, status: WordStatus | null) => {
       onNotice(null);
       const before = statusOf(target) ?? null;
+      const newlyKnown = target.kind === "word" && status === "known" && before !== "known";
+      if (newlyKnown) onKnownWord?.(target, false);
       apply(target, status);
       try {
         await write(target, status, before === null);
-        if (target.kind === "word" && status === "known" && before !== "known") onKnownWord?.(target);
+        if (newlyKnown) onKnownWord?.(target, true);
         onSaved();
       } catch (e) {
         apply(target, before);

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { Polly } from "./polly";
 
 const EVENT = "polly-known";
+const MARKING = "polly-marking";
 const FLIGHT_MS = 700;
 const SIZE = 24;
 
@@ -12,6 +13,10 @@ interface Box { x: number; y: number }
 export interface Flight { id: number; from: Box; to: Box }
 
 const centre = (r: DOMRect): Box => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+
+export function expectPolly() {
+  window.dispatchEvent(new Event(MARKING));
+}
 
 export function sendPollyFrom(element: Element | null) {
   const rect = element?.getBoundingClientRect();
@@ -26,23 +31,28 @@ function stillMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-export function usePollyFlights(target: () => Element | null, onTakeOff: () => void): [Flight | null, () => void] {
+export function usePollyFlights(target: () => Element | null, on: { mark: () => void; takeOff: () => void }): [Flight | null, () => void] {
   const [flight, setFlight] = useState<Flight | null>(null);
   const busy = useRef(false);
-  const takeOff = useRef(onTakeOff);
+  const handlers = useRef(on);
   useEffect(() => {
-    takeOff.current = onTakeOff;
-  }, [onTakeOff]);
+    handlers.current = on;
+  }, [on]);
   useEffect(() => {
     const listen = (e: Event) => {
       const to = target()?.getBoundingClientRect();
       if (busy.current || stillMotion() || !onScreen(to)) return;
       busy.current = true;
-      takeOff.current();
+      handlers.current.takeOff();
       setFlight({ id: Date.now(), from: (e as CustomEvent<Box>).detail, to: centre(to) });
     };
+    const mark = () => handlers.current.mark();
     window.addEventListener(EVENT, listen);
-    return () => window.removeEventListener(EVENT, listen);
+    window.addEventListener(MARKING, mark);
+    return () => {
+      window.removeEventListener(EVENT, listen);
+      window.removeEventListener(MARKING, mark);
+    };
   }, [target]);
   const land = () => {
     busy.current = false;

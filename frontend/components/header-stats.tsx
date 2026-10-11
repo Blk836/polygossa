@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FlameIcon } from "./icons";
 import { HoneyJar } from "./polly";
 import { PollyFlight, usePollyFlights } from "./polly-flight";
@@ -21,15 +21,27 @@ function useKnownCount(server: number) {
   const [floor, setFloor] = useState<{ value: number; server: number } | null>(null);
   const shown = hold ?? (floor && floor.server === server ? Math.max(server, floor.value) : server);
   const latest = useRef({ shown, server });
+  const holding = useRef<number | null>(null);
+  const before = useRef<number | null>(null);
   useEffect(() => {
     latest.current = { shown, server };
   }, [shown, server]);
-  const takeOff = useCallback(() => setHold(latest.current.shown), []);
+  const mark = useCallback(() => {
+    before.current = latest.current.shown;
+  }, []);
+  const takeOff = useCallback(() => {
+    holding.current = latest.current.shown;
+    setHold(holding.current);
+  }, []);
   const land = useCallback(() => {
-    setFloor({ value: latest.current.shown + 1, server: latest.current.server });
+    if (holding.current === null) return;
+    setFloor({ value: (before.current ?? holding.current) + 1, server: latest.current.server });
+    holding.current = null;
+    before.current = null;
     setHold(null);
   }, []);
-  return { shown, takeOff, land };
+  const on = useMemo(() => ({ mark, takeOff }), [mark, takeOff]);
+  return { shown, on, land };
 }
 
 function useWobbles(count: number): number {
@@ -46,7 +58,7 @@ function KnownWords({ server, language }: { server: number; language: string }) 
   const jar = useRef<HTMLAnchorElement>(null);
   const count = useKnownCount(server);
   const findJar = useCallback(() => jar.current?.querySelector("[data-testid=honey-jar]") ?? null, []);
-  const [flight, endFlight] = usePollyFlights(findJar, count.takeOff);
+  const [flight, endFlight] = usePollyFlights(findJar, count.on);
   const wobbles = useWobbles(count.shown);
   const [milestone, closeMilestone] = useMilestone(language, count.shown);
   const known = knownWords(count.shown);
