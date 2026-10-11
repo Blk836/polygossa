@@ -49,9 +49,21 @@ async function prepare(sha) {
   return fresh || (await exec("npm ci", join(copy, "infra"))) === 0;
 }
 
+function uploadsBucket() {
+  const query = "StackResources[?ResourceType=='AWS::S3::Bucket' && starts_with(LogicalResourceId, 'Uploads')]"
+    + ".PhysicalResourceId";
+  return tryRun(() => run(AWS, ["cloudformation", "describe-stack-resources", "--stack-name", "PolygossaStaging",
+    "--profile", PROFILE, "--region", "eu-west-1", "--query", query, "--output", "text"])) || null;
+}
+
 async function liveChecks() {
+  const bucket = uploadsBucket();
+  if (!bucket || /\s/.test(bucket)) {
+    console.log(`The uploads bucket of PolygossaStaging couldn't be found (got: ${bucket ?? "nothing"}).`);
+    return false;
+  }
   const jdk = join(homedir(), ".jdks", "openjdk-26.0.1");
-  const env = { ...process.env, ...credentials(), AWS_REGION: "eu-west-1" };
+  const env = { ...process.env, ...credentials(), AWS_REGION: "eu-west-1", LIVE_S3_BUCKET: bucket };
   if (!env.JAVA_HOME && existsSync(jdk)) env.JAVA_HOME = jdk;
   return (await exec(`${WIN ? ".\\gradlew.bat" : "./gradlew"} --no-daemon :backend:liveTest`, copy, env)) === 0;
 }
