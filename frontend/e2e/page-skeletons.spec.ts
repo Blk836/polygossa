@@ -190,7 +190,7 @@ test("a page without its own outline gets a neutral one, with no other page's ti
   await page.waitForLoadState("networkidle");
   const release = await holdPage(page, "/admin");
 
-  await openAccountItem(page, "Admin", "/admin");
+  await openAccountItem(page, "Admin");
   await expect(outline(page)).toHaveAttribute("aria-label", "Loading page");
   await expect(outline(page)).toHaveText("");
   release();
