@@ -4,6 +4,7 @@ import app.lector.token.Language;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -26,6 +27,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ApiException.class)
     ResponseEntity<ErrorBody> handleApi(ApiException e) {
         return ResponseEntity.status(e.status()).body(new ErrorBody(e.code(), e.getMessage()));
+    }
+
+    @ExceptionHandler(RateLimiter.LimitedException.class)
+    ResponseEntity<ErrorBody> handleLimited(RateLimiter.LimitedException e) {
+        return ResponseEntity.status(e.status()).header(HttpHeaders.RETRY_AFTER, String.valueOf(e.retryAfter().toSeconds()))
+                .body(new ErrorBody(e.code(), e.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
