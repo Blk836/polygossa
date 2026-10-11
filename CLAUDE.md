@@ -154,7 +154,7 @@ If it can't be reproduced, say so and ask instead of guessing. Pick the browser 
   `TranslationClient`, and every feature using one keeps working without it.
 
 ### AWS, GitHub and production
-**Production:** https://d3pd9mue4v7won.cloudfront.net (the `SiteUrl` output of the `PolygossaStaging` stack; it was
+**Production:** https://polygossa.com (the `SiteUrl` output of the `PolygossaStaging` stack; it was
 built as staging, and renaming a stack rebuilds everything). No real users yet. Test accounts made there use
 `@example.com` addresses. **QA** is the local app, signing in through the QA Cognito user pool (stack `PolygossaQa`).
 There is no cloud staging: treat main as releasable. What is live is the latest "deploy production" mark on main's
