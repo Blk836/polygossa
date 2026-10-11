@@ -130,6 +130,21 @@ test.describe("videos", () => {
     expect(await page.evaluate(() => (window as unknown as { __pages: string[] }).__pages.join("|"))).not.toContain("Page 1 of 4");
   });
 
+  test("turning the page while the video plays jumps the video to the new page and stays", async ({ page }) => {
+    created = await createVideo(page);
+    await openReader(page, `/read/${created.id}`);
+    await expect(player(page)).toContainText("60:00");
+    await player(page).getByRole("button", { name: "Play", exact: true }).click();
+    await expect.poll(() => ytState(page)).toBe(1);
+    await pager(page).getByRole("button", { name: "Next page" }).click();
+    await expect(pager(page)).toContainText("Page 2 of 4");
+    const start = await pageStartMs(page, created.id);
+    await expect.poll(() => ytCalls(page)).toContain(`seek:${start}`);
+    await page.waitForTimeout(500);
+    await expect(pager(page)).toContainText("Page 2 of 4");
+    expect(await ytState(page)).toBe(1);
+  });
+
   test("moving the slider past the last word leaves the page alone", async ({ page }) => {
     created = await createVideo(page);
     await openReader(page, `/read/${created.id}`);

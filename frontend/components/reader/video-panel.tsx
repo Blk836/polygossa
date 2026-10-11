@@ -157,6 +157,7 @@ const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video,
 
   useImperativeHandle(ref, () => ({
     playFromToken: player.playFromToken,
+    startPage: player.startPage,
     pause: () => yt.current?.pauseVideo(),
     shortcut: player.shortcut,
   }));

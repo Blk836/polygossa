@@ -15,10 +15,27 @@ interface Options {
   place: (token: number) => void;
   close: () => void;
   active: number | null;
+  pageStart: number | null;
+  onPage: (index: number) => boolean;
+  startPage: (index: number | null) => void;
 }
 
-export function usePageTurns({ page, goTo, goToToken, follow, articleRef, place, close, active }: Options) {
+export function usePageTurns({ page, goTo, goToToken, follow, articleRef, place, close, active, pageStart, onPage, startPage }: Options) {
   const pending = useRef<PendingScroll | null>(null);
+  const turned = useRef<number | null>(null);
+  const latest = useRef({ active, onPage, startPage });
+  useEffect(() => {
+    latest.current = { active, onPage, startPage };
+  });
+
+  useEffect(() => {
+    if (turned.current !== page || pageStart === null) return;
+    const now = latest.current;
+    if (now.active !== null && now.onPage(now.active)) {
+      turned.current = null;
+      now.startPage(null);
+    } else now.startPage(pageStart);
+  }, [page, pageStart]);
 
   useEffect(() => {
     const p = pending.current;
@@ -53,6 +70,7 @@ export function usePageTurns({ page, goTo, goToToken, follow, articleRef, place,
       if (!goTo(n)) return;
       close();
       pending.current = { top: true };
+      turned.current = n;
     },
     [goTo, close],
   );
@@ -62,7 +80,12 @@ export function usePageTurns({ page, goTo, goToToken, follow, articleRef, place,
     following.current = follow;
   });
   useEffect(() => {
-    if (active !== null && following.current(active)) pending.current ??= { top: true };
+    if (active === null) return;
+    if (turned.current !== null) {
+      if (latest.current.onPage(active)) turned.current = null;
+      return;
+    }
+    if (following.current(active)) pending.current ??= { top: true };
   }, [active]);
 
   return { reveal, turnPage };

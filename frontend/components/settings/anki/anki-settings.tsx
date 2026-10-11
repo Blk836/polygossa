@@ -56,7 +56,7 @@ export function AnkiSettings() {
       <div role="group" aria-label="Connect to Anki" className={box}>
         <h2 className="font-semibold">Anki</h2>
         <AnkiConnectStep connection={connection} accountConnected={decks.length > 0} onConnect={connectToAnki} onConnected={() => setConnection("granted")} />
-        {connection === "granted" && <AnkiDeckPicker saved={decks} onSaved={(next) => { setDecks(next); setSaves((n) => n + 1); }} />}
+        {connection === "granted" && <AnkiDeckPicker saved={decks} folded={decks.length > 0} onSaved={(next) => { setDecks(next); setSaves((n) => n + 1); }} />}
       </div>
       {decks.length > 0 && (
         <div role="group" aria-label="Sync with Anki" className={box}>
