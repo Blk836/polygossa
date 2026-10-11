@@ -151,12 +151,12 @@ async function emptyWords(page: Page) {
     route.request().method() === "GET" ? route.fulfill({ json: { items: [], total: 0, page: 0, size: 50 } }) : route.continue());
 }
 
-test("an empty list shows a sleepy Polly above the unchanged message, hidden from screen readers", async ({ page }) => {
+test("an empty list shows Polly above the unchanged message, hidden from screen readers", async ({ page }) => {
   await emptyWords(page);
   await page.goto("/vocabulary");
   const empty = page.getByTestId("empty").filter({ hasText: "No words here yet" });
   await expect(empty).toContainText("Words you click while reading appear here.");
-  const polly = empty.locator('svg[data-polly="sleepy"]');
+  const polly = empty.locator('svg[data-polly="curious"]');
   await expect(polly).toBeVisible();
   await expect(polly).toHaveAttribute("aria-hidden", "true");
   await expect(empty.getByRole("img")).toHaveCount(0);
