@@ -6,7 +6,7 @@ import { useMe } from "@/components/me-context";
 import { Button, ErrorNote, selectClass } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import { cardIds, cardsInfo, deckNames, fieldNames, noteTypesInDeck } from "@/lib/anki-connect";
-import { suggestSetup } from "@/lib/anki-decks";
+import { decksTitle, suggestSetup } from "@/lib/anki-decks";
 import { setupFor, toChoice as toNoteTypeChoice, type NoteTypeSetup } from "@/lib/anki-note-types";
 import type { AnkiDeckChoice } from "@/lib/anki-types";
 import { LEARNING_LANGUAGES } from "@/lib/languages";
@@ -73,8 +73,9 @@ function DeckRow({ row, onChange }: { row: Row; onChange: (row: Row) => void }) 
   );
 }
 
-export function AnkiDeckPicker({ saved, onSaved }: { saved: AnkiDeckChoice[]; onSaved: (decks: AnkiDeckChoice[]) => void }) {
+export function AnkiDeckPicker({ saved, folded, onSaved }: { saved: AnkiDeckChoice[]; folded: boolean; onSaved: (decks: AnkiDeckChoice[]) => void }) {
   const { me, setMe } = useMe();
+  const [open, setOpen] = useState(!folded);
   const [rows, setRows] = useState<Row[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -96,7 +97,11 @@ export function AnkiDeckPicker({ saved, onSaved }: { saved: AnkiDeckChoice[]; on
     if (!pending) return;
     let cancelled = false;
     noteTypesOf(pending.id, saved.find((s) => s.ankiDeckId === pending.id))
-      .then((types) => !cancelled && setRows((all) => all && all.map((r) => (r.id === pending.id ? { ...r, noteTypes: types } : r))))
+      .then((types) => {
+        if (cancelled) return;
+        if (types.some((t) => t.isNew)) setOpen(true);
+        setRows((all) => all && all.map((r) => (r.id === pending.id ? { ...r, noteTypes: types } : r)));
+      })
       .catch((e) => !cancelled && setError(errorMessage(e)));
     return () => {
       cancelled = true;
@@ -116,10 +121,8 @@ export function AnkiDeckPicker({ saved, onSaved }: { saved: AnkiDeckChoice[]; on
     }
   }
 
-  if (!rows) return error ? <ErrorNote message={error} /> : <p className="text-sm text-muted">Reading your decks…</p>;
-  return (
-    <div className="space-y-3">
-      <h3 className="font-semibold">Your decks</h3>
+  const body = rows ? (
+    <div className="mt-3 space-y-3">
       <ul className="space-y-2">
         {rows.map((row) => <DeckRow key={row.id} row={row} onChange={(next) => { setDone(false); setRows(rows.map((r) => (r.id === next.id ? next : r))); }} />)}
       </ul>
@@ -129,5 +132,12 @@ export function AnkiDeckPicker({ saved, onSaved }: { saved: AnkiDeckChoice[]; on
         {done && <span className="text-sm text-muted" role="status">Saved</span>}
       </div>
     </div>
+  ) : error ? <ErrorNote message={error} /> : <p className="mt-3 text-sm text-muted">Reading your decks…</p>;
+
+  return (
+    <details open={open} onToggle={(e) => setOpen(e.currentTarget.open)} data-testid="anki-decks">
+      <summary className="cursor-pointer font-semibold">{decksTitle(saved)}</summary>
+      {body}
+    </details>
   );
 }

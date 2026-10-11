@@ -5,7 +5,8 @@ const connectGroup = (page: Page) => page.getByRole("group", { name: "Connect to
 const syncGroup = (page: Page) => page.getByRole("group", { name: "Sync with Anki" });
 const decksSection = (page: Page) => connectGroup(page).getByTestId("anki-decks");
 const decksTitle = (page: Page) => decksSection(page).locator("summary");
-const deckRow = (page: Page, name: string) => connectGroup(page).getByTestId("anki-deck").filter({ hasText: name });
+const deckRow = (page: Page, name: string) =>
+  connectGroup(page).getByTestId("anki-deck").filter({ has: page.getByRole("checkbox", { name, exact: true, includeHidden: true }) });
 
 const SPANISH = { ankiDeckId: 71, name: "Spanish", language: "es", wordField: "Front", noteTypes: [{ modelId: modelOf(mature({ Front: "", Back: "" })).id, name: "Front+Back", wordField: "Front" }] };
 const FRENCH = { ankiDeckId: 72, name: "French", language: "fr", wordField: "Front", noteTypes: [{ modelId: modelOf(mature({ Front: "", Back: "" })).id, name: "Front+Back", wordField: "Front" }] };

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { AnkiCardInfo } from "./anki-connect";
-import { chunks, exampleWords, languageFromField, suggestSetup, toPayload } from "./anki-decks";
+import { chunks, decksTitle, exampleWords, languageFromField, suggestSetup, toPayload } from "./anki-decks";
 
 function card(fields: Record<string, string>, type = 2, interval = 30): AnkiCardInfo {
   const entries = Object.entries(fields).map(([name, value], order) => [name, { value, order }]);
@@ -48,5 +48,21 @@ describe("reading cards", () => {
   it("splits cards into batches", () => {
     expect(chunks([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]]);
     expect(chunks([], 2)).toEqual([]);
+  });
+});
+
+describe("decksTitle", () => {
+  const deck = (ankiDeckId: number, language: "es" | "fr") => ({ ankiDeckId, name: `D${ankiDeckId}`, language, wordField: "Front" });
+
+  it("is just the heading before any deck is saved", () => {
+    expect(decksTitle([])).toBe("Your decks");
+  });
+
+  it("counts one deck and names its language", () => {
+    expect(decksTitle([deck(1, "es")])).toBe("Your decks · 1 deck · Spanish");
+  });
+
+  it("names each language once, in the order the decks come", () => {
+    expect(decksTitle([deck(1, "es"), deck(2, "fr"), deck(3, "es")])).toBe("Your decks · 3 decks · Spanish, French");
   });
 });
