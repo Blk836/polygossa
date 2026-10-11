@@ -18,6 +18,8 @@ function world(overrides = {}) {
     lock: async (holder) => { calls.order.push("lock"); calls.locks.push(holder); return () => { calls.released++; }; },
     prepare: async (sha) => { calls.order.push("prepare"); calls.prepared.push(sha); return true; },
     liveChecks: async () => { calls.order.push("live"); return true; },
+    liveState: async () => ({ paused: false, databaseSnapshot: "none" }),
+    plannedState: async () => ({ paused: false, databaseSnapshot: "none" }),
     deploy: async () => { calls.order.push("deploy"); clock += 300_000; return { ok: true, siteUrl: SITE }; },
     fetch: async (url) => {
       calls.fetched.push(url);
@@ -189,3 +191,64 @@ test("an unknown argument: usage, nothing runs", async () => {
   assert.match(output(), /Usage/);
   assert.deepEqual(calls.order, []);
 });
+
+const RUNNING = { paused: false, databaseSnapshot: "none" };
+
+test("a paused production is checked by its coming-soon page, not the sign-in page or the backend", async () => {
+  const { deps, calls } = world({
+    deploy: async () => ({ ok: true, siteUrl: SITE, paused: true }),
+    fetch: async (url) => { calls.fetched.push(url); return { ok: true, status: 200, text: async () => "<h1>Coming soon</h1>" }; },
+  });
+  assert.equal(await runDeploy([], deps), 0);
+  assert.deepEqual(calls.fetched, [`${SITE}/`]);
+  assert.deepEqual(states(calls), ["pending", "success"]);
+  assert.match(calls.status[1].description, /coming-soon page/);
+});
+
+test("a paused production whose coming-soon page never answers: red mark", async () => {
+  const { deps, calls, output } = world({
+    sleep: async () => {},
+    deploy: async () => ({ ok: true, siteUrl: SITE, paused: true }),
+    fetch: async () => ({ ok: true, status: 200, text: async () => "<html>The app</html>" }),
+  });
+  assert.equal(await runDeploy([], deps), 1);
+  assert.deepEqual(states(calls), ["pending", "failure"]);
+  assert.match(output(), /coming-soon page/);
+});
+
+for (const [label, live, planned, reason] of [
+  ["unpausing without naming a snapshot", { paused: true, databaseSnapshot: "none" }, RUNNING, /new, empty database/],
+  ["unpausing from the snapshot it ran from before pausing", { paused: true, databaseSnapshot: "snap-a" },
+    { paused: false, databaseSnapshot: "snap-a" }, /older snapshot/],
+  ["naming a different snapshot under a running database", RUNNING, { paused: false, databaseSnapshot: "snap-b" },
+    /replaced/],
+]) {
+  test(`${label} is refused before production is touched`, async () => {
+    let deployed = false;
+    const { deps, calls, output } = world({
+      liveState: async () => live,
+      plannedState: async () => planned,
+      deploy: async () => { deployed = true; return { ok: true, siteUrl: SITE }; },
+    });
+    assert.equal(await runDeploy([], deps), 1);
+    assert.equal(deployed, false);
+    assert.equal(calls.order.includes("live"), false);
+    assert.deepEqual(states(calls), ["pending", "failure"]);
+    assert.match(output(), reason);
+  });
+}
+
+for (const [label, live, planned] of [
+  ["pausing a running production", RUNNING, { paused: true, databaseSnapshot: "none" }],
+  ["unpausing from a newly named snapshot", { paused: true, databaseSnapshot: "none" },
+    { paused: false, databaseSnapshot: "snap-b" }],
+  ["a running production keeping the snapshot it came from", { paused: false, databaseSnapshot: "snap-b" },
+    { paused: false, databaseSnapshot: "snap-b" }],
+  ["a stack that doesn't exist yet", null, RUNNING],
+]) {
+  test(`${label} is deployed`, async () => {
+    const { deps, calls } = world({ liveState: async () => live, plannedState: async () => planned });
+    assert.equal(await runDeploy([], deps), 0);
+    assert.ok(calls.order.includes("deploy"));
+  });
+}

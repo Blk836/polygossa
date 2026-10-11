@@ -56,6 +56,24 @@ function uploadsBucket() {
     "--profile", PROFILE, "--region", "eu-west-1", "--query", query, "--output", "text"])) || null;
 }
 
+function liveState() {
+  let outputs;
+  try {
+    outputs = JSON.parse(run(AWS, ["cloudformation", "describe-stacks", "--stack-name", "PolygossaStaging",
+      "--profile", PROFILE, "--region", "eu-west-1", "--query", "Stacks[0].Outputs", "--output", "json"])) ?? [];
+  } catch (error) {
+    if (/does not exist/.test(String(error.stderr))) return null;
+    throw error;
+  }
+  const value = (key) => outputs.find((o) => o.OutputKey === key)?.OutputValue;
+  return { paused: value("Paused") === "true", databaseSnapshot: value("DatabaseSnapshot") ?? "none" };
+}
+
+function plannedState() {
+  const { context } = JSON.parse(readFileSync(join(copy, "infra", "cdk.json"), "utf8"));
+  return { paused: context.paused === true, databaseSnapshot: context["database-snapshot"] ?? "none" };
+}
+
 async function liveChecks() {
   const bucket = uploadsBucket();
   if (!bucket || /\s/.test(bucket)) {
@@ -74,8 +92,8 @@ async function deploy() {
   const outputs = join(copy, "infra", "cdk.out", "deploy-outputs.json");
   const code = await exec("npx cdk deploy PolygossaStaging PolygossaQa --require-approval never --progress events"
     + ` --outputs-file "${outputs}"`, join(copy, "infra"), env);
-  const siteUrl = tryRun(() => JSON.parse(readFileSync(outputs, "utf8")).PolygossaStaging.SiteUrl);
-  return { ok: code === 0 && Boolean(siteUrl), siteUrl };
+  const stack = tryRun(() => JSON.parse(readFileSync(outputs, "utf8")).PolygossaStaging);
+  return { ok: code === 0 && Boolean(stack?.SiteUrl), siteUrl: stack?.SiteUrl, paused: stack?.Paused === "true" };
 }
 
 function deployState(sha) {
@@ -128,6 +146,8 @@ process.exitCode = await runDeploy(process.argv.slice(2), {
     return release;
   },
   prepare,
+  liveState: async () => liveState(),
+  plannedState: async () => plannedState(),
   liveChecks,
   deploy,
   fetch: (url) => fetch(url, { signal: AbortSignal.timeout(20_000) }),
