@@ -2,6 +2,7 @@ package app.lector.recommend;
 
 import app.lector.ai.AiClient;
 import app.lector.ai.EmbeddingClient;
+import app.lector.common.JobLock;
 import app.lector.text.TextFeature;
 import app.lector.text.TextFeatureRepository;
 import app.lector.text.TextRepository;
@@ -10,6 +11,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +24,7 @@ public class TextFeatureJob {
 
     private static final Logger log = LoggerFactory.getLogger(TextFeatureJob.class);
     private static final long MAX_BACKOFF_MINUTES = 24 * 60;
+    public static final String LOCK = "text-features";
 
     private record Source(String language, String title, String content) {}
 
@@ -32,9 +35,11 @@ public class TextFeatureJob {
     private final Clock clock;
     private final RecommendProperties props;
     private final TransactionTemplate tx;
+    private final JobLock lock;
 
     public TextFeatureJob(TextFeatureRepository features, TextRepository texts, AiClient ai, EmbeddingClient embeddings,
-                          Clock clock, RecommendProperties props, TransactionTemplate tx) {
+                          Clock clock, RecommendProperties props, TransactionTemplate tx, JobLock lock) {
+        this.lock = lock;
         this.features = features;
         this.texts = texts;
         this.ai = ai;
@@ -48,8 +53,12 @@ public class TextFeatureJob {
             initialDelayString = "${app.recommend.feature-job-delay:60s}")
     public void scheduled() {
         if (props.featureJob()) {
-            runOnce();
+            runAlone();
         }
+    }
+
+    public Optional<Integer> runAlone() {
+        return lock.runAlone(LOCK, this::runOnce);
     }
 
     public int runOnce() {
