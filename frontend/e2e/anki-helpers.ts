@@ -29,6 +29,7 @@ export class FakeAnki {
   apiKey: string | null = null;
   outdated = false;
   closed = false;
+  untrusted = false;
   closeAfterCardsInfo: number | null = null;
   cardsInfoDelayMs = 0;
   calls: { action: string; params: Record<string, unknown>; key?: string }[] = [];
@@ -78,8 +79,10 @@ export class FakeAnki {
     const headers = { "Access-Control-Allow-Origin": "*" };
     if (body.action === "requestPermission") {
       if (this.outdated) return route.fulfill({ headers, json: { result: null, error: "unsupported action" } });
+      if (this.permission === "granted") this.untrusted = false;
       return route.fulfill({ headers, json: { result: { permission: this.permission, requireApikey: this.apiKey !== null, version: 6 }, error: null } });
     }
+    if (this.untrusted) return route.abort("failed");
     if (this.apiKey !== null && body.key !== this.apiKey) return route.fulfill({ headers, json: { result: null, error: "valid api key must be provided" } });
     if (body.action === "cardsInfo" && (await this.closesNow())) return route.abort("connectionrefused");
     return route.fulfill({ headers, json: { result: this.result(body.action, params), error: null } });
