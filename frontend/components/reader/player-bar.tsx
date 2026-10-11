@@ -1,68 +1,37 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { CloseIcon, PauseIcon, PlayIcon, RepeatIcon, ReplayIcon, SkipBackIcon, SkipForwardIcon } from "../icons";
-import { chipSelectClass } from "../ui";
 import { formatTime } from "./audio-sync";
-import { SPEEDS } from "./media-nav";
-import type { MediaPlayer } from "./use-media-player";
+import { PhoneBar } from "./phone-bar";
+import { barClass, CloseButton, LoopButton, PlayButton, ReplayButton, SpeedSelect, StepButton, type PlayerBarProps } from "./player-controls";
+import { PHONE, useMediaQuery } from "./use-media-query";
 
-const iconButton = "flex size-8 shrink-0 items-center justify-center rounded-full text-muted hover:bg-paper hover:text-ink disabled:opacity-40";
-
-function Transport({ player, playing, synced }: { player: MediaPlayer; playing: boolean; synced: boolean }) {
-  return (
-    <div className="flex items-center gap-1">
-      <button onClick={() => player.step(-1)} disabled={!synced} className={iconButton} aria-label="Previous sentence" title="Previous sentence ([)">
-        <SkipBackIcon className="size-4" />
-      </button>
-      <button onClick={player.toggle} className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent text-accent-ink" aria-label={playing ? "Pause" : "Play"} title="Play / pause (Space)">
-        {playing ? <PauseIcon /> : <PlayIcon />}
-      </button>
-      <button onClick={() => player.step(1)} disabled={!synced} className={iconButton} aria-label="Next sentence" title="Next sentence (])">
-        <SkipForwardIcon className="size-4" />
-      </button>
-      <button onClick={() => player.step(0)} disabled={!synced} className={iconButton} aria-label="Replay sentence" title="Replay sentence (R)">
-        <ReplayIcon className="size-4" />
-      </button>
-      <button
-        onClick={player.toggleLoop}
-        disabled={!synced}
-        className={`${iconButton} ${player.looped ? "bg-accent-soft text-ink" : ""}`}
-        aria-label="Loop sentence"
-        aria-pressed={player.looped}
-        title="Loop sentence"
-      >
-        <RepeatIcon className="size-4" />
-      </button>
-    </div>
-  );
+export function PlayerBar(props: PlayerBarProps) {
+  const phone = useMediaQuery(PHONE);
+  return phone ? <PhoneBar {...props} /> : <WideBar {...props} />;
 }
 
-export function PlayerBar({ player, playing, duration, onClose, extra, children }: {
-  player: MediaPlayer;
-  playing: boolean;
-  duration: number;
-  onClose: (() => void) | null;
-  extra?: ReactNode;
-  children?: ReactNode;
-}) {
+function WideBar({ player, playing, duration, onClose, extra, children }: PlayerBarProps) {
   const max = duration || 1;
   const synced = player.segments.length > 0;
   return (
-    <div role="region" aria-label="Player" data-bottom-bar className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/95 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] backdrop-blur">
+    <div role="region" aria-label="Player" data-bottom-bar className={barClass}>
       <div className="mx-auto max-w-6xl px-4 pt-3">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <Transport player={player} playing={playing} synced={synced} />
+          <div className="flex items-center gap-1">
+            <StepButton player={player} synced={synced} by={-1} />
+            <PlayButton player={player} playing={playing} />
+            <StepButton player={player} synced={synced} by={1} />
+            <ReplayButton player={player} synced={synced} />
+            <LoopButton player={player} synced={synced} />
+          </div>
           <div className="flex min-w-48 flex-1 items-center gap-2">
             <span className="w-10 text-xs tabular-nums text-muted">{formatTime(player.time)}</span>
             <input type="range" min={0} max={max} value={Math.min(player.time, max)} onChange={(e) => player.seek(Number(e.target.value))} className="flex-1 accent-[var(--accent)]" aria-label="Seek" />
             <span className="w-10 text-xs tabular-nums text-muted">{formatTime(duration)}</span>
           </div>
-          <select value={player.rate} onChange={(e) => player.setRate(Number(e.target.value))} className={`${chipSelectClass} bg-card`} aria-label="Speed">
-            {SPEEDS.map((r) => <option key={r} value={r}>{r}×</option>)}
-          </select>
+          <SpeedSelect player={player} />
           {extra}
-          {onClose && <button onClick={onClose} className="text-muted" aria-label="Close player"><CloseIcon className="size-4" /></button>}
+          {onClose && <CloseButton onClose={onClose} />}
         </div>
         {children}
       </div>

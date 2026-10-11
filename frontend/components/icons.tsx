@@ -111,3 +111,6 @@ export const MiniPlayerIcon = (p: SVGProps<SVGSVGElement>) => (
 export const SideBySideIcon = (p: SVGProps<SVGSVGElement>) => (
   <Icon {...p}><rect x="2.5" y="4.5" width="19" height="15" rx="2.5" /><path d="M14 4.5v15" /><path d="M5.5 9h5M5.5 12h5M5.5 15h3" /></Icon>
 );
+export const MoreIcon = (p: SVGProps<SVGSVGElement>) => (
+  <Icon {...p}><circle cx="5" cy="12" r="1.2" fill="currentColor" /><circle cx="12" cy="12" r="1.2" fill="currentColor" /><circle cx="19" cy="12" r="1.2" fill="currentColor" /></Icon>
+);

@@ -78,7 +78,7 @@ export function Reader({ initial, initialSettings, playlist }: {
   const sentences = useMemo(() => sentenceTexts(tokens), [tokens]);
   const paragraphs = useMemo(() => (video ? transcriptParagraphs(tokens) : toParagraphs(tokens)), [tokens, video]);
   const measuring = useMeasuring();
-  const { pages: fitted, videoMax } = useFitPages(paragraphs, measureRef, articleRef, measuring, settings.video);
+  const { pages: fitted, videoMax } = useFitPages(paragraphs, measureRef, articleRef, measuring, `${settings.video}:${settings.tucked}`);
   const paging = useReaderPages(text.id, tokens, paragraphs, fitted, text.progress?.position ?? null);
   const { page, pages, goTo, goToToken } = paging;
   const budgets = useMemo(() => slideBudgets(audio?.timings ?? video?.timings ?? []), [audio, video]);
@@ -205,6 +205,7 @@ export function Reader({ initial, initialSettings, playlist }: {
       <VideoPanel
         ref={mediaRef} video={video} tokens={tokens} onSpoken={setSpoken} onJumpToToken={jumpToToken} cueToken={cueToken} maxHeight={videoMax}
         layout={settings.video} onLayout={(layout) => updateSettings({ video: layout })}
+        tucked={settings.tucked} onTucked={(tucked) => updateSettings({ tucked })}
       />
 
       <div className="reader-column min-w-0 lg:col-start-1">
