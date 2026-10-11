@@ -2,6 +2,7 @@ package app.lector.recommend;
 
 import app.lector.recommend.RecommendationFeedback.EventItem;
 import app.lector.text.Category;
+import app.lector.text.MediaKind;
 import app.lector.token.Language;
 import app.lector.user.AuthUser;
 import app.lector.user.CurrentUser;
@@ -45,8 +46,10 @@ public class RecommendationController {
 
     @GetMapping
     public Recommendations recommend(@AuthenticationPrincipal AuthUser principal,
-                                     @RequestParam(required = false) Language language) {
-        return recommendations.recommend(currentUser.load(principal), language);
+                                     @RequestParam(required = false) Language language,
+                                     @RequestParam(required = false) MediaKind kind,
+                                     @RequestParam(required = false) String level) {
+        return recommendations.recommend(currentUser.load(principal), language, RecommendationFilter.of(kind, level));
     }
 
     @PutMapping("/not-interested/{id}")

@@ -1,0 +1,10 @@
+*
+!gradlew
+!settings.gradle.kts
+!build.gradle.kts
+!gradle
+!backend
+backend/build
+backend/data
+backend/bin
+backend/out

@@ -7,6 +7,7 @@ import {
   openEvent,
   recommendationsPath,
   withoutItem,
+  type RecommendationFilters,
   type RecommendedShelf,
   type Recommendations,
   type ShelfId,
@@ -17,8 +18,8 @@ function log(body: object) {
   void api("recommendations/events", { body: { ...body } }).catch(() => {});
 }
 
-function loadShelves(language: string): Promise<RecommendedShelf[]> {
-  return api<Recommendations>(recommendationsPath(language))
+function loadShelves(path: string): Promise<RecommendedShelf[]> {
+  return api<Recommendations>(path)
     .then((r) => {
       impressionBatches(r.shelves).forEach(log);
       return r.shelves;
@@ -26,8 +27,9 @@ function loadShelves(language: string): Promise<RecommendedShelf[]> {
     .catch(() => []);
 }
 
-export function useRecommendations(language: string, onError: (message: string) => void) {
-  const { data: shelves, setData: setShelves } = useRemembered(`recommendations:${language}`, () => loadShelves(language));
+export function useRecommendations(language: string, filters: RecommendationFilters, onError: (message: string) => void) {
+  const path = recommendationsPath(language, filters);
+  const { data: shelves, setData: setShelves } = useRemembered(path, () => loadShelves(path));
 
   const mapTexts = (change: (t: TextSummary) => TextSummary) => {
     setShelves((s) => s?.map((shelf) => ({ ...shelf, items: shelf.items.map((it) => ({ ...it, text: change(it.text) })) })) ?? null);

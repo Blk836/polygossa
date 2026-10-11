@@ -72,7 +72,7 @@ public class RecommendationService {
                            Map<Long, Features> features, TasteProfile profile) {}
 
     @Transactional(readOnly = true)
-    public Recommendations recommend(User user, Language language) {
+    public Recommendations recommend(User user, Language language, RecommendationFilter filter) {
         RecommendProperties ranking = active.ranking();
         Instant now = clock.instant();
         Snapshot s = signals.load(user);
@@ -88,11 +88,12 @@ public class RecommendationService {
 
         String level = language == null ? null : levels.levels(user, language).reading().level();
         Map<Language, Map<String, WordStatus>> statusCache = new HashMap<>();
-        List<Candidate> candidates = candidates(ctx, pool, level, statusCache, ranking);
+        List<Text> offered = pool.stream().filter(filter::matches).toList();
+        List<Candidate> candidates = candidates(ctx, offered, level, statusCache, ranking);
 
         Map<ShelfId, Shelf> built = new LinkedHashMap<>();
-        Map<Long, Text> shown = pool.stream().collect(Collectors.toMap(Text::getId, t -> t));
-        List<ReadingProgress> continuing = continuing(ctx, language);
+        Map<Long, Text> shown = offered.stream().collect(Collectors.toMap(Text::getId, t -> t));
+        List<ReadingProgress> continuing = continuing(ctx, language, filter);
         continuing.forEach(p -> shown.put(p.getTextId(), p.getText()));
         Map<Long, TextSummary> summaries = new HashMap<>();
         Function<List<Pick>, List<Item>> items = picks -> picks.stream()
@@ -164,10 +165,11 @@ public class RecommendationService {
                 ctx.snapshot().tallies().get(t.getId()))).toList();
     }
 
-    private List<ReadingProgress> continuing(Context ctx, Language language) {
+    private List<ReadingProgress> continuing(Context ctx, Language language, RecommendationFilter filter) {
         return ctx.snapshot().progress().values().stream()
                 .filter(p -> !p.isCompleted() && !Signals.abandoned(p.getPercent(), false, p.getUpdatedAt(), ctx.now()))
                 .filter(p -> language == null || p.getText().getLanguage() == language)
+                .filter(p -> filter.matches(p.getText()))
                 .filter(p -> textService.canRead(ctx.user(), p.getText()))
                 .sorted(Comparator.comparing(ReadingProgress::getUpdatedAt).reversed()
                         .thenComparing(ReadingProgress::getTextId))
