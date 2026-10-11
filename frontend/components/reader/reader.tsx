@@ -91,7 +91,10 @@ export function Reader({ initial, initialSettings, playlist }: {
   const stats = useMemo(() => readerStats(tokens, vocab.statuses), [tokens, vocab.statuses]);
   const unseenHere = useMemo(() => unseenOnPage(paging.paragraphs, vocab.statuses), [paging.paragraphs, vocab.statuses]);
 
-  const cueToken = page > 1 ? (pageRange(paging.paragraphs)?.from ?? null) : null;
+  const pageStart = pageRange(paging.paragraphs)?.from ?? null;
+  const cueToken = page > 1 ? pageStart : null;
+  const isShown = useCallback((i: number) => pageOfToken(pages, i) === page, [pages, page]);
+  const startPage = useCallback((i: number | null) => mediaRef.current?.startPage(i), []);
 
   const markPageKnown = usePageKnown({ textId: text.id, statuses: vocab.statuses, markRemainingKnown, onSaved, onError: setError });
   const leavePage = useCallback(
@@ -108,7 +111,7 @@ export function Reader({ initial, initialSettings, playlist }: {
     },
     [pages, leavePage, goTo],
   );
-  const { reveal, turnPage } = usePageTurns({ page, goTo, goToToken, follow, articleRef, place, close, active });
+  const { reveal, turnPage } = usePageTurns({ page, goTo, goToToken, follow, articleRef, place, close, active, pageStart, onPage: isShown, startPage });
 
   const changePage = useCallback(
     (n: number) => {
