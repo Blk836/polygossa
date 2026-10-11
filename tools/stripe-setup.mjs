@@ -2,7 +2,7 @@
 
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { setUp } from "./stripe-setup/setup.mjs";
+import { DEFAULT_SITE, setUp } from "./stripe-setup/setup.mjs";
 
 const run = promisify(execFile);
 const AWS = process.platform === "win32" ? "C:\\Program Files\\Amazon\\AWSCLIV2\\aws.exe" : "aws";
@@ -27,7 +27,7 @@ async function saveSecret(name, value) {
 
 const args = process.argv.slice(2);
 const siteAt = args.indexOf("--site");
-const site = siteAt >= 0 ? args[siteAt + 1] : "https://d3pd9mue4v7won.cloudfront.net";
+const site = siteAt >= 0 ? args[siteAt + 1] : DEFAULT_SITE;
 try {
   await setUp({
     key: await readSecret(KEY_SECRET),

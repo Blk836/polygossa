@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import * as cdk from "aws-cdk-lib";
 import { Match, Template } from "aws-cdk-lib/assertions";
@@ -128,6 +129,14 @@ describe("stage 2: the site moves to the domain", () => {
       CallbackURLs: [`https://${DOMAIN}/api/auth/callback`, `${OLD_SITE}/api/auth/callback`],
       LogoutURLs: [`https://${DOMAIN}/`, `${OLD_SITE}/`],
     });
+  });
+});
+
+describe("production's settings", () => {
+  it("run the site on polygossa.com", () => {
+    const { context } = JSON.parse(readFileSync(new URL("../cdk.json", import.meta.url), "utf8"));
+    assert.equal(context.domain, DOMAIN);
+    assert.equal(context["domain-live"], true);
   });
 });
 

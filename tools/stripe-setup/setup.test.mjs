@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { PRICES, setUp } from "./setup.mjs";
+import { DEFAULT_SITE, PRICES, setUp } from "./setup.mjs";
+
+describe("the default site", () => {
+  it("is production's own domain, so the webhook isn't sent to an address that redirects", () => {
+    assert.equal(DEFAULT_SITE, "https://polygossa.com");
+  });
+});
 
 function fakeStripe({ prices = [], endpoints = [] } = {}) {
   const calls = [];
