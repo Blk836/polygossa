@@ -106,6 +106,9 @@ when its test is fixed.
   `w-speaking` within 5 s. Seen 2026-10-10, PR #90.
 - `e2e/reader-playback-known.spec.ts` › "stepping with ] across the page end marks it known, and stepping back with [
   marks nothing": after the `]` presses the pager still said "Page 1 of 4" within 5 s. Seen 2026-10-10, PR #110.
+- `e2e/reader-pages.spec.ts` › "stepping to the next sentence turns to the page holding it": after the `]` presses the
+  pager still said "Page 1 of 4". Failed 3 of 3 alone on a clean checkout of main (4da45dc) too, so it may be broken
+  rather than flaky. Seen 2026-10-11, PR #116.
 - `e2e/reader-media-resume.spec.ts` › "pressing Play twice while the video is still starting keeps the bar at the
   page's start". Seen 2026-10-10, PR #94.
 
