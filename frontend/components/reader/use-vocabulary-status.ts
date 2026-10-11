@@ -14,6 +14,7 @@ interface Options {
   initialStatuses: Record<string, WordStatus>;
   initialPhrases: Phrase[];
   onSaved: () => void;
+  onKnownWord?: (target: PopupTarget, saved: boolean) => void;
   onNotice: (message: string | null) => void;
   onError: (message: string) => void;
 }
@@ -33,7 +34,7 @@ function meaningFields(lookup: WordLookup | null): { meaning?: string; definitio
 }
 
 export function useVocabularyStatus(opts: Options) {
-  const { language, textId, onSaved, onNotice, onError } = opts;
+  const { language, textId, onSaved, onKnownWord, onNotice, onError } = opts;
   const [statuses, setStatuses] = useState(opts.initialStatuses);
   const [phrases, setPhrases] = useState(opts.initialPhrases);
   const statusesRef = useRef(statuses);
@@ -152,16 +153,19 @@ export function useVocabularyStatus(opts: Options) {
     async (target: PopupTarget, status: WordStatus | null) => {
       onNotice(null);
       const before = statusOf(target) ?? null;
+      const newlyKnown = target.kind === "word" && status === "known" && before !== "known";
+      if (newlyKnown) onKnownWord?.(target, false);
       apply(target, status);
       try {
         await write(target, status, before === null);
+        if (newlyKnown) onKnownWord?.(target, true);
         onSaved();
       } catch (e) {
         apply(target, before);
         reportFailure(e);
       }
     },
-    [onNotice, statusOf, apply, write, onSaved, reportFailure],
+    [onNotice, statusOf, apply, write, onKnownWord, onSaved, reportFailure],
   );
 
   const markRemainingKnown = useCallback((tokens: Token[]) => {

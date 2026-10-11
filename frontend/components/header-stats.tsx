@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FlameIcon } from "./icons";
 import { HoneyJar } from "./polly";
+import { PollyFlight, usePollyFlights } from "./polly-flight";
+import { MilestoneCard, StreakToast, useMilestone, useStreakNews } from "./polly-moments";
 import { flame, knownWords, type HeaderStats as Stats } from "@/lib/header-stats";
 
 const MIN_SCALE = 0.45;
@@ -14,19 +16,60 @@ function flameClass(state: "lit" | "fading" | "out", fuel: number): string {
   return state === "fading" ? "text-rubric streak-flicker" : "text-rubric";
 }
 
-export function HeaderStats({ stats }: { stats: Stats }) {
-  const f = flame(stats);
-  const known = knownWords(stats.knownWords);
-  const [seen, setSeen] = useState(stats.knownWords);
+function useKnownCount(server: number) {
+  const [hold, setHold] = useState<number | null>(null);
+  const [floor, setFloor] = useState<{ value: number; server: number } | null>(null);
+  const shown = hold ?? (floor && floor.server === server ? Math.max(server, floor.value) : server);
+  const latest = useRef({ shown, server });
+  const holding = useRef<number | null>(null);
+  const before = useRef<number | null>(null);
+  useEffect(() => {
+    latest.current = { shown, server };
+  }, [shown, server]);
+  const mark = useCallback(() => {
+    before.current = latest.current.shown;
+  }, []);
+  const takeOff = useCallback(() => {
+    holding.current = latest.current.shown;
+    setHold(holding.current);
+  }, []);
+  const land = useCallback(() => {
+    if (holding.current === null) return;
+    setFloor({ value: (before.current ?? holding.current) + 1, server: latest.current.server });
+    holding.current = null;
+    before.current = null;
+    setHold(null);
+  }, []);
+  const on = useMemo(() => ({ mark, takeOff }), [mark, takeOff]);
+  return { shown, on, land };
+}
+
+function useWobbles(count: number): number {
+  const [seen, setSeen] = useState(count);
   const [wobbles, setWobbles] = useState(0);
-  if (stats.knownWords !== seen) {
-    setSeen(stats.knownWords);
-    if (stats.knownWords > seen) setWobbles((w) => w + 1);
+  if (count !== seen) {
+    setSeen(count);
+    if (count > seen) setWobbles((w) => w + 1);
   }
-  const scale = f.state === "fading" ? MIN_SCALE + (1 - MIN_SCALE) * f.fuel : 1;
+  return wobbles;
+}
+
+function KnownWords({ server, language }: { server: number; language: string }) {
+  const jar = useRef<HTMLAnchorElement>(null);
+  const count = useKnownCount(server);
+  const findJar = useCallback(() => jar.current?.querySelector("[data-testid=honey-jar]") ?? null, []);
+  const [flight, endFlight] = usePollyFlights(findJar, count.on);
+  const wobbles = useWobbles(count.shown);
+  const [milestone, closeMilestone] = useMilestone(language, count.shown);
+  const known = knownWords(count.shown);
+  const land = () => {
+    endFlight();
+    count.land();
+  };
   return (
-    <div className="flex items-center gap-1">
+    <>
       <Link
+        ref={jar}
         href="/vocabulary"
         data-testid="known-words"
         aria-label={known.label}
@@ -37,6 +80,19 @@ export function HeaderStats({ stats }: { stats: Stats }) {
         <span>{known.text}</span>{" "}
         <span className="font-normal text-muted">known</span>
       </Link>
+      {flight && <PollyFlight key={flight.id} flight={flight} onLand={land} />}
+      {milestone !== null && <MilestoneCard words={milestone} onClose={closeMilestone} />}
+    </>
+  );
+}
+
+export function HeaderStats({ stats, language }: { stats: Stats; language: string }) {
+  const f = flame(stats);
+  const [news, closeNews] = useStreakNews(stats.current, stats.activeToday);
+  const scale = f.state === "fading" ? MIN_SCALE + (1 - MIN_SCALE) * f.fuel : 1;
+  return (
+    <div className="flex items-center gap-1">
+      <KnownWords server={stats.knownWords} language={language} />
       <Link
         href="/dashboard"
         data-testid="streak-flame"
@@ -57,6 +113,7 @@ export function HeaderStats({ stats }: { stats: Stats }) {
         </span>
         {stats.current}
       </Link>
+      {news && <StreakToast news={news} onClose={closeNews} />}
     </div>
   );
 }

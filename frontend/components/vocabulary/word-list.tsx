@@ -45,11 +45,11 @@ export function WordList({ filters, onPage, onTag, onChanged }: {
         )}
       </p>
       {data.items.length === 0 && (filters.kind === "phrase" ? (
-        <Empty title="No phrases here yet">
+        <Empty title="No phrases here yet" prop="book">
           In the reader, select several words to save a phrase, or use “Save sentence to review” on a word to save its whole sentence.
         </Empty>
       ) : (
-        <Empty title="No words here yet">Words you click while reading appear here.</Empty>
+        <Empty title="No words here yet" prop="book">Words you click while reading appear here.</Empty>
       ))}
       <ul className="space-y-3">
         {data.items.map((entry) => (

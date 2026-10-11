@@ -22,8 +22,8 @@ export function useDueCount(language: string, pathname: string, refreshed: unkno
   return due;
 }
 
-export function useHeaderStats(language: string, pathname: string, refreshed: unknown): HeaderStats | null {
-  const [loaded, setLoaded] = useState<{ stats: HeaderStats; at: number } | null>(null);
+export function useHeaderStats(language: string, pathname: string, refreshed: unknown): (HeaderStats & { language: string }) | null {
+  const [loaded, setLoaded] = useState<{ stats: HeaderStats; at: number; language: string } | null>(null);
   const [now, setNow] = useState(0);
   const [day, setDay] = useState(0);
 
@@ -33,7 +33,7 @@ export function useHeaderStats(language: string, pathname: string, refreshed: un
       .then((stats) => {
         if (cancelled) return;
         const at = Date.now();
-        setLoaded({ stats, at });
+        setLoaded({ stats, at, language });
         setNow(at);
       })
       .catch(() => !cancelled && setLoaded(null));
@@ -54,5 +54,5 @@ export function useHeaderStats(language: string, pathname: string, refreshed: un
 
   if (!loaded) return null;
   const elapsed = Math.max(Math.floor((now - loaded.at) / 1000), 0);
-  return { ...loaded.stats, secondsLeftToday: Math.max(loaded.stats.secondsLeftToday - elapsed, 0) };
+  return { ...loaded.stats, language: loaded.language, secondsLeftToday: Math.max(loaded.stats.secondsLeftToday - elapsed, 0) };
 }

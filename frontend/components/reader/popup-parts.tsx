@@ -5,7 +5,7 @@ import { dictionaryLinks, meaningView, wordTypeLine } from "@/lib/dictionary";
 import { canSpeak, speak } from "@/lib/speech";
 import type { DictionaryResult, WordLookup, WordStatus } from "@/lib/types";
 import { CloseIcon, PlayIcon, SpeakerIcon } from "../icons";
-import { Spinner } from "../ui";
+import { Polly } from "../polly";
 import type { PopupTarget } from "./word-popup";
 
 const STATUS_BUTTONS: { status: WordStatus; label: string; key: string; className: string }[] = [
@@ -67,7 +67,7 @@ export function Meanings({ lookup, error, onPick }: {
   onPick: (meaning: string) => void;
 }) {
   if (error) return <p className="text-danger">{error}</p>;
-  if (!lookup) return <Spinner className="text-muted" />;
+  if (!lookup) return <span role="status" aria-label="Loading" className="inline-block"><Polly mood="thinking" className="size-8" /></span>;
   const view = meaningView(lookup);
   if (!view) return null;
   if (view.missing) return <p data-testid="meanings" className="text-muted">{view.text}</p>;

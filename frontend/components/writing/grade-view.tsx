@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Polly } from "@/components/polly";
 import { Bone, ButtonBone, CardFrame, SectionLoading } from "@/components/skeletons/parts";
 import { Button, FailureNote } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
@@ -41,6 +42,10 @@ export function GradingOutline({ test }: { test: WritingTest }) {
   return (
     <div className="space-y-5">
       <Situation test={test} />
+      <div data-testid="grading-polly" className="flex items-center gap-3">
+        <Polly mood="thinking" prop="pencil" className="size-16 shrink-0" />
+        <p className="font-medium">Grading your writing…</p>
+      </div>
       <SectionLoading label="results">
         <div className="space-y-5">
           <CardFrame part="score" className="flex flex-wrap items-center gap-6">

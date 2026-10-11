@@ -5,6 +5,7 @@ import { api, errorMessage } from "@/lib/api";
 import type { ReaderPlaylist } from "@/lib/playlist-types";
 import type { TextDetail, WordLookup, WordStatus } from "@/lib/types";
 import { useMe } from "../me-context";
+import { expectPolly, sendPollyFrom } from "../polly-flight";
 import { ErrorNote } from "../ui";
 import { AudioPanel } from "./audio-panel";
 import { FinishPanel } from "./finish-panel";
@@ -32,6 +33,9 @@ import { useReaderSettings } from "./use-reader-settings";
 import { ListenContext, useReadingSession } from "./use-reading-session";
 import { useVocabularyStatus } from "./use-vocabulary-status";
 import { VideoPanel } from "./video-panel";
+
+const flyFromWord = ({ startToken }: { startToken: number }, saved: boolean) =>
+  saved ? sendPollyFrom(document.querySelector(`article [data-i="${startToken}"]`)) : expectPolly();
 
 export function Reader({ initial, initialSettings, playlist }: {
   initial: TextDetail;
@@ -65,6 +69,7 @@ export function Reader({ initial, initialSettings, playlist }: {
     initialStatuses: initial.statuses,
     initialPhrases: initial.phrases,
     onSaved,
+    onKnownWord: flyFromWord,
     onNotice: popup.setNotice,
     onError: setError,
   });

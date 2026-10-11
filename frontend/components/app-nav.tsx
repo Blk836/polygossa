@@ -112,7 +112,7 @@ export function AppNav() {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2 md:ml-0">
-            {stats && <HeaderStats stats={stats} />}
+            {stats && <HeaderStats key={stats.language} stats={stats} language={stats.language} />}
             <LanguageSwitcher />
             <AccountMenu />
           </div>

@@ -25,7 +25,7 @@ export default function WritingPage() {
     return (
       <div className="mx-auto max-w-3xl">
         <PageHeader title="Writing" />
-        <Empty title="Choose a language first">Pick the language you&apos;re learning in the top bar.</Empty>
+        <Empty title="Choose a language first" prop="pencil">Pick the language you&apos;re learning in the top bar.</Empty>
       </div>
     );
   }

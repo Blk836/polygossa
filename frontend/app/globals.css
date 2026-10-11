@@ -48,6 +48,8 @@
   --polly-wing: light-dark(#eef2ff, #283063);
   --polly-face: light-dark(#1d2033, #1d2033);
   --polly-cheek: light-dark(#e8846a, #e8846a);
+  --polly-drop: light-dark(#d98a12, #e8a020);
+  --polly-shine: light-dark(#fff4d6, #fff4d6);
 
   --cover-learners: light-dark(#e4e7f6, #252b52);
   --cover-daily-life: light-dark(#f3e6d3, #3a2f22);
@@ -303,6 +305,32 @@ main:has(> [data-reader]) {
 }
 @media (prefers-reduced-motion: reduce) {
   .jar-wobble {
+    animation: none;
+  }
+}
+
+@keyframes polly-think {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.polly-think {
+  animation: polly-think 1.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .polly-think {
+    animation: none;
+  }
+}
+
+@keyframes polly-pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+.polly-pop {
+  animation: polly-pop 0.25s ease-out 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .polly-pop {
     animation: none;
   }
 }

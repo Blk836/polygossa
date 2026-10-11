@@ -38,10 +38,10 @@ function EmptyLibrary({ filters, language, hasPlaylists, onClear }: { filters: L
     return <Empty title={title}><Button variant="secondary" className="mt-2" onClick={onClear}>Clear filters</Button></Empty>;
   }
   if (hasPlaylists) {
-    return <Empty title="Nothing saved outside your playlists">Bookmark a text or video to keep it here.</Empty>;
+    return <Empty title="Nothing saved outside your playlists" prop="book">Bookmark a text or video to keep it here.</Empty>;
   }
   return (
-    <Empty title={title}>
+    <Empty title={title} prop="book">
       <div className="flex flex-wrap justify-center gap-2 pt-2">
         <LinkButton href={importHref(language)}>Import a text or video</LinkButton>
         <LinkButton href="/community" variant="secondary">Explore shared content</LinkButton>

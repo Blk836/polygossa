@@ -131,7 +131,7 @@ function GridView({ f, grid, error, actions, set, onPage }: {
         </select>
       </div>
       {!grid && !error && <CardsLoading label="results" />}
-      {grid && grid.items.length === 0 && <Empty title="Nothing matches">Try another level, type or search.</Empty>}
+      {grid && grid.items.length === 0 && <Empty title="Nothing matches" prop={f.kind === "video" ? "headphones" : undefined}>Try another level, type or search.</Empty>}
       <div className={cardGridClass(layout)} data-testid="card-grid">
         {grid?.items.map((t) => <TextCard key={t.id} text={t} layout={layout} showOwner actions={actions(t)} />)}
       </div>
