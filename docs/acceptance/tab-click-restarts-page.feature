@@ -24,14 +24,14 @@ Feature: Clicking the tab you are on takes you back to its start
     Then the search box is empty and the shelves show
 
   Scenario: Explore through the logo
-    Given I have opened a category in Explore
+    Given I have searched Explore
     When I click the logo
-    Then the shelves show and no category is picked
+    Then the search box is empty and the shelves show
 
   Scenario: Words with filters and the address's own filter go back to the defaults
-    Given I opened Words from a link that picked "learning" and then typed a search
+    Given I opened Words from a link that picked "known" and then typed a search
     When I click the "Words" sub-tab
-    Then the search box is empty and the status filter is back to its default
+    Then the address has no filter, the search box is empty and the status filter is back to "learning"
 
   Scenario: A page restarted this way opens at the top
     Given I have scrolled down Explore
