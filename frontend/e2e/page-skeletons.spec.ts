@@ -36,13 +36,8 @@ async function top(locator: Locator) {
   return { x: Math.round(box!.x), y: Math.round(box!.y) };
 }
 
-async function openAccountItem(page: Page, name: string, path: string) {
-  const prefetched = page.waitForResponse((res) => {
-    const headers = res.request().headers();
-    return new URL(res.url()).pathname === path && !!headers["next-router-prefetch"];
-  });
+async function openAccountItem(page: Page, name: string) {
   await page.getByRole("button", { name: "Account" }).click();
-  await prefetched;
   await page.getByRole("menu", { name: "Account" }).getByRole("menuitem", { name }).click();
 }
 
@@ -95,7 +90,7 @@ const DESTINATIONS: Destination[] = [
     parts: ["cards"],
   },
   {
-    page: "Classes", title: "Classes", path: "/classes", from: "/community", open: (p) => openAccountItem(p, "Classes", "/classes"),
+    page: "Classes", title: "Classes", path: "/classes", from: "/community", open: (p) => openAccountItem(p, "Classes"),
     parts: ["forms", "rows"],
   },
   {
