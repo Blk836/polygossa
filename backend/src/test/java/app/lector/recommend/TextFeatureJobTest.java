@@ -3,6 +3,12 @@ package app.lector.recommend;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import app.lector.TestApi;
+import app.lector.common.JobLock;
+import com.zaxxer.hikari.HikariDataSource;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import javax.sql.DataSource;
 import app.lector.text.TextFeature;
 import app.lector.text.TextFeatureRepository;
 import app.lector.writing.MutableClock;
@@ -72,6 +78,9 @@ class TextFeatureJobTest {
     @Autowired
     TextFeatureRepository features;
 
+    @Autowired
+    DataSource dataSource;
+
     TestApi api;
     RecommendFixture fx;
     String author;
@@ -131,6 +140,24 @@ class TextFeatureJobTest {
         job.scheduled();
         assertThat(features.findByTextId(id)).isEmpty();
         job.runOnce();
+        assertThat(features.findByTextId(id)).isPresent();
+    }
+
+    @Test
+    void whileAnotherServerRunsTheJobThisOneSkipsWithoutAskingTheAi() throws Exception {
+        long id = fx.publicText(author, "Deux serveurs", "food");
+        AI.reset();
+        HikariDataSource pool = dataSource.unwrap(HikariDataSource.class);
+        try (Connection other = DriverManager.getConnection(pool.getJdbcUrl(), pool.getUsername(), pool.getPassword());
+             PreparedStatement hold = other.prepareStatement("select pg_advisory_lock(?)")) {
+            hold.setLong(1, JobLock.key(TextFeatureJob.LOCK));
+            hold.execute();
+            assertThat(job.runAlone()).isEmpty();
+            assertThat(AI.requests()).isEmpty();
+            assertThat(features.findByTextId(id)).isEmpty();
+        }
+        AI.reply(TAGS);
+        assertThat(job.runAlone()).contains(1);
         assertThat(features.findByTextId(id)).isPresent();
     }
 
