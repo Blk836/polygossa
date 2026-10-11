@@ -104,7 +104,7 @@ when its test is fixed.
 - `e2e/card-layout.spec.ts` › "a category or search grid follows the layout": Explore showed "This page couldn't
   load" (a failed server render, cause not captured: the e2e servers' logs aren't kept). Seen 2026-10-10, PR #89.
 - `e2e/page-skeletons.spec.ts` › "Classes shows an outline shaped like it, and fills in without moving". Seen
-  2026-10-10, PR #90; 2026-10-11, PR #113.
+  2026-10-10, PR #90; 2026-10-11, PR #113 and PR #127.
 - `e2e/reader-colours.spec.ts` › "the word being spoken still shows, quiet or not": after "]" the word never got
   `w-speaking` within 5 s. Seen 2026-10-10, PR #90.
 - `e2e/reader-playback-known.spec.ts` › "stepping with ] across the page end marks it known, and stepping back with [
