@@ -95,7 +95,7 @@ class TidyLinesTest {
                 new WordMark(6, 500), new WordMark(14, 1000), new WordMark(18, 1500), new WordMark(22, 2000)));
         var tidied = TidyLines.apply(marked, List.of("Hello, friends. How are you?"), EN).get();
         assertThat(tidied.getFirst().words()).containsExactly(
-                new WordMark(7, 500), new WordMark(15, 1000), new WordMark(19, 1500), new WordMark(23, 2000));
+                new WordMark(7, 500), new WordMark(16, 1000), new WordMark(20, 1500), new WordMark(24, 2000));
     }
 
     @Test
