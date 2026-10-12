@@ -335,6 +335,34 @@ main:has(> [data-reader]) {
   }
 }
 
+@keyframes polly-buzz-off {
+  0% { opacity: 1; transform: none; }
+  30% { opacity: 1; transform: translateY(4px) scale(1.05); }
+  100% { opacity: 0; transform: translate(24px, -48px) rotate(18deg) scale(0.8); }
+}
+.polly-buzz-off {
+  animation: polly-buzz-off 0.25s ease-in 1 both;
+}
+@keyframes streak-leave {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(12px) scale(0.96); }
+}
+.streak-leave {
+  animation: streak-leave 0.25s ease-in 0.15s 1 both;
+}
+@keyframes streak-leave-fade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .polly-buzz-off {
+    animation: none;
+  }
+  .streak-leave {
+    animation: streak-leave-fade 0.15s linear 1 both;
+  }
+}
+
 .hex-map {
   --k: 1;
   --tx: 0;
