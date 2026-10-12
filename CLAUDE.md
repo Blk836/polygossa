@@ -15,8 +15,8 @@ personal vocabulary, review it with spaced repetition, and watch your known-word
   why in the commit message, and guard a trap with a test or lint rule rather than a warning. Tool directives that
   must be comments (`eslint-disable`, `@ts-expect-error`, `CHECKSTYLE`, shebangs) stay; `tools/no-comments.test.mjs`
   enforces the rest.
-- What remains in `docs/`: the marketing plan (business, not code) and the database restore runbook (an emergency
-  procedure).
+- `docs/` holds only the acceptance scenarios. Business plans (go-to-market: #147) are GitHub issues too, and
+  operating procedures live with their tools in `tools/README.md`.
 
 ```
 backend/    Spring Boot 4.1 (Java 21) — REST API; Gradle module :backend, package app.lector
