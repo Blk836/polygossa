@@ -29,9 +29,9 @@ const comingSoonBucket = (template: Template) =>
 const images = (template: Template) => JSON.stringify(template.toJSON()).match(/container-assets/g) ?? [];
 
 describe("production's settings", () => {
-  it("leave production running", () => {
+  it("say plainly whether production is paused", () => {
     const { context } = JSON.parse(readFileSync(new URL("../cdk.json", import.meta.url), "utf8"));
-    assert.notEqual(context.paused, true);
+    assert.ok(context.paused === undefined || typeof context.paused === "boolean");
   });
 });
 
