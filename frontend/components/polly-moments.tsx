@@ -8,6 +8,7 @@ import { Polly } from "./polly";
 import { Button } from "./ui";
 
 const TOAST_MS = 6000;
+const LEAVE_FALLBACK_MS = 1000;
 
 export function useMilestone(language: string, count: number): [number | null, () => void] {
   const [before, setBefore] = useState(count);
@@ -64,23 +65,44 @@ export function useStreakNews(current: number, activeToday: boolean): [{ title: 
     setWasActive(activeToday);
     if (activeToday) setNews(streakNews(current));
   }
-  useEffect(() => {
-    if (!news) return;
-    const id = setTimeout(() => setNews(null), TOAST_MS);
-    return () => clearTimeout(id);
-  }, [news]);
   return [news, () => setNews(null)];
 }
 
+function useLeaving(onClose: () => void) {
+  const [leaving, setLeaving] = useState(false);
+  const [paused, setPaused] = useState(false);
+  useEffect(() => {
+    if (paused || leaving) return;
+    const id = setTimeout(() => setLeaving(true), TOAST_MS);
+    return () => clearTimeout(id);
+  }, [paused, leaving]);
+  useEffect(() => {
+    if (!leaving) return;
+    const id = setTimeout(onClose, LEAVE_FALLBACK_MS);
+    return () => clearTimeout(id);
+  }, [leaving, onClose]);
+  return { leaving, leave: () => setLeaving(true), pause: () => setPaused(true), resume: () => setPaused(false) };
+}
+
 export function StreakToast({ news, onClose }: { news: { title: string; body: string }; onClose: () => void }) {
+  const { leaving, leave, pause, resume } = useLeaving(onClose);
   return createPortal(
-    <div role="status" className="polly-pop fixed inset-x-4 bottom-24 z-50 mx-auto flex max-w-sm items-center gap-3 rounded-2xl border border-line bg-card p-4 shadow-lg md:bottom-6">
-      <Polly mood="cheering" className="size-14 shrink-0" />
+    <div
+      role="status"
+      data-leaving={leaving || undefined}
+      onMouseEnter={pause}
+      onMouseLeave={resume}
+      onAnimationEnd={(e) => e.animationName.startsWith("streak-leave") && onClose()}
+      className={`${leaving ? "streak-leave pointer-events-none" : "polly-pop"} fixed inset-x-4 bottom-24 z-50 mx-auto flex max-w-sm items-center gap-3 rounded-2xl border border-line bg-card p-4 shadow-lg md:bottom-6`}
+    >
+      <span data-testid="streak-polly" className={`shrink-0 ${leaving ? "polly-buzz-off" : ""}`}>
+        <Polly mood="cheering" className="size-14" />
+      </span>
       <div className="min-w-0 flex-1">
         <p className="font-display text-lg font-semibold">{news.title}</p>
         <p className="text-sm text-muted">{news.body}</p>
       </div>
-      <button type="button" aria-label="Close" onClick={onClose} className="rounded-lg p-2 text-muted hover:bg-paper">
+      <button type="button" aria-label="Close" onClick={leave} className="rounded-lg p-2 text-muted hover:bg-paper">
         <CloseIcon className="size-4" />
       </button>
     </div>,
