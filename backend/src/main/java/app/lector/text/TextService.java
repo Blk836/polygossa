@@ -116,6 +116,19 @@ public class TextService {
         return texts.save(text);
     }
 
+    public List<Token> replaceTranscript(Text text, String content, List<SubtitleParser.Cue> cues) {
+        List<Token> tokens = tokenizer.tokenize(text.getLanguage(), content);
+        DifficultyEstimator.Estimate estimate = DifficultyEstimator.estimate(text.getLanguage(), tokens);
+        text.setContent(content);
+        text.setTokensJson(json.writeValueAsString(tokens));
+        text.setWordsJson(KnownWords.wordsJson(tokens, json));
+        text.setCefrLevel(estimate.level());
+        text.setWordCount(estimate.wordCount());
+        text.setUniqueWordCount(estimate.uniqueWordCount());
+        text.setCuesJson(json.writeValueAsString(cues));
+        return tokens;
+    }
+
     public Text importSubtitles(User owner, MultipartFile file, String title, Language language, boolean isPublic) {
         String raw;
         try {

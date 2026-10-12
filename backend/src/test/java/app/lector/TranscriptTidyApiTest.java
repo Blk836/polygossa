@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
 import app.lector.ai.AiUsageRepository;
+import app.lector.text.TextRepository;
+import app.lector.video.TranscriptBackfill;
 import app.lector.video.YouTubeStub;
 import app.lector.writing.OpenAiStub;
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -60,6 +63,15 @@ class TranscriptTidyApiTest {
 
     @Autowired
     AiUsageRepository usage;
+
+    @Autowired
+    TextRepository texts;
+
+    @Autowired
+    TransactionTemplate tx;
+
+    @Autowired
+    TranscriptBackfill backfill;
 
     TestApi api;
     String user;
@@ -206,6 +218,77 @@ class TranscriptTidyApiTest {
         assertThat(tidyRequests()).allSatisfy(r -> assertThat(r.split("palabra", -1).length - 1).isLessThanOrEqualTo(400));
         assertThat(text).isEqualTo(tidied("alfa") + " " + tidied("bravo") + "\n" + cueText("charlie") + "\n"
                 + cueText("delta") + "\n" + tidied("echo") + " " + tidied("foxtrot"));
+    }
+
+    private long untidiedVideo() throws Exception {
+        video(BARE, true);
+        AI.setFailing(true);
+        long id = importVideo().get("text").get("id").asLong();
+        AI.reset();
+        AI.reply("{\"category\":\"food\"}");
+        tx.executeWithoutResult(s -> texts.findById(id).orElseThrow().setTranscriptChecked(false));
+        return id;
+    }
+
+    private boolean checked(long id) {
+        return Boolean.TRUE.equals(tx.execute(s -> texts.findById(id).orElseThrow().isTranscriptChecked()));
+    }
+
+    private long tokenIndex(JsonNode detail, String word) {
+        for (JsonNode t : detail.get("tokens")) {
+            if (t.get("text").asString().equals(word)) {
+                return t.get("index").asLong();
+            }
+        }
+        throw new AssertionError("no token " + word);
+    }
+
+    @Test
+    void anExistingUntidiedVideoIsTidiedOnceAndTheReaderKeepsTheirPlace() throws Exception {
+        long id = untidiedVideo();
+        JsonNode old = api.get(user, "/api/texts/" + id, 200);
+        api.post(user, "/api/texts/" + id + "/progress", "{\"position\":" + tokenIndex(old, "hoy") + "}", 200);
+        AI.replyWhen(TIDY, lines("¡Hola, amigos!", "Hoy cocinamos arroz."));
+
+        backfill.backfill();
+
+        JsonNode detail = api.get(user, "/api/texts/" + id, 200);
+        assertThat(content(detail)).isEqualTo("¡Hola, amigos! Hoy cocinamos arroz.");
+        assertThat(startOf(detail, "Hoy")).isEqualTo(2000);
+        assertThat(detail.get("text").get("progress").get("position").asLong()).isEqualTo(tokenIndex(detail, "Hoy"));
+        assertThat(detail.get("text").get("wordCount").asInt()).isEqualTo(5);
+        assertThat(tidyRequests()).hasSize(1);
+
+        backfill.backfill();
+        assertThat(tidyRequests()).hasSize(1);
+    }
+
+    @Test
+    void anExistingVideoTheAiCannotTidyIsLeftAndNotAskedAgain() throws Exception {
+        long id = untidiedVideo();
+        AI.replyWhen(TIDY, lines("¡Hola, amigas!", "Hoy cocinamos arroz."));
+        backfill.backfill();
+        backfill.backfill();
+        assertThat(content(api.get(user, "/api/texts/" + id, 200))).isEqualTo("hola amigos\nhoy cocinamos arroz");
+        assertThat(tidyRequests()).hasSize(1);
+    }
+
+    @Test
+    void anExistingVideoWithPunctuationIsNotSent() throws Exception {
+        video(YouTubeStub.srv3("0|2000|Hola amigos.", "2000|2000|Hoy cocinamos arroz."), true);
+        long id = importVideo().get("text").get("id").asLong();
+        tx.executeWithoutResult(s -> texts.findById(id).orElseThrow().setTranscriptChecked(false));
+        backfill.backfill();
+        assertThat(tidyRequests()).isEmpty();
+        assertThat(checked(id)).isTrue();
+    }
+
+    @Test
+    void newImportsAreNotLeftForTheBackfill() throws Exception {
+        video(BARE, true);
+        AI.setFailing(true);
+        long id = importVideo().get("text").get("id").asLong();
+        assertThat(checked(id)).isTrue();
     }
 
     @Test

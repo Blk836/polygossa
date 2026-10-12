@@ -75,6 +75,7 @@ public class VideoImportService {
         String url = YouTubeUrls.watchUrl(videoId);
         Text text = creator.create(owner, title, req.language(), transcript.content(), url, req.isPublic(),
                 transcript.cues());
+        text.setTranscriptChecked(true);
         Integer duration = player.durationSeconds() != null ? player.durationSeconds() : lastCueEnd(transcript.cues());
         Category fromYouTube = Category.fromYouTube(player.youtubeCategory());
         return finish(text, videoId, duration, transcript.cues(), req.category(), fromYouTube);

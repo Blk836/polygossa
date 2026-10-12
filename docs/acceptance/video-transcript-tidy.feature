@@ -66,3 +66,18 @@ Feature: Tidying automatic YouTube transcripts
     When I import a video with an automatic, unpunctuated transcript
     Then the transcript is still tidied
     And my allowance is unchanged
+
+  Scenario: Videos imported before this change are tidied once
+    Given a video imported before tidying existed, whose transcript has almost no punctuation
+    When the server starts with AI configured
+    Then its transcript is tidied in the background, without holding up the start
+    And its timings, word counts and level are worked out again from the tidied text
+    And it is never sent to the AI again, whether or not the tidying worked
+
+  Scenario: A learner part-way through an old video keeps their place
+    Given I had read up to a certain word of an untidied video
+    When its transcript is tidied
+    Then my place is still at that same word
+
+  Scenario: Old videos that are already punctuated, or whose text no longer matches its captions, are left alone
+    Then they are marked as checked without being sent to the AI

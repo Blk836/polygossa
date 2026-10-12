@@ -52,6 +52,10 @@ public class TranscriptTidy {
         this.json = json;
     }
 
+    public boolean enabled() {
+        return ai.enabled();
+    }
+
     public SubtitleParser.Parsed tidy(Language language, boolean automatic, List<Cue> cues) {
         Function<String, List<Token>> tokenize = text -> tokenizer.tokenize(language, text);
         if (!ai.enabled() || !TidyLines.needsTidy(automatic, cues, tokenize)) {
