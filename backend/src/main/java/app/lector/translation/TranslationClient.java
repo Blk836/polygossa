@@ -37,7 +37,7 @@ public class TranslationClient {
         return client != null;
     }
 
-    public Optional<String> translate(String text, String source, String target) {
+    public Optional<String> translate(String text, String source, String target, Runnable onFailure) {
         if (client == null) {
             return Optional.empty();
         }
@@ -46,6 +46,7 @@ public class TranslationClient {
                     .targetLanguageCode(target)).translatedText());
         } catch (SdkException e) {
             log.warn("Amazon Translate failed for {} -> {}: {}", source, target, e.getMessage());
+            onFailure.run();
             return Optional.empty();
         }
     }

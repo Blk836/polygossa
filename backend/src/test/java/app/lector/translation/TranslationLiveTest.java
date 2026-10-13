@@ -44,7 +44,7 @@ class TranslationLiveTest {
     @Test
     void aRealTranslationComesBackThroughOurClient() {
         TranslationClient client = new TranslationClient(SETTINGS);
-        assertThat(client.translate("Hola, amigo", Language.ES.code(), NativeLanguage.EN.code()))
+        assertThat(client.translate("Hola, amigo", Language.ES.code(), NativeLanguage.EN.code(), () -> {}))
                 .hasValueSatisfying(text -> assertThat(text.toLowerCase()).contains("friend"));
     }
 }

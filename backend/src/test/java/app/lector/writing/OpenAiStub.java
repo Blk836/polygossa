@@ -19,6 +19,7 @@ public final class OpenAiStub implements AutoCloseable {
     private volatile boolean failing;
     private volatile String rawContent;
     private volatile long delayMillis;
+    private volatile String usage = "";
     private final java.util.Map<String, String> repliesWhen = java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>());
     private final List<String> embeddingRequests = Collections.synchronizedList(new ArrayList<>());
     private final java.util.Map<String, float[]> vectorsWhen = java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>());
@@ -44,6 +45,11 @@ public final class OpenAiStub implements AutoCloseable {
 
     public void replyRaw(String content) {
         this.rawContent = content;
+    }
+
+    public void usage(long promptTokens, long completionTokens) {
+        this.usage = ",\"usage\":{\"prompt_tokens\":" + promptTokens + ",\"completion_tokens\":" + completionTokens
+                + ",\"total_tokens\":" + (promptTokens + completionTokens) + "}";
     }
 
     public void delay(java.time.Duration delay) {
@@ -91,6 +97,7 @@ public final class OpenAiStub implements AutoCloseable {
         reply = "{}";
         rawContent = null;
         delayMillis = 0;
+        usage = "";
         failing = false;
         repliesWhen.clear();
         embeddingRequests.clear();
@@ -123,7 +130,7 @@ public final class OpenAiStub implements AutoCloseable {
             }
         }
         String content = JsonMapper.builder().build().writeValueAsString(rawContent != null ? rawContent : answer);
-        send(ex, 200, "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":" + content + "}}]}");
+        send(ex, 200, "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":" + content + "}}]" + usage + "}");
     }
 
     private void handleEmbedding(HttpExchange ex) throws IOException {

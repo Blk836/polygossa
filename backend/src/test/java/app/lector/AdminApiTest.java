@@ -67,13 +67,21 @@ class AdminApiTest {
     void onlyAdmins() throws Exception {
         Learner l = learner("plain");
         for (String path : List.of("/api/admin/stats", "/api/admin/users", "/api/admin/users/" + l.id(),
-                "/api/admin/actions")) {
+                "/api/admin/actions", "/api/admin/translations")) {
             assertThat(api.get(l.token(), path, 403).get("code").asString()).isEqualTo("forbidden");
         }
         api.post(l.token(), "/api/admin/users/" + l.id() + "/suspend", "{\"reason\":\"x\"}", 403);
         api.delete(l.token(), "/api/admin/users/" + l.id() + "/posts", 403);
         assertThat(api.get(l.token(), "/api/me", 200).get("admin").asBoolean()).isFalse();
         assertThat(api.get(admin, "/api/me", 200).get("admin").asBoolean()).isTrue();
+    }
+
+    @Test
+    void lookupCostsUseAmazonTranslateAndGpt4oMiniPricesUnlessConfigured() throws Exception {
+        JsonNode prices = api.get(admin, "/api/admin/translations", 200).get("prices");
+        assertThat(prices.get("translatePerMillionCharacters").asDouble()).isEqualTo(15);
+        assertThat(prices.get("aiInputPerMillionTokens").asDouble()).isEqualTo(0.15);
+        assertThat(prices.get("aiOutputPerMillionTokens").asDouble()).isEqualTo(0.6);
     }
 
     @Test
