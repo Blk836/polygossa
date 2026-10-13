@@ -197,8 +197,8 @@ public class TextService {
                 statuses.put(t.normalized(), all.get(t.normalized()));
             }
         }
-        String lowerContent = text.getContent().toLowerCase();
-        phrases.removeIf(p -> !lowerContent.contains(p.term()));
+        String content = TokenizationService.phraseForm(text.getContent(), text.getLanguage());
+        phrases.removeIf(p -> !content.contains(TokenizationService.phraseForm(p.term(), text.getLanguage())));
         return new TextDetail(summarize(user, text, stats(tokens, all), null, null, null), tokens, statuses, phrases,
                 audio(text), VideoViews.dto(text, timings(text), () -> AudioAligner.fromCues(tokens, cues(text))),
                 text.getLanguage().speechLocale());
