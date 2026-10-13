@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { MarkFinished } from "@/components/library/mark-finished";
 import { PlaylistHeader } from "@/components/playlists/playlist-header";
 import { TextCard } from "@/components/text-card";
 import { Empty, ErrorNote, LinkButton, Spinner } from "@/components/ui";
@@ -56,6 +57,7 @@ export default function PlaylistPage() {
     const items = moveItem(detail.items, index, delta);
     void save(items, () => api(base, { method: "PUT", body: { textIds: items.map((t) => t.id) } }));
   };
+  const finished = (t: TextSummary) => setDetail((d) => d && { ...d, items: d.items.map((x) => (x.id === t.id ? t : x)) });
   const remove = (t: TextSummary) => {
     void save(detail.items.filter((x) => x.id !== t.id), () => api(`${base}/${t.id}`, { method: "DELETE" }));
   };
@@ -80,7 +82,12 @@ export default function PlaylistPage() {
             <TextCard
               text={t} layout="list" className="min-w-0 flex-1" showOwner={!t.mine}
               href={playlistReadHref(t.id, detail.playlist.id)}
-              actions={detail.playlist.mine && <ItemActions first={i === 0} last={i === detail.items.length - 1} onMove={(d) => move(i, d)} onRemove={() => remove(t)} />}
+              actions={(detail.playlist.mine || !t.progress?.completed) && (
+                <>
+                  <MarkFinished text={t} onDone={finished} />
+                  {detail.playlist.mine && <ItemActions first={i === 0} last={i === detail.items.length - 1} onMove={(d) => move(i, d)} onRemove={() => remove(t)} />}
+                </>
+              )}
             />
           </li>
         ))}

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cardGridClass, shelfCardLayout, shelfCardWidth, type CardLayout } from "@/lib/card-layout";
+import { cardGridClass, shelfCardLayout, shelfCardWidth, shelfTrackClass, type CardLayout } from "@/lib/card-layout";
 
 export function Bone({ className = "", part }: { className?: string; part?: string }) {
   const rounding = /\brounded/.test(className) ? "" : "rounded-md";
@@ -88,7 +88,7 @@ export function ShelfBone({ layout }: { layout: CardLayout }) {
         <Bone className="h-6 w-40" />
         <Bone className="h-3.5 w-64 max-w-full" />
       </div>
-      <div className="-mx-4 flex gap-4 overflow-hidden px-4 pb-3 sm:mx-0 sm:px-0">
+      <div className={shelfTrackClass(layout, 5).replace("overflow-x-auto", "overflow-hidden")}>
         {Array.from({ length: 5 }, (_, i) => (
           <CardBone key={i} layout={shelfCardLayout(layout)} className={`${shelfCardWidth(layout)} shrink-0`} />
         ))}
