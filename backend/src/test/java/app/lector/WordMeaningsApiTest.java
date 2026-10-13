@@ -203,6 +203,6 @@ class WordMeaningsApiTest {
     @Test
     void machineTranslationIsOffWithoutSettings() {
         assertThat(translationClient.enabled()).isFalse();
-        assertThat(translationClient.translate("Hund", "de", "es")).isEmpty();
+        assertThat(translationClient.translate("Hund", "de", "es", () -> {})).isEmpty();
     }
 }

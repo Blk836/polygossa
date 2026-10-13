@@ -5,6 +5,7 @@ import app.lector.common.ApiException;
 import app.lector.token.Language;
 import app.lector.token.NativeLanguage;
 import app.lector.translation.InContext;
+import app.lector.translation.LookupTally;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -34,7 +35,8 @@ public class SentenceMeanings {
 
     public record Found(String meaning, WordType wordType) {}
 
-    public Optional<Found> meaning(Language source, NativeLanguage target, String term, InContext context) {
+    public Optional<Found> meaning(Language source, NativeLanguage target, String term, InContext context,
+                                   LookupTally tally) {
         if (!ai.enabled()) {
             return Optional.empty();
         }
@@ -46,7 +48,7 @@ public class SentenceMeanings {
         if (known.isPresent()) {
             return Optional.of(new Found(known.get().getMeaning(), known.get().getWordType()));
         }
-        Optional<Found> found = ask(instructions, marked).flatMap(answer -> usable(answer, context.word()));
+        Optional<Found> found = ask(instructions, marked, tally).flatMap(answer -> usable(answer, context.word()));
         found.ifPresent(f -> store(source, target, term, hash, f));
         return found;
     }
@@ -81,10 +83,13 @@ public class SentenceMeanings {
                 + "singular of an adjective, the singular of a noun), otherwise null.";
     }
 
-    private Optional<JsonNode> ask(String instructions, String marked) {
+    private Optional<JsonNode> ask(String instructions, String marked, LookupTally tally) {
         try {
-            return Optional.of(ai.quickJson(instructions, marked));
+            AiClient.Reply reply = ai.quickReply(instructions, marked);
+            tally.aiCall(reply.tokensIn(), reply.tokensOut());
+            return Optional.of(reply.json());
         } catch (ApiException e) {
+            tally.aiFailed();
             return Optional.empty();
         }
     }

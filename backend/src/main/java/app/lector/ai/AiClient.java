@@ -62,15 +62,21 @@ public class AiClient {
         return completeJson(system, user, DEFAULT_TEMPERATURE);
     }
 
+    public record Reply(JsonNode json, long tokensIn, long tokensOut) {}
+
     public JsonNode completeJson(String system, String user, double temperature) {
-        return complete(http, config.model(), system, user, temperature);
+        return complete(http, config.model(), system, user, temperature).json();
     }
 
     public JsonNode quickJson(String system, String user) {
+        return quickReply(system, user).json();
+    }
+
+    public Reply quickReply(String system, String user) {
         return complete(quick, config.meaningModel(), system, user, 0);
     }
 
-    private JsonNode complete(RestClient client, String model, String system, String user, double temperature) {
+    private Reply complete(RestClient client, String model, String system, String user, double temperature) {
         if (!enabled()) {
             throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "ai_disabled",
                     "AI features are not configured on this server (set OPENAI_API_KEY)");
@@ -96,7 +102,9 @@ public class AiClient {
             if (content == null) {
                 throw new ApiException(HttpStatus.BAD_GATEWAY, "ai_error", "The AI service returned no answer");
             }
-            return json.readTree(content);
+            JsonNode usage = response.path("usage");
+            return new Reply(json.readTree(content), usage.path("prompt_tokens").asLong(0),
+                    usage.path("completion_tokens").asLong(0));
         } catch (RestClientException e) {
             log.warn("AI request failed: {}", e.getMessage());
             throw new ApiException(HttpStatus.BAD_GATEWAY, "ai_error", "The AI service is unavailable right now");

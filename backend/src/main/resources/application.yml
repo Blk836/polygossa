@@ -65,6 +65,10 @@ app:
     enabled: ${TRANSLATION_ENABLED:false}
     region: ${TRANSLATION_REGION:eu-west-1}
     monthly-character-cap: ${TRANSLATION_MONTHLY_CHARACTER_CAP:1333333}
+  lookup-prices:
+    translate-per-million-characters: ${PRICE_TRANSLATE_PER_MILLION_CHARACTERS:15}
+    ai-input-per-million-tokens: ${PRICE_AI_INPUT_PER_MILLION_TOKENS:0.15}
+    ai-output-per-million-tokens: ${PRICE_AI_OUTPUT_PER_MILLION_TOKENS:0.60}
   recommend:
     feature-job: ${RECOMMEND_FEATURE_JOB:true}
   billing:

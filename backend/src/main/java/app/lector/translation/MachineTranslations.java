@@ -31,7 +31,7 @@ public class MachineTranslations {
     }
 
     public Optional<String> translate(Language source, NativeLanguage target, String term, String text,
-                                      Optional<InContext> context) {
+                                      Optional<InContext> context, LookupTally tally) {
         if (!client.enabled() || term.isEmpty() || term.length() > 200) {
             return Optional.empty();
         }
@@ -41,28 +41,28 @@ public class MachineTranslations {
             if (k.getTranslation() != null || k.isTriedInContext()) {
                 return Optional.ofNullable(k.getTranslation());
             }
-            return inContext(source, target, term, context);
+            return inContext(source, target, term, context, tally);
         }
-        return alone(source, target, term, text, context);
+        return alone(source, target, term, text, context, tally);
     }
 
     private Optional<String> alone(Language source, NativeLanguage target, String term, String text,
-                                   Optional<InContext> context) {
-        Optional<String> answer = send(text, source, target);
+                                   Optional<InContext> context, LookupTally tally) {
+        Optional<String> answer = send(text, source, target, tally);
         if (answer.isEmpty()) {
             return Optional.empty();
         }
         String useful = answer.get().isEmpty() || answer.get().equalsIgnoreCase(text) ? null : cut(answer.get());
         stored.insertIfAbsent(source.name(), target.name(), term, useful, clock.instant());
-        return useful != null ? Optional.of(useful) : inContext(source, target, term, context);
+        return useful != null ? Optional.of(useful) : inContext(source, target, term, context, tally);
     }
 
     private Optional<String> inContext(Language source, NativeLanguage target, String term,
-                                       Optional<InContext> context) {
+                                       Optional<InContext> context, LookupTally tally) {
         if (context.isEmpty()) {
             return Optional.empty();
         }
-        Optional<String> answer = send(context.get().marked(), source, target);
+        Optional<String> answer = send(context.get().marked(), source, target, tally);
         if (answer.isEmpty()) {
             return Optional.empty();
         }
@@ -71,13 +71,15 @@ public class MachineTranslations {
         return meaning;
     }
 
-    private Optional<String> send(String text, Language source, NativeLanguage target) {
+    private Optional<String> send(String text, Language source, NativeLanguage target, LookupTally tally) {
         String month = YearMonth.now(clock.withZone(ZoneOffset.UTC)).toString();
         if (usage.add(month, text.length(), settings.monthlyCharacterCap()) == 0) {
             log.warn("Machine translation cap of {} characters reached for {}", settings.monthlyCharacterCap(), month);
+            tally.refusedByCap();
             return Optional.empty();
         }
-        return client.translate(text, source.code(), target.code()).map(String::strip);
+        tally.translateCall(text.length());
+        return client.translate(text, source.code(), target.code(), tally::translateFailed).map(String::strip);
     }
 
     private static String cut(String s) {
