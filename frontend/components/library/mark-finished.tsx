@@ -16,12 +16,22 @@ export function MarkFinished({ text, onDone }: { text: TextSummary; onDone: (t: 
   const { refresh } = useMe();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [asking, setAsking] = useState(false);
   const label = markFinishedLabel(text.kind);
   if (text.progress?.completed) return null;
 
+  function open() {
+    setAsking(true);
+    dialog.current?.showModal();
+  }
+
   function close() {
-    setError(null);
     dialog.current?.close();
+  }
+
+  function closed() {
+    setError(null);
+    setAsking(false);
   }
 
   async function confirm() {
@@ -41,15 +51,15 @@ export function MarkFinished({ text, onDone }: { text: TextSummary; onDone: (t: 
 
   return (
     <>
-      <button type="button" onClick={() => dialog.current?.showModal()} aria-label={label} title={label} className={ICON_BUTTON}>
+      <button type="button" onClick={open} aria-label={label} title={label} className={ICON_BUTTON}>
         <CheckIcon className="size-4" />
       </button>
       <dialog
-        ref={dialog} aria-labelledby={headingId} onClose={() => setError(null)}
+        ref={dialog} aria-labelledby={headingId} onClose={closed}
         onClick={(e) => e.target === dialog.current && close()}
         className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-xl border border-line bg-card p-0 text-ink shadow-xl backdrop:bg-black/40"
       >
-        <div className="space-y-4 p-5 text-sm">
+        {asking && <div className="space-y-4 p-5 text-sm">
           <div>
             <h2 id={headingId} className="font-display text-xl font-semibold">{label}?</h2>
             <p className="truncate text-muted" lang={text.language}>{text.title}</p>
@@ -60,7 +70,7 @@ export function MarkFinished({ text, onDone }: { text: TextSummary; onDone: (t: 
             <Button type="button" variant="secondary" onClick={close}>Cancel</Button>
             <Button type="button" onClick={() => void confirm()} disabled={busy}>{label}</Button>
           </div>
-        </div>
+        </div>}
       </dialog>
     </>
   );
