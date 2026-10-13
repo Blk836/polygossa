@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ACTIONS, actionSummary, planCounts, usersPath } from "./admin";
+import { ACTIONS, ADMIN_TABS, actionSummary, adminTab, cents, dollars, LOOKUP_LAYERS, pairName, percent, planCounts, share, usersPath } from "./admin";
 
 describe("usersPath", () => {
   it("searches and pages", () => {
@@ -50,5 +50,67 @@ describe("actions", () => {
     expect(actionSummary("unshare", { texts: 2, playlists: 0 })).toBe("Made 2 texts and 0 playlists private");
     expect(actionSummary("suspend", {})).toBe("Suspended");
     expect(actionSummary("unsuspend", {})).toBe("Suspension lifted");
+  });
+});
+
+describe("admin tabs", () => {
+  it("each tab has its own address, Overview the page's own", () => {
+    expect(ADMIN_TABS.map((t) => [t.label, t.href])).toEqual([
+      ["Overview", "/admin"],
+      ["Users", "/admin?tab=users"],
+      ["Translations", "/admin?tab=translations"],
+      ["Log", "/admin?tab=log"],
+    ]);
+  });
+
+  it("takes a known tab from the address and otherwise shows Overview", () => {
+    expect(adminTab("translations")).toBe("translations");
+    expect(adminTab("log")).toBe("log");
+    expect(adminTab("users")).toBe("users");
+    expect(adminTab(undefined)).toBe("overview");
+    expect(adminTab("nonsense")).toBe("overview");
+    expect(adminTab("Users")).toBe("overview");
+    expect(adminTab(["log", "users"])).toBe("log");
+  });
+});
+
+describe("translation figures", () => {
+  it("names a pair by its languages, and the total row Total", () => {
+    expect(pairName("fr", "en")).toBe("French → English");
+    expect(pairName("es", "pl")).toBe("Spanish → Polish");
+    expect(pairName(null, null)).toBe("Total");
+  });
+
+  it("lists the layers in the order a lookup tries them", () => {
+    expect(LOOKUP_LAYERS.map((l) => [l.key, l.label])).toEqual([
+      ["aiStored", "AI, stored"],
+      ["aiNew", "AI, new"],
+      ["community", "Community"],
+      ["machineStored", "Machine, stored"],
+      ["machineNew", "Machine, new"],
+      ["none", "Nothing found"],
+    ]);
+  });
+
+  it("shows shares as whole percents, and a dash when there is nothing to share", () => {
+    expect(share(120, 1000)).toBe("12%");
+    expect(share(1, 3)).toBe("33%");
+    expect(share(0, 0)).toBe("—");
+    expect(percent(0.62)).toBe("62%");
+    expect(percent(0)).toBe("0%");
+    expect(percent(null)).toBe("—");
+  });
+
+  it("shows dollars to the cent, a tiny cost as under a cent, and no cost as a dash", () => {
+    expect(dollars(3.21)).toBe("$3.21");
+    expect(dollars(1234.5)).toBe("$1,234.50");
+    expect(dollars(0)).toBe("$0.00");
+    expect(dollars(0.004)).toBe("<$0.01");
+    expect(dollars(null)).toBe("—");
+  });
+
+  it("charts cost in cents", () => {
+    expect(cents(3.21)).toBe(321);
+    expect(cents(0.0042)).toBe(0.42);
   });
 });
