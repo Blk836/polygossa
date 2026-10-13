@@ -143,20 +143,22 @@ export function TextCard({ text, actions, showOwner, layout = "cards", className
 
 function TextRow({ text, actions, showOwner, className, href, reason, onOpen }: Omit<CardProps, "layout" | "href"> & { href: string }) {
   return (
-    <article className={`group flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-line bg-card p-2 transition hover:border-accent/40 hover:shadow-sm sm:flex-nowrap sm:pr-3 ${className}`}>
-      <Cover text={text} layout="list" href={href} onOpen={onOpen} className="w-28 shrink-0 rounded-lg sm:w-36" />
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <Meta text={text} />
-        <Title text={text} layout="list" href={href} onOpen={onOpen} />
-        {showOwner && <Owner text={text} />}
-        <ReasonLine reason={reason} />
-        <div className="max-w-xs"><DifficultyChip text={text} /></div>
-      </div>
-      {actions && (
-        <div className="flex basis-full flex-wrap items-center gap-1 border-t border-line pt-2 sm:basis-auto sm:flex-nowrap sm:justify-end sm:border-0 sm:pt-0">
-          {actions}
+    <article className={`group @container rounded-xl border border-line bg-card transition hover:border-accent/40 hover:shadow-sm ${className}`}>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 p-2 @xl:flex-nowrap @xl:pr-3">
+        <Cover text={text} layout="list" href={href} onOpen={onOpen} className="w-28 shrink-0 rounded-lg @xl:w-36" />
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <Meta text={text} />
+          <Title text={text} layout="list" href={href} onOpen={onOpen} />
+          {showOwner && <Owner text={text} />}
+          <ReasonLine reason={reason} />
+          <div className="max-w-xs"><DifficultyChip text={text} /></div>
         </div>
-      )}
+        {actions && (
+          <div className="flex basis-full flex-wrap items-center gap-1 border-t border-line pt-2 @xl:basis-auto @xl:flex-nowrap @xl:justify-end @xl:border-0 @xl:pt-0">
+            {actions}
+          </div>
+        )}
+      </div>
     </article>
   );
 }

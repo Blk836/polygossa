@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { shelfCardLayout, shelfCardWidth } from "@/lib/card-layout";
+import { shelfCardLayout, shelfCardWidth, shelfTrackClass } from "@/lib/card-layout";
 import { reasonLabel, shelfHeading, type RecommendedShelf } from "@/lib/recommendations";
 import type { TextSummary } from "@/lib/types";
 import { useCardLayout } from "../card-layout-context";
@@ -31,7 +31,7 @@ export function RecommendedShelfRow({ shelf, actions, onOpen, onNotInterested, o
           </button>
         )}
       </div>
-      <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:px-0">
+      <div className={shelfTrackClass(layout, shelf.items.length)}>
         {shelf.items.map(({ text, reason }, position) => (
           <TextCard
             key={text.id}
