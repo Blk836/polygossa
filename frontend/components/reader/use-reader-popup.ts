@@ -1,30 +1,45 @@
 "use client";
 
-import { useCallback, useState, type RefObject } from "react";
+import { useCallback, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import type { Token } from "@/lib/types";
+import { fixedDocks } from "./docks";
+import { popupLeft, popupTop } from "./popup-place";
+import { reservedBelow } from "./reader-fit";
 import { MAX_PHRASE_WORDS, normalizePhrase, phraseRange, textAround, type Range } from "./reader-text";
 import type { PopupTarget } from "./word-popup";
 
 const POPUP_WIDTH = 352;
 
-export function usePopupState(articleRef: RefObject<HTMLDivElement | null>) {
+export function usePopupState(articleRef: RefObject<HTMLDivElement | null>, popupRef: RefObject<HTMLDivElement | null>) {
   const [sel, setSel] = useState<Range | null>(null);
   const [target, setTarget] = useState<PopupTarget | null>(null);
-  const [anchor, setAnchor] = useState({ top: 0, left: 0 });
   const [notice, setNotice] = useState<string | null>(null);
   const [phraseMode, setPhraseMode] = useState(false);
+  const anchorToken = useRef<number | null>(null);
+
+  const position = useCallback(() => {
+    const container = articleRef.current;
+    const popup = popupRef.current;
+    const word = container?.querySelector<HTMLElement>(`[data-i="${anchorToken.current}"]`);
+    if (!container || !popup || !word) return;
+    const c = container.getBoundingClientRect();
+    const r = word.getBoundingClientRect();
+    const width = Math.min(POPUP_WIDTH, c.width);
+    const left = popupLeft(r.left - c.left, width, c.width);
+    const docked = reservedBelow(window.innerHeight, { left: c.left + left, right: c.left + left + width }, fixedDocks());
+    const view = { top: 0, bottom: window.innerHeight - docked };
+    popup.style.setProperty("--pmh", `${view.bottom - view.top}px`);
+    const top = popupTop(r, popup.getBoundingClientRect().height, view);
+    popup.style.setProperty("--pt", `${top - c.top}px`);
+    popup.style.setProperty("--pl", `${left}px`);
+  }, [articleRef, popupRef]);
 
   const place = useCallback(
     (tokenIndex: number) => {
-      const container = articleRef.current;
-      const el = container?.querySelector<HTMLElement>(`[data-i="${tokenIndex}"]`);
-      if (!container || !el) return;
-      const c = container.getBoundingClientRect();
-      const r = el.getBoundingClientRect();
-      const width = Math.min(POPUP_WIDTH, c.width);
-      setAnchor({ top: r.bottom - c.top + 8, left: Math.max(0, Math.min(r.left - c.left, c.width - width)) });
+      anchorToken.current = tokenIndex;
+      position();
     },
-    [articleRef],
+    [position],
   );
 
   const close = useCallback(() => {
@@ -34,7 +49,22 @@ export function usePopupState(articleRef: RefObject<HTMLDivElement | null>) {
     setPhraseMode(false);
   }, []);
 
-  return { sel, setSel, target, setTarget, anchor, notice, setNotice, phraseMode, setPhraseMode, place, close };
+  return { sel, setSel, target, setTarget, notice, setNotice, phraseMode, setPhraseMode, place, position, close };
+}
+
+export function useKeepPopupPlaced(popupRef: RefObject<HTMLDivElement | null>, position: () => void, shown: PopupTarget | null) {
+  useLayoutEffect(() => {
+    const popup = popupRef.current;
+    if (!shown || !popup) return;
+    position();
+    const observer = new ResizeObserver(position);
+    observer.observe(popup);
+    window.addEventListener("resize", position);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", position);
+    };
+  }, [popupRef, position, shown]);
 }
 
 type PopupState = ReturnType<typeof usePopupState>;

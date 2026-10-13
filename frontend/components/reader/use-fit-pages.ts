@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 import type { Token } from "@/lib/types";
+import { fixedDocks } from "./docks";
 import { fitPages, reservedBelow, splitPages, wordBreaks, type WordBox } from "./reader-fit";
 import { PAGE_WORDS, SINGLE_PAGE_MAX_WORDS, type ReaderPage } from "./reader-pages";
 
@@ -36,9 +37,7 @@ function room(text: HTMLElement): { height: number; finish: number | null } {
   const end = column.lastElementChild!.getBoundingClientRect().bottom;
   const padding = px(getComputedStyle(layout).paddingBottom) + px(getComputedStyle(main).paddingBottom);
   const box = text.getBoundingClientRect();
-  const docks = [...document.querySelectorAll<HTMLElement>("[data-bottom-bar], [data-floating-player]")]
-    .filter((el) => getComputedStyle(el).position === "fixed")
-    .map((el) => el.getBoundingClientRect());
+  const docks = fixedDocks();
   const above = box.top + window.scrollY;
   const below = end - box.bottom - finishHeight + Math.max(padding, reservedBelow(window.innerHeight, box, docks));
   return { height: window.innerHeight - above - below - SLACK, finish: finish?.dataset.finish === "prompt" ? finishHeight : null };

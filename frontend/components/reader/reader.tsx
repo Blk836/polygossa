@@ -28,7 +28,7 @@ import { useFitPages, useMeasuring } from "./use-fit-pages";
 import { usePageTurns } from "./use-page-turns";
 import { useMediaShortcuts, useReaderInput } from "./use-reader-input";
 import { useReaderPages } from "./use-reader-pages";
-import { usePopupOpeners, usePopupState } from "./use-reader-popup";
+import { useKeepPopupPlaced, usePopupOpeners, usePopupState } from "./use-reader-popup";
 import { useReaderSettings } from "./use-reader-settings";
 import { ListenContext, useReadingSession } from "./use-reading-session";
 import { useVocabularyStatus } from "./use-vocabulary-status";
@@ -61,7 +61,7 @@ export function Reader({ initial, initialSettings, playlist }: {
   const mediaRef = useRef<MediaHandle>(null);
   const session = useReadingSession(text.id);
   const onSaved = useCallback(() => void refresh(), [refresh]);
-  const popup = usePopupState(articleRef);
+  const popup = usePopupState(articleRef, popupRef);
   const { sel, target, place, close } = popup;
   const vocab = useVocabularyStatus({
     language,
@@ -155,6 +155,7 @@ export function Reader({ initial, initialSettings, playlist }: {
   );
 
   const shown = onPage(target, pages, page);
+  useKeepPopupPlaced(popupRef, popup.position, shown);
   const input = useReaderInput({
     tokens, sel, setSel: popup.setSel, popup: shown && shown.kind, phraseMode: popup.phraseMode, openWord, openPhrase,
     savedPhraseAt: phraseAt, setStatus, close,
@@ -233,7 +234,6 @@ export function Reader({ initial, initialSettings, playlist }: {
           <ReaderPopup
               ref={popupRef}
               target={shown}
-              anchor={popup.anchor}
               language={language}
               speechLocale={initial.speechLocale}
               status={vocab.statusOf(shown)}
