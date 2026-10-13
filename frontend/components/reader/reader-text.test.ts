@@ -78,6 +78,35 @@ describe("phraseMarks", () => {
     const t = tokens("ab", " ", "c");
     expect([...phraseMarks(t, [{ term: "ab", status: "known" }]).keys()]).toEqual([0]);
   });
+
+  it.each([" ", " ", "\n", "  ", " \n "])("matches whatever spacing %j separates the words", (gap) => {
+    const t = tokens("à", " ", "voix", gap, "haute", ".");
+    expect([...phraseMarks(t, [{ term: "voix haute", status: "learning" }])]).toEqual([[2, "learning"], [4, "learning"]]);
+  });
+
+  it("matches spacing and a curly apostrophe together, across tokens", () => {
+    const t = tokens("Il", " ", "boit", " ", "l’", "", "eau", " ", "froide", ".");
+    expect([...phraseMarks(t, [{ term: "l'eau froide", status: "learning" }]).keys()]).toEqual([4, 6, 8]);
+  });
+
+  it("does not join words that have no separator", () => {
+    expect(phraseMarks(tokens("voixhaute"), [{ term: "voix haute", status: "learning" }]).size).toBe(0);
+  });
+
+  it("keeps a learning phrase marked inside a known one, whichever comes first", () => {
+    const t = tokens("à", " ", "voix", " ", "haute");
+    const learning = { term: "voix haute", status: "learning" as const };
+    const known = { term: "à voix haute", status: "known" as const };
+    for (const order of [[learning, known], [known, learning]]) {
+      expect([...phraseMarks(t, order)].sort(([a], [b]) => a - b)).toEqual([[0, "known"], [2, "learning"], [4, "learning"]]);
+    }
+  });
+
+  it("marks all of a learning phrase that has a known one inside it", () => {
+    const t = tokens("à", " ", "voix", " ", "haute");
+    const marks = phraseMarks(t, [{ term: "à voix haute", status: "learning" }, { term: "voix haute", status: "known" }]);
+    expect([...marks.values()]).toEqual(["learning", "learning", "learning"]);
+  });
 });
 
 describe("learningEdges", () => {
