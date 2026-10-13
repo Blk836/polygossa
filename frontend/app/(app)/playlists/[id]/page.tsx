@@ -82,12 +82,12 @@ export default function PlaylistPage() {
             <TextCard
               text={t} layout="list" className="min-w-0 flex-1" showOwner={!t.mine}
               href={playlistReadHref(t.id, detail.playlist.id)}
-              actions={
+              actions={(detail.playlist.mine || !t.progress?.completed) && (
                 <>
                   <MarkFinished text={t} onDone={finished} />
                   {detail.playlist.mine && <ItemActions first={i === 0} last={i === detail.items.length - 1} onMove={(d) => move(i, d)} onRemove={() => remove(t)} />}
                 </>
-              }
+              )}
             />
           </li>
         ))}
