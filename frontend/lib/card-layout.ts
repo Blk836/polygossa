@@ -29,10 +29,21 @@ export function cardGridClass(layout: CardLayout): string {
   return GRID_CLASSES[layout];
 }
 
-export function shelfCardLayout(layout: CardLayout): "cards" | "compact" {
-  return layout === "cards" ? "cards" : "compact";
+export function shelfCardLayout(layout: CardLayout): CardLayout {
+  return layout;
 }
 
+const SHELF_WIDTHS: Record<CardLayout, string> = { cards: "w-64", compact: "w-44", list: "min-w-0" };
+
 export function shelfCardWidth(layout: CardLayout): string {
-  return shelfCardLayout(layout) === "cards" ? "w-64" : "w-44";
+  return SHELF_WIDTHS[layout];
+}
+
+const SHELF_LINE = "-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:px-0";
+const SHELF_ROWS = ["grid-rows-1", "grid-rows-2", "grid-rows-3"];
+
+export function shelfTrackClass(layout: CardLayout, items: number): string {
+  if (layout !== "list") return SHELF_LINE;
+  const rows = SHELF_ROWS[Math.min(Math.max(items, 1), SHELF_ROWS.length) - 1];
+  return `-mx-4 grid grid-flow-col auto-cols-[min(24rem,calc(100vw-3rem))] ${rows} snap-x snap-mandatory gap-x-4 gap-y-2 overflow-x-auto px-4 pb-3 sm:mx-0 sm:px-0`;
 }

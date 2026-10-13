@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { shelfCardLayout, shelfCardWidth } from "@/lib/card-layout";
+import { shelfCardLayout, shelfCardWidth, shelfTrackClass } from "@/lib/card-layout";
 import { categoryInfo } from "@/lib/categories";
 import type { Shelf, TextSummary } from "@/lib/types";
 import { useCardLayout } from "../card-layout-context";
@@ -25,7 +25,7 @@ export function ShelfRow({ shelf, onSeeAll, actions }: {
           See all {shelf.total} →
         </button>
       </div>
-      <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:px-0">
+      <div className={shelfTrackClass(layout, shelf.items.length)}>
         {shelf.items.map((t) => (
           <TextCard key={t.id} text={t} layout={shelfCardLayout(layout)} showOwner actions={actions(t)} className={`${shelfCardWidth(layout)} shrink-0 snap-start`} />
         ))}
