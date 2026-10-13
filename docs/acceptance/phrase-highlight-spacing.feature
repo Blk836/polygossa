@@ -25,6 +25,11 @@ Feature: A learning phrase is yellow wherever its words appear, whatever separat
     Then "voix haute" is yellow and "à" is not
     And after reloading "voix haute" is still yellow, whichever phrase was saved first
 
+  Scenario: Marking a known phrase around a learning one
+    Given I have marked "voix haute" as learning
+    When I mark "à voix haute" as known
+    Then "voix haute" stays yellow and "à" is not, before and after reloading
+
   Scenario: A known phrase inside a learning phrase
     Given I have marked "voix haute" as known
     When I mark "à voix haute" as learning
