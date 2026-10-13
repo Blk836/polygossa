@@ -11,6 +11,7 @@ import { useRemembered } from "../use-remembered";
 import { CardsLoading } from "../skeletons/card-pages";
 import { Button, Empty, ErrorNote, LinkButton, PageHeader } from "../ui";
 import { FilterBar } from "./filter-bar";
+import { MarkFinished } from "./mark-finished";
 import { OwnerActions } from "./owner-actions";
 import { api, errorMessage } from "@/lib/api";
 import { cardGridClass } from "@/lib/card-layout";
@@ -102,6 +103,7 @@ function Results({ shown, filters, language, hasPlaylists, onClear, onChanged, o
           actions={
             <>
               <AddToPlaylist text={t} />
+              <MarkFinished text={t} onDone={onChanged} />
               {t.mine ? (
                 <OwnerActions text={t} onChanged={onChanged} onDeleted={onRemoved} onError={onError} />
               ) : (

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { uniqueById } from "@/lib/library-filters";
-import { shelfCardLayout, shelfCardWidth } from "@/lib/card-layout";
+import { shelfCardLayout, shelfCardWidth, shelfTrackClass } from "@/lib/card-layout";
 import { withLanguage } from "@/lib/media";
 import type { PlaylistSummary } from "@/lib/playlist-types";
 import { useCardLayout } from "../card-layout-context";
@@ -54,7 +54,7 @@ export function PlaylistShelfRow({ source, query = "", lists }: { source: ShelfS
         </div>
         {source === "yours" && <Link href="/playlists" className="shrink-0 text-sm font-medium text-accent hover:underline">All playlists →</Link>}
       </div>
-      <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:px-0">
+      <div className={shelfTrackClass(layout, lists.length)}>
         {lists.map((p) => (
           <PlaylistCard key={p.id} playlist={p} layout={shelfCardLayout(layout)} saveable={source === "shared" || saveable(p)} className={`${shelfCardWidth(layout)} shrink-0 snap-start`} />
         ))}

@@ -5,6 +5,7 @@ import { CardLayoutPicker } from "@/components/card-layout-picker";
 import { useCardLayout } from "@/components/card-layout-context";
 import { KindFilterTabs } from "@/components/kind-filter";
 import { CategoryChips } from "@/components/library/category-chips";
+import { MarkFinished } from "@/components/library/mark-finished";
 import { ReactionButtons } from "@/components/library/reaction-buttons";
 import { RecommendedShelfRow } from "@/components/library/recommended-shelf";
 import { ShelfRow } from "@/components/library/shelf";
@@ -52,12 +53,15 @@ function Explore({ language }: { language: string }) {
   const { showShelves, shelves, setShelves, grid, setGrid, error: loadError } = useExploreData(f);
   const error = failure ?? loadError;
 
-  async function toggle(t: TextSummary, reaction: Reaction) {
-    const on = reaction === "like" ? t.liked : t.bookmarked;
-    const apply = (x: TextSummary) => (x.id === t.id ? toggleReaction(x, reaction) : x);
+  function update(apply: (x: TextSummary) => TextSummary) {
     setShelves((s) => s?.map((shelf) => ({ ...shelf, items: shelf.items.map(apply) })) ?? null);
     setGrid((g) => g && { ...g, items: g.items.map(apply) });
     recs.mapTexts(apply);
+  }
+
+  async function toggle(t: TextSummary, reaction: Reaction) {
+    const on = reaction === "like" ? t.liked : t.bookmarked;
+    update((x) => (x.id === t.id ? toggleReaction(x, reaction) : x));
     try {
       await api(`library/${t.id}/${reaction}`, { method: on ? "DELETE" : "PUT" });
     } catch (e) {
@@ -67,7 +71,10 @@ function Explore({ language }: { language: string }) {
 
   const counts = Object.fromEntries((shelves ?? []).map((s) => [s.category, s.total]));
   const options = shelves ? ALL_CATEGORIES.filter((c) => counts[c] !== undefined || c === f.category) : [];
-  const actions = (t: TextSummary) => <><ReactionButtons text={t} onToggle={(r) => void toggle(t, r)} /><AddToPlaylist text={t} /></>;
+  const finished = (t: TextSummary) => update((x) => (x.id === t.id ? { ...x, progress: t.progress, stats: t.stats } : x));
+  const actions = (t: TextSummary) => (
+    <><ReactionButtons text={t} onToggle={(r) => void toggle(t, r)} /><AddToPlaylist text={t} /><MarkFinished text={t} onDone={finished} /></>
+  );
 
   return (
     <div>
