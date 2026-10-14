@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Token } from "@/lib/types";
+import type { Token, WordStatus } from "@/lib/types";
 import { learningEdges, normalizePhrase, overlapping, sentenceHere, phraseMarks, phraseRange, readerStats, sentenceTexts, textAround, toParagraphs } from "./reader-text";
 
 function tokens(...parts: (string | [string, number])[]): Token[] {
@@ -112,8 +112,11 @@ describe("phraseMarks", () => {
 describe("phraseMarks on a five-hour transcript", () => {
   const words = ["bonjour", "à", "tous", "on", "parle", "du", "marché", "de", "la", "ville"];
   const long = tokens(...Array.from({ length: 60_000 }, (_, i) => (i % 2 ? " " : words[(i / 2) % words.length])));
-  const phrases = Array.from({ length: 300 }, (_, i) => ({ term: `zz${i} qq`, status: "learning" as const }))
-    .concat([{ term: "du marché", status: "learning" }, { term: "la ville", status: "known" }]);
+  const phrases: { term: string; status: WordStatus }[] = [
+    ...Array.from({ length: 300 }, (_, i) => ({ term: `zz${i} qq`, status: "learning" as const })),
+    { term: "du marché", status: "learning" },
+    { term: "la ville", status: "known" },
+  ];
 
   it("finds every phrase quickly", () => {
     phraseMarks(long, phrases);
