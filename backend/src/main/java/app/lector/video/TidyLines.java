@@ -11,6 +11,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 final class TidyLines {
@@ -33,6 +34,8 @@ final class TidyLines {
     private static final Pattern SENTENCE_END = Pattern.compile("[.!?…。！？][\"'»”’)\\]]*\\s*$");
     private static final Pattern NOT_WORD = Pattern.compile("[^\\p{L}\\p{N}]");
     private static final Pattern SPACE = Pattern.compile("\\s+");
+    private static final Pattern LEADING_CLOSE = Pattern.compile("^[.,…]+\\s*");
+    private static final Pattern SPACE_BEFORE_CLOSE = Pattern.compile("\\s+(?=[.,…])");
 
     private TidyLines() {}
 
@@ -56,14 +59,42 @@ final class TidyLines {
         }
         Optional<List<Cue>> recut = recut(cues, String.join(" ", lines), tokenize);
         if (recut.isPresent() || lines.size() != cues.size()) {
-            return recut;
+            return recut.map(TidyLines::settle);
         }
         List<Cue> out = new ArrayList<>();
         for (int i = 0; i < cues.size(); i++) {
             Cue cue = cues.get(i);
             out.add(retext(cue, lines.get(i), tokenize).orElse(cue));
         }
-        return Optional.of(out);
+        return Optional.of(settle(out));
+    }
+
+    private static List<Cue> settle(List<Cue> cues) {
+        List<Cue> out = new ArrayList<>();
+        for (Cue cue : cues) {
+            Matcher lead = LEADING_CLOSE.matcher(cue.text());
+            if (!out.isEmpty() && lead.find()) {
+                Cue previous = out.removeLast();
+                out.add(withText(previous, previous.text() + lead.group().strip(), 0, 0));
+                cue = withText(cue, cue.text().substring(lead.end()), 0, lead.end());
+            }
+            Matcher space = SPACE_BEFORE_CLOSE.matcher(cue.text());
+            while (space.find()) {
+                cue = withText(cue, cue.text().substring(0, space.start()) + cue.text().substring(space.end()),
+                        space.start(), space.end() - space.start());
+                space = SPACE_BEFORE_CLOSE.matcher(cue.text());
+            }
+            out.add(cue);
+        }
+        return out;
+    }
+
+    private static Cue withText(Cue cue, String text, int at, int removed) {
+        List<WordMark> marks = cue.words().stream()
+                .map(m -> m.offset() >= at + removed ? new WordMark(m.offset() - removed, m.startMs())
+                        : new WordMark(Math.min(m.offset(), at), m.startMs()))
+                .toList();
+        return new Cue(cue.startMs(), cue.endMs(), text, cue.charStart(), cue.charEnd(), marks);
     }
 
     private static Optional<List<Cue>> recut(List<Cue> cues, String reply, Function<String, List<Token>> tokenize) {
@@ -113,20 +144,21 @@ final class TidyLines {
         int words = 0;
         boolean pending = false;
         for (Part part : parts) {
+            List<Cue> cues = part.tidied() ? settle(part.cues()) : part.cues();
             Set<Integer> starts = new HashSet<>();
-            for (int i = 0; i < part.cues().size(); i++) {
+            for (int i = 0; i < cues.size(); i++) {
                 if (pending) {
                     starts.add(i);
                     pending = false;
                 }
-                String text = part.cues().get(i).text();
+                String text = cues.get(i).text();
                 words += wordCount(text, tokenize);
                 if (part.tidied() && words >= PARAGRAPH_WORDS && SENTENCE_END.matcher(text).find()) {
                     pending = true;
                     words = 0;
                 }
             }
-            out.add(new Part(part.cues(), starts, part.tidied()));
+            out.add(new Part(cues, starts, part.tidied()));
         }
         return out;
     }

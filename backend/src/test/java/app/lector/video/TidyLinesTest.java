@@ -186,6 +186,21 @@ class TidyLinesTest {
     }
 
     @Test
+    void aClosingMarkAtTheStartOfALineMovesToTheEndOfTheLineBefore() {
+        var cues = List.of(cue(0, 1000, "épisode"), cue(1000, 3000, "98 pourquoi le pass", new WordMark(3, 2000)));
+        var tidied = TidyLines.apply(cues, List.of("Épisode", ". 98. Pourquoi le pass"), FR).get();
+        assertThat(texts(tidied)).containsExactly("Épisode.", "98. Pourquoi le pass");
+        assertThat(tidied.get(1).words()).containsExactly(new WordMark(4, 2000));
+    }
+
+    @Test
+    void alreadyPunctuatedLinesAreSettledTheSameWay() {
+        var cues = List.of(cue(0, 1000, "Épisode"), cue(1000, 3000, ". 98. Pourquoi le pass", new WordMark(6, 2000)));
+        assertThat(texts(TidyLines.punctuated(cues, FR).cues())).containsExactly("Épisode.", "98. Pourquoi le pass");
+        assertThat(TidyLines.punctuated(cues, FR).cues().get(1).words()).containsExactly(new WordMark(4, 2000));
+    }
+
+    @Test
     void wordMarksMoveWithTheirWords() {
         var marked = List.of(cue(0, 3000, "hello friends how are you",
                 new WordMark(6, 500), new WordMark(14, 1000), new WordMark(18, 1500), new WordMark(22, 2000)));
