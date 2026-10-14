@@ -109,6 +109,23 @@ describe("phraseMarks", () => {
   });
 });
 
+describe("phraseMarks on a five-hour transcript", () => {
+  const words = ["bonjour", "à", "tous", "on", "parle", "du", "marché", "de", "la", "ville"];
+  const long = tokens(...Array.from({ length: 60_000 }, (_, i) => (i % 2 ? " " : words[(i / 2) % words.length])));
+  const phrases = Array.from({ length: 300 }, (_, i) => ({ term: `zz${i} qq`, status: "learning" as const }))
+    .concat([{ term: "du marché", status: "learning" }, { term: "la ville", status: "known" }]);
+
+  it("finds every phrase quickly", () => {
+    phraseMarks(long, phrases);
+    const start = performance.now();
+    const marks = phraseMarks(long, phrases);
+    expect(performance.now() - start).toBeLessThan(250);
+    expect(marks.size).toBe(12_000);
+    expect(marks.get(10)).toBe("learning");
+    expect(marks.get(16)).toBe("known");
+  });
+});
+
 describe("learningEdges", () => {
   const learning = (start: number, end: number) => ({ start, end, status: "learning" as const });
 
