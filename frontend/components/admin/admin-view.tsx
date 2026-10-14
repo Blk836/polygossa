@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
+import { AiPanel } from "@/components/admin/ai-panel";
 import { StatsPanel } from "@/components/admin/stats-panel";
 import { TranslationsPanel } from "@/components/admin/translations-panel";
 import { UserPanel } from "@/components/admin/user-panel";
@@ -134,6 +135,7 @@ const PANELS: Record<AdminTabKey, () => ReactNode> = {
   overview: Overview,
   users: Users,
   translations: TranslationsPanel,
+  ai: AiPanel,
   log: Log,
 };
 

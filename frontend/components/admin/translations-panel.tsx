@@ -10,7 +10,7 @@ const PERIODS = [7, 30, 90] as const;
 
 const count = (n: number) => n.toLocaleString("en-US");
 
-function Period({ days, onDays }: { days: number; onDays: (d: number) => void }) {
+export function Period({ days, onDays }: { days: number; onDays: (d: number) => void }) {
   return (
     <div role="radiogroup" aria-label="Period" className="inline-flex rounded-lg border border-line bg-paper p-1 text-sm">
       {PERIODS.map((d) => (
@@ -29,7 +29,7 @@ function Period({ days, onDays }: { days: number; onDays: (d: number) => void })
   );
 }
 
-function Table({ label, title, hint, head, rows }: { label: string; title: string; hint?: string; head: string[]; rows: ReactNode }) {
+export function Table({ label, title, hint, head, rows }: { label: string; title: string; hint?: string; head: string[]; rows: ReactNode }) {
   return (
     <section aria-label={label} className="rounded-xl border border-line bg-card p-5">
       <h2 className="font-display text-lg font-semibold">{title}</h2>
