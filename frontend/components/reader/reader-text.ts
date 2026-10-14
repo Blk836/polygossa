@@ -29,16 +29,40 @@ export interface PhraseSpan {
 }
 
 function phraseForm(text: string): { text: string; at: number[] } {
-  let out = "";
+  const out: string[] = [];
   const at: number[] = [];
+  let spaced = false;
   for (let i = 0; i < text.length; i++) {
-    if (/\s/.test(text[i])) {
-      if (out.endsWith(" ")) continue;
-      out += " ";
-    } else out += text[i] === "’" ? "'" : text[i].toLowerCase();
-    while (at.length < out.length) at.push(i);
+    const space = /\s/.test(text[i]);
+    if (space && spaced) continue;
+    const piece = space ? " " : text[i] === "’" ? "'" : text[i].toLowerCase();
+    out.push(piece);
+    for (let k = 0; k < piece.length; k++) at.push(i);
+    spaced = space;
   }
-  return { text: out, at };
+  return { text: out.join(""), at };
+}
+
+function firstFrom(starts: number[], from: number): number {
+  let lo = 0;
+  let hi = starts.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (starts[mid] < from) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
+function wordsWithin(tokens: Token[], starts: number[], from: number, to: number): [number, number] | null {
+  let first = -1;
+  let last = -1;
+  for (let k = firstFrom(starts, from); k < tokens.length && starts[k] <= to; k++) {
+    if (!tokens[k].word) continue;
+    if (first < 0) first = k;
+    last = k;
+  }
+  return first < 0 ? null : [tokens[first].index, tokens[last].index];
 }
 
 export function phraseSpans(tokens: Token[], phrases: { term: string; status: WordStatus }[]): PhraseSpan[] {
@@ -54,10 +78,8 @@ export function phraseSpans(tokens: Token[], phrases: { term: string; status: Wo
     const term = normalizePhrase(p.term);
     if (!term) continue;
     for (let at = form.text.indexOf(term); at >= 0; at = form.text.indexOf(term, at + term.length)) {
-      const from = form.at[at];
-      const to = form.at[at + term.length - 1];
-      const inside = tokens.filter((t) => t.word && starts[t.index] >= from && starts[t.index] <= to);
-      if (inside.length) spans.push({ start: inside[0].index, end: inside[inside.length - 1].index, status: p.status });
+      const inside = wordsWithin(tokens, starts, form.at[at], form.at[at + term.length - 1]);
+      if (inside) spans.push({ start: inside[0], end: inside[1], status: p.status });
     }
   }
   return spans;
