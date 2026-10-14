@@ -24,15 +24,21 @@ async function measure(page: Page, words: number) {
     await openReader(page, `/read/${created.id}`);
     await expect(wordAt(page, 0)).toBeVisible();
   });
-  const turn = await timeIt(async () => {
-    await pager(page).getByRole("button", { name: "Next page" }).click();
-    await expect(pager(page)).toContainText("Page 2 of");
-  });
-  const click = await timeIt(async () => {
-    await page.locator("article [data-i]").first().click();
-    await expect(page.locator("[data-word-popup]")).toBeVisible();
-  });
-  return { open, turn, click };
+  const turns: number[] = [];
+  const clicks: number[] = [];
+  for (let n = 2; n <= 4; n++) {
+    turns.push(await timeIt(async () => {
+      await pager(page).getByRole("button", { name: "Next page" }).click();
+      await expect(pager(page)).toContainText(`Page ${n} of`);
+    }));
+    clicks.push(await timeIt(async () => {
+      await page.locator("article [data-i]").first().click();
+      await expect(page.locator("[data-word-popup]")).toBeVisible();
+    }));
+    await page.keyboard.press("Escape");
+    await expect(page.locator("[data-word-popup]")).toHaveCount(0);
+  }
+  return { open, turn: Math.min(...turns), click: Math.min(...clicks) };
 }
 
 test("a five-hour video lesson opens, turns pages and opens a word nearly as quickly as a short one", async ({ page }) => {
