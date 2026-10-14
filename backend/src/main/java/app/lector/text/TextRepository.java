@@ -32,10 +32,6 @@ public interface TextRepository extends JpaRepository<Text, Long> {
             + " or t.body.tokensJson like '%’\",\"word\":true%')")
     List<Long> findIdsWithSplitElisions(@Param("languages") Collection<Language> languages);
 
-    @Query("select t.id from Text t where t.videoId is not null and t.transcriptChecked = false"
-            + " and t.body.cuesJson is not null order by t.id")
-    List<Long> findIdsWithUncheckedTranscripts();
-
     @Query("""
             select t from Text t
             where t.isPublic = true
