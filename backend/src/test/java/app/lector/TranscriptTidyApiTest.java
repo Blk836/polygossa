@@ -207,9 +207,9 @@ class TranscriptTidyApiTest {
     }
 
     @Test
-    void aLineWithAnAddedWordKeepsItsOriginalTextAndTheOthersAreTidied() throws Exception {
+    void aLineTheAiRewroteKeepsItsOriginalTextAndTheOthersAreTidied() throws Exception {
         video(BARE, true);
-        AI.replyWhen(TIDY, lines("¡Hola, mis amigos!", "Hoy cocinamos arroz."));
+        AI.replyWhen(TIDY, lines("¡Adiós, chicos!", "Hoy cocinamos arroz."));
         JsonNode detail = importVideo();
         assertThat(content(detail)).isEqualTo("hola amigos Hoy cocinamos arroz.");
         assertThat(detail.get("video").get("timings")).hasSize(5);
@@ -236,9 +236,19 @@ class TranscriptTidyApiTest {
     }
 
     @Test
-    void aReplyWithTheWrongNumberOfLinesAndAnAddedWordKeepsThePartAsToday() throws Exception {
+    void aWordTheAiAddedIsTakenOutAndOneItDroppedIsPutBack() throws Exception {
+        video(YouTubeStub.srv3("0|2000|hola amigos hoy", "2000|2000|cocinamos arroz con pollo y verduras para toda la familia",
+                "4000|2000|porque esta noche vienen mis padres a cenar a casa"), true);
+        AI.replyWhen(TIDY, lines("¡Hola, mis amigos! Hoy", "cocinamos arroz con pollo y para toda la familia,",
+                "porque esta noche vienen mis padres a cenar a casa."));
+        assertThat(content(importVideo())).isEqualTo("¡Hola, amigos! Hoy cocinamos arroz con pollo y verduras para toda "
+                + "la familia, porque esta noche vienen mis padres a cenar a casa.");
+    }
+
+    @Test
+    void aReplyWithTheWrongNumberOfLinesAndARewrittenLineKeepsThePartAsToday() throws Exception {
         video(BARE, true);
-        AI.replyWhen(TIDY, lines("¡Hola, mis amigos! Hoy cocinamos arroz."));
+        AI.replyWhen(TIDY, lines("¡Adiós, chicos! Hoy cocinamos arroz."));
         assertThat(content(importVideo())).isEqualTo("hola amigos\nhoy cocinamos arroz");
     }
 

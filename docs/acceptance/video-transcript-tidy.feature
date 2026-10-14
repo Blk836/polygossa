@@ -23,24 +23,25 @@ Feature: Tidying automatic YouTube transcripts
     And a word at the start or end of a caption line
     And clicking a word or line still jumps the video to that moment
 
-  Scenario: A word the AI corrected is put back as it was spoken
-    Given the AI's version swaps a word for another, such as "entouré" for "entourée"
+  Scenario: Words the AI corrected, added or dropped are put back as they were spoken
+    Given the AI's version corrects a word ("penseent" to "pensent"), adds one ("on n'aime") or drops one
     When I import the video
-    Then the original word is put back in its place, keeping the AI's punctuation around it
+    Then each word is exactly as in the captions again, in its place
+    And the AI's punctuation and capitals around it are kept
 
-  Scenario: A caption line the AI adds or drops words in keeps its original words
-    Given the AI's version of one caption line adds or drops a word, or swaps more than about 1 word in 20
+  Scenario: A caption line the AI rewrote keeps its original words
+    Given more than about 1 word in 10 of the AI's version of a line had to be put back
     When I import the video
     Then that one line keeps its original text
     And the other caption lines in the same part are still tidied
     And every word, tidied or not, keeps its timing
 
   Scenario: The AI merges, splits or shifts caption lines
-    Given the AI's reply has every word, but joins lines, splits them, or moves a word to the next line
+    Given the AI's reply joins lines, splits them, or moves a word to the next line
     When I import the video
     Then the tidied text is cut back at the original caption lines, each with exactly its own words
     And every word keeps its timing
-    But if a word was also added or dropped, that part keeps its original lines
+    But if more than about 1 word in 10 had to be put back, that part keeps its original lines
 
   Scenario: Fillers the AI drops don't cost the line
     Given a caption line contains a filler such as "euh" or "hum"

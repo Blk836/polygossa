@@ -61,15 +61,15 @@ class TidyLinesTest {
     }
 
     @Test
-    void anAddedWordKeepsOnlyThatLineOriginal() {
+    void aWordTheAiAddedIsTakenOut() {
         var tidied = TidyLines.apply(CUES, List.of("Hello, my friends. How are you?", "Today we cook rice."), EN);
-        assertThat(texts(tidied.get())).containsExactly("hello friends how are you", "Today we cook rice.");
+        assertThat(texts(tidied.get())).containsExactly("Hello, friends. How are you?", "Today we cook rice.");
     }
 
     @Test
-    void aDroppedWordKeepsOnlyThatLineOriginal() {
+    void aWordTheAiDroppedIsPutBackBeforeTheClosingMark() {
         var tidied = TidyLines.apply(CUES, List.of("Hello, friends. How are you?", "Today we cook."), EN);
-        assertThat(texts(tidied.get())).containsExactly("Hello, friends. How are you?", "today we cook rice");
+        assertThat(texts(tidied.get())).containsExactly("Hello, friends. How are you?", "Today we cook rice.");
     }
 
     @Test
@@ -101,8 +101,8 @@ class TidyLinesTest {
     }
 
     @Test
-    void theWrongNumberOfLinesWithAnAddedWordLeavesThePartUntidied() {
-        assertThat(TidyLines.apply(CUES, List.of("Hello, friends. How are you? Today we cook the rice."), EN)).isEmpty();
+    void theWrongNumberOfLinesWithTooManyChangesLeavesThePartUntidied() {
+        assertThat(TidyLines.apply(CUES, List.of("Hi, pals. How are you? Tomorrow we eat rice."), EN)).isEmpty();
         assertThat(TidyLines.apply(CUES, null, EN)).isEmpty();
     }
 
@@ -150,10 +150,30 @@ class TidyLinesTest {
     }
 
     @Test
-    void aDroppedWordThatIsNotAFillerStillFailsTheLine() {
+    void aDroppedWordInTheMiddleGoesBackBeforeTheNextWord() {
         var cues = List.of(cue(0, 3000, "et alors je pense que oui"));
         var tidied = TidyLines.apply(cues, List.of("Et je pense que oui."), FR);
-        assertThat(texts(tidied.get())).containsExactly("et alors je pense que oui");
+        assertThat(texts(tidied.get())).containsExactly("Et alors je pense que oui.");
+    }
+
+    @Test
+    void garbledCaptionWordsTheAiFixedAreKeptAsSpoken() {
+        var cues = List.of(cue(0, 3000, "beaucoup de gens penseent qu apprendre"),
+                cue(3000, 6000, "une langue est une corvé on aaime pas"),
+                cue(6000, 9000, "forcément ça et on prévoi pas non plus"),
+                cue(9000, 12000, "de faire des efforts pour être capable"),
+                cue(12000, 15000, "de la parler alors on abandonne vite"),
+                cue(15000, 18000, "et puis voilà c est comme ça en France"),
+                cue(18000, 21000, "les gens préfèrent rester chez eux le soir"));
+        var tidied = TidyLines.apply(cues, List.of(
+                "Beaucoup de gens pensent qu apprendre une langue est une corvé.",
+                "On n aime pas forcément ça et on ne prévoit pas non plus de faire des efforts",
+                "pour être capable de la parler, alors on abandonne vite. Et puis voilà, c est comme ça en France.",
+                "Les gens préfèrent rester chez eux le soir."), FR).get();
+        assertThat(texts(tidied)).containsExactly("Beaucoup de gens penseent qu apprendre",
+                "une langue est une corvé. On aaime pas", "forcément ça et on prévoi pas non plus",
+                "de faire des efforts pour être capable", "de la parler, alors on abandonne vite.",
+                "Et puis voilà, c est comme ça en France.", "Les gens préfèrent rester chez eux le soir.");
     }
 
     @Test
