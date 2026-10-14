@@ -35,11 +35,6 @@ public class VideoImportService {
 
     private record Transcript(String content, List<Cue> cues) {}
 
-    private interface Creator {
-        Text create(User owner, String title, Language language, String content, String sourceUrl, boolean isPublic,
-                    List<Cue> cues, ContentLimit limit);
-    }
-
     private final TextService texts;
     private final PlanService plans;
     private final YouTubeClient youtube;
@@ -60,21 +55,21 @@ public class VideoImportService {
     public Text importVideo(User owner, VideoImport req) {
         String videoId = YouTubeUrls.videoId(req.url());
         plans.checkCanImportText(owner);
-        return save(owner, videoId, req, texts::create);
+        return save(owner, videoId, req);
     }
 
     public Text importForLibrary(User library, VideoImport req) {
-        return save(library, YouTubeUrls.videoId(req.url()), req, texts::createUnchecked);
+        return save(library, YouTubeUrls.videoId(req.url()), req);
     }
 
-    private Text save(User owner, String videoId, VideoImport req, Creator creator) {
+    private Text save(User owner, String videoId, VideoImport req) {
         Optional<YouTubeClient.Metadata> meta = youtube.metadata(videoId);
         PlayerInfo player = youtube.player(videoId);
         Transcript transcript = transcript(req, player);
         String title = orElse(req.title(), orElse(meta.map(YouTubeClient.Metadata::title).orElse(null),
                 "YouTube video " + videoId));
         String url = YouTubeUrls.watchUrl(videoId);
-        Text text = creator.create(owner, title, req.language(), transcript.content(), url, req.isPublic(),
+        Text text = texts.createUnchecked(owner, title, req.language(), transcript.content(), url, req.isPublic(),
                 transcript.cues(), ContentLimit.VIDEO);
         Integer duration = player.durationSeconds() != null ? player.durationSeconds() : lastCueEnd(transcript.cues());
         Category fromYouTube = Category.fromYouTube(player.youtubeCategory());

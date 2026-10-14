@@ -81,14 +81,8 @@ public class TextService {
     @Transactional
     public Text create(User owner, String title, Language language, String content, String sourceUrl,
                        boolean isPublic, List<SubtitleParser.Cue> cues) {
-        return create(owner, title, language, content, sourceUrl, isPublic, cues, ContentLimit.TEXT);
-    }
-
-    @Transactional
-    public Text create(User owner, String title, Language language, String content, String sourceUrl,
-                       boolean isPublic, List<SubtitleParser.Cue> cues, ContentLimit limit) {
         plans.checkCanImportText(owner);
-        return createUnchecked(owner, title, language, content, sourceUrl, isPublic, cues, limit);
+        return createUnchecked(owner, title, language, content, sourceUrl, isPublic, cues);
     }
 
     @Transactional
