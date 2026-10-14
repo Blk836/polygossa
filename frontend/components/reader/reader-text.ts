@@ -28,6 +28,19 @@ export interface PhraseSpan {
   status: WordStatus;
 }
 
+function phraseForm(text: string): { text: string; at: number[] } {
+  let out = "";
+  const at: number[] = [];
+  for (let i = 0; i < text.length; i++) {
+    if (/\s/.test(text[i])) {
+      if (out.endsWith(" ")) continue;
+      out += " ";
+    } else out += text[i] === "’" ? "'" : text[i].toLowerCase();
+    while (at.length < out.length) at.push(i);
+  }
+  return { text: out, at };
+}
+
 export function phraseSpans(tokens: Token[], phrases: { term: string; status: WordStatus }[]): PhraseSpan[] {
   const starts: number[] = [];
   let offset = 0;
@@ -35,11 +48,15 @@ export function phraseSpans(tokens: Token[], phrases: { term: string; status: Wo
     starts.push(offset);
     offset += t.text.length;
   }
-  const lower = tokens.map((t) => t.text).join("").toLowerCase().replace(/’/g, "'");
+  const form = phraseForm(tokens.map((t) => t.text).join(""));
   const spans: PhraseSpan[] = [];
   for (const p of phrases) {
-    for (let at = lower.indexOf(p.term); at >= 0; at = lower.indexOf(p.term, at + p.term.length)) {
-      const inside = tokens.filter((t) => t.word && starts[t.index] >= at && starts[t.index] < at + p.term.length);
+    const term = normalizePhrase(p.term);
+    if (!term) continue;
+    for (let at = form.text.indexOf(term); at >= 0; at = form.text.indexOf(term, at + term.length)) {
+      const from = form.at[at];
+      const to = form.at[at + term.length - 1];
+      const inside = tokens.filter((t) => t.word && starts[t.index] >= from && starts[t.index] <= to);
       if (inside.length) spans.push({ start: inside[0].index, end: inside[inside.length - 1].index, status: p.status });
     }
   }
@@ -49,7 +66,7 @@ export function phraseSpans(tokens: Token[], phrases: { term: string; status: Wo
 export function phraseMarks(tokens: Token[], phrases: { term: string; status: WordStatus }[]): Map<number, WordStatus> {
   const marks = new Map<number, WordStatus>();
   for (const s of phraseSpans(tokens, phrases)) {
-    for (let i = s.start; i <= s.end; i++) if (tokens[i].word) marks.set(i, s.status);
+    for (let i = s.start; i <= s.end; i++) if (tokens[i].word && marks.get(i) !== "learning") marks.set(i, s.status);
   }
   return marks;
 }

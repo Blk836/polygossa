@@ -20,7 +20,7 @@ test("an admin finds a learner, suspends them after confirming, and lifts it", a
   const res = await other.post("/api/auth/signup", { data: { email, password: "password123", displayName: "Spammy" } });
   expect(res.ok(), await res.text()).toBe(true);
 
-  await page.goto("/admin");
+  await page.goto("/admin?tab=users");
   await page.getByPlaceholder("Search by email or name").fill(email);
   await page.getByPlaceholder("Search by email or name").press("Enter");
   await page.getByRole("row").filter({ hasText: email }).getByRole("button", { name: "Open" }).click();
@@ -39,6 +39,7 @@ test("an admin finds a learner, suspends them after confirming, and lifts it", a
   await expect(panel.getByTestId("admin-status")).toHaveText("Active");
   expect((await other.get("/api/me")).status()).toBe(200);
 
+  await page.getByRole("navigation", { name: "Admin pages" }).getByRole("link", { name: "Log" }).click();
   await expect(page.getByRole("region", { name: "Recent actions" })).toContainText(email);
   await other.dispose();
 });
@@ -56,6 +57,9 @@ test("learners never see the panel", async ({ browser, playwright }) => {
   await expect(page.getByRole("menu", { name: "Account" }).getByRole("menuitem")).toHaveText(["Settings", "Classes", "Sign out"]);
   expect((await signup.get("/api/admin/stats")).status()).toBe(403);
   await page.goto("/admin");
+  await expect(page.getByText("Only the team can use the admin panel")).toBeVisible();
+  expect((await signup.get("/api/admin/translations")).status()).toBe(403);
+  await page.goto("/admin?tab=translations");
   await expect(page.getByText("Only the team can use the admin panel")).toBeVisible();
   await context.close();
   await signup.dispose();

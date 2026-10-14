@@ -37,13 +37,16 @@ public class AdminController {
     private final AdminStats stats;
     private final AdminUsers users;
     private final AdminLog log;
+    private final AdminTranslations translations;
 
-    public AdminController(CurrentUser currentUser, Admins admins, AdminStats stats, AdminUsers users, AdminLog log) {
+    public AdminController(CurrentUser currentUser, Admins admins, AdminStats stats, AdminUsers users, AdminLog log,
+                           AdminTranslations translations) {
         this.currentUser = currentUser;
         this.admins = admins;
         this.stats = stats;
         this.users = users;
         this.log = log;
+        this.translations = translations;
     }
 
     private User admin(AuthUser principal) {
@@ -58,10 +61,21 @@ public class AdminController {
     public AdminStats.Stats stats(@AuthenticationPrincipal AuthUser principal,
                                   @RequestParam(defaultValue = "30") int days) {
         admin(principal);
+        return stats.stats(checkedDays(days));
+    }
+
+    @GetMapping("/translations")
+    public AdminTranslations.Report translations(@AuthenticationPrincipal AuthUser principal,
+                                                 @RequestParam(defaultValue = "30") int days) {
+        admin(principal);
+        return translations.report(checkedDays(days));
+    }
+
+    private static int checkedDays(int days) {
         if (days < 1 || days > 365) {
             throw ApiException.badRequest("days must be 1 to 365");
         }
-        return stats.stats(days);
+        return days;
     }
 
     @GetMapping("/users")

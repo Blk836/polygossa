@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class CommunityMeanings {
 
-    static final int MIN_LEARNERS = 2;
+    public static final int MIN_LEARNERS = 2;
     static final int MAX_MEANINGS = 3;
 
     private final VocabularyRepository repo;

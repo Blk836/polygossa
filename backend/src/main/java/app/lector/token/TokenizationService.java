@@ -68,6 +68,10 @@ public class TokenizationService {
         return normalize(term, Locale.forLanguageTag(language.code()));
     }
 
+    public static String phraseForm(String text, Language language) {
+        return normalize(text, language).replaceAll("(?U)\\s+", " ");
+    }
+
     private static String normalize(String term, Locale locale) {
         return term.strip().replace('’', '\'').toLowerCase(locale);
     }
