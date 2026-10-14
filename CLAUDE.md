@@ -117,6 +117,8 @@ when its test is fixed.
   Again PR #165 (a backend-only revert); passed 24 of 24 alone.
 - `e2e/reader-media-resume.spec.ts` › "pressing Play twice while the video is still starting keeps the bar at the
   page's start". Seen 2026-10-10, PR #94.
+- Backend `VocabMapApiTest` › `theMapAnswersQuicklyForALargeVocabulary`: took 1,094 ms against its 1,000 ms limit
+  in a full run on a loaded PC (a dev backend was also up); passed alone. Seen 2026-10-14, PR #168.
 
 ### One worktree per session
 Several Claude sessions often work on this repository at once, and in one shared folder they switch branches under
