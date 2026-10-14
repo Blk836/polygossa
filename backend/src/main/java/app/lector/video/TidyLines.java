@@ -184,8 +184,9 @@ final class TidyLines {
         int offset = 0;
         for (Token t : tokenize.apply(text)) {
             String key = NOT_WORD.matcher(t.text()).replaceAll("").toLowerCase(Locale.ROOT);
-            if (t.word() && !key.isEmpty()) {
-                out.add(new Word(offset, key, t.text()));
+            if (!key.isEmpty()) {
+                int lead = t.text().length() - t.text().stripLeading().length();
+                out.add(new Word(offset + lead, key, t.text().strip()));
             }
             offset += t.text().length();
         }

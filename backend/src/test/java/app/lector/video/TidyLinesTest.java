@@ -177,6 +177,15 @@ class TidyLinesTest {
     }
 
     @Test
+    void aNumberMovedToAnotherLineGoesBackWithItsTimeMark() {
+        var cues = List.of(cue(0, 3000, "elle travaille 35", new WordMark(5, 1000), new WordMark(15, 2000)),
+                cue(3000, 5000, "heures par semaine", new WordMark(7, 4000)));
+        var tidied = TidyLines.apply(cues, List.of("Elle travaille", "35 heures par semaine."), FR).get();
+        assertThat(texts(tidied)).containsExactly("Elle travaille 35", "heures par semaine.");
+        assertThat(tidied.getFirst().words()).containsExactly(new WordMark(5, 1000), new WordMark(15, 2000));
+    }
+
+    @Test
     void wordMarksMoveWithTheirWords() {
         var marked = List.of(cue(0, 3000, "hello friends how are you",
                 new WordMark(6, 500), new WordMark(14, 1000), new WordMark(18, 1500), new WordMark(22, 2000)));
