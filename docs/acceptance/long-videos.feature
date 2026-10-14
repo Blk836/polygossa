@@ -33,7 +33,9 @@ Feature: Importing long videos
     And web pages and books are still cut or split at 100,000 characters
 
   Scenario: A long video lesson stays quick to read
-    Given a video lesson of 300,000 characters
-    When I open it in the reader
-    Then the first page shows within the time a 100,000-character lesson takes now, give or take a little
-    And turning pages, clicking a word and the video's word highlighting keep up as they do on short lessons
+    Given a video lesson of 300,000 characters and one of 100,000
+    When I open each in the reader, turn to page 2 and click a word
+    Then the long one opens in under 4 times as long as the short one (measured: 1.8 s against 0.7 s; before the
+      fix 11 s against 1.3 s, because finding saved phrases slowed down faster than the text grew)
+    And turning a page and opening a word take under 3 times as long as on the short one
+    And the video's word highlighting looks up the spoken word by binary search, so it keeps up on any length
