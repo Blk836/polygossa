@@ -118,12 +118,13 @@ export function actionSummary(action: ActionKey, result: Record<string, number>)
   }
 }
 
-export type AdminTabKey = "overview" | "users" | "translations" | "log";
+export type AdminTabKey = "overview" | "users" | "translations" | "ai" | "log";
 
 export const ADMIN_TABS: { key: AdminTabKey; label: string; href: string }[] = [
   { key: "overview", label: "Overview", href: "/admin" },
   { key: "users", label: "Users", href: "/admin?tab=users" },
   { key: "translations", label: "Translations", href: "/admin?tab=translations" },
+  { key: "ai", label: "AI", href: "/admin?tab=ai" },
   { key: "log", label: "Log", href: "/admin?tab=log" },
 ];
 
@@ -169,6 +170,39 @@ export interface AdminTranslations {
   pairs: TranslationRow[];
   total: TranslationRow;
   trend: { day: string; layers: Record<LookupLayer, number>; cost: number }[];
+}
+
+export interface AiJobRow {
+  job: string | null;
+  system: boolean;
+  calls: number;
+  failures: number;
+  tokensIn: number;
+  tokensOut: number;
+  cost: number;
+}
+
+export interface AdminAi {
+  days: number;
+  prices: AdminTranslations["prices"];
+  today: { day: string; systemTokens: number; ceiling: number };
+  jobs: AiJobRow[];
+  total: AiJobRow;
+}
+
+const AI_JOBS: Record<string, string> = {
+  DEFINITION: "Word definitions",
+  EXAMPLE: "Example sentences",
+  TRANSLATION: "Translations",
+  WRITING_FEEDBACK: "Writing feedback",
+  WRITING_GRADE: "Writing test grades",
+  WORD_MEANING: "Word meanings",
+  CONTENT_REVIEW: "Content review",
+  TOPIC_TAGS: "Topic tagging",
+};
+
+export function aiJobName(job: string | null): string {
+  return job === null ? "Total" : AI_JOBS[job] ?? job;
 }
 
 export function pairName(source: string | null, target: string | null): string {

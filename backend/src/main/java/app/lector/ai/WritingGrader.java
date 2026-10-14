@@ -42,7 +42,7 @@ public class WritingGrader {
 
     public Grade grade(Submission s) {
         String lang = s.language().displayName();
-        JsonNode r = ai.completeJson(
+        JsonNode r = ai.completeJson(AiJob.WRITING_GRADE,
                 "You are a strict but fair examiner marking a timed " + lang + " writing test (5 minutes) for a learner "
                         + "aiming at CEFR " + s.level() + ". Mark only what was written. Score each criterion 1-5: "
                         + "task (did it address every point of the situation, in " + lang + "?), grammar, vocabulary "

@@ -1,6 +1,7 @@
 package app.lector.text;
 
 import app.lector.ai.AiClient;
+import app.lector.ai.AiJob;
 import app.lector.common.ApiException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,7 +75,7 @@ public class ContentReview {
 
     private Optional<JsonNode> ask(Text text, boolean categorise, boolean moderate) {
         try {
-            return Optional.of(ai.completeJson(prompt(categorise, moderate),
+            return Optional.of(ai.completeJson(AiJob.CONTENT_REVIEW, prompt(categorise, moderate),
                     "Language: " + text.getLanguage().displayName() + "\nTitle: " + text.getTitle() + "\n\n"
                             + excerpt(text.getContent(), moderate ? MODERATION_EXCERPT : CATEGORY_EXCERPT),
                     0));

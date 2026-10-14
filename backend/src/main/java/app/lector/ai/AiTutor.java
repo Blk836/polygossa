@@ -28,7 +28,7 @@ public class AiTutor {
     }
 
     public DictionaryResult define(Language language, NativeLanguage learner, String term, String context) {
-        JsonNode r = ai.completeJson(
+        JsonNode r = ai.completeJson(AiJob.DEFINITION,
                 "You are a bilingual dictionary for " + learner.displayName() + "-speaking learners of "
                         + language.displayName()
                         + ". Reply with JSON: {\"lemma\": string|null, \"pronunciation\": string (IPA or reading), "
@@ -52,7 +52,7 @@ public class AiTutor {
     }
 
     public Example example(Language language, NativeLanguage learner, String term, String definition) {
-        JsonNode r = ai.completeJson(
+        JsonNode r = ai.completeJson(AiJob.EXAMPLE,
                 "You write short, natural example sentences for language learners. Reply with JSON: "
                         + "{\"sentence\": string in " + language.displayName() + ", \"translation\": string in "
                         + learner.displayName() + "}. "
@@ -62,7 +62,7 @@ public class AiTutor {
     }
 
     public String translate(Language language, NativeLanguage learner, String text) {
-        JsonNode r = ai.completeJson(
+        JsonNode r = ai.completeJson(AiJob.TRANSLATION,
                 "Translate the " + language.displayName() + " text into natural " + learner.displayName() + ". "
                         + "Reply with JSON: {\"translation\": string}.",
                 text);
@@ -70,7 +70,7 @@ public class AiTutor {
     }
 
     public Feedback writingFeedback(Language language, NativeLanguage learner, String sourceExcerpt, String writing) {
-        JsonNode r = ai.completeJson(
+        JsonNode r = ai.completeJson(AiJob.WRITING_FEEDBACK,
                 "You are a supportive " + language.displayName() + " writing tutor. The student read a text and wrote "
                         + "a short response in " + language.displayName() + ". Correct grammar, spelling, word choice and "
                         + "unnatural phrasing. Explanations must be in " + learner.displayName()

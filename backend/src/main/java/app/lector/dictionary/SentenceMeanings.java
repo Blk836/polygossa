@@ -1,6 +1,7 @@
 package app.lector.dictionary;
 
 import app.lector.ai.AiClient;
+import app.lector.ai.AiJob;
 import app.lector.common.ApiException;
 import app.lector.token.Language;
 import app.lector.token.NativeLanguage;
@@ -85,7 +86,7 @@ public class SentenceMeanings {
 
     private Optional<JsonNode> ask(String instructions, String marked, LookupTally tally) {
         try {
-            AiClient.Reply reply = ai.quickReply(instructions, marked);
+            AiClient.Reply reply = ai.quickReply(AiJob.WORD_MEANING, instructions, marked);
             tally.aiCall(reply.tokensIn(), reply.tokensOut());
             return Optional.of(reply.json());
         } catch (ApiException e) {

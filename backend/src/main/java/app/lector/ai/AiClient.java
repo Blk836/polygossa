@@ -2,6 +2,7 @@ package app.lector.ai;
 
 import app.lector.common.ApiException;
 import app.lector.config.AppProperties;
+import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.MissingNode;
 
 @Component
 public class AiClient {
@@ -27,10 +29,12 @@ public class AiClient {
     private final RestClient http;
     private final RestClient quick;
     private final ObjectMapper json;
+    private final AiSpending spending;
 
-    public AiClient(AppProperties props, RestClient.Builder builder, ObjectMapper json) {
+    public AiClient(AppProperties props, RestClient.Builder builder, ObjectMapper json, AiSpending spending) {
         this.config = props.openai();
         this.json = json;
+        this.spending = spending;
         this.http = client(builder, config.timeout());
         this.quick = client(builder, config.meaningTimeout());
     }
@@ -58,59 +62,88 @@ public class AiClient {
         return config.meaningModel();
     }
 
-    public JsonNode completeJson(String system, String user) {
-        return completeJson(system, user, DEFAULT_TEMPERATURE);
+    public boolean systemBudgetLeft() {
+        return spending.systemBudgetLeft();
+    }
+
+    public JsonNode completeJson(AiJob job, String system, String user) {
+        return completeJson(job, system, user, DEFAULT_TEMPERATURE);
     }
 
     public record Reply(JsonNode json, long tokensIn, long tokensOut) {}
 
-    public JsonNode completeJson(String system, String user, double temperature) {
-        return complete(http, config.model(), system, user, temperature).json();
+    public JsonNode completeJson(AiJob job, String system, String user, double temperature) {
+        return complete(http, job, config.model(), system, user, temperature).json();
     }
 
-    public JsonNode quickJson(String system, String user) {
-        return quickReply(system, user).json();
+    public Reply quickReply(AiJob job, String system, String user) {
+        return complete(quick, job, config.meaningModel(), system, user, 0);
     }
 
-    public Reply quickReply(String system, String user) {
-        return complete(quick, config.meaningModel(), system, user, 0);
-    }
-
-    private Reply complete(RestClient client, String model, String system, String user, double temperature) {
+    private Reply complete(RestClient client, AiJob job, String model, String system, String user,
+                           double temperature) {
         if (!enabled()) {
             throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "ai_disabled",
                     "AI features are not configured on this server (set OPENAI_API_KEY)");
         }
+        if (job.system() && !spending.systemBudgetLeft()) {
+            throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "ai_ceiling",
+                    "Today's AI budget for background work is used up; it resets at midnight UTC");
+        }
+        int cap = job.maxTokens(user);
         Map<String, Object> request = Map.of(
                 "model", model,
                 "temperature", temperature,
+                "max_completion_tokens", cap,
                 "response_format", Map.of("type", "json_object"),
                 "messages", List.of(
                         Map.of("role", "system", "content", system),
                         Map.of("role", "user", "content", user)));
+        JsonNode response;
         try {
-            JsonNode response = client.post()
+            response = client.post()
                     .uri("/chat/completions")
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(request)
                     .retrieve()
                     .body(JsonNode.class);
-            String content = response == null ? null
-                    : response.path("choices").path(0).path("message").path("content").asString(null);
-            log.info("AI call to {} used {} tokens", model,
-                    response == null ? "?" : response.path("usage").path("total_tokens").asString("?"));
-            if (content == null) {
-                throw new ApiException(HttpStatus.BAD_GATEWAY, "ai_error", "The AI service returned no answer");
-            }
-            JsonNode usage = response.path("usage");
-            return new Reply(json.readTree(content), usage.path("prompt_tokens").asLong(0),
-                    usage.path("completion_tokens").asLong(0));
         } catch (RestClientException e) {
-            log.warn("AI request failed: {}", e.getMessage());
+            spending.failed(job, 0, timedOut(e) ? cap : 0);
+            log.warn("AI request for {} failed: {}", job, e.getMessage());
             throw new ApiException(HttpStatus.BAD_GATEWAY, "ai_error", "The AI service is unavailable right now");
+        }
+        return read(job, model, response == null ? MissingNode.getInstance() : response);
+    }
+
+    private Reply read(AiJob job, String model, JsonNode response) {
+        JsonNode usage = response.path("usage");
+        long tokensIn = usage.path("prompt_tokens").asLong(0);
+        long tokensOut = usage.path("completion_tokens").asLong(0);
+        JsonNode choice = response.path("choices").path(0);
+        String content = choice.path("message").path("content").asString(null);
+        log.info("AI call for {} to {} used {} tokens in, {} out", job, model, tokensIn, tokensOut);
+        if (content == null || "length".equals(choice.path("finish_reason").asString(null))) {
+            spending.failed(job, tokensIn, tokensOut);
+            throw new ApiException(HttpStatus.BAD_GATEWAY, "ai_error",
+                    content == null ? "The AI service returned no answer" : "The AI service's answer was cut off");
+        }
+        try {
+            Reply reply = new Reply(json.readTree(content), tokensIn, tokensOut);
+            spending.succeeded(job, tokensIn, tokensOut);
+            return reply;
         } catch (tools.jackson.core.JacksonException e) {
-            log.warn("AI returned invalid JSON: {}", e.getMessage());
+            spending.failed(job, tokensIn, tokensOut);
+            log.warn("AI returned invalid JSON for {}: {}", job, e.getMessage());
             throw new ApiException(HttpStatus.BAD_GATEWAY, "ai_error", "The AI service returned an unreadable answer");
         }
+    }
+
+    private static boolean timedOut(Throwable e) {
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            if (t instanceof SocketTimeoutException) {
+                return true;
+            }
+        }
+        return false;
     }
 }

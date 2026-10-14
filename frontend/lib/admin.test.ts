@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ACTIONS, ADMIN_TABS, actionSummary, adminTab, cents, dollars, LOOKUP_LAYERS, pairName, percent, planCounts, share, usersPath } from "./admin";
+import { ACTIONS, ADMIN_TABS, actionSummary, adminTab, aiJobName, cents, dollars, LOOKUP_LAYERS, pairName, percent, planCounts, share, usersPath } from "./admin";
 
 describe("usersPath", () => {
   it("searches and pages", () => {
@@ -59,18 +59,31 @@ describe("admin tabs", () => {
       ["Overview", "/admin"],
       ["Users", "/admin?tab=users"],
       ["Translations", "/admin?tab=translations"],
+      ["AI", "/admin?tab=ai"],
       ["Log", "/admin?tab=log"],
     ]);
   });
 
   it("takes a known tab from the address and otherwise shows Overview", () => {
     expect(adminTab("translations")).toBe("translations");
+    expect(adminTab("ai")).toBe("ai");
     expect(adminTab("log")).toBe("log");
     expect(adminTab("users")).toBe("users");
     expect(adminTab(undefined)).toBe("overview");
     expect(adminTab("nonsense")).toBe("overview");
     expect(adminTab("Users")).toBe("overview");
     expect(adminTab(["log", "users"])).toBe("log");
+  });
+});
+
+describe("AI spending", () => {
+  it("names every job the backend counts, and the total row Total", () => {
+    expect(["DEFINITION", "EXAMPLE", "TRANSLATION", "WRITING_FEEDBACK", "WRITING_GRADE", "WORD_MEANING", "CONTENT_REVIEW", "TOPIC_TAGS"].map(aiJobName)).toEqual([
+      "Word definitions", "Example sentences", "Translations", "Writing feedback", "Writing test grades", "Word meanings",
+      "Content review", "Topic tagging",
+    ]);
+    expect(aiJobName(null)).toBe("Total");
+    expect(aiJobName("SOMETHING_NEW")).toBe("SOMETHING_NEW");
   });
 });
 

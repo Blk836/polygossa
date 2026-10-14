@@ -38,15 +38,17 @@ public class AdminController {
     private final AdminUsers users;
     private final AdminLog log;
     private final AdminTranslations translations;
+    private final AdminAi ai;
 
     public AdminController(CurrentUser currentUser, Admins admins, AdminStats stats, AdminUsers users, AdminLog log,
-                           AdminTranslations translations) {
+                           AdminTranslations translations, AdminAi ai) {
         this.currentUser = currentUser;
         this.admins = admins;
         this.stats = stats;
         this.users = users;
         this.log = log;
         this.translations = translations;
+        this.ai = ai;
     }
 
     private User admin(AuthUser principal) {
@@ -69,6 +71,13 @@ public class AdminController {
                                                  @RequestParam(defaultValue = "30") int days) {
         admin(principal);
         return translations.report(checkedDays(days));
+    }
+
+    @GetMapping("/ai")
+    public AdminAi.Report ai(@AuthenticationPrincipal AuthUser principal,
+                             @RequestParam(defaultValue = "30") int days) {
+        admin(principal);
+        return ai.report(checkedDays(days));
     }
 
     private static int checkedDays(int days) {
