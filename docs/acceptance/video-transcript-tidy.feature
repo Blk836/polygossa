@@ -24,11 +24,18 @@ Feature: Tidying automatic YouTube transcripts
     And clicking a word or line still jumps the video to that moment
 
   Scenario: A caption line the AI changes keeps its original words
-    Given the AI's version of one caption line changes, adds or drops a word, or moves a word to another line
+    Given the AI's version of one caption line changes, adds or drops a word
     When I import the video
     Then that one line keeps its original text
     And the other caption lines in the same part are still tidied
     And every word, tidied or not, keeps its timing
+
+  Scenario: The AI merges, splits or shifts caption lines
+    Given the AI's reply has every word, but joins lines, splits them, or moves a word to the next line
+    When I import the video
+    Then the tidied text is cut back at the original caption lines, each with exactly its own words
+    And every word keeps its timing
+    But if a word also changed, that part keeps its original lines
 
   Scenario: Fillers the AI drops don't cost the line
     Given a caption line contains a filler such as "euh" or "hum"

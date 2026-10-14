@@ -73,17 +73,42 @@ class TidyLinesTest {
     }
 
     @Test
-    void aWordMovedToAnotherLineKeepsBothLinesOriginal() {
+    void aWordMovedToAnotherLineGoesBackToItsOwnLine() {
         var tidied = TidyLines.apply(CUES, List.of("Hello, friends. How are", "you? Today we cook rice."), EN);
-        assertThat(texts(tidied.get())).containsExactly("hello friends how are you", "today we cook rice");
+        assertThat(texts(tidied.get())).containsExactly("Hello, friends. How are you?", "Today we cook rice.");
     }
 
     @Test
-    void aMissingOrExtraLineLeavesThePartUntidied() {
-        assertThat(TidyLines.apply(CUES, List.of("Hello, friends. How are you? Today we cook rice."), EN)).isEmpty();
-        assertThat(TidyLines.apply(CUES, List.of("Hello, friends.", "How are you?", "Today we cook rice."), EN))
-                .isEmpty();
+    void mergedOrSplitLinesAreCutBackAtTheOriginalLines() {
+        assertThat(texts(TidyLines.apply(CUES, List.of("Hello, friends. How are you? Today we cook rice."), EN).get()))
+                .containsExactly("Hello, friends. How are you?", "Today we cook rice.");
+        assertThat(texts(TidyLines.apply(CUES, List.of("Hello, friends.", "How are you?", "Today we cook rice."), EN)
+                .get())).containsExactly("Hello, friends. How are you?", "Today we cook rice.");
+    }
+
+    @Test
+    void openingMarksStayWithTheWordAfterThem() {
+        var cues = List.of(cue(0, 1000, "hola amigos cómo"), cue(1000, 2000, "estáis hoy"));
+        var es = (Function<String, List<Token>>) text -> TOKENIZER.tokenize(Language.ES, text);
+        assertThat(texts(TidyLines.apply(cues, List.of("¡Hola, amigos! ¿Cómo estáis hoy?"), es).get()))
+                .containsExactly("¡Hola, amigos! ¿Cómo", "estáis hoy?");
+    }
+
+    @Test
+    void theWrongNumberOfLinesWithAChangedWordLeavesThePartUntidied() {
+        assertThat(TidyLines.apply(CUES, List.of("Hello, friends. How are you? Today we cook pasta."), EN)).isEmpty();
         assertThat(TidyLines.apply(CUES, null, EN)).isEmpty();
+    }
+
+    @Test
+    void aWordMovedAcrossLinesKeepsItsTime() {
+        var marked = List.of(cue(0, 2000, "hello friends how are", new WordMark(6, 500), new WordMark(14, 1000),
+                new WordMark(18, 1500)), cue(2000, 4000, "you today", new WordMark(4, 3000)));
+        var tidied = TidyLines.apply(marked, List.of("Hello, friends. How", "are you? Today."), EN).get();
+        assertThat(texts(tidied)).containsExactly("Hello, friends. How are", "you? Today.");
+        assertThat(tidied.get(0).words()).containsExactly(new WordMark(7, 500), new WordMark(16, 1000),
+                new WordMark(20, 1500));
+        assertThat(tidied.get(1).words()).containsExactly(new WordMark(5, 3000));
     }
 
     @Test

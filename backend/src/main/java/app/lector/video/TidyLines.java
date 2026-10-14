@@ -51,8 +51,12 @@ final class TidyLines {
     }
 
     static Optional<List<Cue>> apply(List<Cue> cues, List<String> lines, Function<String, List<Token>> tokenize) {
-        if (lines == null || lines.size() != cues.size()) {
+        if (lines == null) {
             return Optional.empty();
+        }
+        Optional<List<Cue>> recut = recut(cues, String.join(" ", lines), tokenize);
+        if (recut.isPresent() || lines.size() != cues.size()) {
+            return recut;
         }
         List<Cue> out = new ArrayList<>();
         for (int i = 0; i < cues.size(); i++) {
@@ -60,6 +64,44 @@ final class TidyLines {
             out.add(retext(cue, lines.get(i), tokenize).orElse(cue));
         }
         return Optional.of(out);
+    }
+
+    private static Optional<List<Cue>> recut(List<Cue> cues, String reply, Function<String, List<Token>> tokenize) {
+        List<Word> before = new ArrayList<>();
+        List<Integer> counts = new ArrayList<>();
+        for (Cue cue : cues) {
+            List<Word> words = words(cue.text(), tokenize);
+            if (words.isEmpty()) {
+                return Optional.empty();
+            }
+            before.addAll(words);
+            counts.add(words.size());
+        }
+        String text = SPACE.matcher(reply).replaceAll(" ").strip();
+        Optional<String> restored = withFillers(before, text, tokenize);
+        List<Word> after = restored.map(r -> words(r, tokenize)).orElse(List.of());
+        if (restored.isEmpty() || !keys(before).equals(keys(after))) {
+            return Optional.empty();
+        }
+        List<Cue> out = new ArrayList<>();
+        int from = 0;
+        int k = 0;
+        for (int i = 0; i < cues.size(); i++) {
+            k += counts.get(i);
+            int to = k < after.size() ? cut(restored.get(), from, after.get(k).offset()) : restored.get().length();
+            Optional<Cue> line = retext(cues.get(i), restored.get().substring(from, to), tokenize);
+            if (line.isEmpty()) {
+                return Optional.empty();
+            }
+            out.add(line.get());
+            from = to;
+        }
+        return Optional.of(out);
+    }
+
+    private static int cut(String text, int from, int nextWord) {
+        int space = text.lastIndexOf(' ', nextWord - 1);
+        return space > from ? space : nextWord;
     }
 
     static Part punctuated(List<Cue> cues, Function<String, List<Token>> tokenize) {

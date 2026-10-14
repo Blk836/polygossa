@@ -216,9 +216,22 @@ class TranscriptTidyApiTest {
     }
 
     @Test
-    void aReplyWithTheWrongNumberOfLinesKeepsThePartAsToday() throws Exception {
+    void aReplyWithTheWrongNumberOfLinesIsCutBackAtTheCaptionLinesAndKeepsItsTiming() throws Exception {
         video(BARE, true);
+        AI.setFailing(true);
+        List<Timed> before = wordTimes(importVideo());
+        AI.reset();
+        AI.reply("{\"category\":\"food\"}");
         AI.replyWhen(TIDY, lines("¡Hola, amigos! Hoy cocinamos arroz."));
+        JsonNode detail = importVideo();
+        assertThat(content(detail)).isEqualTo("¡Hola, amigos! Hoy cocinamos arroz.");
+        assertThat(wordTimes(detail)).isEqualTo(before);
+    }
+
+    @Test
+    void aReplyWithTheWrongNumberOfLinesAndAChangedWordKeepsThePartAsToday() throws Exception {
+        video(BARE, true);
+        AI.replyWhen(TIDY, lines("¡Hola, amigas! Hoy cocinamos arroz."));
         assertThat(content(importVideo())).isEqualTo("hola amigos\nhoy cocinamos arroz");
     }
 
