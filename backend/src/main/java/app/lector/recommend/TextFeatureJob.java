@@ -1,6 +1,7 @@
 package app.lector.recommend;
 
 import app.lector.ai.AiClient;
+import app.lector.ai.AiJob;
 import app.lector.ai.EmbeddingClient;
 import app.lector.common.JobLock;
 import app.lector.text.TextFeature;
@@ -62,7 +63,7 @@ public class TextFeatureJob {
     }
 
     public int runOnce() {
-        if (!ai.enabled()) {
+        if (!ai.enabled() || !ai.systemBudgetLeft()) {
             return 0;
         }
         Instant now = clock.instant();
@@ -71,10 +72,15 @@ public class TextFeatureJob {
         if (ids.size() < batch) {
             ids.addAll(features.findDue(embeddings.model(), now, PageRequest.of(0, batch - ids.size())));
         }
+        int processed = 0;
         for (Long id : ids) {
+            if (!ai.systemBudgetLeft()) {
+                break;
+            }
             process(id, now);
+            processed++;
         }
-        return ids.size();
+        return processed;
     }
 
     private void process(Long textId, Instant now) {
@@ -95,7 +101,7 @@ public class TextFeatureJob {
             return true;
         }
         try {
-            TopicTagger.Tags t = TopicTagger.parse(ai.completeJson(TopicTagger.SYSTEM,
+            TopicTagger.Tags t = TopicTagger.parse(ai.completeJson(AiJob.TOPIC_TAGS, TopicTagger.SYSTEM,
                     TopicTagger.user(s.language(), s.title(), s.content()), 0));
             f.withTags(t.topics(), t.summary(), t.register(), t.suitableFor(), ai.model());
             return true;

@@ -1,6 +1,7 @@
 package app.lector.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -21,11 +22,12 @@ class AiTutorLanguageTest {
 
     @BeforeEach
     void reply() {
-        when(ai.completeJson(anyString(), anyString())).thenReturn(JsonMapper.builder().build().readTree("{}"));
+        when(ai.completeJson(any(AiJob.class), anyString(), anyString()))
+                .thenReturn(JsonMapper.builder().build().readTree("{}"));
     }
 
     private String prompt() {
-        verify(ai).completeJson(system.capture(), anyString());
+        verify(ai).completeJson(any(AiJob.class), system.capture(), anyString());
         return system.getValue();
     }
 

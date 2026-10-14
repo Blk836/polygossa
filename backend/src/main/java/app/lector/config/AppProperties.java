@@ -32,7 +32,8 @@ public record AppProperties(
             @DefaultValue("30") int dailyLimit,
             @DefaultValue("text-embedding-3-small") String embeddingModel,
             @DefaultValue("5s") Duration meaningTimeout,
-            @DefaultValue("gpt-4.1-mini") String meaningModel) {
+            @DefaultValue("gpt-4.1-mini") String meaningModel,
+            @DefaultValue("500000") long systemDailyTokens) {
 
         public boolean enabled() {
             return apiKey != null && !apiKey.isBlank();

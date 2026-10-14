@@ -60,6 +60,7 @@ app:
     base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
     model: ${OPENAI_MODEL:gpt-4o-mini}
     daily-limit: ${AI_DAILY_LIMIT:30}
+    system-daily-tokens: ${AI_SYSTEM_DAILY_TOKENS:500000}
     embedding-model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
   translation:
     enabled: ${TRANSLATION_ENABLED:false}
