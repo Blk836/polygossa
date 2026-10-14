@@ -199,6 +199,7 @@ const AI_JOBS: Record<string, string> = {
   WORD_MEANING: "Word meanings",
   CONTENT_REVIEW: "Content review",
   TOPIC_TAGS: "Topic tagging",
+  TRANSCRIPT_TIDY: "Transcript tidying",
 };
 
 export function aiJobName(job: string | null): string {

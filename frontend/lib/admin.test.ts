@@ -78,9 +78,9 @@ describe("admin tabs", () => {
 
 describe("AI spending", () => {
   it("names every job the backend counts, and the total row Total", () => {
-    expect(["DEFINITION", "EXAMPLE", "TRANSLATION", "WRITING_FEEDBACK", "WRITING_GRADE", "WORD_MEANING", "CONTENT_REVIEW", "TOPIC_TAGS"].map(aiJobName)).toEqual([
+    expect(["DEFINITION", "EXAMPLE", "TRANSLATION", "WRITING_FEEDBACK", "WRITING_GRADE", "WORD_MEANING", "CONTENT_REVIEW", "TOPIC_TAGS", "TRANSCRIPT_TIDY"].map(aiJobName)).toEqual([
       "Word definitions", "Example sentences", "Translations", "Writing feedback", "Writing test grades", "Word meanings",
-      "Content review", "Topic tagging",
+      "Content review", "Topic tagging", "Transcript tidying",
     ]);
     expect(aiJobName(null)).toBe("Total");
     expect(aiJobName("SOMETHING_NEW")).toBe("SOMETHING_NEW");
