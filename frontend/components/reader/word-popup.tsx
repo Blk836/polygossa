@@ -164,7 +164,7 @@ export function WordPopup(props: Props) {
   }
 
   return (
-    <div className="flex max-h-[70vh] flex-col overflow-hidden rounded-t-2xl border border-line bg-card shadow-xl sm:max-h-[28rem] sm:rounded-2xl">
+    <div className="flex max-h-[70vh] flex-col overflow-hidden rounded-t-2xl border border-line bg-card shadow-xl sm:max-h-[min(28rem,var(--pmh,28rem))] sm:rounded-2xl">
       <PopupHeader target={target} speechLocale={props.speechLocale} onClose={props.onClose} />
       <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
         {target.back && <BackToPhrase display={target.back.display} onBack={props.onBack} />}

@@ -104,7 +104,7 @@ test("turning through a lesson whose pages scroll never changes how it is split"
   expect(still, "pages that don't").toBeGreaterThan(0);
 });
 
-test("opening a word whose popup reaches below the window keeps the page", async ({ page }) => {
+test("opening the last word on a page keeps the page, and its popup fits without scrolling", async ({ page }) => {
   await page.setViewportSize({ width: 930, height: 560 });
   created = await createText(page);
   await openReader(page, `/read/${created.id}`);
@@ -116,7 +116,7 @@ test("opening a word whose popup reaches below the window keeps the page", async
   await wordsShown(page).last().click();
   await expect(page.getByRole("button", { name: "Close", exact: true })).toBeVisible();
   await page.waitForTimeout(500);
-  expect(await overflow(page)).toBeGreaterThan(0);
+  expect(await overflow(page)).toBeLessThanOrEqual(0);
   await expect(pager(page)).toContainText(`Page 2 of ${count}`);
   expect(await firstWord(page)).toBe(first);
 });
