@@ -68,8 +68,6 @@ public class Text {
     private String videoId;
 
     private Integer videoDurationSeconds;
-    @Column(nullable = false)
-    private boolean transcriptChecked;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 24)
@@ -93,7 +91,6 @@ public class Text {
     public void setTitle(String title) { this.title = title; }
     public Language getLanguage() { return language; }
     public String getContent() { return body.getContent(); }
-    void setContent(String content) { body.setContent(content); }
     public String getTokensJson() { return body.getTokensJson(); }
     public void setTokensJson(String tokensJson) { body.setTokensJson(tokensJson); }
     public String getWordsJson() { return wordsJson; }
@@ -131,9 +128,6 @@ public class Text {
     public boolean isVideo() {
         return videoId != null;
     }
-
-    public boolean isTranscriptChecked() { return transcriptChecked; }
-    public void setTranscriptChecked(boolean transcriptChecked) { this.transcriptChecked = transcriptChecked; }
     public Instant getCreatedAt() { return createdAt; }
 
     public boolean hasAudio() {

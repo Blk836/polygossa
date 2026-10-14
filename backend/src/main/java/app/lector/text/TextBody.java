@@ -34,7 +34,6 @@ public class TextBody {
     }
 
     public String getContent() { return content; }
-    void setContent(String content) { this.content = content; }
     public String getTokensJson() { return tokensJson; }
     public void setTokensJson(String tokensJson) { this.tokensJson = tokensJson; }
     public String getTimingsJson() { return timingsJson; }
