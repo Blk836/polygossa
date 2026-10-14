@@ -61,6 +61,9 @@ test("learners never see the panel", async ({ browser, playwright }) => {
   expect((await signup.get("/api/admin/translations")).status()).toBe(403);
   await page.goto("/admin?tab=translations");
   await expect(page.getByText("Only the team can use the admin panel")).toBeVisible();
+  expect((await signup.get("/api/admin/ai")).status()).toBe(403);
+  await page.goto("/admin?tab=ai");
+  await expect(page.getByText("Only the team can use the admin panel")).toBeVisible();
   await context.close();
   await signup.dispose();
 });

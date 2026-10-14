@@ -48,7 +48,7 @@ async function stubTranslations(page: Page, pairs: TranslationRow[]): Promise<nu
 test("the admin page opens on Overview, and each tab keeps its own address", async ({ page }) => {
   await stubTranslations(page, [FR_EN]);
   await page.goto("/admin");
-  await expect(tabs(page).getByRole("link")).toHaveText(["Overview", "Users", "Translations", "Log"]);
+  await expect(tabs(page).getByRole("link")).toHaveText(["Overview", "Users", "Translations", "AI", "Log"]);
   await expect(tabs(page).locator("[aria-current=page]")).toHaveText("Overview");
   await expect(page.getByTestId("admin-tiles")).toBeVisible();
 
