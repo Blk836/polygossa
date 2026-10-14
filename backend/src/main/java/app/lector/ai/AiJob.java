@@ -8,13 +8,14 @@ public enum AiJob {
     WRITING_GRADE(false, 1000, 2),
     WORD_MEANING(false, 200, 0),
     CONTENT_REVIEW(false, 150, 0),
-    TOPIC_TAGS(true, 400, 0);
+    TOPIC_TAGS(true, 400, 0),
+    TRANSCRIPT_TIDY(true, 300, 0.5);
 
     private final boolean system;
     private final int baseTokens;
-    private final int tokensPerCharacter;
+    private final double tokensPerCharacter;
 
-    AiJob(boolean system, int baseTokens, int tokensPerCharacter) {
+    AiJob(boolean system, int baseTokens, double tokensPerCharacter) {
         this.system = system;
         this.baseTokens = baseTokens;
         this.tokensPerCharacter = tokensPerCharacter;
@@ -25,6 +26,6 @@ public enum AiJob {
     }
 
     public int maxTokens(String input) {
-        return baseTokens + tokensPerCharacter * input.length();
+        return baseTokens + (int) (tokensPerCharacter * input.length());
     }
 }

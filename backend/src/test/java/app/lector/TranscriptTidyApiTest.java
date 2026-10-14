@@ -297,7 +297,7 @@ class TranscriptTidyApiTest {
         AI.usage(120, 40);
         assertThat(content(importVideo())).isEqualTo("¡Hola, amigos! Hoy cocinamos arroz.");
         assertThat(allowance.findAll()).isEmpty();
-        assertThat(jobUsage.findAll()).filteredOn(u -> u.getJob().equals(AiJob.TRANSCRIPT_TIDY.name()))
+        assertThat(jobUsage.since(spending.today())).filteredOn(u -> u.getJob().equals(AiJob.TRANSCRIPT_TIDY.name()))
                 .singleElement()
                 .satisfies(u -> {
                     assertThat(u.getCalls()).isEqualTo(1);
@@ -305,6 +305,14 @@ class TranscriptTidyApiTest {
                     assertThat(u.getTokensOut()).isEqualTo(40);
                 });
         assertThat(AiJob.TRANSCRIPT_TIDY.system()).isTrue();
+    }
+
+    @Test
+    void everyAiJobCanBeCounted() {
+        for (AiJob job : AiJob.values()) {
+            jobUsage.add(spending.today(), job.name(), 0, 0, 0);
+        }
+        assertThat(jobUsage.since(spending.today())).hasSize(AiJob.values().length);
     }
 
     private static String cueText(String marker) {

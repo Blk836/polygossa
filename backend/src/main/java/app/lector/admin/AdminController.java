@@ -7,6 +7,7 @@ import app.lector.user.AuthUser;
 import app.lector.user.CurrentUser;
 import app.lector.user.Tier;
 import app.lector.user.User;
+import app.lector.video.TranscriptRetidy;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -39,9 +40,10 @@ public class AdminController {
     private final AdminLog log;
     private final AdminTranslations translations;
     private final AdminAi ai;
+    private final AdminTranscripts transcripts;
 
     public AdminController(CurrentUser currentUser, Admins admins, AdminStats stats, AdminUsers users, AdminLog log,
-                           AdminTranslations translations, AdminAi ai) {
+                           AdminTranslations translations, AdminAi ai, AdminTranscripts transcripts) {
         this.currentUser = currentUser;
         this.admins = admins;
         this.stats = stats;
@@ -49,6 +51,7 @@ public class AdminController {
         this.log = log;
         this.translations = translations;
         this.ai = ai;
+        this.transcripts = transcripts;
     }
 
     private User admin(AuthUser principal) {
@@ -142,6 +145,12 @@ public class AdminController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeText(@AuthenticationPrincipal AuthUser principal, @PathVariable Long id) {
         users.removeText(admin(principal), id);
+    }
+
+    @PostMapping("/texts/{id}/tidy-transcript")
+    public TranscriptRetidy.Report tidyTranscript(@AuthenticationPrincipal AuthUser principal,
+                                                   @PathVariable Long id) {
+        return transcripts.tidy(admin(principal), id);
     }
 
     @GetMapping("/actions")

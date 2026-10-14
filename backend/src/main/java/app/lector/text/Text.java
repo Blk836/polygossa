@@ -91,6 +91,7 @@ public class Text {
     public void setTitle(String title) { this.title = title; }
     public Language getLanguage() { return language; }
     public String getContent() { return body.getContent(); }
+    void setContent(String content) { body.setContent(content); }
     public String getTokensJson() { return body.getTokensJson(); }
     public void setTokensJson(String tokensJson) { body.setTokensJson(tokensJson); }
     public String getWordsJson() { return wordsJson; }
