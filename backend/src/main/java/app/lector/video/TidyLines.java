@@ -78,7 +78,7 @@ final class TidyLines {
             counts.add(words.size());
         }
         String text = SPACE.matcher(reply).replaceAll(" ").strip();
-        Optional<String> restored = withFillers(before, text, tokenize);
+        Optional<String> restored = restoreWords(before, text, tokenize);
         List<Word> after = restored.map(r -> words(r, tokenize)).orElse(List.of());
         if (restored.isEmpty() || !keys(before).equals(keys(after))) {
             return Optional.empty();
@@ -137,7 +137,7 @@ final class TidyLines {
         if (text.isEmpty()) {
             return Optional.empty();
         }
-        Optional<String> restored = withFillers(before, text, tokenize);
+        Optional<String> restored = restoreWords(before, text, tokenize);
         if (restored.isEmpty()) {
             return Optional.empty();
         }
@@ -155,24 +155,44 @@ final class TidyLines {
         return Optional.of(new Cue(cue.startMs(), cue.endMs(), restored.get(), 0, 0, marks));
     }
 
-    private static Optional<String> withFillers(List<Word> before, String text, Function<String, List<Token>> tokenize) {
+    private record Edit(int at, int length, String text) {}
+
+    private static Optional<String> restoreWords(List<Word> before, String text, Function<String, List<Token>> tokenize) {
         List<Word> after = words(text, tokenize);
-        StringBuilder out = new StringBuilder(text);
-        int shift = 0;
+        List<Edit> edits = new ArrayList<>();
         int j = 0;
-        for (Word word : before) {
+        int swapped = 0;
+        for (int i = 0; i < before.size(); i++) {
+            Word word = before.get(i);
             if (j < after.size() && after.get(j).key().equals(word.key())) {
                 j++;
-            } else if (FILLERS.contains(word.key())) {
+            } else if (droppedFiller(before, i, after, j)) {
                 boolean atEnd = j == after.size();
-                String insert = atEnd ? " " + word.text() : word.text() + " ";
-                out.insert(atEnd ? out.length() : after.get(j).offset() + shift, insert);
-                shift += insert.length();
+                edits.add(new Edit(atEnd ? text.length() : after.get(j).offset(), 0,
+                        atEnd ? " " + word.text() : word.text() + " "));
+            } else if (j < after.size()) {
+                edits.add(new Edit(after.get(j).offset(), after.get(j).text().length(), word.text()));
+                j++;
+                swapped++;
             } else {
                 return Optional.empty();
             }
         }
-        return j == after.size() ? Optional.of(out.toString()) : Optional.empty();
+        if (j != after.size() || swapped > Math.max(2, before.size() / 20)) {
+            return Optional.empty();
+        }
+        StringBuilder out = new StringBuilder(text);
+        for (Edit edit : edits.reversed()) {
+            out.replace(edit.at(), edit.at() + edit.length(), edit.text());
+        }
+        return Optional.of(out.toString());
+    }
+
+    private static boolean droppedFiller(List<Word> before, int i, List<Word> after, int j) {
+        if (!FILLERS.contains(before.get(i).key())) {
+            return false;
+        }
+        return j == after.size() || i + 1 < before.size() && before.get(i + 1).key().equals(after.get(j).key());
     }
 
     static SubtitleParser.Parsed join(List<Part> parts, String separator) {

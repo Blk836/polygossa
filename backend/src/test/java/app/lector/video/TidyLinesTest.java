@@ -49,8 +49,14 @@ class TidyLinesTest {
     }
 
     @Test
-    void aChangedWordKeepsOnlyThatLineOriginal() {
+    void aWordTheAiChangedIsPutBackWithItsPunctuationKept() {
         var tidied = TidyLines.apply(CUES, List.of("Hello, friends. How are you?", "Today we cook pasta."), EN);
+        assertThat(texts(tidied.get())).containsExactly("Hello, friends. How are you?", "Today we cook rice.");
+    }
+
+    @Test
+    void tooManyChangedWordsKeepThatLineOriginal() {
+        var tidied = TidyLines.apply(CUES, List.of("Hello, friends. How are you?", "Tomorrow they eat pasta."), EN);
         assertThat(texts(tidied.get())).containsExactly("Hello, friends. How are you?", "today we cook rice");
     }
 
@@ -95,8 +101,8 @@ class TidyLinesTest {
     }
 
     @Test
-    void theWrongNumberOfLinesWithAChangedWordLeavesThePartUntidied() {
-        assertThat(TidyLines.apply(CUES, List.of("Hello, friends. How are you? Today we cook pasta."), EN)).isEmpty();
+    void theWrongNumberOfLinesWithAnAddedWordLeavesThePartUntidied() {
+        assertThat(TidyLines.apply(CUES, List.of("Hello, friends. How are you? Today we cook the rice."), EN)).isEmpty();
         assertThat(TidyLines.apply(CUES, null, EN)).isEmpty();
     }
 
@@ -109,6 +115,12 @@ class TidyLinesTest {
         assertThat(tidied.get(0).words()).containsExactly(new WordMark(7, 500), new WordMark(16, 1000),
                 new WordMark(20, 1500));
         assertThat(tidied.get(1).words()).containsExactly(new WordMark(5, 3000));
+    }
+
+    @Test
+    void aChangedWordInAReplyWithTheWrongNumberOfLinesIsPutBackToo() {
+        assertThat(texts(TidyLines.apply(CUES, List.of("Hello, friends. How are you? Today we cook pasta."), EN).get()))
+                .containsExactly("Hello, friends. How are you?", "Today we cook rice.");
     }
 
     @Test

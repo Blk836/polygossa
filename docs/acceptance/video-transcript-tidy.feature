@@ -23,8 +23,13 @@ Feature: Tidying automatic YouTube transcripts
     And a word at the start or end of a caption line
     And clicking a word or line still jumps the video to that moment
 
-  Scenario: A caption line the AI changes keeps its original words
-    Given the AI's version of one caption line changes, adds or drops a word
+  Scenario: A word the AI corrected is put back as it was spoken
+    Given the AI's version swaps a word for another, such as "entouré" for "entourée"
+    When I import the video
+    Then the original word is put back in its place, keeping the AI's punctuation around it
+
+  Scenario: A caption line the AI adds or drops words in keeps its original words
+    Given the AI's version of one caption line adds or drops a word, or swaps more than about 1 word in 20
     When I import the video
     Then that one line keeps its original text
     And the other caption lines in the same part are still tidied
@@ -35,7 +40,7 @@ Feature: Tidying automatic YouTube transcripts
     When I import the video
     Then the tidied text is cut back at the original caption lines, each with exactly its own words
     And every word keeps its timing
-    But if a word also changed, that part keeps its original lines
+    But if a word was also added or dropped, that part keeps its original lines
 
   Scenario: Fillers the AI drops don't cost the line
     Given a caption line contains a filler such as "euh" or "hum"

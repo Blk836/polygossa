@@ -207,9 +207,9 @@ class TranscriptTidyApiTest {
     }
 
     @Test
-    void aLineWhoseWordsChangedKeepsItsOriginalTextAndTheOthersAreTidied() throws Exception {
+    void aLineWithAnAddedWordKeepsItsOriginalTextAndTheOthersAreTidied() throws Exception {
         video(BARE, true);
-        AI.replyWhen(TIDY, lines("¡Hola, amigas!", "Hoy cocinamos arroz."));
+        AI.replyWhen(TIDY, lines("¡Hola, mis amigos!", "Hoy cocinamos arroz."));
         JsonNode detail = importVideo();
         assertThat(content(detail)).isEqualTo("hola amigos Hoy cocinamos arroz.");
         assertThat(detail.get("video").get("timings")).hasSize(5);
@@ -229,9 +229,16 @@ class TranscriptTidyApiTest {
     }
 
     @Test
-    void aReplyWithTheWrongNumberOfLinesAndAChangedWordKeepsThePartAsToday() throws Exception {
+    void aWordTheAiCorrectedIsPutBackAsSpoken() throws Exception {
         video(BARE, true);
-        AI.replyWhen(TIDY, lines("¡Hola, amigas! Hoy cocinamos arroz."));
+        AI.replyWhen(TIDY, lines("¡Hola, amigas!", "Hoy cocinamos arroz."));
+        assertThat(content(importVideo())).isEqualTo("¡Hola, amigos! Hoy cocinamos arroz.");
+    }
+
+    @Test
+    void aReplyWithTheWrongNumberOfLinesAndAnAddedWordKeepsThePartAsToday() throws Exception {
+        video(BARE, true);
+        AI.replyWhen(TIDY, lines("¡Hola, mis amigos! Hoy cocinamos arroz."));
         assertThat(content(importVideo())).isEqualTo("hola amigos\nhoy cocinamos arroz");
     }
 
