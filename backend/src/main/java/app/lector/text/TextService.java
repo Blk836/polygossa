@@ -38,7 +38,7 @@ import tools.jackson.databind.ObjectMapper;
 @Service
 public class TextService {
 
-    public static final int MAX_CONTENT_CHARS = 100_000;
+    public static final int MAX_CONTENT_CHARS = ContentLimit.TEXT.maxChars();
 
     private final TextRepository texts;
     private final VocabularyRepository vocabulary;
@@ -88,13 +88,17 @@ public class TextService {
     @Transactional
     public Text createUnchecked(User owner, String title, Language language, String content, String sourceUrl,
                                 boolean isPublic, List<SubtitleParser.Cue> cues) {
+        return createUnchecked(owner, title, language, content, sourceUrl, isPublic, cues, ContentLimit.TEXT);
+    }
+
+    @Transactional
+    public Text createUnchecked(User owner, String title, Language language, String content, String sourceUrl,
+                                boolean isPublic, List<SubtitleParser.Cue> cues, ContentLimit limit) {
         String clean = content == null ? "" : content.strip();
         if (clean.isEmpty()) {
             throw ApiException.badRequest("The text is empty");
         }
-        if (clean.length() > MAX_CONTENT_CHARS) {
-            throw ApiException.badRequest("Texts are limited to " + MAX_CONTENT_CHARS + " characters; split it into parts");
-        }
+        limit.check(clean.length());
         if (title == null || title.isBlank()) {
             throw ApiException.badRequest("A title is required");
         }

@@ -93,7 +93,7 @@ function YouTubeInput({ draft, update }: { draft: Draft; update: (patch: Partial
             <input type="file" accept=".srt,.vtt,text/vtt" onChange={(e) => update({ file: e.target.files?.[0] ?? null })} className={fileInputClass} />
           </Field>
           <Field label="Or paste the transcript" hint="Timings are estimated from the video’s length.">
-            <textarea className={`${inputClass} min-h-32 font-reading`} value={draft.transcript} maxLength={100_000}
+            <textarea className={`${inputClass} min-h-32 font-reading`} value={draft.transcript} maxLength={300_000}
               onChange={(e) => update({ transcript: e.target.value })} disabled={!!draft.file} />
           </Field>
         </div>
