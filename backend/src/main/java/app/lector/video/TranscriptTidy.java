@@ -9,7 +9,6 @@ import app.lector.token.Token;
 import app.lector.token.TokenizationService;
 import app.lector.video.TidyLines.Part;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -33,16 +33,15 @@ public class TranscriptTidy {
     private static final int PARALLEL = 6;
 
     static final String INSTRUCTIONS = "Restore punctuation and capital letters in an automatic speech transcript. "
-            + "You get JSON {\"language\", \"lines\"}: the caption lines of a video, in order; the first line may "
-            + "start mid-sentence and the last may end mid-sentence. Reply with JSON {\"lines\": [...], "
-            + "\"paragraphStarts\": [...]}. \"lines\" has exactly one string per input line, in the same order. "
+            + "You get JSON {\"language\", \"lines\"}: the caption lines of a video, in order. A caption line is not "
+            + "a sentence: sentences usually run across several lines, and most lines end mid-sentence without any "
+            + "punctuation. Reply with JSON {\"lines\": [...]}, exactly one string per input line, in the same order. "
             + "Each keeps exactly the same words in the same order as its input line: only add punctuation (full "
             + "stops, commas, question and exclamation marks, colons, quotation marks, and the language's own marks "
-            + "such as Spanish ¿ and ¡) and change letters between upper and lower case. Never add, remove, correct, "
-            + "translate, join or split words, and never move a word to another line, even one that looks misheard. "
-            + "Keep filler words such as euh, um or äh, and bracketed sound tags such as [Musique], as they are. "
-            + "\"paragraphStarts\" lists the 0-based indexes of lines that begin a new paragraph, where the topic "
-            + "changes.";
+            + "such as Spanish ¿ and ¡) where the sentence needs it, and change letters between upper and lower case. "
+            + "Never add, remove, correct, translate, join or split words, and never move a word to another line, "
+            + "even one that looks misheard. Keep filler words such as euh, um or äh, and bracketed sound tags such "
+            + "as [Musique], as they are.";
 
     public record Result(SubtitleParser.Parsed parsed, int lines, int changedLines) {}
 
@@ -63,16 +62,21 @@ public class TranscriptTidy {
     public Result tidyAutomatic(Language language, List<Cue> cues) {
         Function<String, List<Token>> tokenize = text -> tokenizer.tokenize(language, text);
         String separator = language.spaceDelimited() ? " " : "";
-        if (!TidyLines.unpunctuated(cues, tokenize)) {
-            return result(cues, TidyLines.join(List.of(TidyLines.punctuated(cues, tokenize)), separator));
-        }
-        if (!ai.enabled() || !ai.systemBudgetLeft()) {
-            return result(cues, SubtitleParser.join(cues));
-        }
         try {
-            List<Part> parts = ask(language, chunks(cues, tokenize), tokenize);
-            log.info("Tidied {} of {} parts of a transcript", parts.stream().filter(Part::tidied).count(), parts.size());
-            return result(cues, TidyLines.join(parts, separator));
+            List<List<Cue>> chunks = chunks(cues, tokenize);
+            List<Integer> bare = IntStream.range(0, chunks.size())
+                    .filter(i -> TidyLines.unpunctuated(chunks.get(i), tokenize)).boxed().toList();
+            List<Part> parts = new ArrayList<>(chunks.stream().map(c -> new Part(c, Set.of(), true)).toList());
+            bare.forEach(i -> parts.set(i, Part.untidied(chunks.get(i))));
+            if (!bare.isEmpty() && ai.enabled() && ai.systemBudgetLeft()) {
+                List<Part> answers = ask(language, bare.stream().map(chunks::get).toList(), tokenize);
+                for (int k = 0; k < bare.size(); k++) {
+                    parts.set(bare.get(k), answers.get(k));
+                }
+                log.info("Tidied {} of {} parts of a transcript", answers.stream().filter(Part::tidied).count(),
+                        answers.size());
+            }
+            return result(cues, TidyLines.join(TidyLines.paragraphs(parts, tokenize), separator));
         } catch (RuntimeException e) {
             log.warn("Could not tidy a transcript: {}", e.getMessage());
             return result(cues, SubtitleParser.join(cues));
@@ -139,7 +143,7 @@ public class TranscriptTidy {
                     "lines", chunk.stream().map(Cue::text).toList()));
             JsonNode answer = ai.completeJson(AiJob.TRANSCRIPT_TIDY, INSTRUCTIONS, request, 0);
             return TidyLines.apply(chunk, strings(answer.path("lines")), tokenize)
-                    .map(cues -> new Part(cues, indexes(answer.path("paragraphStarts"), cues.size()), true))
+                    .map(cues -> new Part(cues, Set.of(), true))
                     .orElseGet(() -> {
                         log.info("A tidied transcript part had the wrong number of lines; keeping the original");
                         return Part.untidied(chunk);
@@ -160,19 +164,6 @@ public class TranscriptTidy {
                 return null;
             }
             out.add(item.asString());
-        }
-        return out;
-    }
-
-    private static Set<Integer> indexes(JsonNode array, int size) {
-        Set<Integer> out = new HashSet<>();
-        if (!array.isArray()) {
-            return out;
-        }
-        for (JsonNode item : array) {
-            if (item.isInt() && item.asInt() >= 0 && item.asInt() < size) {
-                out.add(item.asInt());
-            }
         }
         return out;
     }

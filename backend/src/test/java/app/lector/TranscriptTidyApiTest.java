@@ -145,7 +145,7 @@ class TranscriptTidyApiTest {
 
     private static String lines(String... lines) {
         return "{\"lines\":[" + Arrays.stream(lines).map(l -> "\"" + l + "\"")
-                .collect(Collectors.joining(",")) + "],\"paragraphStarts\":[]}";
+                .collect(Collectors.joining(",")) + "]}";
     }
 
     private JsonNode untidiedImport() throws Exception {
@@ -190,10 +190,20 @@ class TranscriptTidyApiTest {
     }
 
     @Test
-    void paragraphBreaksGoWhereTheAiSuggests() throws Exception {
+    void aParagraphStartsAtASentenceEndAboutEveryHundredWords() throws Exception {
+        String hundred = "palabra ".repeat(99) + "uno";
+        video(YouTubeStub.srv3("0|2000|" + hundred, "2000|2000|hoy cocinamos arroz", "4000|2000|y luego comemos"), true);
+        AI.replyWhen(TIDY, lines("Palabra " + "palabra ".repeat(98) + "uno.", "Hoy cocinamos arroz", "y luego comemos."));
+        assertThat(content(importVideo()))
+                .isEqualTo("Palabra " + "palabra ".repeat(98) + "uno.\nHoy cocinamos arroz y luego comemos.");
+    }
+
+    @Test
+    void theAiIsNotAskedForParagraphsAndAListItSendsAnywayIsIgnored() throws Exception {
         video(BARE, true);
-        AI.replyWhen(TIDY, "{\"lines\":[\"¡Hola, amigos!\",\"Hoy cocinamos arroz.\"],\"paragraphStarts\":[1]}");
-        assertThat(content(importVideo())).isEqualTo("¡Hola, amigos!\nHoy cocinamos arroz.");
+        AI.replyWhen(TIDY, "{\"lines\":[\"¡Hola, amigos!\",\"Hoy cocinamos arroz.\"],\"paragraphStarts\":[0,1]}");
+        assertThat(content(importVideo())).isEqualTo("¡Hola, amigos! Hoy cocinamos arroz.");
+        assertThat(tidyRequests().getFirst()).doesNotContainIgnoringCase("paragraph");
     }
 
     @Test
@@ -320,7 +330,11 @@ class TranscriptTidyApiTest {
     }
 
     private static String tidied(String marker) {
-        return "Palabra " + "palabra ".repeat(148) + marker + ".";
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < 149; i++) {
+            out.append(i % 10 == 0 ? "Palabra" : "palabra").append(i % 10 == 9 ? ". " : " ");
+        }
+        return out.append(marker).append(".").toString();
     }
 
     @Test
@@ -336,8 +350,30 @@ class TranscriptTidyApiTest {
         String text = content(importVideo());
         assertThat(tidyRequests()).hasSize(3);
         assertThat(tidyRequests()).allSatisfy(r -> assertThat(r.split("palabra", -1).length - 1).isLessThanOrEqualTo(400));
-        assertThat(text).isEqualTo(tidied("alfa") + " " + tidied("bravo") + "\n" + cueText("charlie") + "\n"
-                + cueText("delta") + "\n" + tidied("echo") + " " + tidied("foxtrot"));
+        assertThat(text).isEqualTo(tidied("alfa") + "\n" + tidied("bravo") + "\n" + cueText("charlie") + "\n"
+                + cueText("delta") + "\n" + tidied("echo") + "\n" + tidied("foxtrot"));
+    }
+
+    @Test
+    void tidyingAgainSendsOnlyThePartsStillUnpunctuated() throws Exception {
+        List<String> markers = List.of("alfa", "bravo", "charlie", "delta", "echo", "foxtrot");
+        List<String> timed = new ArrayList<>();
+        IntStream.range(0, markers.size())
+                .forEach(i -> timed.add(i * 5000 + "|5000|" + cueText(markers.get(i))));
+        video(YouTubeStub.srv3(timed.toArray(String[]::new)), true);
+        AI.replyWhen("alfa", lines(tidied("alfa"), tidied("bravo")));
+        long id = importVideo().get("text").get("id").asLong();
+        assertThat(tidyRequests()).hasSize(3);
+        AI.reset();
+        AI.replyWhen("charlie", lines(tidied("charlie"), tidied("delta")));
+        AI.replyWhen("echo", lines(tidied("echo"), tidied("foxtrot")));
+
+        JsonNode report = api.post(admin(), "/api/admin/texts/" + id + "/tidy-transcript", "{}", 200);
+
+        assertThat(tidyRequests()).hasSize(2).noneMatch(r -> r.contains("alfa"));
+        assertThat(report.get("tidiedLines").asInt()).isEqualTo(4);
+        assertThat(content(api.get(user, "/api/texts/" + id, 200))).isEqualTo(String.join("\n",
+                markers.stream().map(TranscriptTidyApiTest::tidied).toList()));
     }
 
     @Test

@@ -63,16 +63,30 @@ final class TidyLines {
     }
 
     static Part punctuated(List<Cue> cues, Function<String, List<Token>> tokenize) {
-        Set<Integer> starts = new HashSet<>();
+        return paragraphs(List.of(new Part(cues, Set.of(), true)), tokenize).getFirst();
+    }
+
+    static List<Part> paragraphs(List<Part> parts, Function<String, List<Token>> tokenize) {
+        List<Part> out = new ArrayList<>();
         int words = 0;
-        for (int i = 0; i + 1 < cues.size(); i++) {
-            words += wordCount(cues.get(i).text(), tokenize);
-            if (words >= PARAGRAPH_WORDS && SENTENCE_END.matcher(cues.get(i).text()).find()) {
-                starts.add(i + 1);
-                words = 0;
+        boolean pending = false;
+        for (Part part : parts) {
+            Set<Integer> starts = new HashSet<>();
+            for (int i = 0; i < part.cues().size(); i++) {
+                if (pending) {
+                    starts.add(i);
+                    pending = false;
+                }
+                String text = part.cues().get(i).text();
+                words += wordCount(text, tokenize);
+                if (part.tidied() && words >= PARAGRAPH_WORDS && SENTENCE_END.matcher(text).find()) {
+                    pending = true;
+                    words = 0;
+                }
             }
+            out.add(new Part(part.cues(), starts, part.tidied()));
         }
-        return new Part(cues, starts, true);
+        return out;
     }
 
     private static Optional<Cue> retext(Cue cue, String line, Function<String, List<Token>> tokenize) {

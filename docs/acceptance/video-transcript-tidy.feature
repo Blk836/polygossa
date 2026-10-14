@@ -12,7 +12,7 @@ Feature: Tidying automatic YouTube transcripts
     When I import the video
     Then the transcript reads as sentences with punctuation and capital letters
     And caption lines run on within a sentence instead of each starting a new line
-    And a paragraph starts where the AI suggested one
+    And a paragraph starts at the end of a sentence about every 100 words
 
   Scenario: Every word still lights up at its own moment
     Given the automatic captions carry a start time for each word
