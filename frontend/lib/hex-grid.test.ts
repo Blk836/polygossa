@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { edgeBetween, growTerritories, hexCentre, hexKey, hexPath, NEIGHBOURS, nearestHex, pieceCount, type Hex } from "./hex-grid";
+import { edgeBetween, growTerritories, hexCentre, hexKey, hexPath, NEIGHBOURS, nearestHex, outlinePath, pieceCount, type Hex } from "./hex-grid";
 import { mendTerritories } from "./hex-mend";
 
 const dist = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -57,6 +57,42 @@ describe("hex maths", () => {
         expect(dist(q, ca)).toBeCloseTo(10);
       }
     }
+  });
+});
+
+describe("outlinePath", () => {
+  const loops = (d: string) => d.split("Z").filter(Boolean).map((l) => l.replace(/^M/, "").split("L"));
+  const ring = NEIGHBOURS.map(([q, r]) => ({ q, r }));
+
+  it("outlines one tile as the tile itself", () => {
+    for (const portrait of [false, true]) {
+      const tile = loops(hexPath(hexCentre({ q: 0, r: 0 }, 10, portrait), 10, portrait))[0];
+      const outline = loops(outlinePath([{ q: 0, r: 0 }], 10, portrait));
+      expect(outline).toHaveLength(1);
+      expect([...outline[0]].sort()).toEqual([...tile].sort());
+    }
+  });
+
+  it("draws only the outside edges, so two neighbours make one ten-cornered loop", () => {
+    const d = outlinePath([{ q: 0, r: 0 }, { q: 1, r: 0 }], 10, false);
+    expect(loops(d)).toHaveLength(1);
+    expect(loops(d)[0]).toHaveLength(10);
+  });
+
+  it("keeps a hole as its own loop, so the sea shows through it", () => {
+    const d = outlinePath(ring, 10, false);
+    expect(loops(d)).toHaveLength(2);
+    expect(loops(d).map((l) => l.length).sort((a, b) => a - b)).toEqual([6, 18]);
+  });
+
+  it("gives an island off the coast its own loop", () => {
+    expect(loops(outlinePath([{ q: 0, r: 0 }, { q: 5, r: 0 }], 10, true))).toHaveLength(2);
+  });
+
+  it("moves the outline with the map", () => {
+    const moved = outlinePath([{ q: 0, r: 0 }], 10, false, (p) => ({ x: p.x + 100, y: p.y }));
+    const corners = loops(moved)[0].map((c) => Number(c.split(" ")[0]));
+    expect(Math.min(...corners)).toBeGreaterThan(90);
   });
 });
 

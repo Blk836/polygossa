@@ -149,6 +149,13 @@ describe("layoutHexWorld", () => {
     expect(world.ground.match(/Z/g)).toHaveLength(allHexes(world).length);
   });
 
+  it("draws the land as the continent's outline, with far fewer corners than tiles, so moving the map stays cheap", () => {
+    const land = world.land.split("Z").filter(Boolean);
+    expect(land.length).toBeGreaterThan(0);
+    expect(land.every((loop) => /^M[\d.\- L]+$/.test(loop))).toBe(true);
+    expect(world.land.split("L").length).toBeLessThan(allHexes(world).length);
+  });
+
   it("puts each country's and province's name tag on its deepest tile, as far inside its border as it gets", () => {
     const depths = (hexes: Hex[]) => {
       const own = new Set(hexes.map(hexKey));
