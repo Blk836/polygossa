@@ -85,7 +85,7 @@ class VocabMapApiTest {
         JsonNode map = map("fr");
         assertThat(map.get("available").asBoolean()).isTrue();
         assertThat(map.get("regions")).hasSize(14);
-        assertThat(map.get("bands")).extracting(JsonNode::asString).containsExactly("A1", "A2", "B1");
+        assertThat(map.get("bands")).extracting(JsonNode::asString).containsExactly("A1", "A2", "B1", "B2", "C1");
         assertThat(map.get("meaningLanguage").asString()).isEqualTo("en");
         assertThat(map.get("beyondCore").asInt()).isZero();
         JsonNode pomme = word(map, "pomme");
@@ -99,7 +99,7 @@ class VocabMapApiTest {
                 words += a.get("words").size();
             }
         }
-        assertThat(words).isBetween(1700, 2300);
+        assertThat(words).isBetween(6800, 9200);
     }
 
     @Test
