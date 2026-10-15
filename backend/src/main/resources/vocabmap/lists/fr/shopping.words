@@ -166,3 +166,358 @@ pauvre | B1 | money | poor | pauvres
 fauché | B1 | money | broke | fauchée fauchés fauchées
 virement | B1 | money | bank transfer | virements
 code | B1 | money | PIN; code | codes
+
+# === B2 ===
+
+# --- Clothes (B2) ---
+gilet | B2 | clothes | cardigan; waistcoat | gilets
+tailleur | B2 | clothes | woman's suit; tailor | tailleurs
+smoking | B2 | clothes | dinner jacket | smokings
+débardeur | B2 | clothes | vest top | débardeurs
+sweat | B2 | clothes | sweatshirt | sweats
+survêtement | B2 | clothes | tracksuit | survêtements
+legging | B2 | clothes | leggings | leggings
+collant | B2 | clothes | tights | collants
+caleçon | B2 | clothes | boxer shorts | caleçons
+slip | B2 | clothes | briefs; pants | slips
+chemisier | B2 | clothes | blouse | chemisiers
+anorak | B2 | clothes | = | anoraks
+doudoune | B2 | clothes | puffer jacket | doudounes
+parka | B2 | clothes | = | parkas
+bonnet | B2 | clothes | woolly hat | bonnets
+foulard | B2 | clothes | headscarf | foulards
+mouchoir | B2 | clothes | handkerchief; tissue | mouchoirs
+pantoufle | B2 | clothes | slipper | pantoufles
+chausson | B2 | clothes | slipper; turnover | chaussons
+tong | B2 | clothes | flip-flop | tongs
+escarpin | B2 | clothes | court shoe | escarpins
+semelle | B2 | clothes | sole; insole | semelles
+lacet | B2 | clothes | shoelace | lacets
+fermeture | B2 | clothes | fastening; (fermeture éclair) zip | fermetures
+ourlet | B2 | clothes | hem | ourlets
+doublure | B2 | clothes | lining | doublures
+capuche | B2 | clothes | hood | capuches
+pendentif | B2 | clothes | pendant | pendentifs
+broche | B2 | clothes | brooch | broches
+porte-monnaie | B2 | clothes | purse |
+portefeuille | B2 | clothes | wallet | portefeuilles
+tendance | B2 | clothes | trend; trendy | tendances
+moulant | B2 | clothes | tight-fitting | moulante moulants
+décolleté | B2 | clothes | low-cut; neckline | décolletée décolletés
+froisser | B2 | clothes | to crease | froisse froissent
+retoucher | B2 | clothes | to alter | retouche retouchent retouché
+
+# --- Colours & materials (B2) ---
+écarlate | B2 | colours | scarlet | écarlates
+pourpre | B2 | colours | crimson; purple | pourpres
+bordeaux | B2 | colours | maroon |
+mauve | B2 | colours | = | mauves
+lilas | B2 | colours | lilac |
+ocre | B2 | colours | ochre |
+fauve | B2 | colours | tawny; wild animal | fauves
+châtain | B2 | colours | chestnut (hair) | châtaine châtains
+teinte | B2 | colours | shade; hue | teintes
+nuance | B2 | colours | shade; nuance | nuances
+terne | B2 | colours | dull | ternes
+criard | B2 | colours | garish; loud | criarde criards
+fluo | B2 | colours | neon; fluorescent |
+multicolore | B2 | colours | multicoloured | multicolores
+lin | B2 | colours | linen | lins
+velours | B2 | colours | velvet |
+dentelle | B2 | colours | lace | dentelles
+fourrure | B2 | colours | fur | fourrures
+daim | B2 | colours | suede | daims
+polyester | B2 | colours | = |
+nylon | B2 | colours | = |
+caoutchouc | B2 | colours | rubber | caoutchoucs
+cuivre | B2 | colours | copper | cuivres
+aluminium | B2 | colours | = |
+
+# --- Shops (B2) ---
+marchand | B2 | shops | merchant; seller | marchands
+droguerie | B2 | shops | hardware shop | drogueries
+papeterie | B2 | shops | stationer's | papeteries
+mercerie | B2 | shops | haberdashery | merceries
+cordonnerie | B2 | shops | cobbler's | cordonneries
+cordonnier | B2 | shops | cobbler | cordonniers
+parfumerie | B2 | shops | perfume shop | parfumeries
+maroquinerie | B2 | shops | leather goods shop | maroquineries
+animalerie | B2 | shops | pet shop | animaleries
+friperie | B2 | shops | second-hand clothes shop | friperies
+brocante | B2 | shops | flea market; second-hand shop | brocantes
+vide-grenier | B2 | shops | car boot sale | vide-greniers
+étalage | B2 | shops | display | étalages
+présentoir | B2 | shops | display stand | présentoirs
+affaire | B2 | shops | bargain; deal; matter | affaires
+défectueux | B2 | shops | faulty | défectueuse défectueux
+réclamation | B2 | shops | complaint | réclamations
+retour | B2 | shops | return | retours
+
+# --- Money & paying (B2) ---
+portemonnaie | B2 | money | purse |
+paiement | B2 | money | payment | paiements
+versement | B2 | money | payment; instalment | versements
+mensualité | B2 | money | monthly payment | mensualités
+échéance | B2 | money | due date; deadline | échéances
+solde | B2 | money | balance (account) |
+épargne | B2 | money | savings | épargnes
+épargner | B2 | money | to save | épargnent épargné
+livret | B2 | money | savings account; booklet | livrets
+placement | B2 | money | investment | placements
+investir | B2 | money | to invest | investis investit investissent investi
+emprunt | B2 | money | loan | emprunts
+hypothèque | B2 | money | mortgage | hypothèques
+endetté | B2 | money | in debt | endettée endettés
+TVA | B2 | money | VAT |
+devise | B2 | money | currency; motto | devises
+fortune | B2 | money | = | fortunes
+radin | B2 | money | stingy | radine radins
+dépensier | B2 | money | extravagant | dépensière dépensiers
+
+# === C1 ===
+
+# --- Clothes (C1) ---
+garde-robe | C1 | clothes | wardrobe (clothes) | garde-robes
+accoutrement | C1 | clothes | getup; outfit | accoutrements
+fringues | C1 | clothes | clothes (informal) |
+nippes | C1 | clothes | old clothes; rags |
+haillons | C1 | clothes | rags |
+loques | C1 | clothes | rags |
+dépenaillé | C1 | clothes | ragged | dépenaillée dépenaillés
+débraillé | C1 | clothes | sloppily dressed | débraillée débraillés
+pimpant | C1 | clothes | spruce; smart | pimpante pimpants
+chic | C1 | clothes | stylish; chic | chics
+endimanché | C1 | clothes | in one's Sunday best | endimanchée endimanchés
+élimé | C1 | clothes | threadbare | élimée élimés
+usé | C1 | clothes | worn out | usée usés
+rapiécé | C1 | clothes | patched | rapiécée rapiécés
+cousu | C1 | clothes | sewn | cousue cousus
+coudre | C1 | clothes | to sew | couds coud cousent
+tricot | C1 | clothes | knitting; jumper | tricots
+broderie | C1 | clothes | embroidery | broderies
+couturier | C1 | clothes | fashion designer | couturière couturiers
+prêt-à-porter | C1 | clothes | ready-to-wear |
+mannequin | C1 | clothes | model; mannequin | mannequins
+styliste | C1 | clothes | designer; stylist | stylistes
+redingote | C1 | clothes | frock coat | redingotes
+pardessus | C1 | clothes | overcoat |
+cape | C1 | clothes | cloak | capes
+poncho | C1 | clothes | = | ponchos
+châle | C1 | clothes | shawl | châles
+étole | C1 | clothes | stole | étoles
+bretelles | C1 | clothes | braces |
+jarretelle | C1 | clothes | suspender | jarretelles
+nuisette | C1 | clothes | nightie | nuisettes
+peignoir | C1 | clothes | dressing gown; bathrobe | peignoirs
+bermuda | C1 | clothes | Bermuda shorts | bermudas
+salopette | C1 | clothes | dungarees | salopettes
+combinaison | C1 | clothes | jumpsuit; overalls; combination | combinaisons
+k-way | C1 | clothes | windcheater |
+mitaine | C1 | clothes | fingerless glove | mitaines
+moufle | C1 | clothes | mitten | moufles
+cagoule | C1 | clothes | balaclava | cagoules
+béret | C1 | clothes | beret | bérets
+casque | C1 | clothes | helmet; headphones | casques
+espadrille | C1 | clothes | = | espadrilles
+mocassin | C1 | clothes | moccasin; loafer | mocassins
+bottine | C1 | clothes | ankle boot | bottines
+sabot | C1 | clothes | clog; hoof | sabots
+boutonnière | C1 | clothes | buttonhole | boutonnières
+revers | C1 | clothes | lapel; turn-up; setback |
+pli | C1 | clothes | fold; pleat; crease | plis
+plissé | C1 | clothes | pleated | plissée plissés
+cintré | C1 | clothes | fitted; tailored | cintrée cintrés
+évasé | C1 | clothes | flared | évasée évasés
+échancré | C1 | clothes | low-cut | échancrée échancrés
+seyant | C1 | clothes | becoming; flattering | seyante seyants
+dégriffé | C1 | clothes | designer label removed; discount | dégriffée dégriffés
+griffe | C1 | clothes | designer label; claw | griffes
+écrin | C1 | clothes | jewellery box; case | écrins
+joaillier | C1 | clothes | jeweller | joaillière joailliers
+joaillerie | C1 | clothes | jewellery (trade) |
+chevalière | C1 | clothes | signet ring | chevalières
+gourmette | C1 | clothes | chain bracelet | gourmettes
+breloque | C1 | clothes | charm (bracelet) | breloques
+
+# --- Colours & materials (C1) ---
+vermeil | C1 | colours | vermilion; silver-gilt | vermeille vermeils
+vermillon | C1 | colours | vermilion |
+carmin | C1 | colours | carmine |
+grenat | C1 | colours | garnet; dark red |
+cramoisi | C1 | colours | crimson | cramoisie cramoisis
+incarnat | C1 | colours | rosy pink |
+fuchsia | C1 | colours | = |
+magenta | C1 | colours | = |
+indigo | C1 | colours | = |
+azur | C1 | colours | azure |
+azuré | C1 | colours | azure | azurée
+céruléen | C1 | colours | cerulean | céruléenne
+outremer | C1 | colours | ultramarine |
+cyan | C1 | colours | = |
+émeraude | C1 | colours | emerald | émeraudes
+anis | C1 | colours | aniseed green; aniseed |
+ambré | C1 | colours | amber | ambrée ambrés
+ambre | C1 | colours | amber |
+safrané | C1 | colours | saffron-coloured | safranée
+cuivré | C1 | colours | copper-coloured | cuivrée cuivrés
+mordoré | C1 | colours | bronze; golden-brown | mordorée
+bistre | C1 | colours | dark brown |
+sépia | C1 | colours | sepia |
+anthracite | C1 | colours | charcoal grey |
+ébène | C1 | colours | ebony |
+ivoire | C1 | colours | ivory |
+nacré | C1 | colours | pearly | nacrée nacrés
+nacre | C1 | colours | mother-of-pearl |
+opalin | C1 | colours | opaline | opaline
+irisé | C1 | colours | iridescent | irisée irisés
+chatoyant | C1 | colours | shimmering | chatoyante chatoyants
+bariolé | C1 | colours | multicoloured; motley | bariolée bariolés
+chiné | C1 | colours | flecked | chinée
+moucheté | C1 | colours | speckled | mouchetée mouchetés
+tacheté | C1 | colours | spotted; speckled | tachetée tachetés
+zébré | C1 | colours | striped | zébrée zébrés
+écossais | C1 | colours | tartan; Scottish | écossaise
+pied-de-poule | C1 | colours | houndstooth |
+blanchâtre | C1 | colours | whitish | blanchâtres
+grisâtre | C1 | colours | greyish | grisâtres
+jaunâtre | C1 | colours | yellowish | jaunâtres
+verdâtre | C1 | colours | greenish | verdâtres
+rougeâtre | C1 | colours | reddish | rougeâtres
+bleuté | C1 | colours | bluish | bleutée bleutés
+délavé | C1 | colours | faded; washed out | délavée délavés
+défraîchi | C1 | colours | faded; shop-worn | défraîchie défraîchis
+mat | C1 | colours | matt | mate mats
+satiné | C1 | colours | satin; silky | satinée satinés
+satin | C1 | colours | = | satins
+taffetas | C1 | colours | taffeta |
+mousseline | C1 | colours | muslin; chiffon | mousselines
+tulle | C1 | colours | = | tulles
+organza | C1 | colours | = |
+cachemire | C1 | colours | cashmere |
+mohair | C1 | colours | = |
+alpaga | C1 | colours | alpaca |
+tweed | C1 | colours | = |
+flanelle | C1 | colours | flannel |
+jersey | C1 | colours | = |
+jute | C1 | colours | = |
+chanvre | C1 | colours | hemp |
+osier | C1 | colours | wicker |
+rotin | C1 | colours | rattan |
+bambou | C1 | colours | bamboo | bambous
+liège | C1 | colours | cork |
+étain | C1 | colours | pewter; tin |
+laiton | C1 | colours | brass |
+zinc | C1 | colours | = |
+plomb | C1 | colours | lead |
+inox | C1 | colours | stainless steel |
+fonte | C1 | colours | cast iron; melting |
+cristal | C1 | colours | crystal | cristaux
+marbre | C1 | colours | marble |
+granit | C1 | colours | granite |
+céramique | C1 | colours | ceramic | céramiques
+résine | C1 | colours | resin | résines
+
+# --- Shops (C1) ---
+détaillant | C1 | shops | retailer | détaillante détaillants
+grossiste | C1 | shops | wholesaler | grossistes
+détail | C1 | shops | retail; detail | détails
+franchise | C1 | shops | franchise; excess; frankness | franchises
+succursale | C1 | shops | branch | succursales
+dépôt-vente | C1 | shops | second-hand shop (on commission) | dépôts-ventes
+solderie | C1 | shops | discount store | solderies
+hard-discount | C1 | shops | discount supermarket |
+caviste | C1 | shops | wine merchant | cavistes
+herboristerie | C1 | shops | herbalist's | herboristeries
+horlogerie | C1 | shops | watchmaker's | horlogeries
+horloger | C1 | shops | watchmaker | horlogère horlogers
+chapellerie | C1 | shops | hat shop |
+bonneterie | C1 | shops | hosiery |
+lingerie | C1 | shops | = |
+antiquaire | C1 | shops | antique dealer | antiquaires
+bouquiniste | C1 | shops | second-hand bookseller | bouquinistes
+disquaire | C1 | shops | record dealer | disquaires
+buraliste | C1 | shops | tobacconist | buralistes
+kiosque | C1 | shops | kiosk; newsstand | kiosques
+échoppe | C1 | shops | stall; small shop | échoppes
+devanture | C1 | shops | shop front | devantures
+chaland | C1 | shops | customer (old) | chalands
+clientèle | C1 | shops | customers; clientele |
+achalandé | C1 | shops | well-stocked | achalandée achalandés
+assortiment | C1 | shops | range; assortment | assortiments
+gamme | C1 | shops | range; scale | gammes
+marchandise | C1 | shops | goods; merchandise | marchandises
+inventaire | C1 | shops | stocktaking; inventory | inventaires
+démarque | C1 | shops | markdown | démarques
+déstockage | C1 | shops | clearance sale |
+liquidation | C1 | shops | clearance; liquidation | liquidations
+braderie | C1 | shops | clearance sale; street market | braderies
+rabais | C1 | shops | discount |
+ristourne | C1 | shops | discount; rebate | ristournes
+marchandage | C1 | shops | haggling |
+arnaque | C1 | shops | rip-off; scam | arnaques
+arnaquer | C1 | shops | to rip off | arnaquent arnaqué
+escroquerie | C1 | shops | swindle | escroqueries
+contrefaçon | C1 | shops | counterfeit | contrefaçons
+lèche-vitrine | C1 | shops | window-shopping |
+chiner | C1 | shops | to hunt for bargains | chine chinent
+fouiner | C1 | shops | to rummage | fouine fouinent fouiné
+SAV | C1 | shops | after-sales service |
+garantir | C1 | shops | to guarantee | garantis garantit garantissent garanti
+
+# --- Money & paying (C1) ---
+pécule | C1 | money | nest egg | pécules
+magot | C1 | money | hoard; stash | magots
+fric | C1 | money | cash (informal) |
+pognon | C1 | money | dough (informal) |
+thune | C1 | money | money (informal) | thunes
+radinerie | C1 | money | stinginess |
+pingre | C1 | money | stingy | pingres
+avare | C1 | money | miser; miserly | avares
+avarice | C1 | money | = | 
+prodigue | C1 | money | lavish; prodigal | prodigues
+nanti | C1 | money | well-off | nantie nantis
+aisé | C1 | money | well-off; easy | aisée aisés
+fortuné | C1 | money | wealthy | fortunée fortunés
+démuni | C1 | money | destitute | démunie démunis
+indigent | C1 | money | destitute | indigente indigents
+dèche | C1 | money | (être dans la dèche) to be broke |
+endettement | C1 | money | debt |
+surendettement | C1 | money | over-indebtedness |
+créancier | C1 | money | creditor | créancière créanciers
+débiteur | C1 | money | debtor | débitrice débiteurs
+créance | C1 | money | debt (owed to one) | créances
+recouvrement | C1 | money | recovery (of debts) |
+huissier | C1 | money | bailiff | huissiers
+saisie | C1 | money | seizure; data entry | saisies
+insolvable | C1 | money | insolvent | insolvables
+faillite | C1 | money | bankruptcy | faillites
+banqueroute | C1 | money | bankruptcy | banqueroutes
+agio | C1 | money | bank charges | agios
+commission | C1 | money | commission; fee | commissions
+débit | C1 | money | debit; flow | débits
+débiter | C1 | money | to debit; to cut up | débite débitent débité
+créditer | C1 | money | to credit | crédite créditent crédité
+encaisser | C1 | money | to cash; to take | encaisse encaissent encaissé
+percevoir | C1 | money | to receive; to perceive | perçois perçoit perçoivent perçu
+rente | C1 | money | annuity; private income | rentes
+rentier | C1 | money | person of private means | rentière rentiers
+dividende | C1 | money | dividend | dividendes
+plus-value | C1 | money | capital gain | plus-values
+moins-value | C1 | money | capital loss |
+fiscalité | C1 | money | taxation |
+fisc | C1 | money | tax authorities |
+déclaration | C1 | money | declaration; (déclaration d'impôts) tax return | déclarations
+exonéré | C1 | money | exempt | exonérée exonérés
+défiscaliser | C1 | money | to make tax-free | défiscalise défiscalisent
+pot-de-vin | C1 | money | bribe | pots-de-vin
+bakchich | C1 | money | bribe; backhander |
+liquidités | C1 | money | liquid assets |
+numéraire | C1 | money | cash |
+coffre-fort | C1 | money | safe | coffres-forts
+tirelire | C1 | money | piggy bank | tirelires
+cagnotte | C1 | money | kitty; jackpot | cagnottes
+monnayer | C1 | money | to cash in on | monnaye monnayent monnayé
+onéreux | C1 | money | costly | onéreuse onéreuses
+modique | C1 | money | modest; low | modiques
+dérisoire | C1 | money | derisory | dérisoires
+exorbitant | C1 | money | = | exorbitante exorbitants

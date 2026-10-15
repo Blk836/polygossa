@@ -239,3 +239,400 @@ liste | B1 | food-shopping | list | listes
 régional | B1 | food-shopping | regional | régionale régionaux régionales
 gaspiller | B1 | food-shopping | to waste | gaspille gaspillent gaspillé
 gaspillage | B1 | food-shopping | waste | gaspillages
+
+# === B2 ===
+
+# --- Fruit & vegetables (B2) ---
+pamplemousse | B2 | fruit-veg | grapefruit | pamplemousses
+mandarine | B2 | fruit-veg | mandarin; tangerine | mandarines
+clémentine | B2 | fruit-veg | clementine | clémentines
+kiwi | B2 | fruit-veg | = | kiwis
+figue | B2 | fruit-veg | fig | figues
+datte | B2 | fruit-veg | date (fruit) | dattes
+groseille | B2 | fruit-veg | redcurrant | groseilles
+cassis | B2 | fruit-veg | blackcurrant |
+châtaigne | B2 | fruit-veg | chestnut | châtaignes
+pruneau | B2 | fruit-veg | prune | pruneaux
+artichaut | B2 | fruit-veg | artichoke | artichauts
+asperge | B2 | fruit-veg | asparagus | asperges
+betterave | B2 | fruit-veg | beetroot | betteraves
+navet | B2 | fruit-veg | turnip; flop (film) | navets
+échalote | B2 | fruit-veg | shallot | échalotes
+persil | B2 | fruit-veg | parsley |
+basilic | B2 | fruit-veg | basil |
+ciboulette | B2 | fruit-veg | chives |
+laitue | B2 | fruit-veg | lettuce | laitues
+pois | B2 | fruit-veg | pea; (petits pois) peas |
+fève | B2 | fruit-veg | broad bean | fèves
+potiron | B2 | fruit-veg | pumpkin | potirons
+cresson | B2 | fruit-veg | watercress |
+noyau | B2 | fruit-veg | stone (fruit); core | noyaux
+pépin | B2 | fruit-veg | pip; seed; hitch | pépins
+écorce | B2 | fruit-veg | peel; bark | écorces
+pelure | B2 | fruit-veg | peel; skin | pelures
+
+# --- Meat, fish & basics (B2) ---
+escalope | B2 | meat-fish | escalope; cutlet | escalopes
+côtelette | B2 | meat-fish | chop; cutlet | côtelettes
+gigot | B2 | meat-fish | leg (of lamb) | gigots
+filet | B2 | meat-fish | fillet; net | filets
+lard | B2 | meat-fish | bacon fat; lard |
+lardons | B2 | meat-fish | bacon pieces |
+charcuterie | B2 | meat-fish | cooked meats; delicatessen | charcuteries
+pâté | B2 | meat-fish | = | pâtés
+saucisson | B2 | meat-fish | dry sausage | saucissons
+abats | B2 | meat-fish | offal |
+volaille | B2 | meat-fish | poultry | volailles
+cabillaud | B2 | meat-fish | cod | cabillauds
+morue | B2 | meat-fish | (salt) cod | morues
+truite | B2 | meat-fish | trout | truites
+sardine | B2 | meat-fish | = | sardines
+hareng | B2 | meat-fish | herring | harengs
+homard | B2 | meat-fish | lobster | homards
+crabe | B2 | meat-fish | crab | crabes
+calamar | B2 | meat-fish | squid | calamars
+semoule | B2 | meat-fish | semolina; couscous |
+levure | B2 | meat-fish | yeast; baking powder | levures
+margarine | B2 | meat-fish | = |
+mayonnaise | B2 | meat-fish | = |
+ketchup | B2 | meat-fish | = |
+cornichon | B2 | meat-fish | gherkin | cornichons
+nouilles | B2 | meat-fish | noodles |
+tartine | B2 | meat-fish | slice of bread and butter | tartines
+brioche | B2 | meat-fish | = | brioches
+
+# --- Cooking & eating (B2) ---
+assaisonner | B2 | cooking | to season | assaisonne assaisonnent assaisonné
+saupoudrer | B2 | cooking | to sprinkle | saupoudre saupoudrent saupoudré
+hacher | B2 | cooking | to chop; to mince | hache hachent haché hachée
+râper | B2 | cooking | to grate | râpe râpent râpé râpée
+fouetter | B2 | cooking | to whisk; to whip | fouette fouettent fouetté
+pétrir | B2 | cooking | to knead | pétris pétrit pétrissent
+mijoter | B2 | cooking | to simmer | mijote mijotent mijoté
+dorer | B2 | cooking | to brown | dore dorent
+égoutter | B2 | cooking | to drain | égoutte égouttent égoutté
+farcir | B2 | cooking | to stuff | farcis farcit farcissent farci farcie
+garnir | B2 | cooking | to garnish; to fill | garnis garnit garnissent garni
+décongeler | B2 | cooking | to defrost | décongèle décongèlent décongelé
+saisir | B2 | cooking | to sear; to seize; to grasp | saisis saisit saisissent saisi
+napper | B2 | cooking | to coat (with sauce) | nappent nappé
+dégustation | B2 | cooking | tasting | dégustations
+déguster | B2 | cooking | to savour; to taste | déguste dégustent dégusté
+savoureux | B2 | cooking | tasty | savoureuse savoureuses
+croustillant | B2 | cooking | crispy; crusty | croustillante croustillants
+fondant | B2 | cooking | melting; soft | fondante fondants
+moelleux | B2 | cooking | soft; moist | moelleuse moelleuses
+acide | B2 | cooking | sour; acid | acides
+aigre | B2 | cooking | sour | aigres
+pimenté | B2 | cooking | spicy; hot | pimentée pimentés
+gourmandise | B2 | cooking | greed; delicacy | gourmandises
+gastronomique | B2 | cooking | gourmet | gastronomiques
+rassasié | B2 | cooking | full; satisfied | rassasiée rassasiés
+calorique | B2 | cooking | high-calorie | caloriques
+
+# --- Drinks (B2) ---
+eau-de-vie | B2 | drinks | brandy; spirit |
+liqueur | B2 | drinks | = | liqueurs
+digestif | B2 | drinks | after-dinner drink | digestifs
+infusion | B2 | drinks | herbal tea; infusion | infusions
+déca | B2 | drinks | decaf | décas
+soda | B2 | drinks | fizzy drink | sodas
+pétillant | B2 | drinks | sparkling | pétillante pétillants
+millésime | B2 | drinks | vintage | millésimes
+tire-bouchon | B2 | drinks | corkscrew | tire-bouchons
+carafe | B2 | drinks | jug; carafe | carafes
+pichet | B2 | drinks | jug; pitcher | pichets
+trinquer | B2 | drinks | to clink glasses | trinque trinquent trinqué
+siroter | B2 | drinks | to sip | sirote sirotent siroté
+désaltérant | B2 | drinks | thirst-quenching | désaltérante désaltérants
+alcoolisé | B2 | drinks | alcoholic (drink) | alcoolisée alcoolisés alcoolisées
+
+# --- Eating out (B2) ---
+traiteur | B2 | eating-out | caterer; deli | traiteurs
+crêperie | B2 | eating-out | pancake restaurant | crêperies
+pizzeria | B2 | eating-out | = | pizzerias
+snack | B2 | eating-out | snack bar | snacks
+restauration | B2 | eating-out | catering; restoration |
+fast-food | B2 | eating-out | = | fast-foods
+spécialité | B2 | eating-out | speciality | spécialités
+garniture | B2 | eating-out | side; garnish | garnitures
+accompagnement | B2 | eating-out | side dish | accompagnements
+sommelier | B2 | eating-out | wine waiter | sommelière sommeliers
+convive | B2 | eating-out | guest (at a meal) | convives
+régaler | B2 | eating-out | (se régaler) to have a feast | régale régalent régalé
+
+# --- Meals & food shopping (B2) ---
+traçabilité | B2 | food-shopping | traceability |
+étiquette | B2 | food-shopping | label; etiquette | étiquettes
+périmé | B2 | food-shopping | out of date | périmée périmés périmées
+terroir | B2 | food-shopping | local area; land (of produce) | terroirs
+maraîcher | B2 | food-shopping | market gardener | maraîchère maraîchers
+primeur | B2 | food-shopping | greengrocer; early produce | primeurs
+fermier | B2 | food-shopping | farm; free-range; farmer | fermière fermiers
+vrac | B2 | food-shopping | (en vrac) loose; in bulk |
+hypermarché | B2 | food-shopping | hypermarket | hypermarchés
+supérette | B2 | food-shopping | mini-market | supérettes
+traiter | B2 | food-shopping | to treat; to process | traite traitent traité
+additif | B2 | food-shopping | additive | additifs
+conservateur | B2 | food-shopping | preservative; conservative | conservateurs
+allégé | B2 | food-shopping | low-fat; light | allégée allégés
+équitable | B2 | food-shopping | fair (trade) | équitables
+brunch | B2 | food-shopping | = | brunchs
+souper | B2 | food-shopping | supper; to have supper | soupers
+collation | B2 | food-shopping | light meal; snack | collations
+portion | B2 | food-shopping | = | portions
+
+# === C1 ===
+
+# --- Fruit & vegetables (C1) ---
+agrume | C1 | fruit-veg | citrus fruit | agrumes
+baie | C1 | fruit-veg | berry; bay | baies
+airelle | C1 | fruit-veg | cranberry; bilberry | airelles
+canneberge | C1 | fruit-veg | cranberry | canneberges
+coing | C1 | fruit-veg | quince | coings
+nectarine | C1 | fruit-veg | = | nectarines
+brugnon | C1 | fruit-veg | nectarine | brugnons
+grenade | C1 | fruit-veg | pomegranate; grenade | grenades
+kaki | C1 | fruit-veg | persimmon; khaki | kakis
+litchi | C1 | fruit-veg | lychee | litchis
+goyave | C1 | fruit-veg | guava | goyaves
+papaye | C1 | fruit-veg | papaya | papayes
+pistache | C1 | fruit-veg | pistachio | pistaches
+cacahuète | C1 | fruit-veg | peanut | cacahuètes
+rhubarbe | C1 | fruit-veg | rhubarb |
+endive | C1 | fruit-veg | chicory; endive | endives
+blette | C1 | fruit-veg | chard | blettes
+fenouil | C1 | fruit-veg | fennel |
+panais | C1 | fruit-veg | parsnip |
+topinambour | C1 | fruit-veg | Jerusalem artichoke | topinambours
+rutabaga | C1 | fruit-veg | swede | rutabagas
+salsifis | C1 | fruit-veg | salsify |
+cardon | C1 | fruit-veg | cardoon | cardons
+courge | C1 | fruit-veg | squash; marrow | courges
+potimarron | C1 | fruit-veg | red kuri squash | potimarrons
+roquette | C1 | fruit-veg | rocket (salad) |
+oseille | C1 | fruit-veg | sorrel; dough (money) |
+estragon | C1 | fruit-veg | tarragon |
+cerfeuil | C1 | fruit-veg | chervil |
+coriandre | C1 | fruit-veg | coriander |
+aneth | C1 | fruit-veg | dill |
+romarin | C1 | fruit-veg | rosemary |
+thym | C1 | fruit-veg | thyme |
+sauge | C1 | fruit-veg | sage |
+laurier | C1 | fruit-veg | bay leaf; laurel | lauriers
+menthe | C1 | fruit-veg | mint | menthes
+gingembre | C1 | fruit-veg | ginger |
+piment | C1 | fruit-veg | chilli | piments
+gousse | C1 | fruit-veg | pod; clove (garlic) | gousses
+tubercule | C1 | fruit-veg | tuber | tubercules
+légumineuse | C1 | fruit-veg | pulse; legume | légumineuses
+trognon | C1 | fruit-veg | core; stump | trognons
+pulpe | C1 | fruit-veg | pulp | pulpes
+zeste | C1 | fruit-veg | zest | zestes
+grappe | C1 | fruit-veg | bunch; cluster | grappes
+blet | C1 | fruit-veg | overripe | blets
+
+# --- Meat, fish & basics (C1) ---
+aloyau | C1 | meat-fish | sirloin | aloyaux
+bavette | C1 | meat-fish | flank steak; bib | bavettes
+entrecôte | C1 | meat-fish | rib steak | entrecôtes
+faux-filet | C1 | meat-fish | sirloin steak | faux-filets
+rumsteck | C1 | meat-fish | rump steak | rumstecks
+onglet | C1 | meat-fish | hanger steak; tab | onglets
+jarret | C1 | meat-fish | shank; knuckle | jarrets
+carré | C1 | meat-fish | rack (of lamb); square | carrés
+pot-au-feu | C1 | meat-fish | beef stew; boiled beef |
+blanquette | C1 | meat-fish | veal in white sauce | blanquettes
+tripes | C1 | meat-fish | tripe |
+boudin | C1 | meat-fish | black pudding; sausage | boudins
+andouillette | C1 | meat-fish | chitterling sausage | andouillettes
+rillettes | C1 | meat-fish | potted meat |
+terrine | C1 | meat-fish | = | terrines
+gibier | C1 | meat-fish | game (meat) |
+chevreuil | C1 | meat-fish | venison; roe deer | chevreuils
+sanglier | C1 | meat-fish | wild boar | sangliers
+caille | C1 | meat-fish | quail | cailles
+pintade | C1 | meat-fish | guinea fowl | pintades
+oie | C1 | meat-fish | goose | oies
+lotte | C1 | meat-fish | monkfish | lottes
+bar | C1 | meat-fish | sea bass; bar | bars
+dorade | C1 | meat-fish | sea bream | dorades
+sole | C1 | meat-fish | = | soles
+merlu | C1 | meat-fish | hake | merlus
+maquereau | C1 | meat-fish | mackerel | maquereaux
+anchois | C1 | meat-fish | anchovy |
+langoustine | C1 | meat-fish | langoustine; scampi | langoustines
+coquille | C1 | meat-fish | shell; (coquille Saint-Jacques) scallop | coquilles
+seiche | C1 | meat-fish | cuttlefish | seiches
+poulpe | C1 | meat-fish | octopus | poulpes
+oursin | C1 | meat-fish | sea urchin | oursins
+caviar | C1 | meat-fish | = |
+fécule | C1 | meat-fish | starch | fécules
+chapelure | C1 | meat-fish | breadcrumbs |
+gélatine | C1 | meat-fish | gelatine |
+bouillon | C1 | meat-fish | stock; broth | bouillons
+fond | C1 | meat-fish | stock; bottom; background | fonds
+câpre | C1 | meat-fish | caper | câpres
+muscade | C1 | meat-fish | nutmeg |
+cannelle | C1 | meat-fish | cinnamon |
+vanille | C1 | meat-fish | vanilla |
+safran | C1 | meat-fish | saffron |
+cumin | C1 | meat-fish | = |
+paprika | C1 | meat-fish | = |
+mélasse | C1 | meat-fish | molasses; treacle |
+cassonade | C1 | meat-fish | brown sugar |
+
+# --- Cooking & eating (C1) ---
+blanchir | C1 | cooking | to blanch; to whiten | blanchis blanchit blanchissent blanchi
+braiser | C1 | cooking | to braise | braise braisent braisé
+flamber | C1 | cooking | to flambé; to blaze | flambe flambent flambé
+pocher | C1 | cooking | to poach | pochent poché pochée
+gratiner | C1 | cooking | to brown (under the grill) | gratine gratinent gratiné gratinée
+réduire | C1 | cooking | to reduce | réduis réduit réduisent
+lier | C1 | cooking | to thicken; to tie; to link | lie lient lié liée
+déglacer | C1 | cooking | to deglaze | déglace déglacent déglacé
+émincer | C1 | cooking | to slice thinly | émince émincent émincé émincée
+ciseler | C1 | cooking | to chop finely; to chisel | cisèle ciselé
+dénoyauter | C1 | cooking | to stone (fruit) | dénoyaute dénoyautent dénoyauté
+désosser | C1 | cooking | to bone | désosse désossent désossé
+vider | C1 | cooking | to gut; to empty | vident vidé
+paner | C1 | cooking | to coat in breadcrumbs | pane panent pané panée
+enrober | C1 | cooking | to coat | enrobe enrobent enrobé
+badigeonner | C1 | cooking | to brush (with oil) | badigeonne badigeonnent badigeonné
+macérer | C1 | cooking | to marinate; to steep | macère macèrent macéré
+mariner | C1 | cooking | to marinate | marine marinent mariné
+caraméliser | C1 | cooking | to caramelise | caramélise caramélisent caramélisé
+étuver | C1 | cooking | to steam; to stew | étuve étuvent étuvé
+vapeur | C1 | cooking | steam | vapeurs
+cuisson | C1 | cooking | cooking; baking | cuissons
+dégoûtant | C1 | cooking | disgusting | dégoûtante dégoûtants
+écœurant | C1 | cooking | sickening; too rich | écœurante écœurants
+insipide | C1 | cooking | tasteless | insipides
+relevé | C1 | cooking | spicy; well-seasoned | relevée relevés
+onctueux | C1 | cooking | creamy; smooth | onctueuse onctueuses
+juteux | C1 | cooking | juicy | juteuse juteuses
+coriace | C1 | cooking | tough (meat); tenacious | coriaces
+rance | C1 | cooking | rancid | rances
+succulent | C1 | cooking | delicious; succulent | succulente succulents
+exquis | C1 | cooking | exquisite | exquise exquises
+frugal | C1 | cooking | = | frugale frugaux
+festin | C1 | cooking | feast | festins
+ripaille | C1 | cooking | feast; (faire ripaille) to feast |
+bouchée | C1 | cooking | mouthful; bite | bouchées
+grignoter | C1 | cooking | to nibble; to snack | grignote grignotent grignoté
+engloutir | C1 | cooking | to gobble up | engloutis engloutit engloutissent englouti
+dévorer | C1 | cooking | to devour | dévore dévorent dévoré
+savourer | C1 | cooking | to savour | savoure savourent savouré
+saliver | C1 | cooking | to salivate | salive salivent salivé
+gourmet | C1 | cooking | = | gourmets
+gastronome | C1 | cooking | gourmet; gastronome | gastronomes
+cuistot | C1 | cooking | cook (informal) | cuistots
+marmiton | C1 | cooking | kitchen boy; cook's helper | marmitons
+
+# --- Drinks (C1) ---
+spiritueux | C1 | drinks | spirits |
+cognac | C1 | drinks | = | cognacs
+armagnac | C1 | drinks | = |
+calvados | C1 | drinks | apple brandy |
+pastis | C1 | drinks | aniseed drink |
+kir | C1 | drinks | white wine with blackcurrant | kirs
+rhum | C1 | drinks | rum | rhums
+whisky | C1 | drinks | = | whiskys
+vodka | C1 | drinks | = | vodkas
+gin | C1 | drinks | = |
+mousseux | C1 | drinks | sparkling (wine) | mousseuse mousseuses
+rosé | C1 | drinks | = | rosés
+vignoble | C1 | drinks | vineyard | vignobles
+vigneron | C1 | drinks | winegrower | vigneronne vignerons
+vendange | C1 | drinks | grape harvest | vendanges
+cépage | C1 | drinks | grape variety | cépages
+œnologie | C1 | drinks | oenology |
+œnologue | C1 | drinks | oenologist | œnologues
+sommellerie | C1 | drinks | wine service |
+carafer | C1 | drinks | to decant | carafent carafé
+décanter | C1 | drinks | to decant; to settle | décante décantent décanté
+tanin | C1 | drinks | tannin | tanins
+lampée | C1 | drinks | gulp; swig | lampées
+ingurgiter | C1 | drinks | to gulp down | ingurgite ingurgitent ingurgité
+assoiffé | C1 | drinks | thirsty | assoiffée assoiffés
+éméché | C1 | drinks | tipsy | éméchée éméchés
+pompette | C1 | drinks | tipsy | pompettes
+soûl | C1 | drinks | drunk | soûle soûls
+ivresse | C1 | drinks | drunkenness; elation |
+ivrogne | C1 | drinks | drunkard | ivrognes
+chope | C1 | drinks | tankard | chopes
+pinte | C1 | drinks | pint | pintes
+canette | C1 | drinks | can (drink) | canettes
+paille | C1 | drinks | straw | pailles
+orgeat | C1 | drinks | almond syrup |
+chicorée | C1 | drinks | chicory | chicorées
+torréfaction | C1 | drinks | roasting (coffee) |
+moulu | C1 | drinks | ground (coffee) | moulue moulus
+infuser | C1 | drinks | to brew; to steep | infuse infusent infusé
+lyophilisé | C1 | drinks | freeze-dried; instant | lyophilisée lyophilisés
+
+# --- Eating out (C1) ---
+estaminet | C1 | eating-out | small café (northern France) | estaminets
+guinguette | C1 | eating-out | open-air café with dancing | guinguettes
+gargote | C1 | eating-out | cheap eatery | gargotes
+amuse-bouche | C1 | eating-out | appetiser | amuse-bouches
+amuse-gueule | C1 | eating-out | nibbles | amuse-gueules
+hors-d'œuvre | C1 | eating-out | starter |
+mignardises | C1 | eating-out | petits fours |
+rince-doigts | C1 | eating-out | finger bowl |
+majoration | C1 | eating-out | surcharge | majorations
+douloureuse | C1 | eating-out | the bill (joke) |
+attablé | C1 | eating-out | seated at table | attablée attablés
+banquet | C1 | eating-out | = | banquets
+buffet | C1 | eating-out | = | buffets
+convivial | C1 | eating-out | friendly; convivial | conviviale conviviaux
+macaron | C1 | eating-out | macaroon; rosette | macarons
+toque | C1 | eating-out | chef's hat; top chef | toques
+commis | C1 | eating-out | junior chef |
+brigade | C1 | eating-out | kitchen team; squad | brigades
+plonge | C1 | eating-out | washing-up (in a restaurant) |
+plongeur | C1 | eating-out | dishwasher (person); diver | plongeuse plongeurs
+restaurateur | C1 | eating-out | restaurant owner | restauratrice restaurateurs
+renommée | C1 | eating-out | renown; fame |
+attabler | C1 | eating-out | (s'attabler) to sit down at table | attablent
+bombance | C1 | eating-out | feast; (faire bombance) to feast |
+ripailler | C1 | eating-out | to feast | ripaillent
+
+# --- Meals & food shopping (C1) ---
+agroalimentaire | C1 | food-shopping | food industry; agri-food | agroalimentaires
+denrée | C1 | food-shopping | foodstuff | denrées
+provisions | C1 | food-shopping | supplies; groceries |
+ravitailler | C1 | food-shopping | to resupply | ravitaille ravitaillent ravitaillé
+approvisionner | C1 | food-shopping | to supply; to stock | approvisionne approvisionnent approvisionné
+stock | C1 | food-shopping | = | stocks
+péremption | C1 | food-shopping | expiry |
+conditionnement | C1 | food-shopping | packaging | conditionnements
+lot | C1 | food-shopping | batch; pack | lots
+origine | C1 | food-shopping | origin | origines
+label | C1 | food-shopping | quality label | labels
+appellation | C1 | food-shopping | designation (of origin) | appellations
+locavore | C1 | food-shopping | = | locavores
+OGM | C1 | food-shopping | GMO |
+pesticide | C1 | food-shopping | = | pesticides
+colorant | C1 | food-shopping | colouring | colorants
+édulcorant | C1 | food-shopping | sweetener | édulcorants
+gluten | C1 | food-shopping | = |
+lactose | C1 | food-shopping | = |
+intolérance | C1 | food-shopping | intolerance | intolérances
+végan | C1 | food-shopping | vegan | végane végans
+flexitarien | C1 | food-shopping | flexitarian | flexitarienne flexitariens
+casse-dalle | C1 | food-shopping | snack; sandwich (informal) |
+bouffe | C1 | food-shopping | grub; food (informal) |
+bouffer | C1 | food-shopping | to eat (informal) | bouffent bouffé
+gueuleton | C1 | food-shopping | slap-up meal | gueuletons
+encas | C1 | food-shopping | snack |
+frugalité | C1 | food-shopping | frugality |
+disette | C1 | food-shopping | food shortage | disettes
+famine | C1 | food-shopping | = | famines
+pénurie | C1 | food-shopping | shortage | pénuries
+abondance | C1 | food-shopping | abundance |
+marchander | C1 | food-shopping | to haggle | marchande marchandent marchandé
+étal | C1 | food-shopping | stall | étals
+camelot | C1 | food-shopping | street vendor | camelots
+criée | C1 | food-shopping | fish auction | criées
+halles | C1 | food-shopping | covered market |

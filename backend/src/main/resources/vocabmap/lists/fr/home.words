@@ -146,3 +146,340 @@ bricoler | B1 | tools | to do DIY | bricole bricolent bricolé
 bricolage | B1 | tools | DIY |
 démonter | B1 | tools | to take apart | démonte démontent démonté
 abîmer | B1 | tools | to damage | abîme abîment abîmé abîmée
+
+# === B2 ===
+
+# --- Rooms & furniture (B2) ---
+buanderie | B2 | rooms | utility room; laundry | buanderies
+dressing | B2 | rooms | walk-in wardrobe | dressings
+véranda | B2 | rooms | conservatory | vérandas
+sous-sol | B2 | rooms | basement | sous-sols
+palier | B2 | rooms | landing | paliers
+rez-de-chaussée | B2 | rooms | ground floor |
+mansarde | B2 | rooms | attic room | mansardes
+parquet | B2 | rooms | wooden floor | parquets
+moquette | B2 | rooms | fitted carpet | moquettes
+carrelage | B2 | rooms | tiles; tiling | carrelages
+lustre | B2 | rooms | chandelier | lustres
+abat-jour | B2 | rooms | lampshade |
+banquette | B2 | rooms | bench seat | banquettes
+tabouret | B2 | rooms | stool | tabourets
+pouf | B2 | rooms | footstool; pouffe | poufs
+matelas | B2 | rooms | mattress |
+sommier | B2 | rooms | bed base | sommiers
+couette | B2 | rooms | duvet | couettes
+taie | B2 | rooms | pillowcase | taies
+store | B2 | rooms | blind | stores
+penderie | B2 | rooms | wardrobe; hanging space | penderies
+cintre | B2 | rooms | coat hanger | cintres
+interphone | B2 | rooms | intercom | interphones
+digicode | B2 | rooms | door code | digicodes
+copropriété | B2 | rooms | co-ownership; block of flats | copropriétés
+emménagement | B2 | rooms | moving in | emménagements
+bail | B2 | rooms | lease | baux
+
+# --- Household chores (B2) ---
+serpillière | B2 | chores | floorcloth; mop | serpillières
+seau | B2 | chores | bucket | seaux
+pelle | B2 | chores | shovel; dustpan | pelles
+plumeau | B2 | chores | feather duster | plumeaux
+chiffon | B2 | chores | cloth; rag | chiffons
+détergent | B2 | chores | detergent | détergents
+javel | B2 | chores | bleach |
+adoucissant | B2 | chores | fabric softener | adoucissants
+étendre | B2 | chores | to hang out (washing); to spread | étends étend étendent étendu
+étendoir | B2 | chores | clothes horse | étendoirs
+repassage | B2 | chores | ironing |
+lave-linge | B2 | chores | washing machine |
+sèche-linge | B2 | chores | tumble dryer |
+frotter | B2 | chores | to scrub; to rub | frotte frottent frotté
+récurer | B2 | chores | to scour | récure récurent récuré
+astiquer | B2 | chores | to polish | astique astiquent astiqué
+dépoussiérer | B2 | chores | to dust | dépoussière dépoussièrent dépoussiéré
+aérer | B2 | chores | to air | aère aèrent aéré
+désinfecter | B2 | chores | to disinfect | désinfecte désinfectent désinfecté
+encombré | B2 | chores | cluttered | encombrée encombrés
+fouillis | B2 | chores | mess; jumble |
+bazar | B2 | chores | mess; general store | bazars
+propreté | B2 | chores | cleanliness |
+crasseux | B2 | chores | filthy | crasseuse crasseuses
+moisissure | B2 | chores | mould | moisissures
+
+# --- In the kitchen (B2) ---
+cocotte | B2 | kitchen | casserole dish | cocottes
+marmite | B2 | kitchen | cooking pot | marmites
+autocuiseur | B2 | kitchen | pressure cooker | autocuiseurs
+faitout | B2 | kitchen | stewpot | faitouts
+saladier | B2 | kitchen | salad bowl | saladiers
+passoire | B2 | kitchen | colander | passoires
+tamis | B2 | kitchen | sieve |
+louche | B2 | kitchen | ladle | louches
+spatule | B2 | kitchen | spatula | spatules
+fouet | B2 | kitchen | whisk; whip | fouets
+rouleau | B2 | kitchen | rolling pin; roll | rouleaux
+planche | B2 | kitchen | board; chopping board | planches
+ouvre-boîte | B2 | kitchen | tin opener | ouvre-boîtes
+décapsuleur | B2 | kitchen | bottle opener | décapsuleurs
+économe | B2 | kitchen | peeler; thrifty | économes
+hotte | B2 | kitchen | extractor hood | hottes
+gazinière | B2 | kitchen | gas cooker | gazinières
+vaisselier | B2 | kitchen | dresser | vaisseliers
+théière | B2 | kitchen | teapot | théières
+soucoupe | B2 | kitchen | saucer | soucoupes
+essuie-tout | B2 | kitchen | kitchen roll |
+tablier | B2 | kitchen | apron | tabliers
+
+# --- Tools & repairs (B2) ---
+perceuse | B2 | tools | drill | perceuses
+percer | B2 | tools | to drill; to pierce | perce percent percé
+foret | B2 | tools | drill bit | forets
+écrou | B2 | tools | nut (bolt) | écrous
+boulon | B2 | tools | bolt | boulons
+crochet | B2 | tools | hook | crochets
+ponceuse | B2 | tools | sander | ponceuses
+poncer | B2 | tools | to sand | ponce poncent poncé
+lime | B2 | tools | file; lime | limes
+rabot | B2 | tools | plane (tool) | rabots
+burin | B2 | tools | chisel | burins
+établi | B2 | tools | workbench | établis
+scotch | B2 | tools | sticky tape |
+visser | B2 | tools | to screw | visse vissent vissé
+dévisser | B2 | tools | to unscrew | dévisse dévissent dévissé
+clouer | B2 | tools | to nail | cloue clouent cloué
+fixer | B2 | tools | to fix; to fasten; to stare at | fixe fixent fixé
+brancher | B2 | tools | to plug in | branchent branché
+débrancher | B2 | tools | to unplug | débranche débranchent débranché
+rallonge | B2 | tools | extension lead | rallonges
+fusible | B2 | tools | fuse | fusibles
+disjoncteur | B2 | tools | circuit breaker | disjoncteurs
+court-circuit | B2 | tools | short circuit | courts-circuits
+tuyau | B2 | tools | pipe; hose | tuyaux
+joint | B2 | tools | seal; joint | joints
+dépanner | B2 | tools | to fix; to help out | dépanne dépannent dépanné
+dépanneur | B2 | tools | repairman | dépanneuse dépanneurs
+artisan | B2 | tools | craftsman; tradesman | artisane artisans
+devis | B2 | tools | estimate; quote |
+rénover | B2 | tools | to renovate | rénove rénovent rénové
+rénovation | B2 | tools | renovation | rénovations
+isolation | B2 | tools | insulation | isolations
+
+# === C1 ===
+
+# --- Rooms & furniture (C1) ---
+vestibule | C1 | rooms | hallway; vestibule | vestibules
+débarras | C1 | rooms | junk room; storage |
+cellier | C1 | rooms | storeroom | celliers
+combles | C1 | rooms | loft; attic |
+soupente | C1 | rooms | cupboard under the stairs | soupentes
+alcôve | C1 | rooms | alcove | alcôves
+boudoir | C1 | rooms | = | boudoirs
+lambris | C1 | rooms | panelling |
+plinthe | C1 | rooms | skirting board | plinthes
+moulure | C1 | rooms | moulding | moulures
+corniche | C1 | rooms | cornice | corniches
+poutre | C1 | rooms | beam | poutres
+charpente | C1 | rooms | framework; roof timbers | charpentes
+tuile | C1 | rooms | tile (roof); bad luck | tuiles
+ardoise | C1 | rooms | slate | ardoises
+gouttière | C1 | rooms | gutter | gouttières
+lucarne | C1 | rooms | skylight; dormer window | lucarnes
+vasistas | C1 | rooms | fanlight |
+persienne | C1 | rooms | shutter (louvred) | persiennes
+embrasure | C1 | rooms | doorway; window recess | embrasures
+rampe | C1 | rooms | banister; ramp | rampes
+seuil | C1 | rooms | threshold; doorstep | seuils
+paillasson | C1 | rooms | doormat | paillassons
+judas | C1 | rooms | peephole |
+verrou | C1 | rooms | bolt; lock | verrous
+serrure | C1 | rooms | lock | serrures
+poignée | C1 | rooms | handle | poignées
+gond | C1 | rooms | hinge | gonds
+loquet | C1 | rooms | latch | loquets
+guéridon | C1 | rooms | pedestal table | guéridons
+bahut | C1 | rooms | chest; sideboard | bahuts
+coffre | C1 | rooms | chest; boot (car); safe | coffres
+console | C1 | rooms | console table; console | consoles
+méridienne | C1 | rooms | chaise longue; daybed | méridiennes
+causeuse | C1 | rooms | loveseat | causeuses
+divan | C1 | rooms | couch; divan | divans
+canapé-lit | C1 | rooms | sofa bed | canapés-lits
+berceuse | C1 | rooms | rocking chair; lullaby | berceuses
+baldaquin | C1 | rooms | canopy | baldaquins
+édredon | C1 | rooms | eiderdown | édredons
+traversin | C1 | rooms | bolster | traversins
+plaid | C1 | rooms | throw; blanket | plaids
+bibelot | C1 | rooms | ornament; knick-knack | bibelots
+applique | C1 | rooms | wall light | appliques
+halogène | C1 | rooms | halogen lamp | halogènes
+pavillon | C1 | rooms | detached house; pavilion | pavillons
+demeure | C1 | rooms | residence; mansion | demeures
+taudis | C1 | rooms | slum; hovel |
+logis | C1 | rooms | dwelling |
+HLM | C1 | rooms | council flat |
+studio | C1 | rooms | studio flat | studios
+colocation | C1 | rooms | flat-sharing | colocations
+colocataire | C1 | rooms | flatmate | colocataires
+bailleur | C1 | rooms | landlord; lessor | bailleresse bailleurs
+caution | C1 | rooms | deposit; guarantee | cautions
+préavis | C1 | rooms | notice (period) |
+charges | C1 | rooms | service charges; bills |
+syndic | C1 | rooms | managing agent | syndics
+concierge | C1 | rooms | caretaker | concierges
+gardien | C1 | rooms | caretaker; guard | gardienne gardiens
+agencement | C1 | rooms | layout | agencements
+aménager | C1 | rooms | to fit out; to arrange | aménage aménagent aménagé
+exigu | C1 | rooms | cramped | exiguë exigus
+douillet | C1 | rooms | cosy | douillette douillets
+cossu | C1 | rooms | well-to-do; plush | cossue cossus
+vétuste | C1 | rooms | dilapidated | vétustes
+insalubre | C1 | rooms | unfit for habitation | insalubres
+
+# --- Household chores (C1) ---
+entretenir | C1 | chores | to maintain | entretient entretiennent entretenu
+décrasser | C1 | chores | to clean off grime | décrasse décrassent décrassé
+détartrer | C1 | chores | to descale | détartre détartrent détartré
+calcaire | C1 | chores | limescale; limestone | calcaires
+dégraisser | C1 | chores | to degrease | dégraisse dégraissent dégraissé
+décaper | C1 | chores | to strip; to scour | décape décapent décapé
+lustrer | C1 | chores | to polish; to shine | lustrent lustré
+cirer | C1 | chores | to polish; to wax | cire cirent ciré
+cirage | C1 | chores | shoe polish |
+encaustique | C1 | chores | wax polish |
+rincer | C1 | chores | to rinse | rince rincent rincé
+essorer | C1 | chores | to spin-dry; to wring | essore essorent essoré
+essorage | C1 | chores | spin cycle |
+amidonner | C1 | chores | to starch | amidonne amidonnent amidonné
+froissé | C1 | chores | creased; offended | froissée froissés
+défroisser | C1 | chores | to smooth out | défroisse défroissent défroissé
+ravauder | C1 | chores | to mend | ravaude ravaudent ravaudé
+repriser | C1 | chores | to darn | reprisent reprisé
+recoudre | C1 | chores | to sew back on | recouds recoud recousu
+raccommoder | C1 | chores | to mend | raccommode raccommodent raccommodé
+débarrasser | C1 | chores | to clear (away) | débarrasse débarrassent débarrassé
+dresser | C1 | chores | to lay (table); to put up | dresse dressent dressé
+ramasser | C1 | chores | to pick up | ramasse ramassent ramassé
+balayette | C1 | chores | hand brush | balayettes
+raclette | C1 | chores | squeegee; raclette | raclettes
+écouvillon | C1 | chores | bottle brush; swab | écouvillons
+ventouse | C1 | chores | plunger; suction pad | ventouses
+déboucher | C1 | chores | to unblock; to uncork | débouche débouchent débouché
+bouché | C1 | chores | blocked | bouchés
+compost | C1 | chores | = | composts
+encombrants | C1 | chores | bulky waste |
+déchetterie | C1 | chores | recycling centre | déchetteries
+benne | C1 | chores | skip; bin lorry | bennes
+souillé | C1 | chores | soiled | souillée souillés
+immaculé | C1 | chores | spotless | immaculée immaculés
+impeccable | C1 | chores | spotless; impeccable | impeccables
+nickel | C1 | chores | spotless (informal); nickel |
+crasse | C1 | chores | grime; dirt | crasses
+cambouis | C1 | chores | dirty grease |
+toile | C1 | chores | canvas; (toile d'araignée) cobweb | toiles
+acarien | C1 | chores | dust mite | acariens
+cafard | C1 | chores | cockroach; the blues | cafards
+nuisible | C1 | chores | pest; harmful | nuisibles
+désordonné | C1 | chores | untidy | désordonnée désordonnés
+maniaque | C1 | chores | fussy; obsessive | maniaques
+
+# --- In the kitchen (C1) ---
+ustensile | C1 | kitchen | utensil | ustensiles
+sauteuse | C1 | kitchen | sauté pan | sauteuses
+wok | C1 | kitchen | = | woks
+poêlon | C1 | kitchen | small pan | poêlons
+ramequin | C1 | kitchen | ramekin | ramequins
+cocotte-minute | C1 | kitchen | pressure cooker |
+mandoline | C1 | kitchen | mandoline slicer | mandolines
+hachoir | C1 | kitchen | mincer; chopper | hachoirs
+presse-agrumes | C1 | kitchen | juicer |
+presse-ail | C1 | kitchen | garlic press |
+mortier | C1 | kitchen | mortar | mortiers
+pilon | C1 | kitchen | pestle; drumstick | pilons
+écumoire | C1 | kitchen | skimmer | écumoires
+chinois | C1 | kitchen | conical sieve; Chinese |
+entonnoir | C1 | kitchen | funnel | entonnoirs
+emporte-pièce | C1 | kitchen | pastry cutter |
+minuteur | C1 | kitchen | timer | minuteurs
+bocal | C1 | kitchen | jar | bocaux
+argenterie | C1 | kitchen | silverware |
+porcelaine | C1 | kitchen | china; porcelain |
+faïence | C1 | kitchen | earthenware | faïences
+soupière | C1 | kitchen | soup tureen | soupières
+saucière | C1 | kitchen | gravy boat | saucières
+beurrier | C1 | kitchen | butter dish | beurriers
+sucrier | C1 | kitchen | sugar bowl | sucriers
+salière | C1 | kitchen | salt cellar | salières
+poivrière | C1 | kitchen | pepper pot | poivrières
+coquetier | C1 | kitchen | egg cup | coquetiers
+dessous-de-plat | C1 | kitchen | table mat; trivet |
+desserte | C1 | kitchen | sideboard; serving trolley | dessertes
+vitrocéramique | C1 | kitchen | ceramic hob |
+induction | C1 | kitchen | induction (hob) |
+blender | C1 | kitchen | = | blenders
+yaourtière | C1 | kitchen | yoghurt maker | yaourtières
+friteuse | C1 | kitchen | deep fryer | friteuses
+gaufrier | C1 | kitchen | waffle iron | gaufriers
+broyeur | C1 | kitchen | waste disposal; grinder | broyeurs
+garde-manger | C1 | kitchen | pantry; larder |
+office | C1 | kitchen | pantry; office |
+manique | C1 | kitchen | oven glove; pot holder | maniques
+égouttoir | C1 | kitchen | dish rack | égouttoirs
+bonde | C1 | kitchen | plug (sink); bung | bondes
+
+# --- Tools & repairs (C1) ---
+outillage | C1 | tools | tools; equipment |
+quincaillier | C1 | tools | hardware dealer | quincailliers
+tenaille | C1 | tools | pincers | tenailles
+maillet | C1 | tools | mallet | maillets
+masse | C1 | tools | sledgehammer; mass | masses
+pioche | C1 | tools | pickaxe | pioches
+pelleteuse | C1 | tools | digger | pelleteuses
+truelle | C1 | tools | trowel | truelles
+cutter | C1 | tools | Stanley knife | cutters
+cisaille | C1 | tools | shears | cisailles
+sécateur | C1 | tools | secateurs | sécateurs
+tronçonneuse | C1 | tools | chainsaw | tronçonneuses
+visseuse | C1 | tools | electric screwdriver | visseuses
+serre-joint | C1 | tools | clamp | serre-joints
+étau | C1 | tools | vice (tool) | étaux
+équerre | C1 | tools | set square | équerres
+mastic | C1 | tools | putty; filler | mastics
+enduit | C1 | tools | filler; plaster coating | enduits
+ciment | C1 | tools | cement | ciments
+béton | C1 | tools | concrete | bétons
+brique | C1 | tools | brick | briques
+parpaing | C1 | tools | breeze block | parpaings
+contreplaqué | C1 | tools | plywood |
+aggloméré | C1 | tools | chipboard |
+latte | C1 | tools | slat; lath | lattes
+rondelle | C1 | tools | washer; slice | rondelles
+charnière | C1 | tools | hinge | charnières
+gaine | C1 | tools | sheath; conduit | gaines
+câble | C1 | tools | cable; wire | câbles
+dénuder | C1 | tools | to strip (wire) | dénude dénudent dénudé
+souder | C1 | tools | to weld; to solder | soude soudent soudé
+soudure | C1 | tools | weld; solder | soudures
+colmater | C1 | tools | to seal; to plug | colmate colmatent colmaté
+calfeutrer | C1 | tools | to draught-proof | calfeutre calfeutrent calfeutré
+étanche | C1 | tools | waterproof; watertight | étanches
+étanchéité | C1 | tools | waterproofing |
+infiltration | C1 | tools | leak; infiltration | infiltrations
+dégât | C1 | tools | damage | dégâts
+vétusté | C1 | tools | dilapidation |
+fissure | C1 | tools | crack | fissures
+lézarde | C1 | tools | crack (in a wall) | lézardes
+ravaler | C1 | tools | to clean (a façade); to swallow | ravale ravalent ravalé
+ravalement | C1 | tools | façade cleaning | ravalements
+crépi | C1 | tools | roughcast | crépis
+tapisser | C1 | tools | to wallpaper | tapisse tapissent tapissé
+rafistoler | C1 | tools | to patch up | rafistole rafistolent rafistolé
+bricoleur | C1 | tools | DIY enthusiast; handyman | bricoleuse bricoleurs
+menuisier | C1 | tools | joiner; carpenter | menuisière menuisiers
+charpentier | C1 | tools | carpenter (framing) | charpentiers
+maçon | C1 | tools | builder; mason | maçons
+couvreur | C1 | tools | roofer | couvreurs
+serrurier | C1 | tools | locksmith | serruriers
+vitrier | C1 | tools | glazier | vitriers
+chauffagiste | C1 | tools | heating engineer | chauffagistes
+carreleur | C1 | tools | tiler | carreleurs
+chantier | C1 | tools | building site | chantiers
+échafaudage | C1 | tools | scaffolding | échafaudages
