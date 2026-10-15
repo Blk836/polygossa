@@ -195,7 +195,6 @@ semelle | B2 | clothes | sole; insole | semelles
 lacet | B2 | clothes | shoelace | lacets
 fermeture | B2 | clothes | fastening; (fermeture éclair) zip | fermetures
 ourlet | B2 | clothes | hem | ourlets
-doublure | B2 | clothes | lining | doublures
 capuche | B2 | clothes | hood | capuches
 pendentif | B2 | clothes | pendant | pendentifs
 broche | B2 | clothes | brooch | broches
@@ -227,7 +226,7 @@ daim | B2 | colours | suede | daims
 polyester | B2 | colours | = |
 nylon | B2 | colours | = |
 caoutchouc | B2 | colours | rubber | caoutchoucs
-cuivre | B2 | colours | copper | cuivres
+cuivre | B2 | colours | copper | 
 aluminium | B2 | colours | = |
 
 # --- Shops (B2) ---
@@ -259,7 +258,6 @@ mensualité | B2 | money | monthly payment | mensualités
 solde | B2 | money | balance (account) |
 épargne | B2 | money | savings | épargnes
 épargner | B2 | money | to save | épargnent épargné
-livret | B2 | money | savings account; booklet | livrets
 placement | B2 | money | investment | placements
 investir | B2 | money | to invest | investis investit investissent investi
 emprunt | B2 | money | loan | emprunts
@@ -319,7 +317,6 @@ espadrille | C1 | clothes | = | espadrilles
 mocassin | C1 | clothes | moccasin; loafer | mocassins
 bottine | C1 | clothes | ankle boot | bottines
 boutonnière | C1 | clothes | buttonhole | boutonnières
-revers | C1 | clothes | lapel; turn-up; setback |
 pli | C1 | clothes | fold; pleat; crease | plis
 plissé | C1 | clothes | pleated | plissée plissés
 cintré | C1 | clothes | fitted; tailored | cintrée cintrés
@@ -438,7 +435,6 @@ chaland | C1 | shops | customer (old) | chalands
 clientèle | C1 | shops | customers; clientele |
 achalandé | C1 | shops | well-stocked | achalandée achalandés
 assortiment | C1 | shops | range; assortment | assortiments
-gamme | C1 | shops | range; scale | gammes
 marchandise | C1 | shops | goods; merchandise | marchandises
 inventaire | C1 | shops | stocktaking; inventory | inventaires
 démarque | C1 | shops | markdown | démarques
@@ -453,7 +449,6 @@ arnaquer | C1 | shops | to rip off | arnaquent arnaqué
 escroquerie | C1 | shops | swindle | escroqueries
 contrefaçon | C1 | shops | counterfeit | contrefaçons
 lèche-vitrine | C1 | shops | window-shopping |
-chiner | C1 | shops | to hunt for bargains | chine chinent
 fouiner | C1 | shops | to rummage | fouine fouinent fouiné
 SAV | C1 | shops | after-sales service |
 garantir | C1 | shops | to guarantee | garantis garantit garantissent garanti

@@ -232,13 +232,9 @@ hublot | B2 | holidays | window (plane); porthole | hublots
 turbulences | B2 | holidays | turbulence |
 
 # --- Hotels (B2) ---
-hébergement | B2 | hotels | accommodation | hébergements
 logement | B2 | hotels | accommodation; housing | logements
-héberger | B2 | hotels | to put up; to host | héberge hébergent hébergé
 loger | B2 | hotels | to stay; to put up | loge logent logé
-hôte | B2 | hotels | host; guest | hôtes
 hôtesse | B2 | hotels | hostess | hôtesses
-suite | B2 | hotels | suite; continuation | suites
 minibar | B2 | hotels | = | minibars
 bagagiste | B2 | hotels | porter | bagagistes
 groom | B2 | hotels | bellboy | grooms
@@ -248,7 +244,6 @@ acompte | B2 | hotels | down payment | acomptes
 tarif | B2 | hotels | rate; price | tarifs
 supplément | B2 | hotels | extra charge | suppléments
 inclus | B2 | hotels | included | incluse
-libérer | B2 | hotels | to vacate; to free | libère libèrent libéré
 check-out | B2 | hotels | = |
 insonorisé | B2 | hotels | soundproofed | insonorisée insonorisés
 
@@ -297,7 +292,6 @@ SNCF | C1 | transport | French railways |
 oblitérer | C1 | transport | to stamp (a ticket) | oblitère oblitèrent oblitéré
 resquiller | C1 | transport | to dodge the fare | resquille resquillent resquillé
 fraudeur | C1 | transport | fare dodger | fraudeuse fraudeurs
-fraude | C1 | transport | fraud; fare dodging | fraudes
 deux-roues | C1 | transport | two-wheeler |
 scooter | C1 | transport | = | scooters
 mobylette | C1 | transport | moped | mobylettes
@@ -319,7 +313,6 @@ pédale | C1 | transport | pedal | pédales
 échappement | C1 | transport | exhaust; escapement | échappements
 carburant | C1 | transport | fuel | carburants
 gazole | C1 | transport | diesel |
-consommation | C1 | transport | consumption | consommations
 vidange | C1 | transport | oil change; draining | vidanges
 immatriculation | C1 | transport | registration | immatriculations
 fourrière | C1 | transport | car pound | fourrières
@@ -341,15 +334,12 @@ bretelle | C1 | transport | slip road |
 bas-côté | C1 | transport | verge | bas-côtés
 accotement | C1 | transport | hard shoulder; verge | accotements
 glissière | C1 | transport | crash barrier | glissières
-nationale | C1 | transport | A road | nationales
 départementale | C1 | transport | B road | départementales
-périphérique | C1 | transport | ring road | périphériques
 échangeur | C1 | transport | interchange | échangeurs
 aire | C1 | transport | area; (aire de repos) rest area | aires
 terminus | C1 | transport | = |
 aérogare | C1 | transport | air terminal | aérogares
 tarmac | C1 | transport | = |
-piste | C1 | transport | runway; track; ski run | pistes
 navigation | C1 | transport | = |
 ferry | C1 | transport | = | ferries
 traversée | C1 | transport | crossing | traversées
@@ -362,7 +352,6 @@ télésiège | C1 | transport | chairlift | télésièges
 funiculaire | C1 | transport | funicular | funiculaires
 
 # --- Holidays (C1) ---
-villégiature | C1 | holidays | holiday; stay in the country | villégiatures
 pérégrinations | C1 | holidays | travels; wanderings |
 périple | C1 | holidays | journey; voyage | périples
 odyssée | C1 | holidays | odyssey | odyssées
@@ -383,7 +372,6 @@ pittoresque | C1 | holidays | picturesque | pittoresques
 incontournable | C1 | holidays | must-see | incontournables
 vestige | C1 | holidays | remains; vestige | vestiges
 ruines | C1 | holidays | ruins |
-pèlerinage | C1 | holidays | pilgrimage | pèlerinages
 pèlerin | C1 | holidays | pilgrim | pèlerins
 thalasso | C1 | holidays | seawater spa therapy |
 thalassothérapie | C1 | holidays | seawater therapy |
@@ -392,9 +380,6 @@ bronzette | C1 | holidays | sunbathing (informal) |
 transat | C1 | holidays | deckchair; transatlantic race | transats
 parasol | C1 | holidays | sunshade; parasol | parasols
 paréo | C1 | holidays | sarong | paréos
-tuba | C1 | holidays | snorkel; tuba | tubas
-palmes | C1 | holidays | flippers |
-plongée | C1 | holidays | diving | plongées
 téléski | C1 | holidays | ski tow | téléskis
 après-ski | C1 | holidays | snow boot; après-ski |
 bivouac | C1 | holidays | = | bivouacs
@@ -421,7 +406,6 @@ exil | C1 | holidays | exile | exils
 hôtellerie | C1 | hotels | hotel trade; hospitality |
 hôtelier | C1 | hotels | hotelier; hotel | hôtelière hôteliers
 palace | C1 | hotels | luxury hotel | palaces
-relais | C1 | hotels | inn; relay |
 motel | C1 | hotels | = | motels
 refuge | C1 | hotels | mountain hut; refuge | refuges
 dortoir | C1 | hotels | dormitory | dortoirs

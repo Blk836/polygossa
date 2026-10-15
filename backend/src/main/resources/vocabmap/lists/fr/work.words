@@ -181,7 +181,6 @@ licenciement | B2 | jobs | dismissal; redundancy | licenciements
 démission | B2 | jobs | resignation | démissions
 CDI | B2 | jobs | permanent contract |
 CDD | B2 | jobs | fixed-term contract |
-intérim | B2 | jobs | temporary work |
 intérimaire | B2 | jobs | temp worker | intérimaires
 salarié | B2 | jobs | employee | salariée salariés
 employeur | B2 | jobs | employer | employeuse employeurs
@@ -215,7 +214,6 @@ procès-verbal | B2 | office | minutes; report | procès-verbaux
 échéancier | B2 | office | schedule | échéanciers
 planning | B2 | office | schedule | plannings
 stratégie | B2 | office | strategy | stratégies
-performance | B2 | office | = | performances
 rendement | B2 | office | output; yield | rendements
 productivité | B2 | office | productivity |
 efficacité | B2 | office | efficiency; effectiveness |
@@ -228,19 +226,15 @@ surmené | B2 | office | overworked | surmenée surmenés
 photocopieuse | B2 | office | photocopier | photocopieuses
 agrafeuse | B2 | office | stapler | agrafeuses
 classeur | B2 | office | ring binder; filing cabinet | classeurs
-trombone | B2 | office | paper clip; trombone | trombones
 badge | B2 | office | = | badges
 visioconférence | B2 | office | video conference | visioconférences
 
 # --- School & university (B2) ---
-primaire | B2 | school | primary | primaires
 secondaire | B2 | school | secondary | secondaires
 cursus | B2 | school | course; curriculum |
-filière | B2 | school | stream; field of study | filières
 option | B2 | school | option; elective | options
 exposé | B2 | school | presentation; talk | exposés
 dissertation | B2 | school | essay | dissertations
-rédaction | B2 | school | composition; writing | rédactions
 copie | B2 | school | paper; copy | copies
 partiel | B2 | school | mid-term exam; partial | partielle partiels
 concours | B2 | school | competitive exam; competition |
@@ -295,7 +289,6 @@ personnel | C1 | jobs | staff; personal |
 collaborateur | C1 | jobs | colleague; associate | collaboratrice collaborateurs
 associé | C1 | jobs | partner; associate | associée associés
 cofondateur | C1 | jobs | co-founder | cofondatrice cofondateurs
-PDG | C1 | jobs | CEO |
 magistrat | C1 | jobs | magistrate | magistrate magistrats
 greffier | C1 | jobs | court clerk | greffière greffiers
 expert-comptable | C1 | jobs | chartered accountant | experts-comptables
@@ -321,7 +314,6 @@ douanier | C1 | jobs | customs officer | douanière douaniers
 gendarme | C1 | jobs | gendarme; police officer | gendarmes
 diplomate | C1 | jobs | diplomat | diplomates
 ambassadeur | C1 | jobs | ambassador | ambassadrice ambassadeurs
-élu | C1 | jobs | elected representative | élue élus
 pasteur | C1 | jobs | pastor; minister | pasteurs
 prêtre | C1 | jobs | priest | prêtres
 moine | C1 | jobs | monk | moines
@@ -334,23 +326,19 @@ potier | C1 | jobs | potter | potière potiers
 tapissier | C1 | jobs | upholsterer | tapissière tapissiers
 orfèvre | C1 | jobs | goldsmith | orfèvres
 précaire | C1 | jobs | precarious; insecure | précaires
-précarité | C1 | jobs | insecurity; precariousness |
 smicard | C1 | jobs | minimum-wage earner | smicarde smicards
 SMIC | C1 | jobs | minimum wage |
-pigiste | C1 | jobs | freelance journalist | pigistes
 free-lance | C1 | jobs | freelance |
 auto-entrepreneur | C1 | jobs | self-employed person | auto-entrepreneurs
 bénévolat | C1 | jobs | voluntary work |
 débaucher | C1 | jobs | to poach (staff); to lay off | débauche débauchent débauché
 muter | C1 | jobs | to transfer | mute mutent muté
 mutation | C1 | jobs | transfer; mutation | mutations
-titulaire | C1 | jobs | permanent; holder | titulaires
 titulariser | C1 | jobs | to make permanent | titularise titularisent titularisé
 préretraite | C1 | jobs | early retirement | préretraites
 indemnité | C1 | jobs | allowance; compensation | indemnités
-pointer | C1 | jobs | to clock in; to point | pointe pointent pointé
+pointer | C1 | jobs | to clock in; to point | pointent pointé
 délocaliser | C1 | jobs | to relocate (abroad) | délocalise délocalisent délocalisé
-délocalisation | C1 | jobs | offshoring | délocalisations
 sous-traiter | C1 | jobs | to subcontract | sous-traite sous-traitent sous-traité
 sous-traitant | C1 | jobs | subcontractor | sous-traitants
 prud'hommes | C1 | jobs | employment tribunal |
@@ -361,7 +349,6 @@ organigramme | C1 | office | organisation chart | organigrammes
 avancement | C1 | office | promotion; progress |
 encadrer | C1 | office | to supervise; to frame | encadre encadrent encadré
 encadrement | C1 | office | management; supervision |
-mandat | C1 | office | mandate; term; money order | mandats
 attributions | C1 | office | remit; duties |
 paperasse | C1 | office | paperwork | paperasses
 paperasserie | C1 | office | red tape |
@@ -377,16 +364,13 @@ argumentaire | C1 | office | sales pitch; argument | argumentaires
 prévisionnel | C1 | office | forecast; projected | prévisionnelle prévisionnels
 trésorerie | C1 | office | cash flow; treasury | trésoreries
 rentabilité | C1 | office | profitability |
-rentable | C1 | office | profitable | rentables
 marge | C1 | office | margin | marges
 bénéfice | C1 | office | profit; benefit | bénéfices
-déficit | C1 | office | deficit | déficits
 actionnaire | C1 | office | shareholder | actionnaires
 fusion | C1 | office | merger; fusion | fusions
 rachat | C1 | office | buyout; takeover | rachats
 restructuration | C1 | office | restructuring | restructurations
 cessation | C1 | office | cessation; (cessation d'activité) closure |
-start-up | C1 | office | = | start-ups
 pépinière | C1 | office | business incubator; nursery | pépinières
 incubateur | C1 | office | incubator | incubateurs
 partenariat | C1 | office | partnership | partenariats
@@ -394,11 +378,9 @@ prestataire | C1 | office | service provider | prestataires
 prestation | C1 | office | service; benefit | prestations
 soumission | C1 | office | tender; submission | soumissions
 mandataire | C1 | office | agent; proxy | mandataires
-harcèlement | C1 | office | harassment | harcèlements
 présentéisme | C1 | office | presenteeism |
 absentéisme | C1 | office | absenteeism |
 pénibilité | C1 | office | arduousness |
-ambiance | C1 | office | atmosphere | ambiances
 lèche-bottes | C1 | office | bootlicker |
 fayot | C1 | office | creep; teacher's pet | fayote fayots
 carriériste | C1 | office | careerist | carriéristes
@@ -422,7 +404,6 @@ enseignement | C1 | school | teaching; education | enseignements
 académie | C1 | school | education authority; academy | académies
 rectorat | C1 | school | education authority office | rectorats
 recteur | C1 | school | chief education officer; rector | recteurs
-inspecteur | C1 | school | inspector | inspectrice inspecteurs
 agrégation | C1 | school | top teaching qualification |
 agrégé | C1 | school | holder of the agrégation | agrégée agrégés
 doyen | C1 | school | dean; doyen | doyenne doyens
@@ -431,13 +412,12 @@ jury | C1 | school | panel; jury | jurys
 prépa | C1 | school | preparatory class | prépas
 khâgne | C1 | school | second-year arts prep class |
 bachelier | C1 | school | holder of the baccalauréat | bachelière bacheliers
-brevet | C1 | school | lower-secondary exam; patent | brevets
 ECTS | C1 | school | European credits |
 Erasmus | C1 | school | Erasmus exchange |
 boursier | C1 | school | grant holder | boursière boursiers
 annale | C1 | school | past paper | annales
 bachoter | C1 | school | to cram | bachote bachotent bachoté
-bûcher | C1 | school | to swot | bûche bûchent bûché
+bûcher | C1 | school | to swot | bûchent bûché
 potasser | C1 | school | to swot up | potasse potassent potassé
 cancre | C1 | school | dunce | cancres
 redoublant | C1 | school | pupil repeating a year | redoublante redoublants
@@ -460,7 +440,6 @@ cultivé | C1 | school | cultured; educated | cultivée cultivés
 analphabète | C1 | school | illiterate | analphabètes
 illettrisme | C1 | school | illiteracy |
 alphabétisation | C1 | school | literacy (teaching) |
-laïcité | C1 | school | secularism |
 laïque | C1 | school | secular; lay | laïques
 
 # --- Skills (C1) ---
@@ -469,7 +448,6 @@ atout | C1 | skills | asset; trump card | atouts
 prédisposition | C1 | skills | predisposition | prédispositions
 don | C1 | skills | gift; talent; donation | dons
 virtuosité | C1 | skills | virtuosity |
-virtuose | C1 | skills | virtuoso | virtuoses
 prodige | C1 | skills | prodigy | prodiges
 surdoué | C1 | skills | gifted | surdouée surdoués
 chevronné | C1 | skills | seasoned | chevronnée chevronnés
@@ -477,7 +455,6 @@ aguerri | C1 | skills | seasoned; hardened | aguerrie aguerris
 aguerrir | C1 | skills | to harden; to toughen | aguerrit
 novice | C1 | skills | novice; beginner | novices
 néophyte | C1 | skills | newcomer; neophyte | néophytes
-profane | C1 | skills | layperson; secular | profanes
 amateurisme | C1 | skills | amateurism |
 dilettante | C1 | skills | = | dilettantes
 maladresse | C1 | skills | clumsiness | maladresses

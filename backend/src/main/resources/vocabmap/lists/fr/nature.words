@@ -256,7 +256,7 @@ pelage | B2 | animals | coat; fur | pelages
 écaille | B2 | animals | scale (fish) | écailles
 aboyer | B2 | animals | to bark | aboie aboient aboyé
 miauler | B2 | animals | to miaow | miaule miaulent miaulé
-mordre | B2 | animals | to bite | mords mord mordent mordu
+mordre | B2 | animals | to bite | mords mord mordent
 piquer | B2 | animals | to sting; to prick | pique piquent piqué
 apprivoiser | B2 | animals | to tame | apprivoise apprivoisent apprivoisé
 zoo | B2 | animals | = | zoos
@@ -265,7 +265,7 @@ zoo | B2 | animals | = | zoos
 végétation | B2 | plants | vegetation |
 végétal | B2 | plants | plant; vegetable | végétale végétaux
 arbuste | B2 | plants | shrub | arbustes
-haie | B2 | plants | hedge | haies
+haie | B2 | plants | hedge | 
 lierre | B2 | plants | ivy |
 mousse | B2 | plants | moss; foam | mousses
 fougère | B2 | plants | fern | fougères
@@ -276,7 +276,6 @@ tige | B2 | plants | stem | tiges
 sève | B2 | plants | sap | sèves
 pollen | B2 | plants | = |
 lys | B2 | plants | lily |
-muguet | B2 | plants | lily of the valley |
 coquelicot | B2 | plants | poppy | coquelicots
 tournesol | B2 | plants | sunflower | tournesols
 orchidée | B2 | plants | orchid | orchidées
@@ -302,7 +301,6 @@ râteau | B2 | plants | rake | râteaux
 arrosoir | B2 | plants | watering can | arrosoirs
 
 # --- Landscape (B2) ---
-relief | B2 | landscape | relief; terrain | reliefs
 massif | B2 | landscape | massif; solid | massive massifs
 glacier | B2 | landscape | glacier; ice-cream maker | glaciers
 crête | B2 | landscape | ridge; crest | crêtes
@@ -568,8 +566,6 @@ orme | C1 | plants | elm | ormes
 if | C1 | plants | yew | ifs
 cyprès | C1 | plants | cypress |
 mélèze | C1 | plants | larch | mélèzes
-houx | C1 | plants | holly |
-gui | C1 | plants | mistletoe |
 germer | C1 | plants | to sprout; to germinate | germe germent germé
 éclore | C1 | plants | to hatch; to bloom | éclot éclosent éclos
 s'épanouir | C1 | plants | to bloom; to flourish |
