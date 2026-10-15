@@ -154,7 +154,6 @@ discret | B1 | character | discreet | discrète discrets discrètes
 # --- Emotions (B2) ---
 inquiétude | B2 | emotions | worry; anxiety | inquiétudes
 anxiété | B2 | emotions | anxiety | anxiétés
-anxieux | B2 | emotions | anxious | anxieuse anxieuses
 angoissé | B2 | emotions | anxious; distressed | angoissée angoissés
 stressé | B2 | emotions | stressed | stressée stressés
 épanoui | B2 | emotions | fulfilled; happy | épanouie épanouis
@@ -193,7 +192,6 @@ remords | B2 | emotions | remorse |
 embarrassé | B2 | emotions | embarrassed | embarrassée embarrassés
 vexé | B2 | emotions | offended; hurt | vexée vexés
 émouvoir | B2 | emotions | to move (emotionally) | émeut émeuvent
-exprimer | B2 | emotions | to express | exprime expriment exprimé
 contenir | B2 | emotions | to contain; to hold back | contiens contient contiennent contenu
 
 # --- Opinions (B2) ---
@@ -217,7 +215,6 @@ impartial | B2 | opinions | = | impartiale impartiaux
 préjugé | B2 | opinions | prejudice | préjugés
 cliché | B2 | opinions | = | clichés
 stéréotype | B2 | opinions | stereotype | stéréotypes
-convenir | B2 | opinions | to agree; to suit | conviennent convenu
 douteux | B2 | opinions | doubtful; dubious | douteuse douteuses
 pertinent | B2 | opinions | relevant | pertinente pertinents
 fondé | B2 | opinions | well-founded | fondée fondés
@@ -245,7 +242,6 @@ concevoir | B2 | thinking | to conceive; to design | conçois conçoit conçoive
 interpréter | B2 | thinking | to interpret | interprète interprètent interprété
 percevoir | B2 | thinking | to perceive |
 méditer | B2 | thinking | to meditate; to ponder | médite méditent médité
-hésiter | B2 | thinking | to hesitate | hésite hésitent hésité
 hésitation | B2 | thinking | = | hésitations
 distrait | B2 | thinking | absent-minded | distraite distraits
 lucide | B2 | thinking | lucid; clear-headed | lucides
@@ -295,9 +291,7 @@ impulsif | B2 | character | impulsive | impulsive impulsifs
 prudent | B2 | character | careful | prudente prudents
 imprudent | B2 | character | careless; rash | imprudente imprudents
 audacieux | B2 | character | daring | audacieuse audacieuses
-lâche | B2 | character | cowardly; loose | lâches
 avare | B2 | character | miserly |
-naïf | B2 | character | naive | naïve naïfs
 rusé | B2 | character | cunning | rusée rusés
 débrouillard | B2 | character | resourceful |
 persévérant | B2 | character | persevering | persévérante persévérants
@@ -357,7 +351,6 @@ dégoût | C1 | emotions | disgust | dégoûts
 répulsion | C1 | emotions | repulsion |
 aversion | C1 | emotions | = | aversions
 effroi | C1 | emotions | terror; dread |
-épouvante | C1 | emotions | terror; horror |
 épouvanté | C1 | emotions | terrified | épouvantée épouvantés
 appréhension | C1 | emotions | apprehension | appréhensions
 appréhender | C1 | emotions | to dread; to apprehend | appréhende appréhendent appréhendé
@@ -381,7 +374,6 @@ lassé | C1 | emotions | tired (of) | lassée lassés
 attendri | C1 | emotions | touched; softened | attendrie attendris
 attendrissant | C1 | emotions | touching | attendrissante attendrissants
 émoi | C1 | emotions | agitation; excitement |
-trouble | C1 | emotions | confusion; disturbance; cloudy | troubles
 troublé | C1 | emotions | troubled; flustered | troublée troublés
 fébrile | C1 | emotions | feverish; nervous | fébriles
 fébrilité | C1 | emotions | nervousness |
@@ -403,7 +395,6 @@ apaiser | C1 | emotions | to soothe; to calm | apaise apaisent apaisé
 apaisement | C1 | emotions | calming; appeasement |
 réconforter | C1 | emotions | to comfort | réconforte réconfortent réconforté
 réconfort | C1 | emotions | comfort |
-consoler | C1 | emotions | to console | consolent consolé
 refouler | C1 | emotions | to repress; to turn back | refoule refoulent refoulé
 défouler | C1 | emotions | (se défouler) to let off steam | défoule défoulent défoulé
 exulter | C1 | emotions | to exult | exulte exultent
@@ -431,7 +422,6 @@ détracteur | C1 | opinions | critic; detractor | détractrice détracteurs
 souscrire | C1 | opinions | to subscribe (to) | souscris souscrit souscrivent souscrit
 désapprouver | C1 | opinions | to disapprove | désapprouve désapprouvent désapprouvé
 réprouver | C1 | opinions | to condemn | réprouve réprouvent réprouvé
-dénoncer | C1 | opinions | to denounce | dénonce dénoncent dénoncé
 fustiger | C1 | opinions | to castigate | fustige fustigent fustigé
 décrier | C1 | opinions | to decry | décrie décrient décrié
 dénigrer | C1 | opinions | to denigrate | dénigre dénigrent dénigré
@@ -446,18 +436,15 @@ nuancer | C1 | opinions | to qualify; to nuance | nuance nuancent nuancé
 mitigé | C1 | opinions | mixed; lukewarm | mitigée mitigés
 tranché | C1 | opinions | clear-cut; firm | tranchée tranchés
 catégorique | C1 | opinions | categorical | catégoriques
-péremptoire | C1 | opinions | peremptory | péremptoires
 incontestable | C1 | opinions | indisputable | incontestables
 irréfutable | C1 | opinions | irrefutable | irréfutables
 discutable | C1 | opinions | debatable | discutables
 contestable | C1 | opinions | questionable | contestables
 spécieux | C1 | opinions | specious | spécieuse spécieuses
-fallacieux | C1 | opinions | fallacious | fallacieuse fallacieuses
 infondé | C1 | opinions | unfounded | infondée infondés
 judicieux | C1 | opinions | judicious; wise | judicieuse judicieuses
 sensé | C1 | opinions | sensible | sensée sensés
 insensé | C1 | opinions | insane; senseless | insensée insensés
-saugrenu | C1 | opinions | preposterous | saugrenue saugrenus
 farfelu | C1 | opinions | hare-brained; eccentric | farfelue farfelus
 grotesque | C1 | opinions | = | grotesques
 navrant | C1 | opinions | pitiful; distressing | navrante navrants
@@ -603,7 +590,6 @@ volage | C1 | character | fickle (in love) | volages
 frivole | C1 | character | frivolous | frivoles
 insouciant | C1 | character | carefree | insouciante insouciants
 désinvolte | C1 | character | casual; offhand | désinvoltes
-nonchalant | C1 | character | = | nonchalante nonchalants
 indolent | C1 | character | idle; indolent | indolente indolents
 fainéant | C1 | character | lazy; idler | fainéants
 flemmard | C1 | character | lazy (informal) | flemmarde flemmards
@@ -615,7 +601,6 @@ entêté | C1 | character | stubborn | entêtée entêtés
 buté | C1 | character | stubborn; pig-headed | butée butés
 borné | C1 | character | narrow-minded | bornée bornés
 tolérance | C1 | character | = |
-intransigeant | C1 | character | uncompromising | intransigeante intransigeants
 pointilleux | C1 | character | fussy; pernickety | pointilleuse pointilleuses
 tatillon | C1 | character | nit-picking | tatillonne tatillons
 méticuleux | C1 | character | meticulous | méticuleuse méticuleuses

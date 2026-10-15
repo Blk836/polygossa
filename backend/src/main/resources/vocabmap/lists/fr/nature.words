@@ -207,7 +207,6 @@ pluvieux | B2 | weather | rainy | pluvieuse pluvieuses
 venteux | B2 | weather | windy | venteuse venteuses
 glacial | B2 | weather | icy; freezing | glaciale glaciaux
 étouffant | B2 | weather | stifling | étouffante étouffants
-radieux | B2 | weather | glorious; radiant | radieuse radieuses
 dégagé | B2 | weather | clear (sky) | dégagée dégagés
 redoux | B2 | weather | thaw; milder spell |
 dégel | B2 | weather | thaw | dégels
@@ -290,9 +289,7 @@ olivier | B2 | plants | olive tree | oliviers
 pommier | B2 | plants | apple tree | pommiers
 verger | B2 | plants | orchard | vergers
 potager | B2 | plants | vegetable garden | potagers
-serre | B2 | plants | greenhouse | serres
 semer | B2 | plants | to sow | sème sèment semé
-tailler | B2 | plants | to prune; to cut | taillent taillé
 faner | B2 | plants | (se faner) to wilt | fane fanent fané fanée
 engrais | B2 | plants | fertiliser |
 tondeuse | B2 | plants | lawnmower; clippers | tondeuses
@@ -361,7 +358,6 @@ pluviométrie | C1 | weather | rainfall |
 précipitations | C1 | weather | precipitation; rainfall |
 intempéries | C1 | weather | bad weather |
 vigilance | C1 | weather | alert; vigilance |
-alerte | C1 | weather | warning; alert | alertes
 perturbation | C1 | weather | disturbance; weather front | perturbations
 accalmie | C1 | weather | lull | accalmies
 embellie | C1 | weather | bright spell; upturn | embellies
@@ -381,7 +377,6 @@ froidure | C1 | weather | cold (season) |
 glacé | C1 | weather | icy; frozen | glacée glacés
 transi | C1 | weather | chilled to the bone | transie transis
 frisquet | C1 | weather | chilly | frisquette frisquets
-torride | C1 | weather | scorching | torrides
 caniculaire | C1 | weather | sweltering | caniculaires
 suffocant | C1 | weather | suffocating | suffocante suffocants
 moite | C1 | weather | sticky; clammy | moites
@@ -588,7 +583,6 @@ chlorophylle | C1 | plants | chlorophyll |
 # --- Landscape (C1) ---
 topographie | C1 | landscape | topography |
 géographique | C1 | landscape | geographical | géographiques
-escarpé | C1 | landscape | steep | escarpée escarpés
 abrupt | C1 | landscape | steep; abrupt | abrupte abrupts
 accidenté | C1 | landscape | hilly; uneven | accidentée accidentés
 vallonné | C1 | landscape | undulating | vallonnée vallonnés

@@ -187,7 +187,6 @@ chiffon | B2 | chores | cloth; rag | chiffons
 détergent | B2 | chores | detergent | détergents
 javel | B2 | chores | bleach |
 adoucissant | B2 | chores | fabric softener | adoucissants
-étendre | B2 | chores | to hang out (washing); to spread | étends étend étendent étendu
 étendoir | B2 | chores | clothes horse | étendoirs
 repassage | B2 | chores | ironing |
 lave-linge | B2 | chores | washing machine |
@@ -245,7 +244,6 @@ scotch | B2 | tools | sticky tape |
 visser | B2 | tools | to screw | visse vissent vissé
 dévisser | B2 | tools | to unscrew | dévisse dévissent dévissé
 clouer | B2 | tools | to nail | cloue clouent cloué
-fixer | B2 | tools | to fix; to fasten; to stare at | fixent fixé
 brancher | B2 | tools | to plug in | branchent branché
 débrancher | B2 | tools | to unplug | débranche débranchent débranché
 rallonge | B2 | tools | extension lead | rallonges
@@ -309,7 +307,6 @@ plaid | C1 | rooms | throw; blanket | plaids
 bibelot | C1 | rooms | ornament; knick-knack | bibelots
 halogène | C1 | rooms | halogen lamp | halogènes
 pavillon | C1 | rooms | detached house; pavilion | pavillons
-demeure | C1 | rooms | residence; mansion | demeures
 taudis | C1 | rooms | slum; hovel |
 logis | C1 | rooms | dwelling |
 HLM | C1 | rooms | council flat |
@@ -324,13 +321,9 @@ concierge | C1 | rooms | caretaker | concierges
 gardien | C1 | rooms | caretaker; guard | gardienne gardiens
 agencement | C1 | rooms | layout | agencements
 aménager | C1 | rooms | to fit out; to arrange | aménage aménagent aménagé
-exigu | C1 | rooms | cramped | exiguë exigus
-douillet | C1 | rooms | cosy | douillette douillets
-cossu | C1 | rooms | well-to-do; plush | cossue cossus
 insalubre | C1 | rooms | unfit for habitation | insalubres
 
 # --- Household chores (C1) ---
-entretenir | C1 | chores | to maintain | entretient entretiennent entretenu
 décrasser | C1 | chores | to clean off grime | décrasse décrassent décrassé
 détartrer | C1 | chores | to descale | détartre détartrent détartré
 calcaire | C1 | chores | limescale; limestone | calcaires
@@ -364,7 +357,6 @@ encombrants | C1 | chores | bulky waste |
 déchetterie | C1 | chores | recycling centre | déchetteries
 benne | C1 | chores | skip; bin lorry | bennes
 souillé | C1 | chores | soiled | souillée souillés
-immaculé | C1 | chores | spotless | immaculée immaculés
 impeccable | C1 | chores | spotless; impeccable | impeccables
 nickel | C1 | chores | spotless (informal); nickel |
 crasse | C1 | chores | grime; dirt | crasses
