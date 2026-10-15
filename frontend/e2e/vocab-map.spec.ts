@@ -178,7 +178,8 @@ test("the band switch changes what counts and how tiles are coloured, and is rem
   await openInFrench(page);
   const overall = map(page).getByTestId("map-overall");
   await expect(bandButton(page, "A1")).toHaveAttribute("aria-pressed", "true");
-  await expect(map(page).getByRole("group", { name: "Bands counted" }).getByRole("button")).toHaveText(["Up to A1", "Up to A2", "Up to B1"]);
+  await expect(map(page).getByRole("group", { name: "Bands counted" }).getByRole("button"))
+    .toHaveText(["Up to A1", "Up to A2", "Up to B1", "Up to B2", "Up to C1"]);
   const a1 = await overall.textContent();
   await expect(label(page, "region-label", "food").getByTestId("tile-next")).toHaveText(/^\+\d+ at A2$/);
   expect(await tileCount(page, "next")).toBeGreaterThan(0);
@@ -187,14 +188,34 @@ test("the band switch changes what counts and how tiles are coloured, and is rem
   await bandButton(page, "B1").click();
   await expect(bandButton(page, "B1")).toHaveAttribute("aria-pressed", "true");
   await expect(overall).not.toHaveText(a1!);
-  await expect(map(page)).toContainText("B2 words coming soon.");
+  await expect(label(page, "region-label", "food").getByTestId("tile-next")).toHaveText(/^\+\d+ at B2$/);
+  await expect(map(page)).not.toContainText("coming soon");
+  expect(await tileCount(page, "later")).toBeGreaterThan(0);
+
+  await bandButton(page, "B2").click();
+  await expect(label(page, "region-label", "food").getByTestId("tile-next")).toHaveText(/^\+\d+ at C1$/);
+
+  await bandButton(page, "C1").click();
+  await expect(bandButton(page, "C1")).toHaveAttribute("aria-pressed", "true");
+  await expect(map(page)).not.toContainText("coming soon");
   await expect(label(page, "region-label", "food").getByTestId("tile-next")).toHaveCount(0);
   expect(await tileCount(page, "next")).toBe(0);
   expect(await tileCount(page, "later")).toBe(0);
 
   await page.reload();
   await pickLanguage(page, "Français");
-  await expect(bandButton(page, "B1")).toHaveAttribute("aria-pressed", "true");
+  await expect(bandButton(page, "C1")).toHaveAttribute("aria-pressed", "true");
+});
+
+test("an advanced word works like any other: its form counts, its panel shows its band", async ({ page }) => {
+  await save(page, "inquiétudes", "known");
+  await openInFrench(page, "/dashboard?map=mind/emotions");
+  await bandButton(page, "B2").click();
+  await expect(wordTile(page, "inquiétude")).toHaveAttribute("data-status", "known");
+  await wordTile(page, "inquiétude").click();
+  await expect(map(page).getByTestId("map-word-meaning")).toHaveText("worry; anxiety");
+  await expect(map(page).getByTestId("map-word-panel").getByText("B2", { exact: true })).toBeVisible();
+  await expect(map(page).getByTestId("map-word-status")).toHaveText("Known");
 });
 
 test("a language without a list says the map is coming soon", async ({ page }) => {

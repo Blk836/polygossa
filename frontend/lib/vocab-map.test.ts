@@ -58,6 +58,12 @@ describe("defaultTopBand", () => {
     expect(defaultTopBand("C2", ["A1", "A2", "B1"])).toBe("B1");
   });
 
+  it("counts up to B2 for a B2 reader and up to C1 for a C2 reader when the list reaches C1", () => {
+    const all = ["A1", "A2", "B1", "B2", "C1"];
+    expect(defaultTopBand("B2", all)).toBe("B2");
+    expect(defaultTopBand("C2", all)).toBe("C1");
+  });
+
   it("treats an unknown level as none", () => {
     expect(defaultTopBand("Z9", ["A1", "A2"])).toBe("A1");
   });
