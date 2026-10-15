@@ -211,7 +211,7 @@ radieux | B2 | weather | glorious; radiant | radieuse radieuses
 dégagé | B2 | weather | clear (sky) | dégagée dégagés
 redoux | B2 | weather | thaw; milder spell |
 dégel | B2 | weather | thaw | dégels
-fondre | B2 | weather | to melt | fondent fondu
+fondre | B2 | weather | to melt | fondu
 flocon | B2 | weather | snowflake | flocons
 congère | B2 | weather | snowdrift | congères
 baromètre | B2 | weather | barometer | baromètres
@@ -388,20 +388,17 @@ moite | C1 | weather | sticky; clammy | moites
 moiteur | C1 | weather | stickiness; humidity |
 aride | C1 | weather | arid | arides
 zéphyr | C1 | weather | breeze; zephyr |
-brise | C1 | weather | breeze | brises
 mistral | C1 | weather | mistral (wind) |
 tramontane | C1 | weather | tramontane (wind) |
 alizé | C1 | weather | trade wind | alizés
 mousson | C1 | weather | monsoon | moussons
 typhon | C1 | weather | typhoon | typhons
 trombe | C1 | weather | waterspout; (trombes d'eau) downpour | trombes
-éclairer | C1 | weather | to light up |
 gronder | C1 | weather | to rumble |
 crépiter | C1 | weather | to patter; to crackle | crépite crépitent crépité
 pleuviner | C1 | weather | to drizzle | pleuvine
 grêler | C1 | weather | to hail | 
 venter | C1 | weather | to be windy | 
-s'éclaircir | C1 | weather | to clear up |
 radoucir | C1 | weather | (se radoucir) to get milder | radoucit
 rafraîchir | C1 | weather | to cool; (se rafraîchir) to get cooler | rafraîchit rafraîchissent rafraîchi
 
@@ -522,7 +519,6 @@ feuillu | C1 | plants | deciduous; broadleaved | feuillue feuillus
 conifère | C1 | plants | conifer | conifères
 résineux | C1 | plants | conifer; resinous |
 persistant | C1 | plants | evergreen; persistent | persistante persistants
-caduc | C1 | plants | deciduous; obsolete | caduque caducs
 vivace | C1 | plants | perennial; enduring | vivaces
 bulbe | C1 | plants | bulb | bulbes
 rhizome | C1 | plants | = | rhizomes
@@ -568,7 +564,6 @@ cyprès | C1 | plants | cypress |
 mélèze | C1 | plants | larch | mélèzes
 germer | C1 | plants | to sprout; to germinate | germe germent germé
 éclore | C1 | plants | to hatch; to bloom | éclot éclosent éclos
-s'épanouir | C1 | plants | to bloom; to flourish |
 épanouir | C1 | plants | (s'épanouir) to bloom; to flourish | épanouit épanouissent
 flétrir | C1 | plants | to wither | flétrit flétrissent flétri
 dépérir | C1 | plants | to waste away; to wither | dépérit dépérissent dépéri
@@ -638,7 +633,6 @@ galet | C1 | landscape | pebble | galets
 houle | C1 | landscape | swell | houles
 ressac | C1 | landscape | backwash; undertow |
 reflux | C1 | landscape | ebb |
-affluent | C1 | landscape | tributary | affluents
 confluent | C1 | landscape | confluence | confluents
 méandre | C1 | landscape | meander | méandres
 delta | C1 | landscape | = | deltas
@@ -658,7 +652,6 @@ constellation | C1 | landscape | = | constellations
 astre | C1 | landscape | star; celestial body | astres
 comète | C1 | landscape | comet | comètes
 galaxie | C1 | landscape | galaxy | galaxies
-éclipse | C1 | landscape | = | éclipses
 
 # --- The environment (C1) ---
 anthropique | C1 | environment | man-made | anthropiques
@@ -686,7 +679,6 @@ dioxyde | C1 | environment | dioxide |
 méthane | C1 | environment | methane |
 hydrocarbure | C1 | environment | hydrocarbon | hydrocarbures
 fracturation | C1 | environment | fracking; fracturing |
-centrale | C1 | environment | power station | centrales
 barrage | C1 | environment | dam | barrages
 hydroélectrique | C1 | environment | hydroelectric | hydroélectriques
 géothermie | C1 | environment | geothermal energy |

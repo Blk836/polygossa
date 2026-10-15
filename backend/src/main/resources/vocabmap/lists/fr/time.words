@@ -180,7 +180,6 @@ nombreux | B1 | quantities | numerous | nombreuse nombreuses
 
 # --- Numbers (B2) ---
 quantième | B2 | numbers | day of the month |
-cardinal | B2 | numbers | = | cardinale cardinaux
 ordinal | B2 | numbers | = | ordinale ordinaux
 décimal | B2 | numbers | decimal | décimale décimaux
 virgule | B2 | numbers | decimal point; comma | virgules
@@ -194,13 +193,11 @@ vingtaine | B2 | numbers | about twenty | vingtaines
 quinzaine | B2 | numbers | about fifteen; fortnight | quinzaines
 chiffrer | B2 | numbers | to cost; to encrypt | chiffrent chiffré
 additionner | B2 | numbers | to add | additionne additionnent additionné
-soustraire | B2 | numbers | to subtract | soustrait soustraient
 multiplier | B2 | numbers | to multiply | multiplie multiplient multiplié
 diviser | B2 | numbers | to divide | divise divisent divisé
 soustraction | B2 | numbers | subtraction | soustractions
 multiplication | B2 | numbers | = | multiplications
 division | B2 | numbers | = | divisions
-égal | B2 | numbers | equal | égale égaux
 égaler | B2 | numbers | to equal | égalent égalé
 statistique | B2 | numbers | statistic; statistical | statistiques
 arrondir | B2 | numbers | to round | arrondis arrondit arrondissent arrondi
@@ -215,7 +212,6 @@ biennal | B2 | calendar | biennial | biennale biennaux
 millénaire | B2 | calendar | millennium | millénaires
 ère | B2 | calendar | era | ères
 période | B2 | calendar | period | périodes
-avancer | B2 | calendar | to bring forward; to move forward | avancent
 repousser | B2 | calendar | to put off; to push back | repousse repoussent repoussé
 solstice | B2 | calendar | = | solstices
 équinoxe | B2 | calendar | equinox | équinoxes
@@ -224,11 +220,8 @@ estival | B2 | calendar | summer | estivale estivaux
 hivernal | B2 | calendar | winter | hivernale hivernaux
 printanier | B2 | calendar | spring | printanière printaniers
 automnal | B2 | calendar | autumnal | automnale automnaux
-antérieur | B2 | calendar | earlier; previous | antérieure antérieurs
 postérieur | B2 | calendar | later; subsequent | postérieure postérieurs
 ultérieur | B2 | calendar | later | ultérieure ultérieurs
-dorénavant | B2 | calendar | from now on |
-jadis | B2 | calendar | in times past |
 
 # --- Telling the time (B2) ---
 aurore | B2 | clock | dawn | aurores
@@ -257,8 +250,6 @@ périodiquement | B2 | frequency | periodically |
 quotidiennement | B2 | frequency | daily |
 annuellement | B2 | frequency | annually |
 continuellement | B2 | frequency | continually |
-cesse | B2 | frequency | (sans cesse) constantly |
-exceptionnel | B2 | frequency | exceptional | exceptionnelle exceptionnels
 exceptionnellement | B2 | frequency | exceptionally |
 sporadique | B2 | frequency | sporadic | sporadiques
 systématiquement | B2 | frequency | systematically |
@@ -268,7 +259,6 @@ accoutumé | B2 | frequency | accustomed; usual | accoutumée accoutumés
 rituel | B2 | frequency | ritual | rituelle rituels
 répétitif | B2 | frequency | repetitive | répétitive répétitifs
 monotone | B2 | frequency | monotonous | monotones
-récurrent | B2 | frequency | recurring | récurrente récurrents
 alterner | B2 | frequency | to alternate | alterne alternent alterné
 
 # --- Quantities & measures (B2) ---
@@ -292,7 +282,6 @@ multiple | B2 | quantities | many; multiple | multiples
 maximum | B2 | quantities | = | maximums
 minimum | B2 | quantities | = | minimums
 doubler | B2 | quantities | to double |
-accroître | B2 | quantities | to increase | accroît accroissent accru
 hausse | B2 | quantities | rise | hausses
 
 # === C1 ===
@@ -323,14 +312,11 @@ géométrie | C1 | numbers | geometry |
 algèbre | C1 | numbers | algebra |
 arithmétique | C1 | numbers | arithmetic | arithmétiques
 probabilité | C1 | numbers | probability | probabilités
-infini | C1 | numbers | infinite; infinity | infinie infinis
-négatif | C1 | numbers | negative | négative négatifs
 positif | C1 | numbers | positive | positive positifs
 médiane | C1 | numbers | median | médianes
 écart | C1 | numbers | gap; deviation | écarts
 échantillon | C1 | numbers | sample | échantillons
 graphique | C1 | numbers | graph; chart | graphiques
-courbe | C1 | numbers | curve | courbes
 abscisse | C1 | numbers | x-axis | abscisses
 dénombrer | C1 | numbers | to count | dénombre dénombrent dénombré
 recenser | C1 | numbers | to count; to list | recense recensent recensé
@@ -348,11 +334,7 @@ anachronisme | C1 | calendar | anachronism | anachronismes
 contemporain | C1 | calendar | contemporary | contemporaine contemporains
 séculaire | C1 | calendar | age-old; century-old | séculaires
 antan | C1 | calendar | (d'antan) of yesteryear |
-naguère | C1 | calendar | not long ago; formerly |
-imminent | C1 | calendar | = | imminente imminents
-révolu | C1 | calendar | bygone; completed | révolue révolus
 écoulé | C1 | calendar | past; elapsed | écoulée écoulés
-s'écouler | C1 | calendar | to pass (time) |
 écouler | C1 | calendar | (s'écouler) to pass; to sell off | écoule écoulent
 périodicité | C1 | calendar | frequency; periodicity |
 ouvrable | C1 | calendar | working (day) | ouvrables
@@ -366,7 +348,6 @@ quinquennal | C1 | calendar | five-year | quinquennale quinquennaux
 quinquennat | C1 | calendar | five-year term | quinquennats
 septennat | C1 | calendar | seven-year term | septennats
 éternité | C1 | calendar | eternity | éternités
-pérenne | C1 | calendar | lasting; perennial | pérennes
 pérennité | C1 | calendar | durability |
 saisonnalité | C1 | calendar | seasonality |
 mi-saison | C1 | calendar | between seasons |
@@ -391,7 +372,6 @@ diligence | C1 | clock | haste; diligence |
 hâte | C1 | clock | haste |
 hâter | C1 | clock | (se hâter) to hurry | hâtent hâté
 précipitation | C1 | clock | haste |
-s'attarder | C1 | clock | to linger |
 attarder | C1 | clock | (s'attarder) to linger | attarde attardent attardé
 traîner | C1 | clock | to dawdle; to drag | traîne traînent traîné
 lambiner | C1 | clock | to dawdle | lambine lambinent
@@ -406,17 +386,14 @@ fugace | C1 | clock | fleeting | fugaces
 transitoire | C1 | clock | transitional | transitoires
 interminable | C1 | clock | endless | interminables
 perpétuel | C1 | clock | perpetual | perpétuelle perpétuels
-incessant | C1 | clock | = | incessante incessants
 illico | C1 | clock | right away (informal) |
 derechef | C1 | clock | once again |
-d'emblée | C1 | clock | straight away |
 emblée | C1 | clock | (d'emblée) straight away |
 sitôt | C1 | clock | as soon as |
 tantôt | C1 | clock | sometimes; this afternoon |
 jusque-là | C1 | clock | until then |
 simultané | C1 | clock | simultaneous | simultanée simultanés
 simultanément | C1 | clock | simultaneously |
-synchroniser | C1 | clock | to synchronise | synchronise synchronisent synchronisé
 
 # --- How often (C1) ---
 itératif | C1 | frequency | iterative | itérative itératifs
@@ -448,7 +425,6 @@ immuable | C1 | frequency | unchanging | immuables
 coutumier | C1 | frequency | customary; habitual | coutumière coutumiers
 usuel | C1 | frequency | usual; everyday | usuelle usuels
 usage | C1 | frequency | use; custom | usages
-d'ordinaire | C1 | frequency | ordinarily |
 accoutumance | C1 | frequency | habituation; addiction |
 inhabituel | C1 | frequency | unusual | inhabituelle inhabituels
 inédit | C1 | frequency | unprecedented; unpublished | inédite inédits
@@ -483,13 +459,10 @@ lambeau | C1 | quantities | shred; scrap | lambeaux
 infime | C1 | quantities | tiny | infimes
 minime | C1 | quantities | minimal | minimes
 négligeable | C1 | quantities | negligible | négligeables
-considérable | C1 | quantities | considerable | considérables
 colossal | C1 | quantities | = | colossale colossaux
-démesuré | C1 | quantities | excessive; enormous | démesurée démesurés
 pharaonique | C1 | quantities | gigantic | pharaoniques
 astronomique | C1 | quantities | astronomical | astronomiques
 faramineux | C1 | quantities | staggering | faramineuse faramineuses
-exhaustif | C1 | quantities | exhaustive | exhaustive exhaustifs
 intégral | C1 | quantities | complete; full | intégrale intégraux
 intégralité | C1 | quantities | entirety |
 totalité | C1 | quantities | whole; entirety |
@@ -511,7 +484,6 @@ circonférence | C1 | quantities | circumference | circonférences
 densité | C1 | quantities | density | densités
 croître | C1 | quantities | to grow; to increase | croît croissent crû
 décroître | C1 | quantities | to decrease | décroît décroissent décru
-s'amenuiser | C1 | quantities | to dwindle |
 amenuiser | C1 | quantities | (s'amenuiser) to dwindle | amenuise amenuisent amenuisé
 fluctuer | C1 | quantities | to fluctuate | fluctue fluctuent fluctué
 fluctuation | C1 | quantities | = | fluctuations

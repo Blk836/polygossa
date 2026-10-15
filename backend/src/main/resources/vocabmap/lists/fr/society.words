@@ -114,7 +114,6 @@ roi | B2 | politics | king |
 reine | B2 | politics | queen |
 gouverner | B2 | politics | to govern | gouverne gouvernent gouverné
 débat | B2 | politics | debate | débats
-débattre | B2 | politics | to debate | débattent débattu
 promesse | B2 | politics | promise | promesses
 proposition | B2 | politics | proposal | propositions
 militer | B2 | politics | to campaign | milite militent milité
@@ -191,19 +190,16 @@ rédaction | B2 | news | editorial staff |
 JT | B2 | news | TV news |
 présentateur | B2 | news | presenter | présentatrice présentateurs
 animateur | B2 | news | host; presenter | animatrice animateurs
-direct | B2 | news | live |
-diffuser | B2 | news | to broadcast | diffuse diffusent diffusé
 diffusion | B2 | news | broadcast | diffusions
 audience | B2 | news | audience; ratings | audiences
 téléspectateur | B2 | news | viewer | téléspectatrice téléspectateurs
 auditeur | B2 | news | listener | auditrice auditeurs
-abonné | B2 | news | subscriber | abonnée abonnés
+abonné | B2 | news | subscriber | abonnée
 information | B2 | news | = | 
 désinformation | B2 | news | disinformation |
 propagande | B2 | news | propaganda |
 censure | B2 | news | censorship | censures
 scandale | B2 | news | scandal | scandales
-révéler | B2 | news | to reveal | révèle révèlent révélé
 annoncer | B2 | news | to announce | annonce annoncent annoncé
 sondage | B2 | news | poll | sondages
 influence | B2 | news | = | influences
@@ -361,7 +357,6 @@ blanchiment | C1 | law | laundering |
 soudoyer | C1 | law | to bribe | soudoie soudoient soudoyé
 détournement | C1 | law | embezzlement; hijacking | détournements
 détourner | C1 | law | to embezzle; to divert | détourne détournent détourné
-faux | C1 | law | forgery; false |
 contrefaire | C1 | law | to counterfeit; to forge | contrefait contrefont
 usurpation | C1 | law | (usurpation d'identité) identity theft |
 homicide | C1 | law | = | homicides
@@ -372,10 +367,8 @@ harcèlement | C1 | law | harassment |
 sévices | C1 | law | abuse; cruelty |
 maltraitance | C1 | law | ill-treatment; abuse |
 vandalisme | C1 | law | vandalism |
-saccager | C1 | law | to wreck; to ransack | saccage saccagent saccagé
 incendiaire | C1 | law | arsonist; incendiary | incendiaires
 flic | C1 | law | cop | flics
-interpeller | C1 | law | to question; to detain | interpelle interpellent interpellé
 interpellation | C1 | law | arrest; questioning | interpellations
 menottes | C1 | law | handcuffs |
 perquisition | C1 | law | search (of premises) | perquisitions
@@ -385,7 +378,6 @@ indic | C1 | law | informer | indics
 mouchard | C1 | law | informer; snitch | moucharde mouchards
 déposition | C1 | law | statement; testimony | dépositions
 témoignage | C1 | law | testimony | témoignages
-témoigner | C1 | law | to testify | témoigne témoignent témoigné
 inculper | C1 | law | to charge | inculpe inculpent inculpé
 plaignant | C1 | law | plaintiff | plaignante plaignants
 juré | C1 | law | juror | jurée jurés
@@ -393,7 +385,6 @@ plaidoirie | C1 | law | speech for the defence | plaidoiries
 réquisitoire | C1 | law | closing speech for the prosecution | réquisitoires
 procureur | C1 | law | prosecutor | procureurs
 verdict | C1 | law | = | verdicts
-acquitter | C1 | law | to acquit | acquitte acquittent acquitté
 acquittement | C1 | law | acquittal | acquittements
 relaxe | C1 | law | discharge |
 non-lieu | C1 | law | dismissal of charges | non-lieux
@@ -416,7 +407,6 @@ jurisprudence | C1 | law | case law |
 législation | C1 | law | legislation |
 contentieux | C1 | law | dispute; litigation |
 litige | C1 | law | dispute | litiges
-recours | C1 | law | appeal; recourse |
 dommages-intérêts | C1 | law | damages |
 préjudice | C1 | law | harm; prejudice | préjudices
 diffamation | C1 | law | defamation |
@@ -438,7 +428,6 @@ krach | C1 | economy | crash (stock market) | krachs
 bulle | C1 | economy | bubble | bulles
 austérité | C1 | economy | austerity |
 rigueur | C1 | economy | austerity; rigour |
-relance | C1 | economy | stimulus; recovery | relances
 essor | C1 | economy | boom; expansion | essors
 expansion | C1 | economy | = | expansions
 ralentissement | C1 | economy | slowdown | ralentissements
@@ -476,14 +465,12 @@ monétaire | C1 | economy | monetary | monétaires
 budgétaire | C1 | economy | budgetary | budgétaires
 actionnariat | C1 | economy | shareholding |
 obligation | C1 | economy | bond; obligation | obligations
-capital | C1 | economy | = | capitaux
 holding | C1 | economy | holding company | holdings
 consortium | C1 | economy | = | consortiums
 conglomérat | C1 | economy | conglomerate | conglomérats
 PDG | C1 | economy | CEO |
 patronat | C1 | economy | employers |
 ubérisation | C1 | economy | gig economy; Uberisation |
-lucratif | C1 | economy | lucrative | lucrative lucratifs
 florissant | C1 | economy | thriving | florissante florissants
 prospère | C1 | economy | prosperous | prospères
 prospérité | C1 | economy | prosperity |
@@ -495,7 +482,6 @@ médiatique | C1 | news | media | médiatiques
 médiatiser | C1 | news | to give media coverage to | médiatise médiatisent médiatisé
 médiatisation | C1 | news | media coverage |
 surmédiatisé | C1 | news | over-reported | surmédiatisée surmédiatisés
-couvrir | C1 | news | to cover (an event) |
 correspondant | C1 | news | correspondent | correspondante correspondants
 pigiste | C1 | news | freelance journalist |
 chroniqueur | C1 | news | columnist | chroniqueuse chroniqueurs
@@ -505,7 +491,6 @@ tabloïd | C1 | news | tabloid | tabloïds
 manchette | C1 | news | headline; cuff | manchettes
 encart | C1 | news | insert | encarts
 rubrique | C1 | news | section; column | rubriques
-dépêche | C1 | news | news report; dispatch | dépêches
 AFP | C1 | news | French press agency |
 scoop | C1 | news | = | scoops
 exclusivité | C1 | news | exclusive | exclusivités
@@ -541,7 +526,7 @@ CSA | C1 | news | broadcasting regulator |
 # --- Technology (C1) ---
 numérisation | C1 | technology | digitisation |
 numériser | C1 | technology | to digitise; to scan | numérise numérisent numérisé
-dématérialiser | C1 | technology | to go paperless | dématérialise dématérialisent dématérialisé
+dématérialiser | C1 | technology | to go paperless | dématérialise dématérialisent
 dématérialisation | C1 | technology | going paperless |
 informatiser | C1 | technology | to computerise | informatise informatisent informatisé
 automatiser | C1 | technology | to automate | automatise automatisent automatisé
@@ -551,7 +536,6 @@ algorithmique | C1 | technology | algorithmic | algorithmiques
 cloud | C1 | technology | = |
 hébergement | C1 | technology | hosting |
 héberger | C1 | technology | to host |
-navigateur | C1 | technology | browser | navigateurs
 interface | C1 | technology | = | interfaces
 ergonomie | C1 | technology | ergonomics; usability |
 ergonomique | C1 | technology | ergonomic | ergonomiques
@@ -563,7 +547,6 @@ bogue | C1 | technology | bug | bogues
 redémarrer | C1 | technology | to restart | redémarre redémarrent redémarré
 réinitialiser | C1 | technology | to reset | réinitialise réinitialisent réinitialisé
 compatible | C1 | technology | = | compatibles
-obsolète | C1 | technology | obsolete | obsolètes
 obsolescence | C1 | technology | = |
 processeur | C1 | technology | processor | processeurs
 semi-conducteur | C1 | technology | semiconductor | semi-conducteurs

@@ -160,7 +160,7 @@ stressé | B2 | emotions | stressed | stressée stressés
 épanoui | B2 | emotions | fulfilled; happy | épanouie épanouis
 enthousiasme | B2 | emotions | enthusiasm |
 enthousiaste | B2 | emotions | enthusiastic | enthousiastes
-ravi | B2 | emotions | delighted | ravie ravis
+ravi | B2 | emotions | delighted | ravie
 comblé | B2 | emotions | fulfilled; overjoyed | comblée comblés
 satisfaction | B2 | emotions | = | satisfactions
 plaisir | B2 | emotions | pleasure | plaisirs
@@ -168,7 +168,6 @@ gaieté | B2 | emotions | cheerfulness |
 mélancolie | B2 | emotions | melancholy |
 nostalgique | B2 | emotions | nostalgic | nostalgiques
 chagrin | B2 | emotions | grief; sorrow | chagrins
-peine | B2 | emotions | sorrow; trouble; penalty | peines
 désespoir | B2 | emotions | despair |
 découragé | B2 | emotions | discouraged | découragée découragés
 abattu | B2 | emotions | downcast | abattue abattus
@@ -194,8 +193,6 @@ remords | B2 | emotions | remorse |
 embarrassé | B2 | emotions | embarrassed | embarrassée embarrassés
 vexé | B2 | emotions | offended; hurt | vexée vexés
 émouvoir | B2 | emotions | to move (emotionally) | émeut émeuvent
-susciter | B2 | emotions | to arouse; to give rise to | suscite suscitent suscité
-éprouver | B2 | emotions | to feel; to experience | éprouve éprouvent éprouvé
 exprimer | B2 | emotions | to express | exprime expriment exprimé
 contenir | B2 | emotions | to contain; to hold back | contiens contient contiennent contenu
 
@@ -206,14 +203,12 @@ affirmer | B2 | opinions | to assert | affirme affirment affirmé
 nier | B2 | opinions | to deny | nie nient nié
 contester | B2 | opinions | to dispute | conteste contestent contesté
 réfuter | B2 | opinions | to refute | réfute réfutent réfuté
-objecter | B2 | opinions | to object | objecte objectent objecté
 objection | B2 | opinions | = | objections
 persuader | B2 | opinions | to persuade | persuade persuadent persuadé
 partisan | B2 | opinions | supporter; in favour | partisane partisans
 favorable | B2 | opinions | in favour | favorables
 hostile | B2 | opinions | = | hostiles
 opposé | B2 | opinions | opposed; opposite | opposée opposés
-s'opposer | B2 | opinions | to oppose |
 opposer | B2 | opinions | to oppose; (s'opposer) to be against | oppose opposent
 neutre | B2 | opinions | neutral | neutres
 subjectif | B2 | opinions | subjective | subjective subjectifs
@@ -222,18 +217,14 @@ impartial | B2 | opinions | = | impartiale impartiaux
 préjugé | B2 | opinions | prejudice | préjugés
 cliché | B2 | opinions | = | clichés
 stéréotype | B2 | opinions | stereotype | stéréotypes
-convenir | B2 | opinions | to agree; to suit | convient conviennent convenu
-admettre | B2 | opinions | to admit | admets admet admettent admis
-reconnaître | B2 | opinions | to recognise; to admit | reconnais reconnaît reconnaissent reconnu
+convenir | B2 | opinions | to agree; to suit | conviennent convenu
 douteux | B2 | opinions | doubtful; dubious | douteuse douteuses
 pertinent | B2 | opinions | relevant | pertinente pertinents
-valable | B2 | opinions | valid | valables
 fondé | B2 | opinions | well-founded | fondée fondés
 absurde | B2 | opinions | absurd | absurdes
 ridicule | B2 | opinions | ridiculous | ridicules
 scandaleux | B2 | opinions | outrageous | scandaleuse scandaleuses
 inadmissible | B2 | opinions | unacceptable | inadmissibles
-remarquable | B2 | opinions | remarkable | remarquables
 formidable | B2 | opinions | great; tremendous | formidables
 épatant | B2 | opinions | amazing | épatante épatants
 
@@ -250,11 +241,9 @@ concept | B2 | thinking | = | concepts
 notion | B2 | thinking | = | notions
 principe | B2 | thinking | principle | principes
 mémoriser | B2 | thinking | to memorise | mémorise mémorisent mémorisé
-envisager | B2 | thinking | to consider; to envisage | envisage envisagent envisagé
 concevoir | B2 | thinking | to conceive; to design | conçois conçoit conçoivent conçu
 interpréter | B2 | thinking | to interpret | interprète interprètent interprété
 percevoir | B2 | thinking | to perceive |
-ignorer | B2 | thinking | to not know; to ignore | ignore ignorent ignoré
 méditer | B2 | thinking | to meditate; to ponder | médite méditent médité
 hésiter | B2 | thinking | to hesitate | hésite hésitent hésité
 hésitation | B2 | thinking | = | hésitations
@@ -270,7 +259,6 @@ certitude | B2 | thinking | certainty | certitudes
 incertitude | B2 | thinking | uncertainty | incertitudes
 dilemme | B2 | thinking | dilemma | dilemmes
 paradoxe | B2 | thinking | paradox | paradoxes
-cohérent | B2 | thinking | coherent; consistent | cohérente cohérents
 rationnel | B2 | thinking | rational | rationnelle rationnels
 concret | B2 | thinking | concrete | concrète concrets
 
@@ -440,9 +428,7 @@ polémique | C1 | opinions | controversy; polemical | polémiques
 clivant | C1 | opinions | divisive | clivante clivants
 contradicteur | C1 | opinions | opponent (in debate) | contradicteurs
 détracteur | C1 | opinions | critic; detractor | détractrice détracteurs
-adhérer | C1 | opinions | to adhere; to agree with; to join | adhère adhèrent adhéré
 souscrire | C1 | opinions | to subscribe (to) | souscris souscrit souscrivent souscrit
-cautionner | C1 | opinions | to back; to vouch for | cautionne cautionnent cautionné
 désapprouver | C1 | opinions | to disapprove | désapprouve désapprouvent désapprouvé
 réprouver | C1 | opinions | to condemn | réprouve réprouvent réprouvé
 dénoncer | C1 | opinions | to denounce | dénonce dénoncent dénoncé
@@ -455,14 +441,12 @@ préconiser | C1 | opinions | to recommend; to advocate | préconise préconisen
 prôner | C1 | opinions | to advocate | prône prônent prôné
 alléguer | C1 | opinions | to allege; to plead | allègue allèguent allégué
 arguer | C1 | opinions | to argue; to claim | argue arguent argué
-rétorquer | C1 | opinions | to retort | rétorque rétorquent rétorqué
 concéder | C1 | opinions | to concede | concède concèdent concédé
 nuancer | C1 | opinions | to qualify; to nuance | nuance nuancent nuancé
 mitigé | C1 | opinions | mixed; lukewarm | mitigée mitigés
 tranché | C1 | opinions | clear-cut; firm | tranchée tranchés
 catégorique | C1 | opinions | categorical | catégoriques
 péremptoire | C1 | opinions | peremptory | péremptoires
-indéniable | C1 | opinions | undeniable | indéniables
 incontestable | C1 | opinions | indisputable | incontestables
 irréfutable | C1 | opinions | irrefutable | irréfutables
 discutable | C1 | opinions | debatable | discutables
@@ -476,7 +460,6 @@ insensé | C1 | opinions | insane; senseless | insensée insensés
 saugrenu | C1 | opinions | preposterous | saugrenue saugrenus
 farfelu | C1 | opinions | hare-brained; eccentric | farfelue farfelus
 grotesque | C1 | opinions | = | grotesques
-aberrant | C1 | opinions | absurd; aberrant | aberrante aberrants
 navrant | C1 | opinions | pitiful; distressing | navrante navrants
 consternant | C1 | opinions | dismaying | consternante consternants
 louable | C1 | opinions | praiseworthy | louables
@@ -491,7 +474,6 @@ pitoyable | C1 | opinions | pitiful | pitoyables
 lamentable | C1 | opinions | = | lamentables
 exécrable | C1 | opinions | dreadful | exécrables
 déplorable | C1 | opinions | = | déplorables
-déplorer | C1 | opinions | to deplore | déplore déplorent déploré
 trancher | C1 | opinions | to decide; to settle; to slice | tranchent
 statuer | C1 | opinions | to rule (on) | statuent statué
 
@@ -511,7 +493,6 @@ présumer | C1 | thinking | to presume | présume présument présumé
 pressentir | C1 | thinking | to sense; to have a feeling | pressens pressent pressenti
 pressentiment | C1 | thinking | premonition | pressentiments
 discerner | C1 | thinking | to discern | discerne discernent discerné
-cerner | C1 | thinking | to pin down; to surround | cerne cernent cerné
 élucider | C1 | thinking | to elucidate | élucide élucident élucidé
 déchiffrer | C1 | thinking | to decipher | déchiffre déchiffrent déchiffré
 décrypter | C1 | thinking | to decode | décrypte décryptent décrypté
@@ -520,8 +501,6 @@ inférer | C1 | thinking | to infer | infère infèrent inféré
 induire | C1 | thinking | to induce; (induire en erreur) to mislead | induis induit induisent
 corroborer | C1 | thinking | to corroborate | corrobore corroborent corroboré
 infirmer | C1 | thinking | to invalidate | infirme infirment infirmé
-étayer | C1 | thinking | to support; to back up | étaye étayent étayé
-argumenter | C1 | thinking | to argue | argumente argumentent argumenté
 démontrer | C1 | thinking | to demonstrate | démontre démontrent démontré
 démonstration | C1 | thinking | demonstration; proof | démonstrations
 théoriser | C1 | thinking | to theorise | théorise théorisent théorisé
@@ -556,7 +535,6 @@ fantasme | C1 | thinking | fantasy | fantasmes
 fantasmer | C1 | thinking | to fantasise | fantasment fantasmé
 leurre | C1 | thinking | illusion; decoy | leurres
 leurrer | C1 | thinking | to delude; to deceive | leurrent leurré
-méprise | C1 | thinking | mistake | méprises
 quiproquo | C1 | thinking | misunderstanding | quiproquos
 malentendu | C1 | thinking | misunderstanding | malentendus
 sophisme | C1 | thinking | sophism | sophismes
@@ -581,7 +559,7 @@ irascible | C1 | character | = | irascibles
 acariâtre | C1 | character | cantankerous | acariâtres
 grincheux | C1 | character | grumpy | grincheuse grincheuses
 bougon | C1 | character | grumpy | bougonne bougons
-ronchon | C1 | character | grumpy | ronchonne ronchons
+ronchon | C1 | character | grumpy | ronchons
 revêche | C1 | character | surly | revêches
 hargneux | C1 | character | aggressive; bad-tempered | hargneuse hargneuses
 teigneux | C1 | character | nasty; aggressive | teigneuse teigneux
@@ -608,7 +586,6 @@ obligeant | C1 | character | obliging | obligeante obligeants
 complaisant | C1 | character | obliging; complacent | complaisante complaisants
 docile | C1 | character | = | dociles
 soumis | C1 | character | submissive | soumise
-effacé | C1 | character | self-effacing | effacée effacés
 discrétion | C1 | character | = |
 pondéré | C1 | character | level-headed | pondérée pondérés
 flegmatique | C1 | character | phlegmatic | flegmatiques
@@ -644,12 +621,10 @@ tatillon | C1 | character | nit-picking | tatillonne tatillons
 méticuleux | C1 | character | meticulous | méticuleuse méticuleuses
 perfectionniste | C1 | character | perfectionist | perfectionnistes
 scrupuleux | C1 | character | scrupulous | scrupuleuse scrupuleuses
-intègre | C1 | character | honest; upright | intègres
 intégrité | C1 | character | integrity |
 probité | C1 | character | probity |
 droiture | C1 | character | uprightness |
 vertueux | C1 | character | virtuous | vertueuse vertueuses
-vertu | C1 | character | virtue | vertus
 vice | C1 | character | = | vices
 hautain | C1 | character | haughty | hautaine hautains
 condescendant | C1 | character | condescending | condescendante condescendants

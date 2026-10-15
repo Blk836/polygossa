@@ -205,7 +205,6 @@ prime | B2 | jobs | bonus | primes
 
 # --- At work (B2) ---
 hiérarchie | B2 | office | hierarchy | hiérarchies
-supérieur | B2 | office | superior; boss | supérieure supérieurs
 subordonné | B2 | office | subordinate | subordonnée subordonnés
 manager | B2 | office | = | managers
 département | B2 | office | department | départements
@@ -233,9 +232,7 @@ visioconférence | B2 | office | video conference | visioconférences
 secondaire | B2 | school | secondary | secondaires
 cursus | B2 | school | course; curriculum |
 option | B2 | school | option; elective | options
-exposé | B2 | school | presentation; talk | exposés
 dissertation | B2 | school | essay | dissertations
-copie | B2 | school | paper; copy | copies
 partiel | B2 | school | mid-term exam; partial | partielle partiels
 concours | B2 | school | competitive exam; competition |
 mention | B2 | school | grade; distinction | mentions
@@ -263,7 +260,6 @@ expert | B2 | skills | = | experte experts
 acquérir | B2 | skills | to acquire | acquiers acquiert acquièrent acquis
 développer | B2 | skills | to develop | développe développent développé
 perfectionner | B2 | skills | to perfect; to improve | perfectionne perfectionnent perfectionné
-s'adapter | B2 | skills | to adapt |
 adapter | B2 | skills | to adapt | adapte adaptent adapté
 polyvalent | B2 | skills | versatile | polyvalente polyvalents
 compétent | B2 | skills | competent | compétente compétents
@@ -276,7 +272,6 @@ lacune | B2 | skills | gap (in knowledge) | lacunes
 certificat | B2 | skills | certificate | certificats
 diplômé | B2 | skills | graduate; qualified | diplômée diplômés
 autodidacte | B2 | skills | self-taught | autodidactes
-s'exercer | B2 | skills | to practise |
 exercer | B2 | skills | to practise; to exercise | exerce exercent exercé
 apprenti | B2 | skills | apprentice | apprentie apprentis
 
@@ -285,7 +280,6 @@ apprenti | B2 | skills | apprentice | apprentie apprentis
 # --- Jobs (C1) ---
 main-d'œuvre | C1 | jobs | workforce; labour |
 effectif | C1 | jobs | staff; workforce; effective | effectifs
-personnel | C1 | jobs | staff; personal |
 collaborateur | C1 | jobs | colleague; associate | collaboratrice collaborateurs
 associé | C1 | jobs | partner; associate | associée associés
 cofondateur | C1 | jobs | co-founder | cofondatrice cofondateurs
@@ -347,12 +341,10 @@ prud'hommes | C1 | jobs | employment tribunal |
 organigramme | C1 | office | organisation chart | organigrammes
 échelon | C1 | office | grade; level; rung | échelons
 avancement | C1 | office | promotion; progress |
-encadrer | C1 | office | to supervise; to frame | encadre encadrent encadré
 encadrement | C1 | office | management; supervision |
 attributions | C1 | office | remit; duties |
 paperasse | C1 | office | paperwork | paperasses
 paperasserie | C1 | office | red tape |
-circulaire | C1 | office | circular | circulaires
 procédure | C1 | office | procedure | procédures
 protocole | C1 | office | protocol | protocoles
 formalité | C1 | office | formality | formalités
@@ -390,7 +382,6 @@ taf | C1 | office | job; work (informal) |
 glander | C1 | office | to slack off | glandent glandé
 bureaucratie | C1 | office | bureaucracy | bureaucraties
 bureaucratique | C1 | office | bureaucratic | bureaucratiques
-assidu | C1 | office | diligent; regular | assidue assidus
 assiduité | C1 | office | diligence; regular attendance |
 consciencieux | C1 | office | conscientious | consciencieuse consciencieuses
 zélé | C1 | office | zealous | zélée zélés
@@ -436,7 +427,6 @@ syllabus | C1 | school | = |
 érudit | C1 | school | scholar; erudite | érudite érudits
 érudition | C1 | school | learning; erudition |
 lettré | C1 | school | well-read; scholar | lettrée lettrés
-cultivé | C1 | school | cultured; educated | cultivée cultivés
 analphabète | C1 | school | illiterate | analphabètes
 illettrisme | C1 | school | illiteracy |
 alphabétisation | C1 | school | literacy (teaching) |

@@ -231,7 +231,6 @@ tablier | B2 | kitchen | apron | tabliers
 
 # --- Tools & repairs (B2) ---
 perceuse | B2 | tools | drill | perceuses
-percer | B2 | tools | to drill; to pierce | perce percent percé
 foret | B2 | tools | drill bit | forets
 écrou | B2 | tools | nut (bolt) | écrous
 boulon | B2 | tools | bolt | boulons
@@ -241,12 +240,12 @@ poncer | B2 | tools | to sand | ponce poncent poncé
 lime | B2 | tools | file; lime | limes
 rabot | B2 | tools | plane (tool) | rabots
 burin | B2 | tools | chisel | burins
-établi | B2 | tools | workbench | établis
+établi | B2 | tools | workbench | 
 scotch | B2 | tools | sticky tape |
 visser | B2 | tools | to screw | visse vissent vissé
 dévisser | B2 | tools | to unscrew | dévisse dévissent dévissé
 clouer | B2 | tools | to nail | cloue clouent cloué
-fixer | B2 | tools | to fix; to fasten; to stare at | fixe fixent fixé
+fixer | B2 | tools | to fix; to fasten; to stare at | fixent fixé
 brancher | B2 | tools | to plug in | branchent branché
 débrancher | B2 | tools | to unplug | débranche débranchent débranché
 rallonge | B2 | tools | extension lead | rallonges
@@ -254,7 +253,6 @@ fusible | B2 | tools | fuse | fusibles
 disjoncteur | B2 | tools | circuit breaker | disjoncteurs
 court-circuit | B2 | tools | short circuit | courts-circuits
 tuyau | B2 | tools | pipe; hose | tuyaux
-joint | B2 | tools | seal; joint | joints
 dépanner | B2 | tools | to fix; to help out | dépanne dépannent dépanné
 dépanneur | B2 | tools | repairman | dépanneuse dépanneurs
 artisan | B2 | tools | craftsman; tradesman | artisane artisans
@@ -309,7 +307,6 @@ baldaquin | C1 | rooms | canopy | baldaquins
 traversin | C1 | rooms | bolster | traversins
 plaid | C1 | rooms | throw; blanket | plaids
 bibelot | C1 | rooms | ornament; knick-knack | bibelots
-applique | C1 | rooms | wall light | appliques
 halogène | C1 | rooms | halogen lamp | halogènes
 pavillon | C1 | rooms | detached house; pavilion | pavillons
 demeure | C1 | rooms | residence; mansion | demeures
@@ -321,7 +318,6 @@ colocation | C1 | rooms | flat-sharing | colocations
 colocataire | C1 | rooms | flatmate | colocataires
 bailleur | C1 | rooms | landlord; lessor | bailleresse bailleurs
 caution | C1 | rooms | deposit; guarantee | cautions
-préavis | C1 | rooms | notice (period) |
 charges | C1 | rooms | service charges; bills |
 syndic | C1 | rooms | managing agent | syndics
 concierge | C1 | rooms | caretaker | concierges
@@ -331,7 +327,6 @@ aménager | C1 | rooms | to fit out; to arrange | aménage aménagent aménagé
 exigu | C1 | rooms | cramped | exiguë exigus
 douillet | C1 | rooms | cosy | douillette douillets
 cossu | C1 | rooms | well-to-do; plush | cossue cossus
-vétuste | C1 | rooms | dilapidated | vétustes
 insalubre | C1 | rooms | unfit for habitation | insalubres
 
 # --- Household chores (C1) ---
@@ -374,7 +369,6 @@ impeccable | C1 | chores | spotless; impeccable | impeccables
 nickel | C1 | chores | spotless (informal); nickel |
 crasse | C1 | chores | grime; dirt | crasses
 cambouis | C1 | chores | dirty grease |
-toile | C1 | chores | canvas; (toile d'araignée) cobweb | toiles
 acarien | C1 | chores | dust mite | acariens
 cafard | C1 | chores | cockroach; the blues | cafards
 nuisible | C1 | chores | pest; harmful | nuisibles
