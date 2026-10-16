@@ -49,6 +49,12 @@ Feature: The vocabulary map draws only the levels chosen
     When I switch between the levels
     Then the island is one landmass that fits the map, and it gets bigger as the level goes up
 
+  Scenario: On a phone at A1, one landmass comes before every name tag
+    Given I am on a phone, zoomed all the way out, at "Up to A1"
+    Then at most one country's name tag is hidden, because the island is too small for all 14 to fit
+    And no two name tags overlap
+    And from "Up to A2" every country has its name tag
+
   Scenario: Counts don't change
     When I choose any level
     Then the header, country and province counts and coverage are the same as before this change
