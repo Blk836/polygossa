@@ -5,11 +5,13 @@ import {
   bandView,
   coverage,
   defaultTopBand,
+  drawnMap,
   mapWords,
   nextBand,
   placeOf,
   placeParam,
   regionWords,
+  ringScale,
   storedTopBand,
   tileStats,
   withStatus,
@@ -220,5 +222,45 @@ describe("areaWords", () => {
 
   it("has no faint words without a next band", () => {
     expect(areaWords(area, ["A1"], null).map(({ word: w }) => w.term)).toEqual(["a1"]);
+  });
+});
+
+describe("ringScale", () => {
+  const all = ["A1", "A2", "B1", "B2", "C1"];
+
+  it("draws the countries closer round Core for the small island of the first band, the same in every language", () => {
+    expect(ringScale(bandView("A1", all))).toBeCloseTo(0.66, 2);
+    expect(ringScale(bandView("A1", ["A1", "A2", "B1"]))).toBe(ringScale(bandView("A1", all)));
+  });
+
+  it("keeps the full ring from B2 up, and grows with the band below that", () => {
+    const scales = all.map((top) => ringScale(bandView(top, all)));
+    expect(scales.slice(2)).toEqual([1, 1, 1]);
+    expect(scales[0]).toBeLessThan(scales[1]);
+    expect(scales[1]).toBeLessThan(1);
+  });
+});
+
+describe("drawnMap", () => {
+  const terms = (m: VocabMap) => m.regions.map((r) => `${r.id}: ${r.areas.map((a) => `${a.id}=${a.words.map((w) => w.term).join(",")}`).join(" ")}`);
+
+  it("keeps the words up to the next band, and leaves later bands out", () => {
+    expect(terms(drawnMap(map, bandView("A1", ["A1", "A2", "B1"])))).toEqual(["food: fruit-veg=pomme,poire drinks=eau"]);
+  });
+
+  it("leaves out an area, and a region, with no words up to the next band", () => {
+    const wider = { ...map, regions: [...map.regions, { id: "work", name: "Work", areas: [
+      { id: "jobs", name: "Jobs", words: [word("travail", "A2")] },
+      { id: "office", name: "Office", words: [word("bureau", "B1")] },
+    ] }] };
+    expect(terms(drawnMap(wider, bandView("A1", ["A1", "A2", "B1"])))).toEqual(["food: fruit-veg=pomme,poire drinks=eau", "work: jobs=travail"]);
+  });
+
+  it("keeps every word at the top band, and each word's status", () => {
+    expect(mapWords(drawnMap(map, bandView("B1", ["A1", "A2", "B1"])))).toEqual(mapWords(map));
+  });
+
+  it("keeps only the shown bands when the next one is coming soon", () => {
+    expect(terms(drawnMap(map, bandView("A2", ["A1", "A2"])))).toEqual(["food: fruit-veg=pomme,poire drinks=eau"]);
   });
 });
