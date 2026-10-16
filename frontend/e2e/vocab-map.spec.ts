@@ -238,8 +238,9 @@ test("zoomed into a province, switching level keeps my place, and a known word k
 });
 
 test("a province with no words yet at a level is left off, and zoomed into it the view moves out to its country", async ({ page }) => {
-  await openInFrench(page, "/dashboard?map=society/economy");
+  await openInFrench(page, "/dashboard?map=society");
   await bandButton(page, "B1").click();
+  await province(page, "Economy").click();
   const crumb = map(page).getByTestId("map-breadcrumb");
   await expect(crumb).toHaveText("Map›Society & News›Economy");
 
