@@ -41,8 +41,8 @@ test("the map is one continent above the period comparison, with a country per r
   const communication = (await country(page, "Communication").boundingBox())!;
   expect(core.width * core.height).toBeGreaterThan(communication.width * communication.height * 3);
   const list: ApiMap = await (await page.request.get("/api/vocab-map?language=fr")).json();
-  const words = list.regions.flatMap((r) => r.areas.flatMap((a) => a.words)).length;
-  expect(words).toBeGreaterThan(1000);
+  const words = list.regions.flatMap((r) => r.areas.flatMap((a) => a.words)).filter((w) => w.band === "A1" || w.band === "A2").length;
+  expect(words).toBeGreaterThan(800);
   expect(await tileCount(page)).toBe(words);
 
   const mapBox = (await map(page).boundingBox())!;
@@ -182,15 +182,20 @@ test("the band switch changes what counts and how tiles are coloured, and is rem
     .toHaveText(["Up to A1", "Up to A2", "Up to B1", "Up to B2", "Up to C1"]);
   const a1 = await overall.textContent();
   await expect(label(page, "region-label", "food").getByTestId("tile-next")).toHaveText(/^\+\d+ at A2$/);
-  expect(await tileCount(page, "next")).toBeGreaterThan(0);
-  expect(await tileCount(page, "later")).toBeGreaterThan(0);
+  const list: ApiMap = await (await page.request.get("/api/vocab-map?language=fr")).json();
+  const bands = list.regions.flatMap((r) => r.areas.flatMap((a) => a.words.map((w) => w.band)));
+  const upTo = (band: string) => bands.filter((b) => b <= band).length;
+  expect(await tileCount(page)).toBe(upTo("A2"));
+  expect(await tileCount(page, "next")).toBe(bands.filter((b) => b === "A2").length);
+  expect(await tileCount(page, "later")).toBe(0);
 
   await bandButton(page, "B1").click();
   await expect(bandButton(page, "B1")).toHaveAttribute("aria-pressed", "true");
   await expect(overall).not.toHaveText(a1!);
   await expect(label(page, "region-label", "food").getByTestId("tile-next")).toHaveText(/^\+\d+ at B2$/);
   await expect(map(page)).not.toContainText("coming soon");
-  expect(await tileCount(page, "later")).toBeGreaterThan(0);
+  await expect.poll(() => tileCount(page)).toBe(upTo("B2"));
+  expect(await tileCount(page, "later")).toBe(0);
 
   await bandButton(page, "B2").click();
   await expect(label(page, "region-label", "food").getByTestId("tile-next")).toHaveText(/^\+\d+ at C1$/);
@@ -199,6 +204,7 @@ test("the band switch changes what counts and how tiles are coloured, and is rem
   await expect(bandButton(page, "C1")).toHaveAttribute("aria-pressed", "true");
   await expect(map(page)).not.toContainText("coming soon");
   await expect(label(page, "region-label", "food").getByTestId("tile-next")).toHaveCount(0);
+  await expect.poll(() => tileCount(page)).toBe(bands.length);
   expect(await tileCount(page, "next")).toBe(0);
   expect(await tileCount(page, "later")).toBe(0);
 
@@ -216,6 +222,37 @@ test("an advanced word works like any other: its form counts, its panel shows it
   await expect(map(page).getByTestId("map-word-meaning")).toHaveText("worry; anxiety");
   await expect(map(page).getByTestId("map-word-panel").getByText("B2", { exact: true })).toBeVisible();
   await expect(map(page).getByTestId("map-word-status")).toHaveText("Known");
+});
+
+test("zoomed into a province, switching level keeps my place, and a known word keeps its tile", async ({ page }) => {
+  await save(page, "pomme", "known");
+  await openInFrench(page, "/dashboard?map=food/fruit-veg");
+  const crumb = map(page).getByTestId("map-breadcrumb");
+  for (const band of ["A1", "B2", "C1", "A2"]) {
+    await bandButton(page, band).click();
+    await expect(bandButton(page, band)).toHaveAttribute("aria-pressed", "true");
+    await expect(crumb).toHaveText("Map›Food & Drink›Fruit & vegetables");
+    await expect(wordTile(page, "pomme")).toHaveAttribute("data-status", "known");
+    expect(new URL(page.url()).searchParams.get("map")).toBe("food/fruit-veg");
+  }
+});
+
+test("a province with no words yet at a level is left off, and zoomed into it the view moves out to its country", async ({ page }) => {
+  await openInFrench(page, "/dashboard?map=society");
+  await bandButton(page, "B1").click();
+  await province(page, "Economy").click();
+  const crumb = map(page).getByTestId("map-breadcrumb");
+  await expect(crumb).toHaveText("Map›Society & News›Economy");
+
+  await bandButton(page, "A1").click();
+  await expect(crumb).toHaveText("Map›Society & News");
+  await expect.poll(() => new URL(page.url()).searchParams.get("map")).toBe("society");
+  await expect(map(page).getByTestId("map-area")).toHaveCount(4);
+  await expect(province(page, "Economy")).toHaveCount(0);
+  await expect(label(page, "area-label", "economy")).toHaveCount(0);
+
+  await bandButton(page, "A2").click();
+  await expect(province(page, "Economy")).toHaveCount(1);
 });
 
 test("a language without a list says the map is coming soon", async ({ page }) => {

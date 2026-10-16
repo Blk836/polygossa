@@ -10,6 +10,7 @@ import { languageName } from "@/lib/languages";
 import {
   bandView,
   defaultTopBand,
+  drawnMap,
   mapWords,
   placeOf,
   placeParam,
@@ -113,11 +114,18 @@ function MapView({ map, top, language, onTop, onStatus }: {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  const place = placeOf(params.get("map"), map);
   const [selected, setSelected] = useState<string | null>(null);
   const view = useMemo(() => bandView(top, map.bands), [top, map.bands]);
+  const drawn = useMemo(() => drawnMap(map, view), [map, view]);
+  const asked = params.get("map");
+  const place = placeOf(asked, drawn);
+  const shown = placeParam(place.region?.id ?? null, place.area?.id ?? null);
   const overall = tileStats(mapWords(map), view.shown, view.next);
   const word = selectedWord(place, selected);
+
+  useEffect(() => {
+    if (asked !== null && shown !== asked) router.replace(shown ? `${pathname}?map=${shown}` : pathname, { scroll: false });
+  }, [asked, shown, pathname, router]);
 
   const go = (regionId: string | null, areaId: string | null = null) => {
     const param = placeParam(regionId, areaId);
@@ -141,7 +149,7 @@ function MapView({ map, top, language, onTop, onStatus }: {
   return (
     <Frame header={header} notes={notes} bleed>
       <HexMap
-        map={map}
+        map={drawn}
         view={view}
         top={top}
         onTop={onTop}

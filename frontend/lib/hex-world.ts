@@ -55,10 +55,10 @@ const RING_PLACES: Point[] = (() => {
   return RING.map((_, i) => on(-Math.PI / 2 + (along.findIndex((d) => d >= (i / RING.length) * along[steps]) / steps) * 2 * Math.PI));
 })();
 
-function seedOf(id: string, spare: () => number): Hex {
+function seedOf(id: string, spare: () => number, scale: number): Hex {
   const i = RING.indexOf(id);
   const place = id === "core" ? { x: 0, y: 0 } : i >= 0 ? RING_PLACES[i] : SPARE[spare() % SPARE.length];
-  return nearestHex(place, TILE, false);
+  return nearestHex({ x: place.x * scale, y: place.y * scale }, TILE, false);
 }
 
 const mean = (pts: Point[]): Point => ({ x: pts.reduce((s, p) => s + p.x, 0) / pts.length, y: pts.reduce((s, p) => s + p.y, 0) / pts.length });
@@ -97,10 +97,10 @@ interface Raw {
 
 const MIDDLE = "core";
 
-function grow(regions: VocabMapRegion[], portrait: boolean): Raw[] {
+function grow(regions: VocabMapRegion[], portrait: boolean, scale: number): Raw[] {
   let spare = 0;
-  const seeds = regions.map((r) => seedOf(r.id, () => spare++));
   const quota = (r: VocabMapRegion) => Math.max(1, r.areas.reduce((s, a) => s + Math.max(a.words.length, 1), 0));
+  const seeds = regions.map((r) => seedOf(r.id, () => spare++, scale));
   const grower = (r: VocabMapRegion, i: number) => ({ id: r.id, seed: seeds[i], quota: quota(r) });
   const middle = growTerritories(regions.flatMap((r, i) => (r.id === MIDDLE ? [grower(r, i)] : [])));
   const blocked = new Set([...middle.values()].flat().map(hexKey));
@@ -193,8 +193,8 @@ function byDepth(hexes: Hex[]): Hex[] {
 
 const LABEL_SPOTS = 40;
 
-function build(regions: VocabMapRegion[], portrait: boolean): HexWorld {
-  const raw = grow(regions, portrait);
+function build(regions: VocabMapRegion[], portrait: boolean, scale: number): HexWorld {
+  const raw = grow(regions, portrait, scale);
   const centres = raw.flatMap((c) => c.areas.flatMap((a) => a.hexes.map((h) => hexCentre(h, TILE, portrait))));
   const box = boxAround(centres);
   const aspect = portrait ? ASPECT.portrait : ASPECT.landscape;
@@ -231,11 +231,11 @@ function build(regions: VocabMapRegion[], portrait: boolean): HexWorld {
 }
 
 const cache = new Map<string, HexWorld>();
-const CACHED = 4;
+const CACHED = 12;
 
-export function layoutHexWorld(regions: VocabMapRegion[], portrait: boolean): HexWorld {
-  const shape = `${portrait}|${regions.map((r) => `${r.id}:${r.areas.map((a) => `${a.id}=${a.words.length}`).join(",")}`).join("|")}`;
-  const world = cache.get(shape) ?? build(regions, portrait);
+export function layoutHexWorld(regions: VocabMapRegion[], portrait: boolean, ringScale = 1): HexWorld {
+  const shape = `${portrait}|${ringScale}|${regions.map((r) => `${r.id}:${r.areas.map((a) => `${a.id}=${a.words.length}`).join(",")}`).join("|")}`;
+  const world = cache.get(shape) ?? build(regions, portrait, ringScale);
   cache.delete(shape);
   cache.set(shape, world);
   if (cache.size > CACHED) cache.delete(cache.keys().next().value!);

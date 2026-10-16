@@ -8,7 +8,7 @@ import { hexPath } from "@/lib/hex-grid";
 import { groundOf, labelPlan, placeCamera, TILE_KINDS, tileLayers, wordFontSize, zoomLimits, type TileKind } from "@/lib/hex-view";
 import { areaTiles, layoutHexWorld, TILE, type AreaShape, type HexWorld } from "@/lib/hex-world";
 import type { Size } from "@/lib/map-camera";
-import { regionWords, tileStats, type BandView, type MapPlace } from "@/lib/vocab-map";
+import { regionWords, ringScale, tileStats, type BandView, type MapPlace } from "@/lib/vocab-map";
 import type { VocabMap, VocabMapArea, VocabMapWord } from "@/lib/types";
 
 function useViewport(ref: RefObject<HTMLDivElement | null>): Size {
@@ -67,7 +67,7 @@ export function HexMap({ map, view, top, onTop, place, selected, go, onSelect, p
   const svgRef = useRef<SVGSVGElement>(null);
   const worldRef = useRef<SVGGElement>(null);
   const viewport = useViewport(frameRef);
-  const world = useMemo(() => layoutHexWorld(map.regions, viewport.height > viewport.width), [map.regions, viewport]);
+  const world = useMemo(() => layoutHexWorld(map.regions, viewport.height > viewport.width, ringScale(view)), [map.regions, viewport, view]);
   const layers = useMemo(() => tileLayers(world, map.regions, view), [world, map.regions, view]);
   const limits = useMemo(() => zoomLimits(world, viewport), [world, viewport]);
   const regionId = place.region?.id ?? null;
