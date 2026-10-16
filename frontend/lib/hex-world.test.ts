@@ -93,7 +93,6 @@ describe("layoutHexWorld", () => {
     expect(lakes(world)).toBe(0);
   });
 
-
   it("grows each country from the same place in every language", () => {
     const other = layoutHexWorld(regions(FRENCH.map(([id, a]) => [id, a.map((n) => Math.max(5, Math.round(n * 0.6)))])), false);
     for (const w of [world, other]) {
@@ -150,9 +149,7 @@ describe("layoutHexWorld", () => {
   });
 
   it("draws the land as the continent's outline, with far fewer corners than tiles, so moving the map stays cheap", () => {
-    const land = world.land.split("Z").filter(Boolean);
-    expect(land.length).toBeGreaterThan(0);
-    expect(land.every((loop) => /^M[\d.\- L]+$/.test(loop))).toBe(true);
+    expect(world.land).toMatch(/^(M[\d.\- L]+Z)+$/);
     expect(world.land.split("L").length).toBeLessThan(allHexes(world).length);
   });
 
