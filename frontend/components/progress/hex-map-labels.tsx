@@ -52,13 +52,19 @@ function Tag({ id, kind, name, words, view, where, compact, more, fit = FULL }: 
   );
 }
 
+const NOTE_GAP = " · ";
+
+function noteList(stats: TileStats, next: string | null): { id: string; text: string }[] {
+  return [
+    ...(stats.learning > 0 ? [{ id: "tile-learning", text: `${stats.learning} learning` }] : []),
+    ...(next && stats.next > 0 ? [{ id: "tile-next", text: `+${stats.next} at ${next}` }] : []),
+  ];
+}
+
 function Notes({ stats, next }: { stats: TileStats; next: string | null }) {
-  const notes = [
-    stats.learning > 0 && <span key="l" data-testid="tile-learning">{stats.learning} learning</span>,
-    next && stats.next > 0 && <span key="n" data-testid="tile-next">+{stats.next} at {next}</span>,
-  ].filter(Boolean);
+  const notes = noteList(stats, next).map((n) => <span key={n.id} data-testid={n.id}>{n.text}</span>);
   if (notes.length === 0) return null;
-  return <span className="more">{notes.flatMap((n, i) => (i ? [<span key={`s${i}`}> · </span>, n] : [n]))}</span>;
+  return <span className="more">{notes.flatMap((n, i) => (i ? [<span key={`s${i}`}>{NOTE_GAP}</span>, n] : [n]))}</span>;
 }
 
 const FULL: TagFit = { show: "full", dx: 0, dy: 0 };
@@ -70,6 +76,7 @@ function countryFits(world: HexWorld, byId: Map<string, VocabMapRegion>, plan: L
       id: c.regionId,
       name: byId.get(c.regionId)!.name,
       count: `${stats.known} / ${stats.total}`,
+      notes: noteList(stats, view.next).map((n) => n.text).join(NOTE_GAP),
       places: c.labelSpots.map((p) => ({ x: (p.x - camera.x) * camera.k + viewport.width / 2, y: (p.y - camera.y) * camera.k + viewport.height / 2 })),
       weight: c.areas.reduce((n, a) => n + a.slots.length, 0),
     };

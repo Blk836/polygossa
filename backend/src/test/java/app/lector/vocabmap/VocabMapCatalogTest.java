@@ -33,10 +33,10 @@ class VocabMapCatalogTest {
     }
 
     @Test
-    void theMvpHasAFrenchListWithEnglishMeaningsUpToB1() {
+    void theFrenchListHasEnglishMeaningsAndEveryBandUpToC1() {
         WordList french = REAL.list(Language.FR).orElseThrow();
         assertThat(french.meaningLanguages()).containsExactly(NativeLanguage.EN);
-        assertThat(french.bands()).containsExactly("A1", "A2", "B1");
+        assertThat(french.bands()).containsExactly("A1", "A2", "B1", "B2", "C1");
         assertThat(french.words()).allSatisfy(w -> assertThat(w.meanings().get(NativeLanguage.EN)).isNotBlank());
         assertThat(REAL.list(Language.ES)).isEmpty();
     }
@@ -60,6 +60,31 @@ class VocabMapCatalogTest {
             REAL.list(language).ifPresent(list ->
                     assertThat(list.emptyAreas(REAL.blueprint(), "B1")).as("%s", language).isEmpty());
         }
+    }
+
+    @Test
+    void everyAreaOutsideCoreWordsHasB2AndC1Words() {
+        WordList french = REAL.list(Language.FR).orElseThrow();
+        List<String> themed = REAL.blueprint().regions().stream().filter(r -> !r.id().equals("core"))
+                .flatMap(r -> r.areas().stream()).map(Area::id).toList();
+        for (String band : List.of("B2", "C1")) {
+            List<String> filled = french.words().stream().filter(w -> w.band().equals(band)).map(MapWord::area)
+                    .distinct().toList();
+            assertThat(filled).as("areas with %s words", band).containsAll(themed);
+        }
+    }
+
+    @Test
+    void aWordAtC2IsReportedAndLeftOut() {
+        WordListParser parser = new WordListParser(Language.FR, REAL.blueprint().areaIds());
+        parser.parse("fr/c2.words", """
+                word | band | area | meaning:en | forms
+                pomme | A1 | fruit-veg | apple | pommes
+                nonobstant | C2 | opinions | notwithstanding |
+                """);
+        assertThat(parser.problems()).singleElement()
+                .satisfies(p -> assertThat(p).contains("fr/c2.words:3").contains("unknown band \"C2\""));
+        assertThat(parser.result().words()).extracting(MapWord::headword).containsExactly("pomme");
     }
 
     @Test

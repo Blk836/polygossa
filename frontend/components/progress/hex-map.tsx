@@ -127,8 +127,8 @@ export function HexMap({ map, view, top, onTop, place, selected, go, onSelect, p
 const Ground = memo(function Ground({ world }: { world: HexWorld }) {
   return (
     <g pointerEvents="none">
-      <path d={world.ground} fill="var(--map-shadow)" transform={`translate(0 ${SHADOW})`} />
-      <path d={world.ground} fill="var(--tile-grout)" stroke="var(--tile-grout)" strokeWidth={TILE * 0.3} strokeLinejoin="round" />
+      <path d={world.land} fill="var(--map-shadow)" transform={`translate(0 ${SHADOW})`} />
+      <path d={world.land} fill="var(--tile-grout)" stroke="var(--tile-grout)" strokeWidth={TILE * 0.3} strokeLinejoin="round" />
     </g>
   );
 });

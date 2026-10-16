@@ -1,4 +1,4 @@
-import { edgeBetween, growTerritories, hexCentre, hexKey, hexPath, NEIGHBOURS, nearestHex, pieceCount, type Hex } from "./hex-grid";
+import { edgeBetween, growTerritories, hexCentre, hexKey, hexPath, NEIGHBOURS, nearestHex, outlinePath, pieceCount, type Hex } from "./hex-grid";
 import { mendTerritories } from "./hex-mend";
 import type { Box, Size } from "./map-camera";
 import { hashSeed, type Point } from "./map-geometry";
@@ -40,6 +40,7 @@ export interface HexWorld extends Size {
   countries: CountryShape[];
   beyond: Point;
   ground: string;
+  land: string;
   borders: { coast: string; countries: string; areas: string };
 }
 
@@ -224,6 +225,7 @@ function build(regions: VocabMapRegion[], portrait: boolean): HexWorld {
     countries,
     beyond: openSea({ width, height }, tiles),
     ground: tiles.map((t) => hexPath(t, TILE, portrait)).join(""),
+    land: outlinePath(raw.flatMap((c) => c.areas.flatMap((a) => a.hexes)), TILE, portrait, shift),
     borders: lines.lines,
   };
 }

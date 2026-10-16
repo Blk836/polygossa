@@ -156,3 +156,319 @@ dépendance | B1 | fitness | addiction; dependence | dépendances
 sieste | B1 | fitness | nap | siestes
 insomnie | B1 | fitness | insomnia | insomnies
 cauchemar | B1 | fitness | nightmare | cauchemars
+
+# === B2 ===
+
+# --- Body parts (B2) ---
+crâne | B2 | body-parts | skull | crânes
+nuque | B2 | body-parts | nape of the neck | nuques
+paupière | B2 | body-parts | eyelid | paupières
+cil | B2 | body-parts | eyelash | cils
+narine | B2 | body-parts | nostril | narines
+tempe | B2 | body-parts | temple (head) | tempes
+mollet | B2 | body-parts | calf (leg) | mollets
+paume | B2 | body-parts | palm | paumes
+poing | B2 | body-parts | fist | poings
+aisselle | B2 | body-parts | armpit | aisselles
+nombril | B2 | body-parts | navel | nombrils
+colonne | B2 | body-parts | column; (colonne vertébrale) spine | colonnes
+vertèbre | B2 | body-parts | vertebra | vertèbres
+articulation | B2 | body-parts | joint | articulations
+nerf | B2 | body-parts | nerve | nerfs
+veine | B2 | body-parts | vein; luck | veines
+artère | B2 | body-parts | artery | artères
+intestin | B2 | body-parts | intestine | intestins
+vessie | B2 | body-parts | bladder | vessies
+gencive | B2 | body-parts | gum (mouth) | gencives
+sein | B2 | body-parts | breast; (au sein de) within | seins
+fesse | B2 | body-parts | buttock | fesses
+pupille | B2 | body-parts | pupil (eye) | pupilles
+tendon | B2 | body-parts | = | 
+glande | B2 | body-parts | gland | glandes
+
+# --- Illness & symptoms (B2) ---
+migraine | B2 | illness | = | migraines
+angine | B2 | illness | sore throat; tonsillitis | angines
+bronchite | B2 | illness | bronchitis | bronchites
+asthme | B2 | illness | asthma |
+tension | B2 | illness | blood pressure; tension | tensions
+contagieux | B2 | illness | contagious | contagieuse contagieuses
+épidémie | B2 | illness | epidemic | épidémies
+pandémie | B2 | illness | pandemic | pandémies
+fracture | B2 | illness | = | fractures
+entorse | B2 | illness | sprain | entorses
+bosse | B2 | illness | bump; lump | bosses
+démangeaison | B2 | illness | itch | démangeaisons
+courbature | B2 | illness | ache; stiffness | courbatures
+évanouir | B2 | illness | (s'évanouir) to faint | évanoui évanouie
+malaise | B2 | illness | dizzy spell; unease | malaises
+vertige | B2 | illness | dizziness; vertigo | vertiges
+diarrhée | B2 | illness | diarrhoea |
+constipé | B2 | illness | constipated | constipée constipés
+déprime | B2 | illness | the blues; low mood |
+dépression | B2 | illness | depression | dépressions
+chronique | B2 | illness | chronic | chroniques
+grave | B2 | illness | serious; grave | graves
+sida | B2 | illness | AIDS |
+tumeur | B2 | illness | tumour | tumeurs
+paralysé | B2 | illness | paralysed | paralysée paralysés
+aveugle | B2 | illness | blind | aveugles
+sourd | B2 | illness | deaf | sourde sourds
+muet | B2 | illness | mute; silent | muette muets
+infarctus | B2 | illness | heart attack |
+AVC | B2 | illness | stroke |
+
+# --- At the doctor (B2) ---
+généraliste | B2 | doctor | GP | généralistes
+radiographie | B2 | doctor | X-ray | radiographies
+prescrire | B2 | doctor | to prescribe | prescrit prescrivent
+dose | B2 | doctor | = | doses
+posologie | B2 | doctor | dosage |
+effet | B2 | doctor | effect; (effet secondaire) side effect | effets
+anesthésie | B2 | doctor | anaesthetic |
+greffe | B2 | doctor | transplant; graft | greffes
+hospitaliser | B2 | doctor | to hospitalise | hospitalise hospitalisent hospitalisé hospitalisée
+brancard | B2 | doctor | stretcher | brancards
+béquille | B2 | doctor | crutch | béquilles
+attelle | B2 | doctor | splint | attelles
+pommade | B2 | doctor | ointment | pommades
+gouttes | B2 | doctor | drops |
+seringue | B2 | doctor | syringe | seringues
+vacciner | B2 | doctor | to vaccinate | vaccine vaccinent vacciné vaccinée
+dépistage | B2 | doctor | screening | dépistages
+guérison | B2 | doctor | recovery; cure | guérisons
+convalescence | B2 | doctor | = |
+rechute | B2 | doctor | relapse | rechutes
+kiné | B2 | doctor | physio | kinés
+psychologue | B2 | doctor | psychologist | psychologues
+ordonner | B2 | doctor | to order; to prescribe | ordonne ordonnent
+
+# --- Fitness & wellbeing (B2) ---
+sédentaire | B2 | fitness | sedentary | sédentaires
+nutrition | B2 | fitness | = |
+calorie | B2 | fitness | = | calories
+vitamine | B2 | fitness | vitamin | vitamines
+protéine | B2 | fitness | protein | protéines
+jeûne | B2 | fitness | fast; fasting | jeûnes
+surpoids | B2 | fitness | excess weight |
+obésité | B2 | fitness | obesity |
+souplesse | B2 | fitness | flexibility; suppleness |
+échauffement | B2 | fitness | warm-up | échauffements
+musculaire | B2 | fitness | muscular; muscle | musculaires
+ressourcer | B2 | fitness | (se ressourcer) to recharge | ressourcent
+relaxation | B2 | fitness | = |
+sevrage | B2 | fitness | withdrawal; weaning |
+addiction | B2 | fitness | = | addictions
+drogue | B2 | fitness | drug (narcotic) | drogues
+récupérer | B2 | fitness | to recover; to get back | récupère récupèrent récupéré
+somnifère | B2 | fitness | sleeping pill | somnifères
+épanouissement | B2 | fitness | fulfilment; blossoming |
+vitalité | B2 | fitness | vitality |
+posture | B2 | fitness | = | postures
+mental | B2 | fitness | mental; mindset | mentale mentaux
+physiquement | B2 | fitness | physically |
+
+# === C1 ===
+
+# --- Body parts (C1) ---
+omoplate | C1 | body-parts | shoulder blade | omoplates
+clavicule | C1 | body-parts | collarbone | clavicules
+bassin | C1 | body-parts | pelvis; basin; pond | bassins
+rotule | C1 | body-parts | kneecap | rotules
+tibia | C1 | body-parts | shin; tibia | tibias
+fémur | C1 | body-parts | thigh bone | fémurs
+molaire | C1 | body-parts | molar | molaires
+canine | C1 | body-parts | canine tooth | canines
+incisive | C1 | body-parts | incisor | incisives
+palais | C1 | body-parts | palate; palace |
+luette | C1 | body-parts | uvula | luettes
+amygdale | C1 | body-parts | tonsil | amygdales
+pharynx | C1 | body-parts | = |
+larynx | C1 | body-parts | = |
+trachée | C1 | body-parts | windpipe | trachées
+œsophage | C1 | body-parts | oesophagus |
+pancréas | C1 | body-parts | pancreas |
+thyroïde | C1 | body-parts | thyroid |
+utérus | C1 | body-parts | uterus; womb |
+ovaire | C1 | body-parts | ovary | ovaires
+prostate | C1 | body-parts | = |
+iris | C1 | body-parts | = |
+rétine | C1 | body-parts | retina | rétines
+cornée | C1 | body-parts | cornea |
+tympan | C1 | body-parts | eardrum | tympans
+lobe | C1 | body-parts | = | lobes
+phalange | C1 | body-parts | finger bone; phalanx | phalanges
+auriculaire | C1 | body-parts | little finger | auriculaires
+index | C1 | body-parts | index finger; index |
+annulaire | C1 | body-parts | ring finger | annulaires
+aine | C1 | body-parts | groin | aines
+abdomen | C1 | body-parts | = | abdomens
+thorax | C1 | body-parts | chest; thorax |
+torse | C1 | body-parts | torso; chest | torses
+buste | C1 | body-parts | bust; chest | bustes
+ligament | C1 | body-parts | = | ligaments
+cartilage | C1 | body-parts | = | cartilages
+moelle | C1 | body-parts | marrow; (moelle épinière) spinal cord | moelles
+neurone | C1 | body-parts | neuron | neurones
+hormone | C1 | body-parts | = | hormones
+globule | C1 | body-parts | blood cell | globules
+cellule | C1 | body-parts | cell | cellules
+pore | C1 | body-parts | = | pores
+épiderme | C1 | body-parts | skin; epidermis |
+duvet | C1 | body-parts | down; fine hair; duvet | duvets
+poil | C1 | body-parts | (body) hair | poils
+mamelon | C1 | body-parts | nipple | mamelons
+orbite | C1 | body-parts | eye socket; orbit | orbites
+sinus | C1 | body-parts | = |
+
+# --- Illness & symptoms (C1) ---
+indisposé | C1 | illness | unwell; indisposed | indisposée indisposés
+patraque | C1 | illness | under the weather | patraques
+souffrant | C1 | illness | unwell | souffrante souffrants
+fiévreux | C1 | illness | feverish | fiévreuse fiévreuses
+grelotter | C1 | illness | to shiver | grelotte grelottent grelotté
+frisson | C1 | illness | shiver; thrill | frissons
+quinte | C1 | illness | fit (of coughing) | quintes
+expectorer | C1 | illness | to cough up | expectore expectorent
+crachat | C1 | illness | spit; phlegm | crachats
+glaire | C1 | illness | phlegm; mucus | glaires
+pus | C1 | illness | = |
+abcès | C1 | illness | abscess |
+furoncle | C1 | illness | boil (skin) | furoncles
+eczéma | C1 | illness | eczema |
+urticaire | C1 | illness | hives; nettle rash |
+varicelle | C1 | illness | chickenpox |
+rougeole | C1 | illness | measles |
+oreillons | C1 | illness | mumps |
+coqueluche | C1 | illness | whooping cough |
+tuberculose | C1 | illness | tuberculosis |
+paludisme | C1 | illness | malaria |
+choléra | C1 | illness | cholera |
+pneumonie | C1 | illness | pneumonia | pneumonies
+méningite | C1 | illness | meningitis |
+hépatite | C1 | illness | hepatitis |
+cirrhose | C1 | illness | cirrhosis |
+ulcère | C1 | illness | ulcer | ulcères
+hernie | C1 | illness | hernia | hernies
+arthrose | C1 | illness | osteoarthritis |
+rhumatisme | C1 | illness | rheumatism | rhumatismes
+sciatique | C1 | illness | sciatica |
+lumbago | C1 | illness | lower back pain |
+tendinite | C1 | illness | tendinitis |
+foulure | C1 | illness | sprain; strain | foulures
+luxation | C1 | illness | dislocation | luxations
+hématome | C1 | illness | bruise; haematoma | hématomes
+ecchymose | C1 | illness | bruise | ecchymoses
+contusion | C1 | illness | = | contusions
+plaie | C1 | illness | wound | plaies
+lésion | C1 | illness | injury; lesion | lésions
+hémorragie | C1 | illness | haemorrhage | hémorragies
+commotion | C1 | illness | concussion; shock | commotions
+syncope | C1 | illness | blackout; fainting fit | syncopes
+convulsion | C1 | illness | = | convulsions
+épilepsie | C1 | illness | epilepsy |
+démence | C1 | illness | dementia; madness |
+Alzheimer | C1 | illness | Alzheimer's |
+anorexie | C1 | illness | anorexia |
+boulimie | C1 | illness | bulimia |
+burn-out | C1 | illness | burnout |
+surmenage | C1 | illness | overwork |
+pathologie | C1 | illness | pathology; condition | pathologies
+syndrome | C1 | illness | = | syndromes
+séquelle | C1 | illness | after-effect | séquelles
+morbide | C1 | illness | morbid | morbides
+bénin | C1 | illness | benign; minor | bénigne bénins
+malin | C1 | illness | malignant; clever | maligne malins
+incurable | C1 | illness | = | incurables
+infecter | C1 | illness | to infect | infecte infectent infecté infectée
+enflammé | C1 | illness | inflamed | enflammée enflammés
+inflammation | C1 | illness | = | inflammations
+
+# --- At the doctor (C1) ---
+ausculter | C1 | doctor | to listen to (a patient's chest) | ausculte auscultent ausculté
+stéthoscope | C1 | doctor | stethoscope | stéthoscopes
+palper | C1 | doctor | to feel; to palpate | palpe palpent palpé
+symptomatique | C1 | doctor | symptomatic | symptomatiques
+pronostic | C1 | doctor | prognosis | pronostics
+antécédents | C1 | doctor | medical history |
+bilan | C1 | doctor | check-up; assessment | bilans
+échographie | C1 | doctor | ultrasound scan | échographies
+scanner | C1 | doctor | CT scanner; scan | scanners
+IRM | C1 | doctor | MRI |
+biopsie | C1 | doctor | biopsy | biopsies
+prélèvement | C1 | doctor | sample; swab | prélèvements
+perfusion | C1 | doctor | drip; infusion | perfusions
+transfusion | C1 | doctor | = | transfusions
+intraveineuse | C1 | doctor | intravenous | intraveineuses
+suture | C1 | doctor | stitches; suture | sutures
+points | C1 | doctor | stitches; points |
+cicatriser | C1 | doctor | to heal (wound) | cicatrise cicatrisent cicatrisé
+anesthésiste | C1 | doctor | anaesthetist | anesthésistes
+cardiologue | C1 | doctor | cardiologist | cardiologues
+dermatologue | C1 | doctor | dermatologist | dermatologues
+pédiatre | C1 | doctor | paediatrician | pédiatres
+gynécologue | C1 | doctor | gynaecologist | gynécologues
+ophtalmologue | C1 | doctor | ophthalmologist | ophtalmologues
+psychiatre | C1 | doctor | psychiatrist | psychiatres
+chirurgie | C1 | doctor | surgery |
+bloc | C1 | doctor | block; (bloc opératoire) operating theatre | blocs
+réanimation | C1 | doctor | intensive care; resuscitation |
+antibiotique | C1 | doctor | antibiotic | antibiotiques
+antidouleur | C1 | doctor | painkiller | antidouleurs
+anti-inflammatoire | C1 | doctor | anti-inflammatory | anti-inflammatoires
+calmant | C1 | doctor | sedative; tranquilliser | calmants
+générique | C1 | doctor | generic (drug); credits | génériques
+remède | C1 | doctor | remedy; cure | remèdes
+placebo | C1 | doctor | = | placebos
+dispensaire | C1 | doctor | clinic (free) | dispensaires
+infirmerie | C1 | doctor | sickbay | infirmeries
+soignant | C1 | doctor | carer; caring | soignante soignants
+aide-soignant | C1 | doctor | care assistant | aide-soignante aide-soignants
+convalescent | C1 | doctor | convalescing | convalescente convalescents
+pronostiquer | C1 | doctor | to forecast; to give a prognosis | pronostique pronostiquent
+déontologie | C1 | doctor | professional ethics |
+euthanasie | C1 | doctor | euthanasia |
+palliatif | C1 | doctor | palliative | palliative palliatifs
+
+# --- Fitness & wellbeing (C1) ---
+diététique | C1 | fitness | dietetics; dietary | diététiques
+diététicien | C1 | fitness | dietitian | diététicienne diététiciens
+glucide | C1 | fitness | carbohydrate | glucides
+lipide | C1 | fitness | fat; lipid | lipides
+fibre | C1 | fitness | = | fibres
+cholestérol | C1 | fitness | cholesterol |
+métabolisme | C1 | fitness | metabolism |
+carence | C1 | fitness | deficiency | carences
+apport | C1 | fitness | intake; contribution | apports
+tonifier | C1 | fitness | to tone | tonifie tonifient tonifié
+gainage | C1 | fitness | core exercises; plank |
+abdos | C1 | fitness | abs; sit-ups |
+pompes | C1 | fitness | press-ups |
+cardio | C1 | fitness | = | 
+assouplissement | C1 | fitness | stretching; loosening | assouplissements
+décontracter | C1 | fitness | to relax (muscles) | décontracte décontractent décontracté
+ressourcement | C1 | fitness | recharging |
+sérénité | C1 | fitness | serenity |
+somnoler | C1 | fitness | to doze | somnole somnolent
+assoupir | C1 | fitness | (s'assoupir) to doze off | assoupi assoupie
+somnolence | C1 | fitness | drowsiness |
+ronfler | C1 | fitness | to snore | ronfle ronflent ronflé
+bâiller | C1 | fitness | to yawn | bâille bâillent bâillé
+sobre | C1 | fitness | sober; plain | sobres
+sobriété | C1 | fitness | sobriety; restraint |
+abstinence | C1 | fitness | = |
+toxicomanie | C1 | fitness | drug addiction |
+toxicomane | C1 | fitness | drug addict | toxicomanes
+accro | C1 | fitness | hooked; addict | accros
+tabagisme | C1 | fitness | smoking (habit) |
+alcoolisme | C1 | fitness | alcoholism |
+gueule | C1 | fitness | mouth (animal); (gueule de bois) hangover | gueules
+cure | C1 | fitness | course of treatment; spa cure | cures
+thermal | C1 | fitness | thermal; spa | thermale thermaux
+longévité | C1 | fitness | longevity |
+vigueur | C1 | fitness | vigour; in force |
+vigoureux | C1 | fitness | vigorous | vigoureuse vigoureuses
+robuste | C1 | fitness | robust; sturdy | robustes
+fourbu | C1 | fitness | worn out | fourbue fourbus
+éreinté | C1 | fitness | exhausted | éreintée éreintés
+revigorer | C1 | fitness | to invigorate | revigore revigorent revigoré

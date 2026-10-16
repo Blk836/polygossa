@@ -45,6 +45,30 @@ export function edgeBetween(a: Hex, b: Hex, size: number, portrait: boolean): [P
   return [corner(ca, size, towards - Math.PI / 6), corner(ca, size, towards + Math.PI / 6)];
 }
 
+export function outlinePath(hexes: Hex[], size: number, portrait: boolean, shift = (p: Point) => p): string {
+  const own = new Set(hexes.map(hexKey));
+  const at = (p: Point) => `${num(p.x)} ${num(p.y)}`;
+  const from = new Map<string, string[]>();
+  for (const h of hexes) {
+    for (const [dq, dr] of NEIGHBOURS) {
+      const n = { q: h.q + dq, r: h.r + dr };
+      if (own.has(hexKey(n))) continue;
+      const [p, q] = edgeBetween(h, n, size, portrait).map((c) => at(shift(c)));
+      from.set(p, [...(from.get(p) ?? []), q]);
+    }
+  }
+  let d = "";
+  for (const start of from.keys()) {
+    const loop: string[] = [];
+    for (let p = start; from.get(p)?.length; ) {
+      loop.push(p);
+      p = from.get(p)!.pop()!;
+    }
+    if (loop.length) d += `M${loop.join("L")}Z`;
+  }
+  return d;
+}
+
 export interface Grower {
   id: string;
   seed: Hex;

@@ -182,3 +182,523 @@ biodiversité | B1 | environment | biodiversity |
 disparition | B1 | environment | disappearance; extinction | disparitions
 menacé | B1 | environment | endangered; threatened | menacée menacés menacées
 préserver | B1 | environment | to preserve | préserve préservent préservé
+
+# === B2 ===
+
+# --- Weather (B2) ---
+bruine | B2 | weather | drizzle | bruines
+crachin | B2 | weather | drizzle |
+ondée | B2 | weather | shower | ondées
+déluge | B2 | weather | downpour; deluge | déluges
+verglas | B2 | weather | black ice |
+givre | B2 | weather | frost | givres
+rosée | B2 | weather | dew | rosées
+brume | B2 | weather | mist | brumes
+brumeux | B2 | weather | misty | brumeuse brumeuses
+éclaircie | B2 | weather | sunny spell | éclaircies
+rafale | B2 | weather | gust | rafales
+bourrasque | B2 | weather | squall; gust | bourrasques
+ouragan | B2 | weather | hurricane | ouragans
+cyclone | B2 | weather | = | cyclones
+tornade | B2 | weather | tornado | tornades
+foudre | B2 | weather | lightning |
+orageux | B2 | weather | stormy | orageuse orageuses
+pluvieux | B2 | weather | rainy | pluvieuse pluvieuses
+venteux | B2 | weather | windy | venteuse venteuses
+glacial | B2 | weather | icy; freezing | glaciale glaciaux
+étouffant | B2 | weather | stifling | étouffante étouffants
+dégagé | B2 | weather | clear (sky) | dégagée dégagés
+redoux | B2 | weather | thaw; milder spell |
+dégel | B2 | weather | thaw | dégels
+fondre | B2 | weather | to melt | fondu
+flocon | B2 | weather | snowflake | flocons
+congère | B2 | weather | snowdrift | congères
+baromètre | B2 | weather | barometer | baromètres
+anticyclone | B2 | weather | high pressure area | anticyclones
+saisonnier | B2 | weather | seasonal | saisonnière saisonniers
+
+# --- Animals (B2) ---
+bétail | B2 | animals | livestock; cattle |
+troupeau | B2 | animals | herd; flock | troupeaux
+taureau | B2 | animals | bull | taureaux
+poussin | B2 | animals | chick | poussins
+coq | B2 | animals | cockerel | coqs
+dindon | B2 | animals | turkey (cock) | dindons
+cygne | B2 | animals | swan | cygnes
+corbeau | B2 | animals | crow; raven | corbeaux
+moineau | B2 | animals | sparrow | moineaux
+hibou | B2 | animals | owl | hiboux
+chouette | B2 | animals | owl; great | chouettes
+mouette | B2 | animals | seagull | mouettes
+perroquet | B2 | animals | parrot | perroquets
+rat | B2 | animals | = | rats
+taupe | B2 | animals | mole | taupes
+chauve-souris | B2 | animals | bat | chauves-souris
+biche | B2 | animals | doe | biches
+crocodile | B2 | animals | = | crocodiles
+lézard | B2 | animals | lizard | lézards
+escargot | B2 | animals | snail | escargots
+limace | B2 | animals | slug | limaces
+ver | B2 | animals | worm | 
+guêpe | B2 | animals | wasp | guêpes
+coccinelle | B2 | animals | ladybird | coccinelles
+criquet | B2 | animals | locust; grasshopper | criquets
+sauterelle | B2 | animals | grasshopper | sauterelles
+méduse | B2 | animals | jellyfish | méduses
+phoque | B2 | animals | seal | phoques
+pingouin | B2 | animals | penguin; auk | pingouins
+griffe | B2 | animals | claw |
+bec | B2 | animals | beak | becs
+corne | B2 | animals | horn | cornes
+museau | B2 | animals | muzzle; snout | museaux
+pelage | B2 | animals | coat; fur | pelages
+écaille | B2 | animals | scale (fish) | écailles
+aboyer | B2 | animals | to bark | aboie aboient aboyé
+miauler | B2 | animals | to miaow | miaule miaulent miaulé
+mordre | B2 | animals | to bite | mords mord mordent
+piquer | B2 | animals | to sting; to prick | pique piquent piqué
+apprivoiser | B2 | animals | to tame | apprivoise apprivoisent apprivoisé
+zoo | B2 | animals | = | zoos
+
+# --- Plants (B2) ---
+végétation | B2 | plants | vegetation |
+végétal | B2 | plants | plant; vegetable | végétale végétaux
+arbuste | B2 | plants | shrub | arbustes
+haie | B2 | plants | hedge | 
+lierre | B2 | plants | ivy |
+mousse | B2 | plants | moss; foam | mousses
+fougère | B2 | plants | fern | fougères
+bourgeon | B2 | plants | bud | bourgeons
+pétale | B2 | plants | petal | pétales
+tige | B2 | plants | stem | tiges
+épine | B2 | plants | thorn | épines
+sève | B2 | plants | sap | sèves
+pollen | B2 | plants | = |
+lys | B2 | plants | lily |
+coquelicot | B2 | plants | poppy | coquelicots
+tournesol | B2 | plants | sunflower | tournesols
+orchidée | B2 | plants | orchid | orchidées
+cactus | B2 | plants | = |
+bouleau | B2 | plants | birch | bouleaux
+hêtre | B2 | plants | beech | hêtres
+saule | B2 | plants | willow | saules
+peuplier | B2 | plants | poplar | peupliers
+érable | B2 | plants | maple | érables
+platane | B2 | plants | plane tree | platanes
+olivier | B2 | plants | olive tree | oliviers
+pommier | B2 | plants | apple tree | pommiers
+verger | B2 | plants | orchard | vergers
+potager | B2 | plants | vegetable garden | potagers
+semer | B2 | plants | to sow | sème sèment semé
+faner | B2 | plants | (se faner) to wilt | fane fanent fané fanée
+engrais | B2 | plants | fertiliser |
+tondeuse | B2 | plants | lawnmower; clippers | tondeuses
+tondre | B2 | plants | to mow; to shear | tonds tond tondent tondu
+râteau | B2 | plants | rake | râteaux
+arrosoir | B2 | plants | watering can | arrosoirs
+
+# --- Landscape (B2) ---
+massif | B2 | landscape | massif; solid | massive massifs
+glacier | B2 | landscape | glacier; ice-cream maker | glaciers
+crête | B2 | landscape | ridge; crest | crêtes
+versant | B2 | landscape | slope; side | versants
+ravin | B2 | landscape | ravine | ravins
+canyon | B2 | landscape | = | canyons
+bocage | B2 | landscape | hedged farmland | bocages
+prairie | B2 | landscape | meadow | prairies
+pré | B2 | landscape | meadow | prés
+lande | B2 | landscape | moor | landes
+marais | B2 | landscape | marsh |
+marécage | B2 | landscape | swamp | marécages
+dune | B2 | landscape | = | dunes
+golfe | B2 | landscape | gulf | golfes
+cap | B2 | landscape | cape; headland | caps
+presqu'île | B2 | landscape | peninsula | presqu'îles
+péninsule | B2 | landscape | peninsula | péninsules
+archipel | B2 | landscape | archipelago | archipels
+littoral | B2 | landscape | coastline; coastal | littoraux
+estuaire | B2 | landscape | estuary | estuaires
+embouchure | B2 | landscape | mouth (river) | embouchures
+ruisseau | B2 | landscape | stream | ruisseaux
+torrent | B2 | landscape | mountain stream | torrents
+aube | B2 | landscape | dawn | aubes
+crépuscule | B2 | landscape | dusk; twilight | crépuscules
+panorama | B2 | landscape | = | panoramas
+
+# --- The environment (B2) ---
+carbone | B2 | environment | carbon |
+empreinte | B2 | environment | footprint; print | empreintes
+renouvelable | B2 | environment | renewable | renouvelables
+fossile | B2 | environment | fossil | fossiles
+tri | B2 | environment | sorting; (tri sélectif) recycling | tris
+déforestation | B2 | environment | = |
+désertification | B2 | environment | = |
+fonte | B2 | environment | melting (ice) |
+extinction | B2 | environment | = | extinctions
+écosystème | B2 | environment | ecosystem | écosystèmes
+faune | B2 | environment | fauna; wildlife |
+flore | B2 | environment | flora |
+écologiste | B2 | environment | environmentalist | écologistes
+militant | B2 | environment | activist | militante militants
+transition | B2 | environment | = | transitions
+consommer | B2 | environment | to consume | consomme consomment consommé
+polluant | B2 | environment | pollutant; polluting | polluante polluants
+toxique | B2 | environment | toxic | toxiques
+nocif | B2 | environment | harmful | nocive nocifs
+smog | B2 | environment | = |
+
+# === C1 ===
+
+# --- Weather (C1) ---
+météorologie | C1 | weather | meteorology |
+météorologique | C1 | weather | meteorological | météorologiques
+prévisionniste | C1 | weather | forecaster | prévisionnistes
+hygrométrie | C1 | weather | humidity |
+pluviométrie | C1 | weather | rainfall |
+précipitations | C1 | weather | precipitation; rainfall |
+intempéries | C1 | weather | bad weather |
+vigilance | C1 | weather | alert; vigilance |
+perturbation | C1 | weather | disturbance; weather front | perturbations
+accalmie | C1 | weather | lull | accalmies
+embellie | C1 | weather | bright spell; upturn | embellies
+grisaille | C1 | weather | greyness; dullness |
+morosité | C1 | weather | gloom |
+maussade | C1 | weather | dull; sullen | maussades
+blafard | C1 | weather | pale; wan |
+giboulée | C1 | weather | sudden shower (spring) | giboulées
+grêlon | C1 | weather | hailstone | grêlons
+grésil | C1 | weather | sleet |
+gadoue | C1 | weather | mud; slush |
+poudreuse | C1 | weather | powder snow |
+avalanche | C1 | weather | = | avalanches
+blizzard | C1 | weather | = | blizzards
+frimas | C1 | weather | hoarfrost; wintry weather |
+froidure | C1 | weather | cold (season) |
+glacé | C1 | weather | icy; frozen | glacée glacés
+transi | C1 | weather | chilled to the bone | transie transis
+frisquet | C1 | weather | chilly | frisquette frisquets
+caniculaire | C1 | weather | sweltering | caniculaires
+suffocant | C1 | weather | suffocating | suffocante suffocants
+moite | C1 | weather | sticky; clammy | moites
+moiteur | C1 | weather | stickiness; humidity |
+aride | C1 | weather | arid | arides
+zéphyr | C1 | weather | breeze; zephyr |
+mistral | C1 | weather | mistral (wind) |
+tramontane | C1 | weather | tramontane (wind) |
+alizé | C1 | weather | trade wind | alizés
+mousson | C1 | weather | monsoon | moussons
+typhon | C1 | weather | typhoon | typhons
+trombe | C1 | weather | waterspout; (trombes d'eau) downpour | trombes
+gronder | C1 | weather | to rumble |
+crépiter | C1 | weather | to patter; to crackle | crépite crépitent crépité
+pleuviner | C1 | weather | to drizzle | pleuvine
+grêler | C1 | weather | to hail | 
+venter | C1 | weather | to be windy | 
+radoucir | C1 | weather | (se radoucir) to get milder | radoucit
+rafraîchir | C1 | weather | to cool; (se rafraîchir) to get cooler | rafraîchit rafraîchissent rafraîchi
+
+# --- Animals (C1) ---
+mammifère | C1 | animals | mammal | mammifères
+reptile | C1 | animals | = | reptiles
+amphibien | C1 | animals | amphibian | amphibiens
+rongeur | C1 | animals | rodent | rongeurs
+rapace | C1 | animals | bird of prey; rapacious | rapaces
+prédateur | C1 | animals | predator | prédatrice prédateurs
+proie | C1 | animals | prey | proies
+carnivore | C1 | animals | carnivore; carnivorous | carnivores
+herbivore | C1 | animals | = | herbivores
+invertébré | C1 | animals | invertebrate | invertébrés
+vertébré | C1 | animals | vertebrate | vertébrés
+fauve | C1 | animals | big cat; wild animal |
+bestiole | C1 | animals | creepy-crawly | bestioles
+vermine | C1 | animals | vermin |
+femelle | C1 | animals | female | femelles
+mâle | C1 | animals | male | mâles
+étalon | C1 | animals | stallion; standard | étalons
+jument | C1 | animals | mare | juments
+poulain | C1 | animals | foal | poulains
+mulet | C1 | animals | mule | mulets
+bouc | C1 | animals | billy goat; goatee | boucs
+brebis | C1 | animals | ewe |
+bélier | C1 | animals | ram | béliers
+truie | C1 | animals | sow | truies
+porcelet | C1 | animals | piglet | porcelets
+génisse | C1 | animals | heifer | génisses
+lièvre | C1 | animals | hare | lièvres
+blaireau | C1 | animals | badger; shaving brush | blaireaux
+belette | C1 | animals | weasel | belettes
+loutre | C1 | animals | otter | loutres
+castor | C1 | animals | beaver | castors
+lynx | C1 | animals | = |
+chamois | C1 | animals | = |
+bouquetin | C1 | animals | ibex | bouquetins
+marmotte | C1 | animals | marmot | marmottes
+mulot | C1 | animals | field mouse | mulots
+musaraigne | C1 | animals | shrew | musaraignes
+vipère | C1 | animals | viper; adder | vipères
+couleuvre | C1 | animals | grass snake | couleuvres
+crapaud | C1 | animals | toad | crapauds
+têtard | C1 | animals | tadpole | têtards
+salamandre | C1 | animals | salamander | salamandres
+merle | C1 | animals | blackbird | merles
+rossignol | C1 | animals | nightingale | rossignols
+hirondelle | C1 | animals | swallow | hirondelles
+mésange | C1 | animals | tit (bird) | mésanges
+rouge-gorge | C1 | animals | robin | rouges-gorges
+pie | C1 | animals | magpie | pies
+geai | C1 | animals | jay | geais
+pivert | C1 | animals | woodpecker | piverts
+faucon | C1 | animals | falcon | faucons
+buse | C1 | animals | buzzard | buses
+vautour | C1 | animals | vulture | vautours
+héron | C1 | animals | heron | hérons
+cigogne | C1 | animals | stork | cigognes
+goéland | C1 | animals | gull | goélands
+pélican | C1 | animals | = | pélicans
+autruche | C1 | animals | ostrich | autruches
+paon | C1 | animals | peacock | paons
+frelon | C1 | animals | hornet | frelons
+bourdon | C1 | animals | bumblebee | bourdons
+libellule | C1 | animals | dragonfly | libellules
+cigale | C1 | animals | cicada | cigales
+grillon | C1 | animals | cricket | grillons
+puce | C1 | animals | flea; chip | puces
+pou | C1 | animals | louse | poux
+tique | C1 | animals | tick | tiques
+chenille | C1 | animals | caterpillar | chenilles
+larve | C1 | animals | larva | larves
+cocon | C1 | animals | cocoon | cocons
+essaim | C1 | animals | swarm | essaims
+ruche | C1 | animals | beehive | ruches
+terrier | C1 | animals | burrow; terrier | terriers
+tanière | C1 | animals | den; lair | tanières
+repaire | C1 | animals | den; hideout | repaires
+étable | C1 | animals | cowshed | étables
+écurie | C1 | animals | stable | écuries
+bergerie | C1 | animals | sheepfold | bergeries
+porcherie | C1 | animals | pigsty | porcheries
+poulailler | C1 | animals | henhouse | poulaillers
+clapier | C1 | animals | hutch | clapiers
+crinière | C1 | animals | mane | crinières
+sabot | C1 | animals | hoof |
+mamelle | C1 | animals | udder; teat | mamelles
+nageoire | C1 | animals | fin | nageoires
+branchie | C1 | animals | gill | branchies
+tentacule | C1 | animals | tentacle | tentacules
+carapace | C1 | animals | shell; carapace | carapaces
+dard | C1 | animals | sting | dards
+défense | C1 | animals | tusk; defence | défenses
+ramure | C1 | animals | antlers |
+rugir | C1 | animals | to roar | rugit rugissent
+hennir | C1 | animals | to neigh | hennit hennissent
+bêler | C1 | animals | to bleat | bêle bêlent
+meugler | C1 | animals | to moo | meugle meuglent
+grogner | C1 | animals | to growl; to grumble | grogne grognent grogné
+gazouiller | C1 | animals | to chirp; to babble | gazouille gazouillent
+roucouler | C1 | animals | to coo | roucoule roucoulent
+ronronner | C1 | animals | to purr | ronronne ronronnent
+hiberner | C1 | animals | to hibernate | hiberne hibernent hiberné
+muer | C1 | animals | to moult; to break (voice) | mue muent mué
+pondre | C1 | animals | to lay (eggs) | pond pondent pondu
+couver | C1 | animals | to brood; to incubate | couve couvent couvé
+braconnier | C1 | animals | poacher | braconniers
+braconnage | C1 | animals | poaching |
+dressage | C1 | animals | training; dressage |
+domestiquer | C1 | animals | to domesticate | domestiquent domestiqué
+
+# --- Plants (C1) ---
+botanique | C1 | plants | botany; botanical | botaniques
+botaniste | C1 | plants | botanist | botanistes
+feuillage | C1 | plants | foliage | feuillages
+feuillu | C1 | plants | deciduous; broadleaved | feuillue feuillus
+conifère | C1 | plants | conifer | conifères
+résineux | C1 | plants | conifer; resinous |
+persistant | C1 | plants | evergreen; persistent | persistante persistants
+vivace | C1 | plants | perennial; enduring | vivaces
+bulbe | C1 | plants | bulb | bulbes
+rhizome | C1 | plants | = | rhizomes
+souche | C1 | plants | stump; strain; stub | souches
+rameau | C1 | plants | twig; sprig | rameaux
+brindille | C1 | plants | twig | brindilles
+ramée | C1 | plants | leafy branches |
+cime | C1 | plants | treetop; summit | cimes
+frondaison | C1 | plants | foliage | frondaisons
+taillis | C1 | plants | copse; undergrowth |
+broussaille | C1 | plants | scrub; undergrowth | broussailles
+ronce | C1 | plants | bramble | ronces
+ortie | C1 | plants | nettle | orties
+chardon | C1 | plants | thistle | chardons
+pissenlit | C1 | plants | dandelion | pissenlits
+trèfle | C1 | plants | clover; clubs (cards) | trèfles
+chiendent | C1 | plants | couch grass |
+roseau | C1 | plants | reed | roseaux
+nénuphar | C1 | plants | water lily | nénuphars
+algue | C1 | plants | seaweed; alga | algues
+lichen | C1 | plants | = | lichens
+genêt | C1 | plants | broom (plant) | genêts
+bruyère | C1 | plants | heather | bruyères
+lavande | C1 | plants | lavender |
+jasmin | C1 | plants | jasmine |
+glycine | C1 | plants | wisteria | glycines
+chèvrefeuille | C1 | plants | honeysuckle |
+pâquerette | C1 | plants | daisy | pâquerettes
+jonquille | C1 | plants | daffodil | jonquilles
+pivoine | C1 | plants | peony | pivoines
+œillet | C1 | plants | carnation | œillets
+myosotis | C1 | plants | forget-me-not |
+lilas | C1 | plants | lilac |
+mimosa | C1 | plants | = | mimosas
+châtaignier | C1 | plants | chestnut tree | châtaigniers
+marronnier | C1 | plants | horse chestnut tree | marronniers
+noyer | C1 | plants | walnut tree; to drown | noyers
+tilleul | C1 | plants | lime tree; lime tea | tilleuls
+frêne | C1 | plants | ash (tree) | frênes
+orme | C1 | plants | elm | ormes
+if | C1 | plants | yew | ifs
+cyprès | C1 | plants | cypress |
+mélèze | C1 | plants | larch | mélèzes
+germer | C1 | plants | to sprout; to germinate | germe germent germé
+éclore | C1 | plants | to hatch; to bloom | éclot éclosent éclos
+épanouir | C1 | plants | (s'épanouir) to bloom; to flourish | épanouit épanouissent
+flétrir | C1 | plants | to wither | flétrit flétrissent flétri
+dépérir | C1 | plants | to waste away; to wither | dépérit dépérissent dépéri
+bouturer | C1 | plants | to take cuttings | bouture
+greffer | C1 | plants | to graft | greffent greffé
+élaguer | C1 | plants | to prune; to cut back | élague élaguent élagué
+désherber | C1 | plants | to weed | désherbe désherbent désherbé
+biner | C1 | plants | to hoe | bine binent biné
+bêcher | C1 | plants | to dig | bêche bêchent bêché
+binette | C1 | plants | hoe | binettes
+plate-bande | C1 | plants | flower bed | plates-bandes
+parterre | C1 | plants | flower bed | parterres
+tonnelle | C1 | plants | arbour | tonnelles
+pépiniériste | C1 | plants | nurseryman | pépiniéristes
+horticulture | C1 | plants | = |
+horticulteur | C1 | plants | horticulturist | horticultrice horticulteurs
+paysagiste | C1 | plants | landscape gardener | paysagistes
+herbier | C1 | plants | herbarium | herbiers
+photosynthèse | C1 | plants | photosynthesis |
+chlorophylle | C1 | plants | chlorophyll |
+
+# --- Landscape (C1) ---
+topographie | C1 | landscape | topography |
+géographique | C1 | landscape | geographical | géographiques
+abrupt | C1 | landscape | steep; abrupt | abrupte abrupts
+accidenté | C1 | landscape | hilly; uneven | accidentée accidentés
+vallonné | C1 | landscape | undulating | vallonnée vallonnés
+boisé | C1 | landscape | wooded | boisée boisés
+verdoyant | C1 | landscape | green; verdant | verdoyante verdoyants
+luxuriant | C1 | landscape | lush | luxuriante luxuriants
+escarpement | C1 | landscape | escarpment | escarpements
+promontoire | C1 | landscape | promontory | promontoires
+contrefort | C1 | landscape | foothills; buttress | contreforts
+piémont | C1 | landscape | foothills | piémonts
+cirque | C1 | landscape | cirque; circus | cirques
+moraine | C1 | landscape | = | moraines
+névé | C1 | landscape | snowfield | névés
+crevasse | C1 | landscape | = | crevasses
+aiguille | C1 | landscape | peak; needle | aiguilles
+pic | C1 | landscape | peak | pics
+mont | C1 | landscape | mount | monts
+butte | C1 | landscape | mound; hillock | buttes
+monticule | C1 | landscape | mound | monticules
+tertre | C1 | landscape | mound | tertres
+coteau | C1 | landscape | hillside | coteaux
+gouffre | C1 | landscape | abyss; chasm | gouffres
+précipice | C1 | landscape | = | précipices
+cluse | C1 | landscape | transverse valley | cluses
+causse | C1 | landscape | limestone plateau | causses
+garrigue | C1 | landscape | scrubland | garrigues
+maquis | C1 | landscape | scrubland; Resistance |
+steppe | C1 | landscape | = | steppes
+savane | C1 | landscape | savannah | savanes
+toundra | C1 | landscape | tundra |
+jungle | C1 | landscape | = | jungles
+oasis | C1 | landscape | = |
+fjord | C1 | landscape | = | fjords
+atoll | C1 | landscape | = | atolls
+récif | C1 | landscape | reef | récifs
+lagon | C1 | landscape | lagoon | lagons
+lagune | C1 | landscape | lagoon | lagunes
+crique | C1 | landscape | cove | criques
+anse | C1 | landscape | cove; handle | anses
+galet | C1 | landscape | pebble | galets
+écume | C1 | landscape | foam; spray | écumes
+houle | C1 | landscape | swell | houles
+ressac | C1 | landscape | backwash; undertow |
+reflux | C1 | landscape | ebb |
+confluent | C1 | landscape | confluence | confluents
+méandre | C1 | landscape | meander | méandres
+delta | C1 | landscape | = | deltas
+berge | C1 | landscape | bank (river) | berges
+gué | C1 | landscape | ford | gués
+bief | C1 | landscape | millrace; reach |
+tourbière | C1 | landscape | peat bog | tourbières
+clairière | C1 | landscape | clearing | clairières
+sous-bois | C1 | landscape | undergrowth |
+sylvestre | C1 | landscape | woodland | sylvestres
+bucolique | C1 | landscape | bucolic; pastoral | bucoliques
+champêtre | C1 | landscape | rural; country | champêtres
+agreste | C1 | landscape | rustic | agrestes
+firmament | C1 | landscape | firmament; sky |
+voûte | C1 | landscape | vault; (voûte céleste) the heavens | voûtes
+constellation | C1 | landscape | = | constellations
+astre | C1 | landscape | star; celestial body | astres
+comète | C1 | landscape | comet | comètes
+galaxie | C1 | landscape | galaxy | galaxies
+
+# --- The environment (C1) ---
+anthropique | C1 | environment | man-made | anthropiques
+climatosceptique | C1 | environment | climate sceptic | climatosceptiques
+GIEC | C1 | environment | IPCC |
+décarboner | C1 | environment | to decarbonise | décarbone décarbonent décarboné
+décarbonation | C1 | environment | decarbonisation |
+compensation | C1 | environment | offsetting; compensation | compensations
+décroissance | C1 | environment | degrowth |
+écoresponsable | C1 | environment | eco-friendly | écoresponsables
+écogeste | C1 | environment | eco-friendly action | écogestes
+greenwashing | C1 | environment | = |
+écoblanchiment | C1 | environment | greenwashing |
+biodégradable | C1 | environment | = | biodégradables
+recyclable | C1 | environment | = | recyclables
+jetable | C1 | environment | disposable | jetables
+réutilisable | C1 | environment | reusable | réutilisables
+surconsommation | C1 | environment | overconsumption |
+surexploitation | C1 | environment | overexploitation |
+surpêche | C1 | environment | overfishing |
+épuisement | C1 | environment | depletion; exhaustion |
+raréfaction | C1 | environment | increasing scarcity |
+acidification | C1 | environment | = |
+dioxyde | C1 | environment | dioxide |
+méthane | C1 | environment | methane |
+hydrocarbure | C1 | environment | hydrocarbon | hydrocarbures
+fracturation | C1 | environment | fracking; fracturing |
+barrage | C1 | environment | dam | barrages
+hydroélectrique | C1 | environment | hydroelectric | hydroélectriques
+géothermie | C1 | environment | geothermal energy |
+biomasse | C1 | environment | biomass |
+photovoltaïque | C1 | environment | photovoltaic | photovoltaïques
+radioactif | C1 | environment | radioactive | radioactive radioactifs
+contamination | C1 | environment | = | contaminations
+contaminer | C1 | environment | to contaminate | contamine contaminent contaminé
+dépolluer | C1 | environment | to clean up | dépollue dépolluent dépollué
+assainir | C1 | environment | to clean up; to purify | assainis assainit assainissent assaini
+assainissement | C1 | environment | sanitation; purification |
+reboisement | C1 | environment | reforestation |
+reboiser | C1 | environment | to reforest | reboise reboisent reboisé
+habitat | C1 | environment | habitat; housing | habitats
+niche | C1 | environment | niche; kennel | niches
+réensauvagement | C1 | environment | rewilding |
+invasif | C1 | environment | invasive | invasive invasifs
+endémique | C1 | environment | endemic | endémiques
+pollinisateur | C1 | environment | pollinator | pollinisateurs
+glyphosate | C1 | environment | = |
+agroécologie | C1 | environment | agroecology |
+permaculture | C1 | environment | = |
+résilience | C1 | environment | resilience |
+vulnérabilité | C1 | environment | vulnerability | vulnérabilités
+séisme | C1 | environment | earthquake | séismes
+tsunami | C1 | environment | = | tsunamis
+éruption | C1 | environment | eruption | éruptions
+glissement | C1 | environment | slide; (glissement de terrain) landslide | glissements
+mégafeu | C1 | environment | megafire | mégafeux

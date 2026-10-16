@@ -175,3 +175,305 @@ environs | B1 | town | surroundings |
 habitant | B1 | town | inhabitant | habitante habitants habitantes
 capitale | B1 | town | capital | capitales
 village | A2 | town | = | villages
+
+# === B2 ===
+
+# --- Getting around (B2) ---
+autocar | B2 | transport | coach | autocars
+TGV | B2 | transport | high-speed train |
+RER | B2 | transport | Paris suburban train |
+wagon | B2 | transport | carriage (train) | wagons
+voiture-bar | B2 | transport | buffet car |
+couchette | B2 | transport | couchette; berth | couchettes
+contrôleur | B2 | transport | ticket inspector | contrôleuse contrôleurs
+PV | B2 | transport | parking ticket; fine |
+radar | B2 | transport | speed camera | radars
+clignotant | B2 | transport | indicator (car) | clignotants
+phare | B2 | transport | headlight; lighthouse | phares
+rétroviseur | B2 | transport | rear-view mirror | rétroviseurs
+capot | B2 | transport | bonnet (car) | capots
+pare-brise | B2 | transport | windscreen |
+essuie-glace | B2 | transport | windscreen wiper | essuie-glaces
+moteur | B2 | transport | engine | moteurs
+crevaison | B2 | transport | puncture | crevaisons
+crever | B2 | transport | to burst; to get a puncture | crève crèvent crevé
+accident | B2 | transport | = | accidents
+collision | B2 | transport | crash; collision | collisions
+assurance | B2 | transport | insurance | assurances
+constat | B2 | transport | accident report | constats
+péage | B2 | transport | toll | péages
+déviation | B2 | transport | diversion | déviations
+reculer | B2 | transport | to reverse; to back up | recule reculent reculé
+klaxonner | B2 | transport | to honk | klaxonne klaxonnent klaxonné
+démarrer | B2 | transport | to start (up) | démarre démarrent démarré
+électrique | B2 | transport | electric | électriques
+hybride | B2 | transport | hybrid | hybrides
+usager | B2 | transport | user (of a service) | usagère usagers
+
+# --- Holidays (B2) ---
+estivant | B2 | holidays | holidaymaker (summer) | estivante estivants
+vacancier | B2 | holidays | holidaymaker | vacancière vacanciers
+station | B2 | holidays | resort; station | stations
+colonie | B2 | holidays | colony; (colonie de vacances) summer camp | colonies
+circuit | B2 | holidays | tour; circuit | circuits
+brochure | B2 | holidays | = | brochures
+dépliant | B2 | holidays | leaflet | dépliants
+routard | B2 | holidays | backpacker | routarde routards
+auto-stop | B2 | holidays | hitchhiking |
+caravane | B2 | holidays | caravan | caravanes
+camping-car | B2 | holidays | camper van | camping-cars
+jet-lag | B2 | holidays | jet lag |
+décalage | B2 | holidays | gap; (décalage horaire) jet lag | décalages
+low-cost | B2 | holidays | = | 
+soute | B2 | holidays | hold (plane) | soutes
+hublot | B2 | holidays | window (plane); porthole | hublots
+turbulences | B2 | holidays | turbulence |
+
+# --- Hotels (B2) ---
+logement | B2 | hotels | accommodation; housing | logements
+loger | B2 | hotels | to stay; to put up | loge logent logé
+hôtesse | B2 | hotels | hostess | hôtesses
+minibar | B2 | hotels | = | minibars
+bagagiste | B2 | hotels | porter | bagagistes
+groom | B2 | hotels | bellboy | grooms
+portier | B2 | hotels | doorman | portiers
+arrhes | B2 | hotels | deposit |
+acompte | B2 | hotels | down payment | acomptes
+tarif | B2 | hotels | rate; price | tarifs
+supplément | B2 | hotels | extra charge | suppléments
+check-out | B2 | hotels | = |
+insonorisé | B2 | hotels | soundproofed | insonorisée insonorisés
+
+# --- Directions & places in town (B2) ---
+agglomération | B2 | town | built-up area; town | agglomérations
+périphérie | B2 | town | outskirts | périphéries
+faubourg | B2 | town | suburb (inner) | faubourgs
+arrondissement | B2 | town | district (Paris etc.) | arrondissements
+ruelle | B2 | town | alley | ruelles
+impasse | B2 | town | dead end | impasses
+esplanade | B2 | town | = | esplanades
+square | B2 | town | small public garden | squares
+fontaine | B2 | town | fountain | fontaines
+préfecture | B2 | town | prefecture; police HQ | préfectures
+caserne | B2 | town | barracks; fire station | casernes
+gendarmerie | B2 | town | police station (rural) | gendarmeries
+lampadaire | B2 | town | street lamp | lampadaires
+réverbère | B2 | town | street lamp | réverbères
+borne | B2 | town | terminal; bollard; marker | bornes
+banc | B2 | town | bench | bancs
+orienter | B2 | town | (s'orienter) to find one's way | oriente orientent orienté
+longer | B2 | town | to go along | longe longent longé
+croisement | B2 | town | crossroads | croisements
+intersection | B2 | town | = | intersections
+urbain | B2 | town | urban | urbaine urbains
+citadin | B2 | town | city dweller | citadine citadins
+
+# === C1 ===
+
+# --- Getting around (C1) ---
+mobilité | C1 | transport | mobility |
+pendulaire | C1 | transport | commuting; commuter | pendulaires
+navetteur | C1 | transport | commuter | navetteuse navetteurs
+banlieusard | C1 | transport | commuter; suburbanite | banlieusarde banlieusards
+affluence | C1 | transport | crowds; (heures d'affluence) peak times |
+bondé | C1 | transport | packed | bondée bondés
+rame | C1 | transport | train (metro); oar | rames
+motrice | C1 | transport | power car | motrices
+locomotive | C1 | transport | engine (train) | locomotives
+aiguillage | C1 | transport | points (rail) | aiguillages
+déraillement | C1 | transport | derailment | déraillements
+dérailler | C1 | transport | to derail | déraille déraillent déraillé
+cheminot | C1 | transport | railway worker | cheminots
+SNCF | C1 | transport | French railways |
+oblitérer | C1 | transport | to stamp (a ticket) | oblitère oblitèrent oblitéré
+resquiller | C1 | transport | to dodge the fare | resquille resquillent resquillé
+fraudeur | C1 | transport | fare dodger | fraudeuse fraudeurs
+deux-roues | C1 | transport | two-wheeler |
+scooter | C1 | transport | = | scooters
+mobylette | C1 | transport | moped | mobylettes
+cyclomoteur | C1 | transport | moped | cyclomoteurs
+semi-remorque | C1 | transport | articulated lorry | semi-remorques
+remorque | C1 | transport | trailer | remorques
+fourgonnette | C1 | transport | small van | fourgonnettes
+utilitaire | C1 | transport | utility vehicle; van | utilitaires
+berline | C1 | transport | saloon car | berlines
+cabriolet | C1 | transport | convertible | cabriolets
+bagnole | C1 | transport | car (informal) | bagnoles
+tacot | C1 | transport | old banger | tacots
+carrosserie | C1 | transport | bodywork | carrosseries
+cylindrée | C1 | transport | engine capacity | cylindrées
+embrayage | C1 | transport | clutch | embrayages
+embrayer | C1 | transport | to engage the clutch | embraye embrayent embrayé
+levier | C1 | transport | lever; (levier de vitesse) gear stick | leviers
+pédale | C1 | transport | pedal | pédales
+échappement | C1 | transport | exhaust; escapement | échappements
+carburant | C1 | transport | fuel | carburants
+gazole | C1 | transport | diesel |
+vidange | C1 | transport | oil change; draining | vidanges
+immatriculation | C1 | transport | registration | immatriculations
+fourrière | C1 | transport | car pound | fourrières
+stationnement | C1 | transport | parking | stationnements
+horodateur | C1 | transport | pay-and-display machine | horodateurs
+créneau | C1 | transport | parallel parking; slot | créneaux
+dérapage | C1 | transport | skid | dérapages
+déraper | C1 | transport | to skid | dérape dérapent dérapé
+carambolage | C1 | transport | pile-up | carambolages
+accrochage | C1 | transport | minor collision | accrochages
+chauffard | C1 | transport | reckless driver | chauffards
+alcootest | C1 | transport | breathalyser | alcootests
+éthylotest | C1 | transport | breathalyser | éthylotests
+retrait | C1 | transport | withdrawal; (retrait de permis) driving ban | retraits
+auto-école | C1 | transport | driving school | auto-écoles
+priorité | C1 | transport | right of way; priority | priorités
+bretelle | C1 | transport | slip road | 
+bas-côté | C1 | transport | verge | bas-côtés
+accotement | C1 | transport | hard shoulder; verge | accotements
+glissière | C1 | transport | crash barrier | glissières
+départementale | C1 | transport | B road | départementales
+échangeur | C1 | transport | interchange | échangeurs
+aire | C1 | transport | area; (aire de repos) rest area | aires
+terminus | C1 | transport | = |
+aérogare | C1 | transport | air terminal | aérogares
+tarmac | C1 | transport | = |
+navigation | C1 | transport | = |
+ferry | C1 | transport | = | ferries
+traversée | C1 | transport | crossing | traversées
+péniche | C1 | transport | barge | péniches
+écluse | C1 | transport | lock (canal) | écluses
+pilote | C1 | transport | pilot; driver | pilotes
+copilote | C1 | transport | co-pilot | copilotes
+téléphérique | C1 | transport | cable car | téléphériques
+télésiège | C1 | transport | chairlift | télésièges
+funiculaire | C1 | transport | funicular | funiculaires
+
+# --- Holidays (C1) ---
+pérégrinations | C1 | holidays | travels; wanderings |
+périple | C1 | holidays | journey; voyage | périples
+odyssée | C1 | holidays | odyssey | odyssées
+bourlinguer | C1 | holidays | to knock about the world | bourlingue bourlinguent bourlingué
+baroudeur | C1 | holidays | adventurer; globetrotter | baroudeuse baroudeurs
+globe-trotteur | C1 | holidays | globetrotter | globe-trotteurs
+vadrouille | C1 | holidays | ramble; (en vadrouille) out and about |
+escapade | C1 | holidays | getaway; jaunt | escapades
+virée | C1 | holidays | trip; drive; spin | virées
+flânerie | C1 | holidays | strolling | flâneries
+arpenter | C1 | holidays | to pace; to stride along | arpente arpentent arpenté
+dépayser | C1 | holidays | to give a change of scene | dépayse dépaysent dépaysé
+exotique | C1 | holidays | exotic | exotiques
+exotisme | C1 | holidays | exoticism |
+pittoresque | C1 | holidays | picturesque | pittoresques
+incontournable | C1 | holidays | must-see | incontournables
+vestige | C1 | holidays | remains; vestige | vestiges
+ruines | C1 | holidays | ruins |
+pèlerin | C1 | holidays | pilgrim | pèlerins
+thalasso | C1 | holidays | seawater spa therapy |
+thalassothérapie | C1 | holidays | seawater therapy |
+farniente | C1 | holidays | idleness; lazing about |
+bronzette | C1 | holidays | sunbathing (informal) |
+transat | C1 | holidays | deckchair; transatlantic race | transats
+parasol | C1 | holidays | sunshade; parasol | parasols
+paréo | C1 | holidays | sarong | paréos
+téléski | C1 | holidays | ski tow | téléskis
+après-ski | C1 | holidays | snow boot; après-ski |
+bivouac | C1 | holidays | = | bivouacs
+bivouaquer | C1 | holidays | to bivouac | bivouaque bivouaquent
+réchaud | C1 | holidays | camping stove | réchauds
+glacière | C1 | holidays | cool box | glacières
+gourde | C1 | holidays | water bottle; clumsy | gourdes
+boussole | C1 | holidays | compass | boussoles
+autochtone | C1 | holidays | native; local | autochtones
+indigène | C1 | holidays | native | indigènes
+nostalgie | C1 | holidays | nostalgia |
+déclarer | C1 | holidays | to declare | déclare déclarent déclaré
+détaxe | C1 | holidays | tax refund | détaxes
+duty-free | C1 | holidays | = |
+surréservation | C1 | holidays | overbooking |
+surbooking | C1 | holidays | overbooking |
+indemnisation | C1 | holidays | compensation | indemnisations
+rapatrier | C1 | holidays | to repatriate | rapatrie rapatrient rapatrié
+rapatriement | C1 | holidays | repatriation | rapatriements
+expatrié | C1 | holidays | expatriate | expatriée expatriés
+exil | C1 | holidays | exile | exils
+
+# --- Hotels (C1) ---
+hôtellerie | C1 | hotels | hotel trade; hospitality |
+hôtelier | C1 | hotels | hotelier; hotel | hôtelière hôteliers
+palace | C1 | hotels | luxury hotel | palaces
+motel | C1 | hotels | = | motels
+refuge | C1 | hotels | mountain hut; refuge | refuges
+dortoir | C1 | hotels | dormitory | dortoirs
+nuitée | C1 | hotels | night (stay) | nuitées
+standing | C1 | hotels | status; (de standing) luxury |
+luxueux | C1 | hotels | luxurious | luxueuse luxueuses
+spartiate | C1 | hotels | spartan | spartiates
+miteux | C1 | hotels | shabby; seedy | miteuse miteuses
+voiturier | C1 | hotels | valet parking attendant | voituriers
+liftier | C1 | hotels | lift attendant | liftiers
+gouvernante | C1 | hotels | housekeeper | gouvernantes
+hall | C1 | hotels | lobby; hall | halls
+consigne | C1 | hotels | left-luggage; instructions | consignes
+literie | C1 | hotels | bedding |
+surclasser | C1 | hotels | to upgrade | surclasse surclassent surclassé
+surclassement | C1 | hotels | upgrade |
+fidélité | C1 | hotels | loyalty |
+écourter | C1 | hotels | to cut short | écourte écourtent écourté
+désister | C1 | hotels | (se désister) to withdraw; to cancel | désiste désistent
+désistement | C1 | hotels | withdrawal; cancellation |
+dédommager | C1 | hotels | to compensate | dédommage dédommagent dédommagé
+dédommagement | C1 | hotels | compensation |
+facturer | C1 | hotels | to charge; to invoice | facturent facturé
+nuisance | C1 | hotels | = | nuisances
+tapage | C1 | hotels | racket; (tapage nocturne) disturbance at night |
+hospitalité | C1 | hotels | hospitality |
+hospitalier | C1 | hotels | hospitable; hospital | hospitalière hospitaliers
+
+# --- Directions & places in town (C1) ---
+urbanisme | C1 | town | town planning |
+urbaniste | C1 | town | town planner | urbanistes
+urbanisation | C1 | town | = | 
+métropole | C1 | town | metropolis; mainland France | métropoles
+mégapole | C1 | town | megacity | mégapoles
+bourg | C1 | town | market town | bourgs
+bourgade | C1 | town | small town | bourgades
+hameau | C1 | town | hamlet | hameaux
+lieu-dit | C1 | town | locality | lieux-dits
+municipal | C1 | town | municipal; council | municipale municipaux
+municipalité | C1 | town | municipality; council | municipalités
+ZAC | C1 | town | development zone |
+cité-dortoir | C1 | town | dormitory town | cités-dortoirs
+tour | C1 | town | tower block; tower |
+gratte-ciel | C1 | town | skyscraper |
+venelle | C1 | town | alleyway | venelles
+parvis | C1 | town | square (in front of a church) |
+remparts | C1 | town | ramparts |
+beffroi | C1 | town | belfry | beffrois
+clocher | C1 | town | bell tower; steeple | clochers
+basilique | C1 | town | basilica | basiliques
+mosquée | C1 | town | mosque | mosquées
+synagogue | C1 | town | = | synagogues
+temple | C1 | town | temple; Protestant church | temples
+abribus | C1 | town | bus shelter |
+égout | C1 | town | sewer | égouts
+caniveau | C1 | town | gutter | caniveaux
+chaussée | C1 | town | road surface; carriageway | chaussées
+pavé | C1 | town | cobblestone; paving stone | pavés
+bitume | C1 | town | asphalt; tarmac |
+bordure | C1 | town | kerb; edge | bordures
+encombrement | C1 | town | congestion | encombrements
+égarer | C1 | town | to mislay; (s'égarer) to get lost | égare égarent égaré
+rebrousser | C1 | town | (rebrousser chemin) to turn back | rebrousse rebroussent
+bifurquer | C1 | town | to fork; to turn off | bifurque bifurquent bifurqué
+bifurcation | C1 | town | fork (road) | bifurcations
+contourner | C1 | town | to go round; to bypass | contourne contournent contourné
+avoisinant | C1 | town | neighbouring | avoisinante avoisinants
+limitrophe | C1 | town | bordering | limitrophes
+excentré | C1 | town | outlying; far from the centre | excentrée excentrés
+enclavé | C1 | town | landlocked; isolated | enclavée enclavés
+dédale | C1 | town | maze | dédales
+labyrinthe | C1 | town | maze; labyrinth | labyrinthes
+signalisation | C1 | town | signs; signalling |
+balisage | C1 | town | waymarking | balisages
+riverain | C1 | town | local resident | riveraine riverains
+édile | C1 | town | city councillor | édiles
+gentrification | C1 | town | = |
+embourgeoisement | C1 | town | gentrification |
