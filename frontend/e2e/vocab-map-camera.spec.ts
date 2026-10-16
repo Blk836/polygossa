@@ -1,4 +1,4 @@
-import { expect, test, type Locator } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
   bandButton,
   cleanUpAfterEach,
@@ -63,11 +63,11 @@ test("the zoom buttons zoom in around the middle, and out a level at a time", as
 test("the camera glides, and jumps when the device asks for reduced motion", async ({ page }) => {
   await openInFrench(page);
   await restingZoom(page);
-  const glide = await transformChanges(page, () => country(page, "Home").click(), label(page, "area-label", "rooms"));
+  const glide = await transformChanges(page, () => country(page, "Food & Drink").click(), label(page, "area-label", "fruit-veg"));
   expect(glide).toBeGreaterThan(5);
 
   await page.emulateMedia({ reducedMotion: "reduce" });
-  const jump = await transformChanges(page, () => province(page, "Rooms & furniture").click(), wordText(page, "chambre"));
+  const jump = await transformChanges(page, () => province(page, "Fruit & vegetables").click(), wordText(page, "banane"));
   expect(jump).toBe(1);
 });
 
@@ -159,15 +159,12 @@ test("the map fits a phone, and at province zoom every word is big enough to tap
   expect(mapBox.height).toBeGreaterThan(mapBox.width);
   await expect(world(page)).toHaveCSS("touch-action", "pan-y");
   await expect(bandButton(page, "A1")).toBeVisible();
+  await expect.poll(() => map(page).getByTestId("region-label").count()).toBeGreaterThanOrEqual(13);
+  await expectNoOverlap(page);
+  await bandButton(page, "A2").click();
   await expect(map(page).getByTestId("region-label")).toHaveCount(14);
-  const labels = await map(page).getByTestId("region-label").evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON()));
-  for (let i = 0; i < labels.length; i++) {
-    for (let j = i + 1; j < labels.length; j++) {
-      const [a, b] = [labels[i], labels[j]];
-      const overlap = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
-      expect(overlap, `labels ${i} and ${j}`).toBeLessThan(Math.min(a.width * a.height, b.width * b.height) * 0.1);
-    }
-  }
+  await expectNoOverlap(page);
+  await bandButton(page, "A1").click();
 
   await country(page, "Food & Drink").click();
   await province(page, "Fruit & vegetables").click();
@@ -180,3 +177,14 @@ test("the map fits a phone, and at province zoom every word is big enough to tap
     expect(tile.height, term).toBeGreaterThanOrEqual(44);
   }
 });
+
+async function expectNoOverlap(page: Page) {
+  const labels = await map(page).getByTestId("region-label").evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON()));
+  for (let i = 0; i < labels.length; i++) {
+    for (let j = i + 1; j < labels.length; j++) {
+      const [a, b] = [labels[i], labels[j]];
+      const overlap = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+      expect(overlap, `labels ${i} and ${j}`).toBeLessThan(Math.min(a.width * a.height, b.width * b.height) * 0.1);
+    }
+  }
+}

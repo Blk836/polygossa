@@ -150,6 +150,7 @@ function MapView({ map, top, language, onTop, onStatus }: {
     <Frame header={header} notes={notes} bleed>
       <HexMap
         map={drawn}
+        counted={map}
         view={view}
         top={top}
         onTop={onTop}

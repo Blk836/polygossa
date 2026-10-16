@@ -41,8 +41,8 @@ test("the map is one continent above the period comparison, with a country per r
   const communication = (await country(page, "Communication").boundingBox())!;
   expect(core.width * core.height).toBeGreaterThan(communication.width * communication.height * 3);
   const list: ApiMap = await (await page.request.get("/api/vocab-map?language=fr")).json();
-  const words = list.regions.flatMap((r) => r.areas.flatMap((a) => a.words)).filter((w) => w.band === "A1" || w.band === "A2").length;
-  expect(words).toBeGreaterThan(800);
+  const words = list.regions.flatMap((r) => r.areas.flatMap((a) => a.words)).filter((w) => w.band === "A1").length;
+  expect(words).toBeGreaterThan(400);
   expect(await tileCount(page)).toBe(words);
 
   const mapBox = (await map(page).boundingBox())!;
@@ -185,8 +185,8 @@ test("the band switch changes what counts and how tiles are coloured, and is rem
   const list: ApiMap = await (await page.request.get("/api/vocab-map?language=fr")).json();
   const bands = list.regions.flatMap((r) => r.areas.flatMap((a) => a.words.map((w) => w.band)));
   const upTo = (band: string) => bands.filter((b) => b <= band).length;
-  expect(await tileCount(page)).toBe(upTo("A2"));
-  expect(await tileCount(page, "next")).toBe(bands.filter((b) => b === "A2").length);
+  expect(await tileCount(page)).toBe(upTo("A1"));
+  expect(await tileCount(page, "next")).toBe(0);
   expect(await tileCount(page, "later")).toBe(0);
 
   await bandButton(page, "B1").click();
@@ -194,7 +194,8 @@ test("the band switch changes what counts and how tiles are coloured, and is rem
   await expect(overall).not.toHaveText(a1!);
   await expect(label(page, "region-label", "food").getByTestId("tile-next")).toHaveText(/^\+\d+ at B2$/);
   await expect(map(page)).not.toContainText("coming soon");
-  await expect.poll(() => tileCount(page)).toBe(upTo("B2"));
+  await expect.poll(() => tileCount(page)).toBe(upTo("B1"));
+  expect(await tileCount(page, "next")).toBe(0);
   expect(await tileCount(page, "later")).toBe(0);
 
   await bandButton(page, "B2").click();
@@ -247,12 +248,40 @@ test("a province with no words yet at a level is left off, and zoomed into it th
   await bandButton(page, "A1").click();
   await expect(crumb).toHaveText("Map›Society & News");
   await expect.poll(() => new URL(page.url()).searchParams.get("map")).toBe("society");
-  await expect(map(page).getByTestId("map-area")).toHaveCount(4);
+  await expect(map(page).getByTestId("map-area")).toHaveCount(1);
   await expect(province(page, "Economy")).toHaveCount(0);
   await expect(label(page, "area-label", "economy")).toHaveCount(0);
 
   await bandButton(page, "A2").click();
+  await expect(map(page).getByTestId("map-area")).toHaveCount(4);
+  await expect(province(page, "Economy")).toHaveCount(0);
+
+  await bandButton(page, "B1").click();
   await expect(province(page, "Economy")).toHaveCount(1);
+});
+
+test("at A1 a province shows only its A1 words, and provinces with none are left off", async ({ page }) => {
+  await save(page, "miroir", "known");
+  await openInFrench(page);
+  await bandButton(page, "A1").click();
+  await expect(label(page, "region-label", "home").getByTestId("tile-next")).toHaveText("+34 at A2");
+  await country(page, "Home").click();
+  await expect(map(page).getByTestId("map-area")).toHaveCount(1);
+  await expect(province(page, "Rooms & furniture")).toHaveAttribute("aria-label", /^Rooms & furniture: \d+ of 11 known$/);
+  await expect(province(page, "Household chores")).toHaveCount(0);
+  await expect(label(page, "area-label", "chores")).toHaveCount(0);
+
+  await province(page, "Rooms & furniture").click();
+  await expect(map(page).getByTestId("map-word")).toHaveCount(11);
+  await expect(wordTile(page, "maison")).toHaveCount(1);
+  await expect(wordTile(page, "miroir")).toHaveCount(0);
+  expect(await tileCount(page, "next")).toBe(0);
+
+  await bandButton(page, "A2").click();
+  await expect(map(page).getByTestId("map-word")).toHaveCount(26);
+  await expect(wordTile(page, "miroir")).toHaveAttribute("aria-label", "miroir: known");
+  await map(page).getByTestId("map-breadcrumb").getByText("Home").click();
+  await expect(province(page, "Household chores")).toHaveAttribute("aria-label", /^Household chores: \d+ of 8 known$/);
 });
 
 test("a language without a list says the map is coming soon", async ({ page }) => {
@@ -267,5 +296,5 @@ test("Beyond the core is the uncharted sea, and opens my known words", async ({ 
   await expect(map(page).getByTestId("beyond-core")).toHaveAttribute("aria-label", /^Beyond the core: [\d,]+ words$/);
   await map(page).getByTestId("beyond-core").click();
   await expect(page).toHaveURL(/\/vocabulary\?status=known$/);
-  await expect(page.getByLabel("Status")).toHaveValue("known");
+  await expect(page.getByLabel("Status").filter({ hasText: "Any status" })).toHaveValue("known");
 });

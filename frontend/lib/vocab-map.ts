@@ -105,12 +105,12 @@ const BAND_TARGET: Record<string, number> = { A1: 500, A2: 1000, B1: 2000, B2: 4
 const RING_FITS = 2300;
 
 export function ringScale(view: BandView): number {
-  const widest = view.next ?? view.shown[view.shown.length - 1];
+  const widest = view.shown[view.shown.length - 1];
   return Math.min(1, Math.round(Math.sqrt((BAND_TARGET[widest] ?? RING_FITS) / RING_FITS) * 100) / 100);
 }
 
 export function drawnMap(map: VocabMap, view: BandView): VocabMap {
-  const drawn = (w: VocabMapWord) => view.shown.includes(w.band) || w.band === view.next;
+  const drawn = (w: VocabMapWord) => view.shown.includes(w.band);
   const regions = map.regions
     .map((r) => ({ ...r, areas: r.areas.map((a) => ({ ...a, words: a.words.filter(drawn) })).filter((a) => a.words.length > 0) }))
     .filter((r) => r.areas.length > 0);

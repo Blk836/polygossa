@@ -72,9 +72,9 @@ const turn = (a: number, b: number) => Math.abs(((a - b + 3 * Math.PI) % (2 * Ma
 describe("the French island at each level", () => {
   const worlds = BANDS.map((top) => islandAt(top));
 
-  it("has a tile for each word up to the next band, so it grows with the level", () => {
+  it("has a tile for each word up to the level, none for the next band's, so it grows with the level", () => {
     const upTo = (b: number) => FRENCH_BY_BAND.flatMap(([, areas]) => areas.flatMap((perBand) => perBand.slice(0, b + 1))).reduce((s, n) => s + n, 0);
-    expect(worlds.map((w) => allHexes(w).length)).toEqual([upTo(1), upTo(2), upTo(3), upTo(4), upTo(4)]);
+    expect(worlds.map((w) => allHexes(w).length)).toEqual([upTo(0), upTo(1), upTo(2), upTo(3), upTo(4)]);
   });
 
   it("keeps every level's island, both ways up, so going back to a level shows it straight away", () => {
@@ -82,10 +82,13 @@ describe("the French island at each level", () => {
     for (const { top, portrait, world } of every) expect(islandAt(top, portrait), `${top} ${portrait}`).toBe(world);
   });
 
-  it("leaves off a province with no words up to the next band", () => {
-    const society = worlds[0].countries.find((c) => c.regionId === "society")!;
-    expect(society.areas.map((a) => a.areaId)).toEqual(["society-0", "society-1", "society-3", "society-4"]);
-    expect(worlds[1].countries.find((c) => c.regionId === "society")!.areas).toHaveLength(5);
+  it("leaves off a province with no words up to the level, even when it has the next band's", () => {
+    const areasOf = (w: HexWorld, id: string) => w.countries.find((c) => c.regionId === id)!.areas.map((a) => a.areaId);
+    expect(areasOf(worlds[0], "home")).toEqual(["home-0"]);
+    expect(areasOf(worlds[1], "home")).toEqual(["home-0", "home-1", "home-2", "home-3"]);
+    expect(areasOf(worlds[0], "society")).toEqual(["society-4"]);
+    expect(areasOf(worlds[1], "society")).toEqual(["society-0", "society-1", "society-3", "society-4"]);
+    expect(areasOf(worlds[2], "society")).toHaveLength(5);
   });
 
   it.each(BANDS)("is one landmass with no lakes, every country and province in one piece, up to %s", (top) => {
