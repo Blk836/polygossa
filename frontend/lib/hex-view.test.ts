@@ -94,6 +94,12 @@ describe("fitTags", () => {
     expect(sideBySide("Food & Drink")).toBe("full");
     expect(sideBySide("Communication and everything")).toBe("hidden");
   });
+
+  it("keeps room for the notes a tag shows when pointed at, which can be wider than its name and count", () => {
+    const beside = (notes?: string) => fitTags([big, { ...spot("small", 62, 0, 10, "Home"), notes }]).get("small")!.show;
+    expect(beside()).toBe("full");
+    expect(beside("+34 at A2")).toBe("name");
+  });
 });
 
 describe("placeCamera", () => {

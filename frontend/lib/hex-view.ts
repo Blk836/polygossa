@@ -35,6 +35,7 @@ export interface TagSpot {
   places: Point[];
   weight: number;
   count: string;
+  notes?: string;
 }
 
 export interface TagFit {
@@ -43,14 +44,15 @@ export interface TagFit {
   dy: number;
 }
 
-const TAG = { letter: 5.7, line: 13, gap: 3, digit: 5.6, chip: { pad: 12, h: 16 }, margin: 1 };
+const TAG = { letter: 5.7, line: 13, gap: 3, digit: 5.6, chip: { pad: 12, h: 16 }, notesPad: 12, margin: 1 };
 
 interface Rect { left: number; top: number; right: number; bottom: number }
 
 function tagRect(s: TagSpot, show: TagFit["show"], at: Point): Rect {
   const lines = s.name.split(" & ").map((l, i, all) => (i < all.length - 1 ? `${l} &` : l));
   const chip = s.count.length * TAG.digit + TAG.chip.pad;
-  const w = Math.max(...lines.map((l) => l.length * TAG.letter), show === "full" ? chip : 0) + 2 * TAG.margin;
+  const notes = s.notes ? s.notes.length * TAG.letter + TAG.notesPad : 0;
+  const w = Math.max(...lines.map((l) => l.length * TAG.letter), show === "full" ? Math.max(chip, notes) : 0) + 2 * TAG.margin;
   const h = lines.length * TAG.line + (show === "full" ? TAG.gap + TAG.chip.h : 0) + 2 * TAG.margin;
   return { left: at.x - w / 2, right: at.x + w / 2, top: at.y - h / 2, bottom: at.y + h / 2 };
 }
