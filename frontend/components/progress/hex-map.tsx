@@ -52,8 +52,9 @@ function areaShape(world: HexWorld, regionId: string | null, areaId: string | nu
   return world.countries.find((c) => c.regionId === regionId)?.areas.find((a) => a.areaId === areaId);
 }
 
-export function HexMap({ map, view, top, onTop, place, selected, go, onSelect, panel }: {
+export function HexMap({ map, counted, view, top, onTop, place, selected, go, onSelect, panel }: {
   map: VocabMap;
+  counted: VocabMap;
   view: BandView;
   top: string;
   onTop: (band: string) => void;
@@ -105,14 +106,14 @@ export function HexMap({ map, view, top, onTop, place, selected, go, onSelect, p
           <Tiles layers={layers} />
           <Borders world={world} />
           <WordText world={world} map={map} areas={plan.words} view={view} />
-          <Countries world={world} map={map} view={view} go={go} onPoint={setPointed} />
-          {place.region && <Provinces world={world} regionId={place.region.id} areas={place.region.areas} view={view} go={go} />}
+          <Countries world={world} map={counted} view={view} go={go} onPoint={setPointed} />
+          {place.region && <Provinces world={world} regionId={place.region.id} areas={regionAreas(counted, place.region.id)} view={view} go={go} />}
           {openArea && place.area && (
             <WordButtons shape={openArea} words={place.area.words} portrait={world.portrait} view={view} selected={selected} onSelect={onSelect} />
           )}
         </g>
       </svg>
-      <MapTags world={world} regions={map.regions} plan={plan} view={view} camera={at} viewport={viewport}
+      <MapTags world={world} regions={counted.regions} plan={plan} view={view} camera={at} viewport={viewport}
         compact={viewport.width < COMPACT_BELOW_PX} pointed={pointed} />
       <BeyondTheCore count={map.beyondCore} world={world} />
       <Breadcrumb region={place.region} area={place.area} go={go} />
@@ -204,6 +205,8 @@ const Countries = memo(function Countries({ world, map, view, go, onPoint }: {
     </g>
   );
 });
+
+const regionAreas = (map: VocabMap, regionId: string) => map.regions.find((r) => r.id === regionId)?.areas ?? [];
 
 function Provinces({ world, regionId, areas, view, go }: { world: HexWorld; regionId: string; areas: VocabMapArea[]; view: BandView; go: Go }) {
   const country = world.countries.find((c) => c.regionId === regionId);

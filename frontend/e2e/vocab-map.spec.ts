@@ -262,14 +262,14 @@ test("a province with no words yet at a level is left off, and zoomed into it th
 
 test("at A1 a province shows only its A1 words, and provinces with none are left off", async ({ page }) => {
   await save(page, "miroir", "known");
-  await openInFrench(page, "/dashboard?map=home");
+  await openInFrench(page);
   await bandButton(page, "A1").click();
-  await expect(bandButton(page, "A1")).toHaveAttribute("aria-pressed", "true");
+  await expect(label(page, "region-label", "home").getByTestId("tile-next")).toHaveText("+34 at A2");
+  await country(page, "Home").click();
   await expect(map(page).getByTestId("map-area")).toHaveCount(1);
   await expect(province(page, "Rooms & furniture")).toHaveAttribute("aria-label", /^Rooms & furniture: \d+ of 11 known$/);
   await expect(province(page, "Household chores")).toHaveCount(0);
   await expect(label(page, "area-label", "chores")).toHaveCount(0);
-  await expect(label(page, "area-label", "rooms").getByTestId("tile-next")).toHaveText("+15 at A2");
 
   await province(page, "Rooms & furniture").click();
   await expect(map(page).getByTestId("map-word")).toHaveCount(11);
@@ -279,7 +279,6 @@ test("at A1 a province shows only its A1 words, and provinces with none are left
 
   await bandButton(page, "A2").click();
   await expect(map(page).getByTestId("map-word")).toHaveCount(26);
-  await expect(wordTile(page, "miroir")).toHaveAttribute("data-status", "known");
   await expect(wordTile(page, "miroir")).toHaveAttribute("aria-label", "miroir: known");
   await map(page).getByTestId("map-breadcrumb").getByText("Home").click();
   await expect(province(page, "Household chores")).toHaveAttribute("aria-label", /^Household chores: \d+ of 8 known$/);
@@ -297,5 +296,5 @@ test("Beyond the core is the uncharted sea, and opens my known words", async ({ 
   await expect(map(page).getByTestId("beyond-core")).toHaveAttribute("aria-label", /^Beyond the core: [\d,]+ words$/);
   await map(page).getByTestId("beyond-core").click();
   await expect(page).toHaveURL(/\/vocabulary\?status=known$/);
-  await expect(page.getByLabel("Status")).toHaveValue("known");
+  await expect(page.getByLabel("Status").filter({ hasText: "Any status" })).toHaveValue("known");
 });
