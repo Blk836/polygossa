@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { flame, knownWords, timeLeft } from "./header-stats";
+import { flame, jarCount, knownWords, timeLeft } from "./header-stats";
 
 const DAY = 86_400;
 
@@ -61,12 +61,29 @@ describe("timeLeft", () => {
 
 describe("knownWords", () => {
   it.each([
-    [0, "0", "0 known words"],
-    [1, "1", "1 known word"],
-    [999, "999", "999 known words"],
-    [1234, "1,234", "1,234 known words"],
-    [1234567, "1,234,567", "1,234,567 known words"],
+    [0, "0", "0 known words (all forms)"],
+    [1, "1", "1 known word (all forms)"],
+    [999, "999", "999 known words (all forms)"],
+    [1234, "1,234", "1,234 known words (all forms)"],
+    [1234567, "1,234,567", "1,234,567 known words (all forms)"],
   ])("%i reads %s", (n, text, label) => {
-    expect(knownWords(n)).toEqual({ text, label });
+    expect(knownWords(n, "all_forms")).toEqual({ text, label });
+  });
+
+  it.each([
+    [0, "0", "0 known base words"],
+    [1, "1", "1 known base word"],
+    [1234, "1,234", "1,234 known base words"],
+  ])("%i base words reads %s", (n, text, label) => {
+    expect(knownWords(n, "base_words")).toEqual({ text, label });
+  });
+});
+
+describe("jarCount", () => {
+  const stats = { current: 0, best: 0, activeToday: false, secondsLeftToday: 0, knownWords: 6, knownBaseWords: 2 };
+
+  it("shows all forms or base words, as chosen", () => {
+    expect(jarCount(stats, "all_forms")).toBe(6);
+    expect(jarCount(stats, "base_words")).toBe(2);
   });
 });

@@ -74,6 +74,9 @@ public class User {
     @Column(length = 1300)
     private String toursSeen;
 
+    @Enumerated(EnumType.STRING)
+    private HoneyJar honeyJar;
+
     @Formula("(select count(d.id) from anki_decks d where d.user_id = id)")
     private Long ankiDecks;
 
@@ -253,6 +256,14 @@ public class User {
         }
         toursSeen = toursSeen == null ? name : toursSeen + "," + name;
         return true;
+    }
+
+    public HoneyJar getHoneyJar() {
+        return honeyJar == null ? HoneyJar.ALL_FORMS : honeyJar;
+    }
+
+    public void setHoneyJar(HoneyJar honeyJar) {
+        this.honeyJar = honeyJar;
     }
 
     public String photoUrl() {

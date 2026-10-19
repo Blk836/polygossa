@@ -5,6 +5,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useMe } from "@/components/me-context";
 import { DevicesSection } from "@/components/settings/devices-section";
 import { GoalFields, type GoalChoice } from "@/components/settings/goal-fields";
+import { HoneyJarSection } from "@/components/settings/honey-jar-section";
 import { InterestsSection } from "@/components/settings/interests-section";
 import { MfaSection } from "@/components/settings/mfa-section";
 import { ProfilePhoto } from "@/components/settings/profile-photo";
@@ -75,6 +76,7 @@ export default function ProfilePage() {
         </div>
       </form>
       <InterestsSection />
+      <HoneyJarSection />
       <ToursSection />
       <MfaSection />
       <DevicesSection />

@@ -28,6 +28,13 @@ class VocabMapCatalogTest {
     }
 
     @Test
+    void everyAppSharesOneLoadOfTheShippedLists() {
+        VocabMapCatalog another = new VocabMapCatalog();
+        assertThat(another.list(Language.FR).orElseThrow()).isSameAs(REAL.list(Language.FR).orElseThrow());
+        assertThat(another.blueprint()).isSameAs(REAL.blueprint());
+    }
+
+    @Test
     void theRealListsHaveNoProblems() {
         assertThat(REAL.problems()).isEmpty();
     }

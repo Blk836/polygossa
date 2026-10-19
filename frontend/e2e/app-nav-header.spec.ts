@@ -90,8 +90,8 @@ test("known words show in the header as \"<count> known\", with thousands separa
   await stubStreak(page, { current: 1, activeToday: true, secondsLeftToday: HOUR, knownWords: 1234 });
   await page.goto("/library");
   await expect(known(page)).toHaveText("1,234 known");
-  await expect(known(page)).toHaveAccessibleName("1,234 known words");
-  await expect(known(page)).toHaveAttribute("title", "1,234 known words");
+  await expect(known(page)).toHaveAccessibleName("1,234 known words (all forms)");
+  await expect(known(page)).toHaveAttribute("title", "1,234 known words (all forms)");
   await expect(known(page)).toHaveAttribute("href", "/vocabulary");
   await expect(known(page).locator("svg")).toHaveCount(1);
   await expect(known(page).getByTestId("honey-jar")).toHaveCount(1);

@@ -73,8 +73,9 @@ function ProgressTable({ classId }: { classId: number }) {
   if (!p) return <Spinner />;
   return (
     <section>
-      <div className="mb-3 grid grid-cols-3 gap-3 text-sm">
-        <div className="rounded-xl border border-line bg-card p-3"><p className="text-xs text-muted">Avg known words</p><p className="text-xl font-semibold">{p.averageKnownWords}</p></div>
+      <div className="mb-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+        <div className="rounded-xl border border-line bg-card p-3"><p className="text-xs text-muted">Avg known words</p><p className="text-xl font-semibold" data-testid="average-known-words">{p.averageKnownWords}</p></div>
+        <div className="rounded-xl border border-line bg-card p-3"><p className="text-xs text-muted">Avg base words</p><p className="text-xl font-semibold" data-testid="average-known-base-words">{p.averageKnownBaseWords}</p></div>
         <div className="rounded-xl border border-line bg-card p-3"><p className="text-xs text-muted">Avg reading time</p><p className="text-xl font-semibold">{p.averageReadingMinutes} min</p></div>
         <div className="rounded-xl border border-line bg-card p-3"><p className="text-xs text-muted">Assignments completed</p><p className="text-xl font-semibold">{p.assignmentCompletionRate}%</p></div>
       </div>
@@ -87,6 +88,7 @@ function ProgressTable({ classId }: { classId: number }) {
               <tr className="border-b border-line text-left text-xs text-muted">
                 <th className="p-3 font-medium">Student</th>
                 <th className="p-3 text-right font-medium">Known</th>
+                <th className="p-3 text-right font-medium">Base words</th>
                 <th className="p-3 text-right font-medium">Learning</th>
                 <th className="p-3 text-right font-medium">New words 7d / 30d</th>
                 <th className="p-3 text-right font-medium">Reading</th>
@@ -99,6 +101,7 @@ function ProgressTable({ classId }: { classId: number }) {
                 <tr key={s.id} className="border-b border-line last:border-0">
                   <td className="p-3 font-medium"><Named name={s.displayName} photoUrl={s.photoUrl} size="sm" /></td>
                   <td className="p-3 text-right tabular-nums">{s.knownWords}</td>
+                  <td className="p-3 text-right tabular-nums">{s.knownBaseWords}</td>
                   <td className="p-3 text-right tabular-nums">{s.learningWords}</td>
                   <td className="p-3 text-right tabular-nums">{s.wordsAdded7d} / {s.wordsAdded30d}</td>
                   <td className="p-3 text-right tabular-nums">{formatDuration(s.readingSeconds)} · {s.sessions}×</td>

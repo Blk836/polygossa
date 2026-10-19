@@ -49,11 +49,12 @@ public class VocabularyController {
             String note,
             List<String> tags,
             Long textId,
-            String meaning) {
+            String meaning,
+            String lemma) {
 
         VocabularyService.EntryFields fields() {
             return new VocabularyService.EntryFields(status, definition, partOfSpeech, pronunciation, example,
-                    contextSentence, note, tags, meaning);
+                    contextSentence, note, tags, meaning, lemma);
         }
     }
 
@@ -70,7 +71,7 @@ public class VocabularyController {
 
         VocabularyService.EntryFields fields() {
             return new VocabularyService.EntryFields(status, definition, partOfSpeech, pronunciation, example,
-                    contextSentence, note, tags, meaning);
+                    contextSentence, note, tags, meaning, null);
         }
     }
 

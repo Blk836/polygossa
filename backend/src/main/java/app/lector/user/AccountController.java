@@ -37,7 +37,8 @@ public class AccountController {
             DailyGoal dailyGoal,
             Boolean streakNeedsGoal,
             String timezone,
-            Boolean tours) {}
+            Boolean tours,
+            HoneyJar honeyJar) {}
 
     public record ChangePlanRequest(@NotNull Tier tier) {}
 
@@ -97,10 +98,17 @@ public class AccountController {
                 throw ApiException.badRequest("Unknown time zone: " + req.timezone());
             }
         }
+        applyDisplayChoices(user, req);
+        return MeDto.of(user, plans, admins);
+    }
+
+    private static void applyDisplayChoices(User user, UpdateMeRequest req) {
         if (req.tours() != null) {
             user.setToursOn(req.tours());
         }
-        return MeDto.of(user, plans, admins);
+        if (req.honeyJar() != null) {
+            user.setHoneyJar(req.honeyJar());
+        }
     }
 
     @PostMapping("/me/tours/{name}/seen")

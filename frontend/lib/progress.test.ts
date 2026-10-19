@@ -1,10 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { calendarWeeks, goalProgress, intensity, listeningLabel, milestone, periodChange, periodLabel, STATS_PERIODS, streakMessage, weekChange, weekStrip } from "./progress";
+import { baseWords, calendarWeeks, goalProgress, intensity, listeningLabel, milestone, periodChange, periodLabel, STATS_PERIODS, streakMessage, weekChange, weekStrip } from "./progress";
 import type { ActivityDay } from "./types";
 
 const day = (date: string, over: Partial<ActivityDay> = {}): ActivityDay => ({
   day: date, readingSeconds: 0, wordsSaved: 0, wordsKnown: 0, reviews: 0, writingTests: 0, wordsRead: 0, listenedSeconds: 0,
   active: false, goalMet: false, ...over,
+});
+
+describe("baseWords", () => {
+  it.each([
+    [0, "0 base words"],
+    [1, "1 base word"],
+    [1234, "1,234 base words"],
+  ])("%i reads %s", (n, text) => {
+    expect(baseWords(n)).toBe(text);
+  });
 });
 
 describe("milestone", () => {

@@ -114,7 +114,8 @@ when its test is fixed.
 - `e2e/reader-pages-hold-still.spec.ts` › "the video gives way so three lines of text fit, and no page scrolls".
   Seen 2026-10-11, PR #128 and PR #135; passed 12 of 12 alone. Also PR #143: fails about 1 run in 3 to 6 even
   alone, on main's code too; the page count changes while reading through (re-split, e.g. "Page 57 of 57").
-  Again PR #165 (a backend-only revert); passed 24 of 24 alone.
+  Again PR #165 (a backend-only revert); passed 24 of 24 alone. Again 2026-10-19, PR #176; the spec passed 54 of 54
+  alone.
 - `e2e/reader-media-resume.spec.ts` › "pressing Play twice while the video is still starting keeps the bar at the
   page's start". Seen 2026-10-10, PR #94.
 - Backend `VocabMapApiTest` › `theMapAnswersQuicklyForALargeVocabulary`: took 1,094 ms against its 1,000 ms limit

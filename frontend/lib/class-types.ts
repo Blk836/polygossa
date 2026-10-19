@@ -35,6 +35,7 @@ export interface StudentProgress {
   displayName: string;
   photoUrl: string | null;
   knownWords: number;
+  knownBaseWords: number;
   learningWords: number;
   wordsAdded7d: number;
   wordsAdded30d: number;
@@ -49,6 +50,7 @@ export interface ClassProgress {
   assignmentCount: number;
   students: StudentProgress[];
   averageKnownWords: number;
+  averageKnownBaseWords: number;
   averageReadingMinutes: number;
   assignmentCompletionRate: number;
 }

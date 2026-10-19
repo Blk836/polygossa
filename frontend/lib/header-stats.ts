@@ -6,6 +6,13 @@ export interface HeaderStats {
   activeToday: boolean;
   secondsLeftToday: number;
   knownWords: number;
+  knownBaseWords: number;
+}
+
+export type HoneyJar = "all_forms" | "base_words";
+
+export function jarCount(stats: Pick<HeaderStats, "knownWords" | "knownBaseWords">, jar: HoneyJar): number {
+  return jar === "base_words" ? stats.knownBaseWords : stats.knownWords;
 }
 
 export interface Flame {
@@ -31,7 +38,8 @@ export function flame({ current, activeToday, secondsLeftToday }: Pick<HeaderSta
   };
 }
 
-export function knownWords(n: number): { text: string; label: string } {
+export function knownWords(n: number, jar: HoneyJar): { text: string; label: string } {
   const text = n.toLocaleString("en-US");
-  return { text, label: `${text} known ${n === 1 ? "word" : "words"}` };
+  const words = n === 1 ? "word" : "words";
+  return { text, label: jar === "base_words" ? `${text} known base ${words}` : `${text} known ${words} (all forms)` };
 }

@@ -73,8 +73,18 @@ public class VocabMapCatalog {
     private final Map<Language, WordList> lists = new EnumMap<>(Language.class);
     private final List<String> problems = new ArrayList<>();
 
+    private static final class Shipped {
+        static final VocabMapCatalog CATALOG = new VocabMapCatalog(BLUEPRINT, LISTS);
+    }
+
     public VocabMapCatalog() {
-        this(BLUEPRINT, LISTS);
+        this(Shipped.CATALOG);
+    }
+
+    private VocabMapCatalog(VocabMapCatalog shipped) {
+        blueprint = shipped.blueprint;
+        lists.putAll(shipped.lists);
+        problems.addAll(shipped.problems);
     }
 
     VocabMapCatalog(String blueprintLocation, String listsPattern) {

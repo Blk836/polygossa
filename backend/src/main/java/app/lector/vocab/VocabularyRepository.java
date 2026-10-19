@@ -54,6 +54,11 @@ public interface VocabularyRepository extends JpaRepository<VocabularyEntry, Lon
 
     long countByUserIdAndStatus(Long userId, WordStatus status);
 
+    @Query("select new app.lector.vocab.KnownForm(v.language, v.term, v.lemma) from VocabularyEntry v "
+            + "where v.user.id = :userId and v.status = app.lector.vocab.WordStatus.KNOWN "
+            + "and (:language is null or v.language = :language)")
+    List<KnownForm> findKnownForms(@Param("userId") Long userId, @Param("language") Language language);
+
     @Query("select v.language as language, v.status as status, count(v) as count from VocabularyEntry v "
             + "where v.user.id = :userId group by v.language, v.status")
     List<LanguageStatusCount> countByLanguageAndStatus(@Param("userId") Long userId);

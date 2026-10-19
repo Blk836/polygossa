@@ -66,6 +66,9 @@ public class VocabularyEntry {
 
     private String partOfSpeech;
 
+    @Column(length = 500)
+    private String lemma;
+
     private String pronunciation;
 
     @Column(columnDefinition = "text")
@@ -151,6 +154,8 @@ public class VocabularyEntry {
     }
     public String getPartOfSpeech() { return partOfSpeech; }
     public void setPartOfSpeech(String partOfSpeech) { this.partOfSpeech = partOfSpeech; }
+    public String getLemma() { return lemma; }
+    public void setLemma(String lemma) { this.lemma = lemma; }
     public String getPronunciation() { return pronunciation; }
     public void setPronunciation(String pronunciation) { this.pronunciation = pronunciation; }
     public String getExample() { return example; }
