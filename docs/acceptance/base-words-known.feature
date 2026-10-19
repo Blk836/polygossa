@@ -43,9 +43,9 @@ Feature: Base words known, shown alongside all forms known (#174)
     Then "dilemmes" counts towards the base word "dilemme"
 
   Scenario: A base word saved from a click beats the word lists
-    Given the word lists name "x" as the base word of "y"
-    And my saved word "y" has the base word "z" from a click
-    Then "y" counts towards "z"
+    Given the word lists give "suis" as a form of "suivre"
+    And my saved word "suis" has the base word "être" from a click in "Je suis content."
+    Then "suis" counts towards "être"
 
   Scenario: Looking a word up again after it is saved fills in a missing base word
     Given my saved word "chantons" has no base word
@@ -73,7 +73,7 @@ Feature: Base words known, shown alongside all forms known (#174)
   Scenario: A tie between earlier lookups goes to the alphabetically first base word
     Given earlier lookups of "suis" gave "être" once and "suivre" once
     When the update is installed
-    Then my saved word "suis" has the base word "suivre" or "être", whichever sorts first, the same every time
+    Then my saved word "suis" has the base word "suivre", the first of the two in character order
 
   Scenario: Earlier lookups in another language are not used
     Given a Spanish lookup of "fue" gave "ir", and I saved the French word "fue"
