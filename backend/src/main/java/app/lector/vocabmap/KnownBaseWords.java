@@ -3,9 +3,12 @@ package app.lector.vocabmap;
 import app.lector.token.Language;
 import app.lector.vocab.KnownForm;
 import app.lector.vocab.VocabularyRepository;
+import app.lector.vocabmap.VocabMapCatalog.MapWord;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.stereotype.Service;
@@ -14,26 +17,20 @@ import org.springframework.stereotype.Service;
 public class KnownBaseWords {
 
     private final VocabularyRepository vocabulary;
-    private final Map<Language, Map<String, String>> headwords = new EnumMap<>(Language.class);
+    private final VocabMapCatalog catalog;
 
     public KnownBaseWords(VocabularyRepository vocabulary, VocabMapCatalog catalog) {
         this.vocabulary = vocabulary;
-        for (Language language : Language.values()) {
-            catalog.list(language).ifPresent(list -> {
-                Map<String, String> owners = new HashMap<>();
-                list.words().forEach(w -> w.forms().forEach(form -> owners.put(form, w.headword())));
-                headwords.put(language, owners);
-            });
-        }
+        this.catalog = catalog;
     }
 
     public Map<Language, Long> byLanguage(Long userId) {
-        Map<Language, Set<String>> bases = new EnumMap<>(Language.class);
+        Map<Language, List<KnownForm>> forms = new EnumMap<>(Language.class);
         for (KnownForm form : vocabulary.findKnownForms(userId, null)) {
-            bases.computeIfAbsent(form.language(), l -> new HashSet<>()).add(base(form));
+            forms.computeIfAbsent(form.language(), l -> new ArrayList<>()).add(form);
         }
         Map<Language, Long> counts = new EnumMap<>(Language.class);
-        bases.forEach((language, words) -> counts.put(language, (long) words.size()));
+        forms.forEach((language, known) -> counts.put(language, count(language, known)));
         return counts;
     }
 
@@ -41,17 +38,36 @@ public class KnownBaseWords {
         if (language == null) {
             return byLanguage(userId).values().stream().mapToLong(Long::longValue).sum();
         }
+        return count(language, vocabulary.findKnownForms(userId, language));
+    }
+
+    private long count(Language language, List<KnownForm> known) {
+        Map<String, String> headwords = headwords(language, known);
         Set<String> bases = new HashSet<>();
-        for (KnownForm form : vocabulary.findKnownForms(userId, language)) {
-            bases.add(base(form));
+        for (KnownForm form : known) {
+            bases.add(form.lemma() != null ? form.lemma() : headwords.getOrDefault(form.term(), form.term()));
         }
         return bases.size();
     }
 
-    private String base(KnownForm form) {
-        if (form.lemma() != null) {
-            return form.lemma();
+    private Map<String, String> headwords(Language language, List<KnownForm> known) {
+        Set<String> unknownBase = new HashSet<>();
+        for (KnownForm form : known) {
+            if (form.lemma() == null) {
+                unknownBase.add(form.term());
+            }
         }
-        return headwords.getOrDefault(form.language(), Map.of()).getOrDefault(form.term(), form.term());
+        Map<String, String> headwords = new HashMap<>();
+        if (unknownBase.isEmpty()) {
+            return headwords;
+        }
+        for (MapWord word : catalog.list(language).map(VocabMapCatalog.WordList::words).orElse(List.of())) {
+            for (String form : word.forms()) {
+                if (unknownBase.contains(form)) {
+                    headwords.put(form, word.headword());
+                }
+            }
+        }
+        return headwords;
     }
 }
