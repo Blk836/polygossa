@@ -18,6 +18,7 @@ import tools.jackson.databind.ObjectMapper;
 class DashboardTodayApiTest {
 
     static final MutableClock CLOCK = TestClock.CLOCK;
+    static final String CONTENT = "hola ".repeat(599) + "hola.";
 
     @Autowired
     MockMvc mvc;
@@ -26,9 +27,16 @@ class DashboardTodayApiTest {
     ObjectMapper json;
 
     private String learnerIn(TestApi api, String zone) throws Exception {
-        String token = api.signup();
+        String token = api.signupPro();
         api.patch(token, "/api/me", "{\"timezone\":\"" + zone + "\"}", 200);
         return token;
+    }
+
+    private static void readPages(TestApi api, String token, long text, int pages) throws Exception {
+        api.post(token, "/api/texts/" + text + "/progress", "{\"position\":0}", 200);
+        for (int page = 1; page <= pages; page++) {
+            api.post(token, "/api/texts/" + text + "/progress", "{\"position\":" + page * 240 + "}", 200);
+        }
     }
 
     private static void save(TestApi api, String token, String term, boolean known) throws Exception {
@@ -40,20 +48,17 @@ class DashboardTodayApiTest {
     void todayIsOneDayComparedWithYesterday() throws Exception {
         TestApi api = new TestApi(mvc, json);
         String token = learnerIn(api, "UTC");
+        long text = api.createText(token, "es", CONTENT, false);
         CLOCK.set(Instant.parse("2026-10-01T10:00:00Z"));
-        save(api, token, "gato", true);
+        readPages(api, token, text, 1);
         CLOCK.set(Instant.parse("2026-10-02T09:00:00Z"));
-        save(api, token, "perro", true);
-        save(api, token, "casa", true);
-        save(api, token, "mesa", false);
+        readPages(api, token, text, 2);
         JsonNode p = api.get(token, "/api/dashboard?period=today", 200).get("period");
         assertThat(p.get("period").asString()).isEqualTo("today");
         assertThat(p.get("days").asInt()).isEqualTo(1);
-        assertThat(p.get("current").get("wordsKnown").asLong()).isEqualTo(2);
-        assertThat(p.get("current").get("wordsSaved").asLong()).isEqualTo(3);
+        assertThat(p.get("current").get("wordsRead").asLong()).isEqualTo(240);
         assertThat(p.get("current").get("activeDays").asInt()).isEqualTo(1);
-        assertThat(p.get("previous").get("wordsKnown").asLong()).isEqualTo(1);
-        assertThat(p.get("previous").get("activeDays").asInt()).isEqualTo(1);
+        assertThat(p.get("previous").get("wordsRead").asLong()).isEqualTo(120);
     }
 
     @Test
@@ -71,13 +76,14 @@ class DashboardTodayApiTest {
     void todayStartsAtTheLearnersMidnight() throws Exception {
         TestApi api = new TestApi(mvc, json);
         String token = learnerIn(api, "Asia/Tokyo");
+        long text = api.createText(token, "es", CONTENT, false);
         CLOCK.set(Instant.parse("2026-10-01T14:30:00Z"));
-        save(api, token, "gato", true);
+        readPages(api, token, text, 1);
         CLOCK.set(Instant.parse("2026-10-01T15:30:00Z"));
-        save(api, token, "perro", true);
+        readPages(api, token, text, 2);
         JsonNode p = api.get(token, "/api/dashboard?period=today", 200).get("period");
-        assertThat(p.get("current").get("wordsKnown").asLong()).isEqualTo(1);
-        assertThat(p.get("previous").get("wordsKnown").asLong()).isEqualTo(1);
+        assertThat(p.get("current").get("wordsRead").asLong()).isEqualTo(240);
+        assertThat(p.get("previous").get("wordsRead").asLong()).isEqualTo(120);
     }
 
     @Test
