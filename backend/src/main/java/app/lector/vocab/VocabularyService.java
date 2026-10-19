@@ -211,17 +211,22 @@ public class VocabularyService {
             entry.setExample(trim(f.example(), 2000));
             changed = true;
         }
-        if (f.lemma() != null && !f.lemma().isBlank() && entry.getLemma() == null) {
-            entry.setLemma(TokenizationService.normalize(trim(f.lemma(), 500), entry.getLanguage()));
-            changed = true;
-        }
         if (f.contextSentence() != null && (entry.getContextSentence() == null || entry.getContextSentence().isBlank())) {
             entry.setContextSentence(trim(f.contextSentence(), 2000));
             changed = true;
         }
+        changed |= applyLemma(entry, f);
         if (applyPersonal(entry, f, user) || changed) {
             entry.touch();
         }
+    }
+
+    private static boolean applyLemma(VocabularyEntry entry, EntryFields f) {
+        if (f.lemma() == null || f.lemma().isBlank() || entry.getLemma() != null) {
+            return false;
+        }
+        entry.setLemma(TokenizationService.normalize(trim(f.lemma(), 500), entry.getLanguage()));
+        return true;
     }
 
     private static boolean applyPersonal(VocabularyEntry entry, EntryFields f, User user) {
