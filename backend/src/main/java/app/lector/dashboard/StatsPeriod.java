@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Locale;
 
 public enum StatsPeriod {
-    WEEK(7), MONTH(30), QUARTER(90), YEAR(365), ALL(0);
+    TODAY(1), WEEK(7), MONTH(30), QUARTER(90), YEAR(365), ALL(0);
 
     private final int days;
 
@@ -14,6 +14,10 @@ public enum StatsPeriod {
 
     public int days() {
         return days;
+    }
+
+    public StatsPeriod growthPeriod() {
+        return this == TODAY ? WEEK : this;
     }
 
     @JsonValue
@@ -28,6 +32,6 @@ public enum StatsPeriod {
                 return p;
             }
         }
-        throw new IllegalArgumentException("period must be one of: week, month, quarter, year, all");
+        throw new IllegalArgumentException("period must be one of: today, week, month, quarter, year, all");
     }
 }

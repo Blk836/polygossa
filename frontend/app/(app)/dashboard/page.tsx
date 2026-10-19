@@ -35,7 +35,7 @@ export default function DashboardPage() {
   const { data, error } = useDashboard(period);
 
   if (!data) return error ? <ErrorNote message={error} /> : <ProgressSkeleton />;
-  const label = periodLabel(data.period.period);
+  const label = periodLabel(data.period.period === "today" ? "week" : data.period.period);
 
   const { language, known, knownBase, growth } = languageFigures(data, me.targetLanguage);
   const knownEverywhere = data.languages.reduce((s, l) => s + l.known, 0);

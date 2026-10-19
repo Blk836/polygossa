@@ -114,8 +114,9 @@ describe("calendarWeeks", () => {
 });
 
 describe("STATS_PERIODS", () => {
-  it("offers last week, month, quarter, year and all time, starting with last week", () => {
+  it("offers today, last week, month, quarter, year and all time, today first", () => {
     expect(STATS_PERIODS.map((p) => [p.key, p.label])).toEqual([
+      ["today", "Today"],
       ["week", "Last week"],
       ["month", "Last month"],
       ["quarter", "Last quarter"],
@@ -138,12 +139,20 @@ describe("periodChange", () => {
     ["year", 4, 4, "steady", "Same as the year before"],
     ["month", 0, 0, "steady", "Nothing yet — start today"],
     ["quarter", 1, 9, "steady", "9 the quarter before"],
+    ["today", 15, 10, "up", "+50% on yesterday"],
+    ["today", 3, 0, "up", "Up from nothing yesterday"],
+    ["today", 4, 4, "steady", "Same as yesterday"],
+    ["today", 0, 0, "steady", "Nothing yet — start today"],
   ] as const)("a %s of %i against %i", (period, now, before, trend, text) => {
     expect(periodChange(now, before, period)).toEqual({ trend, text });
   });
 
   it("formats the earlier figure", () => {
     expect(periodChange(10, 90, "month", (n) => `${n} min`)).toEqual({ trend: "steady", text: "90 min the month before" });
+  });
+
+  it("formats yesterday's figure", () => {
+    expect(periodChange(5, 12, "today", (n) => `${n} min`)).toEqual({ trend: "steady", text: "12 min yesterday" });
   });
 
   it("all time has nothing to compare against", () => {
@@ -158,6 +167,7 @@ describe("periodChange", () => {
 
 describe("periodLabel", () => {
   it.each([
+    ["today", "Today"],
     ["week", "Last week"],
     ["quarter", "Last quarter"],
     ["all", "All time"],

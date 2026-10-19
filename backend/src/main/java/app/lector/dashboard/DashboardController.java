@@ -87,7 +87,7 @@ public class DashboardController {
         int span = Math.min(Math.max(days, 7), 365);
         List<LanguageProgress> languages = languageProgress(user);
         LocalDate today = LocalDate.now(zone);
-        LocalDate growthFrom = period == null ? today.minusDays(span - 1L) : activity.periodStart(user, period, today);
+        LocalDate growthFrom = period == null ? today.minusDays(span - 1L) : activity.periodStart(user, period.growthPeriod(), today);
         ReviewService.Stats review = plans.hasFeature(user, PlanService.Feature.SRS) ? reviews.stats(user, null) : null;
         return new Dashboard(languages,
                 languages.stream().mapToLong(LanguageProgress::sessions).sum(),
