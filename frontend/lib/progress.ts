@@ -50,9 +50,10 @@ export interface WeekChange {
   text: string;
 }
 
-export type StatsPeriodKey = "week" | "month" | "quarter" | "year" | "all";
+export type StatsPeriodKey = "today" | "week" | "month" | "quarter" | "year" | "all";
 
 const LABELS: Record<StatsPeriodKey, string> = {
+  today: "Today",
   week: "Last week",
   month: "Last month",
   quarter: "Last quarter",
@@ -67,6 +68,7 @@ export function periodLabel(key: StatsPeriodKey): string {
 }
 
 const BEFORE: Record<Exclude<StatsPeriodKey, "all">, string> = {
+  today: "yesterday",
   week: "last week",
   month: "the month before",
   quarter: "the quarter before",
