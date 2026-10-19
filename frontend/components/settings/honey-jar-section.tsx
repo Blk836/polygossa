@@ -16,17 +16,18 @@ export function HoneyJarSection() {
   const { me, setMe } = useMe();
   const heading = useId();
   const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState<HoneyJar | null>(null);
+  const chosen = saving ?? me.honeyJar;
 
   async function choose(honeyJar: HoneyJar) {
     setError(null);
-    setSaving(true);
+    setSaving(honeyJar);
     try {
       setMe(await api<Me>("me", { method: "PATCH", body: { honeyJar } }));
     } catch (err) {
       setError(errorMessage(err));
     } finally {
-      setSaving(false);
+      setSaving(null);
     }
   }
 
@@ -41,8 +42,8 @@ export function HoneyJarSection() {
               type="radio"
               name="honey-jar"
               className="mt-0.5"
-              checked={me.honeyJar === c.value}
-              disabled={saving}
+              checked={chosen === c.value}
+              disabled={saving !== null}
               onChange={() => void choose(c.value)}
             />
             <span>

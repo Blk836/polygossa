@@ -85,7 +85,7 @@ test.describe("the honey jar setting", () => {
     await page.goto("/settings");
     await expect(known(page)).toHaveText("6 known");
 
-    await honeyJar(page).getByRole("radio", { name: "Base words" }).check();
+    await honeyJar(page).getByRole("radio", { name: "Base words" }).click();
     await expect(page.getByRole("region", { name: "Honey jar" }).getByRole("alert")).toBeVisible();
     await expect(honeyJar(page).getByRole("radio", { name: "All forms" })).toBeChecked();
     await expect(known(page)).toHaveText("6 known");
