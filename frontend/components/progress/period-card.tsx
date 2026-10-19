@@ -16,14 +16,26 @@ function Tile({ label, value, change, testId }: { label: string; value: string; 
   );
 }
 
+function DaysTile({ stats: { period, days, current, previous } }: { stats: PeriodStats }) {
+  return (
+    <Tile
+      label="Days practised"
+      testId="days-practised"
+      value={`${current.activeDays} of ${days.toLocaleString()}`}
+      change={periodChange(current.activeDays, previous?.activeDays ?? null, period)}
+    />
+  );
+}
+
 export function PeriodCard({ stats }: { stats: PeriodStats }) {
-  const { period, days, current, previous } = stats;
+  const { period, current, previous } = stats;
   const label = periodLabel(period);
   const mins = minutes(current.readingSeconds);
+  const oneDay = period === "today";
   return (
     <section aria-label={label} className="rounded-xl border border-line bg-card p-5">
       <h2 className="font-display text-lg font-semibold">{label}</h2>
-      <div className="mt-3 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className={`mt-3 grid gap-3 ${oneDay ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3 lg:grid-cols-5"}`}>
         <Tile
           label="Words learned"
           testId="words-learned"
@@ -48,12 +60,7 @@ export function PeriodCard({ stats }: { stats: PeriodStats }) {
           value={listeningLabel(current.listenedSeconds)}
           change={periodChange(minutes(current.listenedSeconds), previous ? minutes(previous.listenedSeconds) : null, period, (n) => `${n} min`)}
         />
-        <Tile
-          label="Days practised"
-          testId="days-practised"
-          value={`${current.activeDays} of ${days.toLocaleString()}`}
-          change={periodChange(current.activeDays, previous?.activeDays ?? null, period)}
-        />
+        {!oneDay && <DaysTile stats={stats} />}
       </div>
     </section>
   );
