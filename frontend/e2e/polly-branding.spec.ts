@@ -103,7 +103,7 @@ test("a honey jar sits just before the count, inside its link, which reads as be
   await stubHeader(page, { value: 1234 });
   await page.goto("/library");
   await expect(known(page)).toHaveText("1,234 known");
-  await expect(known(page)).toHaveAccessibleName("1,234 known words");
+  await expect(known(page)).toHaveAccessibleName("1,234 known words (all forms)");
   await expect(known(page)).toHaveAttribute("href", "/vocabulary");
   await expect(known(page).getByTestId("honey-jar")).toBeVisible();
   await expect(jar(page)).toHaveAttribute("aria-hidden", "true");
