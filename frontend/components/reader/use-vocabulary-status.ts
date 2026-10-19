@@ -33,6 +33,11 @@ function meaningFields(lookup: WordLookup | null): { meaning?: string; definitio
   return partOfSpeech ? { meaning, definition: meaning, partOfSpeech } : { meaning, definition: meaning };
 }
 
+function baseWord(target: PopupTarget, lookup: WordLookup | null): { lemma?: string } {
+  if (target.kind !== "word" || !lookup?.wordType || lookup.term !== target.term) return {};
+  return { lemma: lookup.wordType.lemma || target.term };
+}
+
 export function useVocabularyStatus(opts: Options) {
   const { language, textId, onSaved, onKnownWord, onNotice, onError } = opts;
   const [statuses, setStatuses] = useState(opts.initialStatuses);
@@ -84,10 +89,15 @@ export function useVocabularyStatus(opts: Options) {
   const recordLookup = useCallback(
     (target: PopupTarget, lookup: WordLookup) => {
       lastLookup.current = lookup;
-      if (target.kind !== "word" || !justCreated.current.delete(target.term)) return;
+      if (target.kind !== "word") return;
+      const base = baseWord(target, lookup);
+      if (!justCreated.current.delete(target.term)) {
+        if (base.lemma && statusesRef.current[target.term]) void save(target.term, base).catch(() => {});
+        return;
+      }
       const fields = meaningFields(lookup);
-      if (!fields.meaning && !target.reading) return;
-      void save(target.term, { ...fields, pronunciation: target.reading }).catch(() => {});
+      if (!fields.meaning && !target.reading && !base.lemma) return;
+      void save(target.term, { ...fields, ...base, pronunciation: target.reading }).catch(() => {});
     },
     [save],
   );
@@ -125,7 +135,7 @@ export function useVocabularyStatus(opts: Options) {
         kind: target.kind,
         status,
         contextSentence: target.sentence,
-        ...(isNew ? meaningFields(lastLookup.current) : {}),
+        ...(isNew ? { ...meaningFields(lastLookup.current), ...baseWord(target, lastLookup.current) } : {}),
       });
     },
     [language, save],

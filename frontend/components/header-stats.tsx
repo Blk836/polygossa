@@ -6,7 +6,8 @@ import { FlameIcon } from "./icons";
 import { HoneyJar } from "./polly";
 import { PollyFlight, usePollyFlights } from "./polly-flight";
 import { MilestoneCard, StreakToast, useMilestone, useStreakNews } from "./polly-moments";
-import { flame, knownWords, type HeaderStats as Stats } from "@/lib/header-stats";
+import { useMe } from "./me-context";
+import { flame, jarCount, knownWords, type HeaderStats as Stats, type HoneyJar as HoneyJarChoice } from "@/lib/header-stats";
 
 const MIN_SCALE = 0.45;
 
@@ -16,7 +17,7 @@ function flameClass(state: "lit" | "fading" | "out", fuel: number): string {
   return state === "fading" ? "text-rubric streak-flicker" : "text-rubric";
 }
 
-function useKnownCount(server: number) {
+function useKnownCount(server: number, risesOnLanding: boolean) {
   const [hold, setHold] = useState<number | null>(null);
   const [floor, setFloor] = useState<{ value: number; server: number } | null>(null);
   const shown = hold ?? (floor && floor.server === server ? Math.max(server, floor.value) : server);
@@ -35,11 +36,11 @@ function useKnownCount(server: number) {
   }, []);
   const land = useCallback(() => {
     if (holding.current === null) return;
-    setFloor({ value: (before.current ?? holding.current) + 1, server: latest.current.server });
+    if (risesOnLanding) setFloor({ value: (before.current ?? holding.current) + 1, server: latest.current.server });
     holding.current = null;
     before.current = null;
     setHold(null);
-  }, []);
+  }, [risesOnLanding]);
   const on = useMemo(() => ({ mark, takeOff }), [mark, takeOff]);
   return { shown, on, land };
 }
@@ -54,14 +55,16 @@ function useWobbles(count: number): number {
   return wobbles;
 }
 
-function KnownWords({ server, language }: { server: number; language: string }) {
+function KnownWords({ stats, language }: { stats: Stats; language: string }) {
+  const { me } = useMe();
+  const choice: HoneyJarChoice = me.honeyJar ?? "all_forms";
   const jar = useRef<HTMLAnchorElement>(null);
-  const count = useKnownCount(server);
+  const count = useKnownCount(jarCount(stats, choice), choice === "all_forms");
   const findJar = useCallback(() => jar.current?.querySelector("[data-testid=honey-jar]") ?? null, []);
   const [flight, endFlight] = usePollyFlights(findJar, count.on);
   const wobbles = useWobbles(count.shown);
   const [milestone, closeMilestone] = useMilestone(language, count.shown);
-  const known = knownWords(count.shown);
+  const known = knownWords(count.shown, choice);
   const land = () => {
     endFlight();
     count.land();
@@ -92,7 +95,7 @@ export function HeaderStats({ stats, language }: { stats: Stats; language: strin
   const scale = f.state === "fading" ? MIN_SCALE + (1 - MIN_SCALE) * f.fuel : 1;
   return (
     <div className="flex items-center gap-1">
-      <KnownWords server={stats.knownWords} language={language} />
+      <KnownWords stats={stats} language={language} />
       <Link
         href="/dashboard"
         data-testid="streak-flame"

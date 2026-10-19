@@ -5,6 +5,7 @@ export interface Dashboard {
   languages: {
     language: LanguageCode;
     known: number;
+    knownBase: number;
     learning: number;
     ignored: number;
     sessions: number;

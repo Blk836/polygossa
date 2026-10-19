@@ -1,5 +1,6 @@
 import type { Tours } from "./tours";
 import type { GoalKind } from "./dashboard-types";
+import type { HoneyJar } from "./header-stats";
 
 export type LanguageCode = "en" | "es" | "fr" | "de" | "it" | "pt" | "ja" | "zh" | "ko";
 export type WordStatus = "learning" | "known" | "ignored";
@@ -42,6 +43,7 @@ export interface Me {
   admin: boolean;
   tours: Tours;
   ankiConnected: boolean;
+  honeyJar: HoneyJar;
 }
 
 export type Person = { id: number; displayName: string; photoUrl: string | null };

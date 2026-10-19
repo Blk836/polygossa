@@ -15,14 +15,16 @@ import { VocabMapCard } from "@/components/progress/vocab-map";
 import { ProgressSkeleton } from "@/components/skeletons/pages";
 import { Empty, ErrorNote, PageHeader, formatDuration } from "@/components/ui";
 import { languageName } from "@/lib/languages";
-import { listeningLabel, periodLabel, type StatsPeriodKey } from "@/lib/progress";
+import { baseWords, listeningLabel, periodLabel, type StatsPeriodKey } from "@/lib/progress";
 import type { Dashboard, LanguageCode } from "@/lib/types";
 
 function languageFigures(data: Dashboard, picked: LanguageCode | null) {
   const language = picked ?? data.languages[0]?.language ?? null;
+  const figures = data.languages.find((l) => l.language === language);
   return {
     language,
-    known: data.languages.find((l) => l.language === language)?.known ?? 0,
+    known: figures?.known ?? 0,
+    knownBase: figures?.knownBase ?? 0,
     growth: data.growth.find((g) => g.language === language),
   };
 }
@@ -35,8 +37,9 @@ export default function DashboardPage() {
   if (!data) return error ? <ErrorNote message={error} /> : <ProgressSkeleton />;
   const label = periodLabel(data.period.period);
 
-  const { language, known, growth } = languageFigures(data, me.targetLanguage);
+  const { language, known, knownBase, growth } = languageFigures(data, me.targetLanguage);
   const knownEverywhere = data.languages.reduce((s, l) => s + l.known, 0);
+  const baseEverywhere = data.languages.reduce((s, l) => s + l.knownBase, 0);
   const { activity } = data;
 
   return (
@@ -53,7 +56,7 @@ export default function DashboardPage() {
         </div>
         <div className="grid gap-4">
           <GoalCard goal={data.goal} />
-          <div data-tour="known-words"><MilestoneCard known={known} language={language} /></div>
+          <div data-tour="known-words"><MilestoneCard known={known} knownBase={knownBase} language={language} /></div>
         </div>
       </div>
 
@@ -86,7 +89,7 @@ export default function DashboardPage() {
 
       <p className="mt-6 text-center text-sm text-muted" data-testid="all-time">
         All time: {formatDuration(data.totalReadingSeconds)} reading · {data.totalWordsRead.toLocaleString("en-US")} words read ·{" "}
-        {listeningLabel(data.totalListenedSeconds)} listening · {knownEverywhere.toLocaleString()} known words
+        {listeningLabel(data.totalListenedSeconds)} listening · {knownEverywhere.toLocaleString()} known words · {baseWords(baseEverywhere)}
         {data.languages.length > 1 && ` across ${data.languages.length} languages`}
       </p>
     </div>

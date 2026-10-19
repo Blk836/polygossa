@@ -27,6 +27,10 @@ export interface Milestone {
   fraction: number;
 }
 
+export function baseWords(n: number): string {
+  return `${n.toLocaleString("en-US")} base ${n === 1 ? "word" : "words"}`;
+}
+
 export function milestone(known: number): Milestone {
   const last = MILESTONES[MILESTONES.length - 1];
   let to = MILESTONES.find((m) => m > known);

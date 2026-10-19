@@ -1,14 +1,15 @@
 import { languageName } from "@/lib/languages";
-import { milestone } from "@/lib/progress";
+import { baseWords, milestone } from "@/lib/progress";
 import type { LanguageCode } from "@/lib/types";
 
-export function MilestoneCard({ known, language }: { known: number; language: LanguageCode | null }) {
+export function MilestoneCard({ known, knownBase, language }: { known: number; knownBase: number; language: LanguageCode | null }) {
   const m = milestone(known);
   const name = language ? `${languageName(language)} ` : "";
   return (
     <section aria-label="Known words" className="flex flex-col rounded-xl border border-line bg-card p-5">
       <p className="text-sm text-muted">Known {name}words</p>
       <p className="mt-1 font-display text-4xl font-semibold tabular-nums" data-testid="known-words">{known.toLocaleString()}</p>
+      <p className="text-sm text-muted tabular-nums" data-testid="known-base-words">{baseWords(knownBase)}</p>
       <div className="mt-auto pt-5">
         <div
           role="progressbar"
