@@ -22,9 +22,9 @@ Feature: Base words known, shown alongside all forms known (#174)
     Then my saved word "parler" has the base word "parler"
 
   Scenario: A form whose lookup gave no word type has no base word yet
-    Given the AI did not answer for "chantons", so the popup shows a machine translation
-    When I click "chantons" in "Nous chantons."
-    Then my saved word "chantons" has no base word
+    Given the AI did not answer for "sifflotons", so the popup shows a machine translation
+    When I click "sifflotons" in "Nous sifflotons."
+    Then my saved word "sifflotons" has no base word
     And it counts as its own base word
 
   Scenario: The base word is stored in the same form as the words it groups
@@ -43,14 +43,14 @@ Feature: Base words known, shown alongside all forms known (#174)
     Then "dilemmes" counts towards the base word "dilemme"
 
   Scenario: A base word saved from a click beats the word lists
-    Given the word lists give "suis" as a form of "suivre"
-    And my saved word "suis" has the base word "être" from a click in "Je suis content."
-    Then "suis" counts towards "être"
+    Given the word lists give "suis" as a form of "être"
+    And my saved word "suis" has the base word "suivre" from a click in "Je suis le guide."
+    Then "suis" counts towards "suivre"
 
   Scenario: Looking a word up again after it is saved fills in a missing base word
-    Given my saved word "chantons" has no base word
-    When I click "chantons" again and the popup shows "from chanter"
-    Then my saved word "chantons" has the base word "chanter"
+    Given my saved word "sifflotons" has no base word
+    When I click "sifflotons" again and the popup shows "from siffloter"
+    Then my saved word "sifflotons" has the base word "siffloter"
 
   # --- Words already saved before this change ---
 
@@ -142,7 +142,7 @@ Feature: Base words known, shown alongside all forms known (#174)
 
   Scenario: In base-word mode, a form of a new base word raises the jar
     Given the honey jar shows base words
-    When I mark "chantons" known after its popup showed "from chanter", and I know no other form of "chanter"
+    When I mark "sifflotons" known after its popup showed "from siffloter", and I know no other form of "siffloter"
     Then the honey jar goes up by one
 
   Scenario: In all-forms mode, the jar still rises by one for every word marked known
