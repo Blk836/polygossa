@@ -11,6 +11,7 @@ import app.lector.user.PlanService;
 import app.lector.user.User;
 import app.lector.vocab.VocabularyRepository;
 import app.lector.vocab.WordStatus;
+import app.lector.vocabmap.KnownBaseWords;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -30,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/dashboard")
 public class DashboardController {
 
-    public record LanguageProgress(Language language, long known, long learning, long ignored, long sessions,
+    public record LanguageProgress(Language language, long known, long knownBase, long learning, long ignored, long sessions,
                                    long readingSeconds, long wordsRead, long listenedSeconds) {}
 
     public record DayValue(LocalDate day, long value) {}
@@ -59,10 +60,13 @@ public class DashboardController {
     private final CurrentUser currentUser;
     private final ActivityService activity;
     private final WordsReadRepository wordsRead;
+    private final KnownBaseWords baseWords;
 
     public DashboardController(VocabularyRepository vocabulary, ReadingSessionRepository sessions,
                                TextRepository texts, ReviewService reviews, PlanService plans,
-                               CurrentUser currentUser, ActivityService activity, WordsReadRepository wordsRead) {
+                               CurrentUser currentUser, ActivityService activity, WordsReadRepository wordsRead,
+                               KnownBaseWords baseWords) {
+        this.baseWords = baseWords;
         this.activity = activity;
         this.wordsRead = wordsRead;
         this.vocabulary = vocabulary;
@@ -100,7 +104,7 @@ public class DashboardController {
     }
 
     public record Header(int current, int best, boolean activeToday, long secondsLeftToday, long knownWords,
-                         ActivityService.GoalToday goal) {}
+                         long knownBaseWords, ActivityService.GoalToday goal) {}
 
     @GetMapping("/header")
     @Transactional(readOnly = true)
@@ -111,7 +115,7 @@ public class DashboardController {
                 .filter(c -> c.getStatus() == WordStatus.KNOWN && (language == null || c.getLanguage() == language))
                 .mapToLong(c -> c.getCount()).sum();
         return new Header(s.current(), s.best(), s.activeToday(), s.secondsLeftToday(), known,
-                activity.goalToday(user));
+                baseWords.count(user.getId(), language), activity.goalToday(user));
     }
 
     private List<LanguageProgress> languageProgress(User user) {
@@ -133,8 +137,10 @@ public class DashboardController {
         for (var w : wordsRead.totalsByLanguage(user.getId())) {
             counts.computeIfAbsent(w.getLanguage(), l -> new long[7])[5] = w.getWords();
         }
+        Map<Language, Long> bases = baseWords.byLanguage(user.getId());
         List<LanguageProgress> languages = new ArrayList<>();
-        counts.forEach((lang, r) -> languages.add(new LanguageProgress(lang, r[0], r[1], r[2], r[3], r[4], r[5], r[6])));
+        counts.forEach((lang, r) -> languages.add(new LanguageProgress(lang, r[0], bases.getOrDefault(lang, 0L),
+                r[1], r[2], r[3], r[4], r[5], r[6])));
         return languages;
     }
 

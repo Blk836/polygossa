@@ -31,16 +31,17 @@ public class VocabularyService {
             String contextSentence,
             String note,
             List<String> tags,
-            String meaning) {
+            String meaning,
+            String lemma) {
 
         public EntryFields(WordStatus status, String definition, String partOfSpeech, String pronunciation,
                            String example, String contextSentence) {
-            this(status, definition, partOfSpeech, pronunciation, example, contextSentence, null, null, null);
+            this(status, definition, partOfSpeech, pronunciation, example, contextSentence, null, null, null, null);
         }
 
         EntryFields checked() {
             return tags == null ? this : new EntryFields(status, definition, partOfSpeech, pronunciation, example,
-                    contextSentence, note, Tags.normalize(tags), meaning);
+                    contextSentence, note, Tags.normalize(tags), meaning, lemma);
         }
     }
 
@@ -208,6 +209,10 @@ public class VocabularyService {
         }
         if (f.example() != null) {
             entry.setExample(trim(f.example(), 2000));
+            changed = true;
+        }
+        if (f.lemma() != null && !f.lemma().isBlank() && entry.getLemma() == null) {
+            entry.setLemma(TokenizationService.normalize(trim(f.lemma(), 500), entry.getLanguage()));
             changed = true;
         }
         if (f.contextSentence() != null && (entry.getContextSentence() == null || entry.getContextSentence().isBlank())) {

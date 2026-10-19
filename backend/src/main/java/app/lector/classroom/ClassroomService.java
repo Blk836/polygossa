@@ -9,6 +9,7 @@ import app.lector.user.PlanService;
 import app.lector.user.User;
 import app.lector.vocab.VocabularyRepository;
 import app.lector.vocab.WordStatus;
+import app.lector.vocabmap.KnownBaseWords;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -34,12 +35,12 @@ public class ClassroomService {
 
     public record ClassDetail(ClassSummary info, List<AssignmentDto> assignments, List<StudentDto> students) {}
 
-    public record StudentProgress(Long id, String displayName, String photoUrl, long knownWords, long learningWords,
-                                  long wordsAdded7d, long wordsAdded30d, long sessions, long readingSeconds,
+    public record StudentProgress(Long id, String displayName, String photoUrl, long knownWords, long knownBaseWords,
+                                  long learningWords, long wordsAdded7d, long wordsAdded30d, long sessions, long readingSeconds,
                                   int assignmentsOpened, int assignmentsCompleted, Instant lastActive) {}
 
     public record ClassProgress(int assignmentCount, List<StudentProgress> students, double averageKnownWords,
-                                double averageReadingMinutes, double assignmentCompletionRate) {}
+                                double averageKnownBaseWords, double averageReadingMinutes, double assignmentCompletionRate) {}
 
     private static final String CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -52,12 +53,14 @@ public class ClassroomService {
     private final ReadingSessionRepository sessions;
     private final PlanService plans;
     private final ApplicationEventPublisher events;
+    private final KnownBaseWords baseWords;
 
     public ClassroomService(ClassroomRepository classrooms, ClassroomMemberRepository members,
                             AssignmentRepository assignments, TextService texts,
                             VocabularyRepository vocabulary, ReadingSessionRepository sessions, PlanService plans,
-                            ApplicationEventPublisher events) {
+                            ApplicationEventPublisher events, KnownBaseWords baseWords) {
         this.events = events;
+        this.baseWords = baseWords;
         this.classrooms = classrooms;
         this.members = members;
         this.assignments = assignments;
@@ -187,6 +190,7 @@ public class ClassroomService {
             int completed = textIds.isEmpty() ? 0 : sessions.completedTextIds(sid, textIds).size();
             rows.add(new StudentProgress(sid, m.getStudent().getDisplayName(), m.getStudent().photoUrl(),
                     vocabulary.countByUserIdAndLanguageAndStatus(sid, lang, WordStatus.KNOWN),
+                    baseWords.count(sid, lang),
                     vocabulary.countByUserIdAndLanguageAndStatus(sid, lang, WordStatus.LEARNING),
                     vocabulary.countCreatedSince(sid, lang, now.minus(7, ChronoUnit.DAYS)),
                     vocabulary.countCreatedSince(sid, lang, now.minus(30, ChronoUnit.DAYS)),
@@ -195,10 +199,11 @@ public class ClassroomService {
                     opened, completed, sessions.lastActive(sid)));
         }
         double avgKnown = rows.stream().mapToLong(StudentProgress::knownWords).average().orElse(0);
+        double avgBase = rows.stream().mapToLong(StudentProgress::knownBaseWords).average().orElse(0);
         double avgMinutes = rows.stream().mapToLong(StudentProgress::readingSeconds).average().orElse(0) / 60.0;
         double completion = rows.isEmpty() || textIds.isEmpty() ? 0
                 : rows.stream().mapToInt(StudentProgress::assignmentsCompleted).sum() / (double) (rows.size() * textIds.size());
-        return new ClassProgress(textIds.size(), rows, Math.round(avgKnown * 10) / 10.0,
+        return new ClassProgress(textIds.size(), rows, Math.round(avgKnown * 10) / 10.0, Math.round(avgBase * 10) / 10.0,
                 Math.round(avgMinutes * 10) / 10.0, Math.round(completion * 1000) / 10.0);
     }
 

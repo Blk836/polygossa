@@ -18,6 +18,7 @@ public record VocabularyDto(
         String meaning,
         String meaningLanguage,
         String partOfSpeech,
+        String lemma,
         String pronunciation,
         String example,
         String contextSentence,
@@ -44,7 +45,7 @@ public record VocabularyDto(
         Text t = e.getSourceText();
         return new VocabularyDto(e.getId(), e.getTerm(), e.getDisplayTerm(), e.getLanguage(), e.getKind(),
                 e.getStatus(), e.getDefinition(), e.getMeaning(),
-                e.getMeaningLanguage() == null ? null : e.getMeaningLanguage().code(), e.getPartOfSpeech(), e.getPronunciation(), e.getExample(),
+                e.getMeaningLanguage() == null ? null : e.getMeaningLanguage().code(), e.getPartOfSpeech(), e.getLemma(), e.getPronunciation(), e.getExample(),
                 e.getContextSentence(), e.getNote(), e.getTags(), t == null ? null : new SourceText(t.getId(), t.getTitle()),
                 e.getCreatedAt(), e.getUpdatedAt(),
                 e.getStatus() == WordStatus.LEARNING ? e.getSrs().getDueAt() : null, Anki.of(e));

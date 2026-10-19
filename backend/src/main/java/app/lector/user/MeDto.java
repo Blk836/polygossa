@@ -17,11 +17,12 @@ public record MeDto(
         String photoUrl,
         boolean admin,
         Tours tours,
-        boolean ankiConnected) {
+        boolean ankiConnected,
+        HoneyJar honeyJar) {
 
     static MeDto of(User user, PlanService plans, Admins admins) {
         return new MeDto(user.getId(), user.getEmail(), user.getDisplayName(), user.getTargetLanguage(),
                 user.getNativeLanguage(), user.getDailyReviewGoal(), user.getDailyGoal(), user.isStreakNeedsGoal(), user.getTimezone(), plans.describe(user), user.photoUrl(), admins.isAdmin(user), user.getTours(),
-                user.isAnkiConnected());
+                user.isAnkiConnected(), user.getHoneyJar());
     }
 }

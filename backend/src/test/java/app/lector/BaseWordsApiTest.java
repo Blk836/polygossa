@@ -62,7 +62,7 @@ class BaseWordsApiTest {
 
     @Test
     void aWordSavedWithoutABaseWordHasNone() throws Exception {
-        assertThat(known("sifflotons", null).get("lemma").isNull()).isTrue();
+        assertThat(known("sifflotons", null).has("lemma")).isFalse();
     }
 
     @Test
@@ -75,7 +75,7 @@ class BaseWordsApiTest {
 
     @Test
     void aBlankBaseWordIsIgnored() throws Exception {
-        assertThat(known("parlons", "  ").get("lemma").isNull()).isTrue();
+        assertThat(known("parlons", "  ").has("lemma")).isFalse();
     }
 
     @Test
