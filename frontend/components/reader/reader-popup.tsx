@@ -30,6 +30,8 @@ export const ReaderPopup = forwardRef<HTMLDivElement, Props>(function ReaderPopu
   return (
     <div
       ref={ref}
+      role="dialog"
+      aria-label={target.term}
       data-word-popup
       className="fixed inset-x-0 bottom-0 z-50 sm:absolute sm:inset-x-auto sm:bottom-auto sm:top-(--pt) sm:left-(--pl) sm:w-[22rem]"
     >

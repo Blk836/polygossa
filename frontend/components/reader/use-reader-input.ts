@@ -100,7 +100,7 @@ export function useReaderInput(o: Options) {
     if (hasPopup) return;
     const onKey = (e: KeyboardEvent) => {
       const dir = ARROWS[e.key.toLowerCase()];
-      if (!dir || isTyping(e)) return;
+      if (!dir || isTyping(e) || e.defaultPrevented) return;
       e.preventDefault();
       latest.current.turnPage(dir);
     };
@@ -155,6 +155,9 @@ export function useReaderInput(o: Options) {
       const i = wordIndex(e.target);
       if (i === null) return;
       if ((e.shiftKey || o.phraseMode) && o.sel) return o.openPhrase(o.sel.start, i);
+      if (!clickSavedPhrase(o, i, lastClicked)) clickWord(o, i);
+    },
+    activate(i: number) {
       if (!clickSavedPhrase(o, i, lastClicked)) clickWord(o, i);
     },
   };

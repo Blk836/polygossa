@@ -132,6 +132,13 @@ body {
 .w:hover {
   box-shadow: inset 0 -2px 0 var(--rubric);
 }
+.w:focus {
+  outline: none;
+}
+.w:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
 .s-spoken {
   background: var(--w-sentence);
   transition: background-color 200ms;
