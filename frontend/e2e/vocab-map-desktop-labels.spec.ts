@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bandButton, cleanUpAfterEach, map, openInFrench } from "./vocab-map-helpers";
+import { bandButton, cleanUpAfterEach, map, openInFrench, restingZoom } from "./vocab-map-helpers";
 
 cleanUpAfterEach();
 
@@ -33,7 +33,8 @@ for (const width of [1400, 1024]) {
       await bandButton(page, band).click();
       await map(page).scrollIntoViewIfNeeded();
       await expect.poll(() => map(page).getByTestId("region-label").count()).toBeGreaterThanOrEqual(10);
-      expect(await overlaps(page), `up to ${band}`).toEqual([]);
+      await restingZoom(page);
+      await expect.poll(() => overlaps(page), { message: `up to ${band}`, timeout: 5_000 }).toEqual([]);
     }
   });
 }
