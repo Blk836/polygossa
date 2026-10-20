@@ -39,11 +39,11 @@ export function shelfCardWidth(layout: CardLayout): string {
   return SHELF_WIDTHS[layout];
 }
 
-const SHELF_LINE = "-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:px-0";
+const SHELF_LINE = "-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:scroll-px-0 sm:px-0";
 const SHELF_ROWS = ["grid-rows-1", "grid-rows-2", "grid-rows-3"];
 
 export function shelfTrackClass(layout: CardLayout, items: number): string {
   if (layout !== "list") return SHELF_LINE;
   const rows = SHELF_ROWS[Math.min(Math.max(items, 1), SHELF_ROWS.length) - 1];
-  return `-mx-4 grid grid-flow-col auto-cols-[min(24rem,calc(100vw-3rem))] ${rows} snap-x snap-mandatory gap-x-4 gap-y-2 overflow-x-auto px-4 pb-3 sm:mx-0 sm:px-0`;
+  return `-mx-4 grid grid-flow-col auto-cols-[min(24rem,calc(100vw-3rem))] ${rows} snap-x snap-mandatory scroll-px-4 gap-x-4 gap-y-2 overflow-x-auto px-4 pb-3 sm:mx-0 sm:scroll-px-0 sm:px-0`;
 }

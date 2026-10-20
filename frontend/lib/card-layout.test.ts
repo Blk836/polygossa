@@ -79,14 +79,14 @@ describe("shelf layouts", () => {
   });
 
   it("scrolls cards and compact cards sideways in one line", () => {
-    const line = "-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:px-0";
+    const line = "-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:scroll-px-0 sm:px-0";
     expect(shelfTrackClass("cards", 12)).toBe(line);
     expect(shelfTrackClass("compact", 12)).toBe(line);
   });
 
   it("stacks list rows three high, in columns that scroll sideways", () => {
     expect(shelfTrackClass("list", 12)).toBe(
-      "-mx-4 grid grid-flow-col auto-cols-[min(24rem,calc(100vw-3rem))] grid-rows-3 snap-x snap-mandatory gap-x-4 gap-y-2 overflow-x-auto px-4 pb-3 sm:mx-0 sm:px-0",
+      "-mx-4 grid grid-flow-col auto-cols-[min(24rem,calc(100vw-3rem))] grid-rows-3 snap-x snap-mandatory scroll-px-4 gap-x-4 gap-y-2 overflow-x-auto px-4 pb-3 sm:mx-0 sm:scroll-px-0 sm:px-0",
     );
   });
 
