@@ -27,11 +27,15 @@ public final class OpenAiStub implements AutoCloseable {
     private volatile float[] defaultVector = {1, 0, 0};
     private volatile boolean embeddingsFailing;
     private volatile String rawEmbeddingResponse;
+    private final List<String> transcriptionRequests = Collections.synchronizedList(new ArrayList<>());
+    private volatile String transcription = "{}";
+    private volatile boolean transcriptionFailing;
 
     public OpenAiStub() throws IOException {
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/chat/completions", this::handle);
         server.createContext("/embeddings", this::handleEmbedding);
+        server.createContext("/audio/transcriptions", this::handleTranscription);
         server.setExecutor(java.util.concurrent.Executors.newCachedThreadPool());
         server.start();
     }
@@ -97,7 +101,24 @@ public final class OpenAiStub implements AutoCloseable {
         }
     }
 
+    public void transcription(String verboseJson) {
+        this.transcription = verboseJson;
+    }
+
+    public void setTranscriptionFailing(boolean failing) {
+        this.transcriptionFailing = failing;
+    }
+
+    public List<String> transcriptionRequests() {
+        synchronized (transcriptionRequests) {
+            return List.copyOf(transcriptionRequests);
+        }
+    }
+
     public void reset() {
+        transcriptionRequests.clear();
+        transcription = "{}";
+        transcriptionFailing = false;
         requests.clear();
         reply = "{}";
         rawContent = null;
@@ -165,6 +186,17 @@ public final class OpenAiStub implements AutoCloseable {
             values.append(i == 0 ? "" : ",").append(vector[i]);
         }
         send(ex, 200, "{\"data\":[{\"embedding\":[" + values + "],\"index\":0}],\"usage\":{\"total_tokens\":12}}");
+    }
+
+    private void handleTranscription(HttpExchange ex) throws IOException {
+        String contentType = String.valueOf(ex.getRequestHeaders().getFirst("Content-Type"));
+        byte[] body = ex.getRequestBody().readAllBytes();
+        transcriptionRequests.add(contentType + "\n" + new String(body, StandardCharsets.ISO_8859_1));
+        if (transcriptionFailing) {
+            send(ex, 500, "{\"error\":\"boom\"}");
+            return;
+        }
+        send(ex, 200, transcription);
     }
 
     private void pause() {
