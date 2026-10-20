@@ -77,10 +77,13 @@ public class PlaylistService {
         List<TextSummary> summaries = progress.attach(user, readable.stream()
                 .map(t -> texts.summarize(user, t, texts.statsFor(user, t, statusCache), null, null, null))
                 .toList());
-        int privateItems = playlist.isOwnedBy(user) ? (int) readable.stream().filter(t -> !t.isPublic()).count() : 0;
+        boolean mine = playlist.isOwnedBy(user);
+        int privateItems = mine ? (int) readable.stream().filter(t -> !t.isPublic() && !t.isFromBook()).count() : 0;
+        int privateBookItems = mine ? (int) readable.stream().filter(t -> !t.isPublic() && t.isFromBook()).count() : 0;
         Set<Long> done = progress.completedTextIds(user, readable.stream().map(Text::getId).toList());
         boolean saved = !bookmarks.savedAmong(user.getId(), List.of(id)).isEmpty();
-        return new PlaylistDetail(summary(user, playlist, readable, done, null, saved), summaries, privateItems);
+        return new PlaylistDetail(summary(user, playlist, readable, done, null, saved), summaries, privateItems,
+                privateBookItems);
     }
 
     @Transactional

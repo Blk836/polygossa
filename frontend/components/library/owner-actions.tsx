@@ -40,9 +40,9 @@ export function OwnerActions({ text, onChanged, onDeleted, onError }: {
       >
         {CATEGORIES.map((c) => <option key={c.code} value={c.code}>{c.label}</option>)}
       </select>
-      <button className={`${button} text-muted hover:text-ink`} onClick={() => void patch({ isPublic: !text.isPublic })}>
+      {!text.fromBook && <button className={`${button} text-muted hover:text-ink`} onClick={() => void patch({ isPublic: !text.isPublic })}>
         {text.isPublic ? "Unshare" : "Share"}
-      </button>
+      </button>}
       <button className={`${button} ml-auto text-danger`} onClick={() => void remove()}>Delete</button>
     </>
   );

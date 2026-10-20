@@ -33,5 +33,6 @@ public final class PlaylistDtos {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record Cover(Long textId, String title, String thumbnailUrl, Category category) {}
 
-    public record PlaylistDetail(PlaylistSummary playlist, List<TextSummary> items, int privateItems) {}
+    public record PlaylistDetail(PlaylistSummary playlist, List<TextSummary> items, int privateItems,
+                                 int privateBookItems) {}
 }

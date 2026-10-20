@@ -29,6 +29,7 @@ export interface PlaylistDetail {
   playlist: PlaylistSummary;
   items: TextSummary[];
   privateItems: number;
+  privateBookItems: number;
 }
 
 export interface ReaderPlaylist {

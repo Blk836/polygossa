@@ -3,6 +3,7 @@ package app.lector.book;
 import app.lector.common.ApiException;
 import app.lector.playlist.Playlist;
 import app.lector.playlist.PlaylistService;
+import app.lector.text.Text;
 import app.lector.text.TextService;
 import app.lector.token.Language;
 import app.lector.user.PlanService;
@@ -41,7 +42,9 @@ public class BookImportService {
         Long playlistId = playlists.create(user, title, "Imported from " + file.getOriginalFilename(), language).id();
         List<Long> ids = new ArrayList<>();
         for (Book.Chapter chapter : book.chapters()) {
-            Long id = texts.createUnchecked(user, chapter.title(), language, chapter.content(), null, false, null).getId();
+            Text text = texts.createUnchecked(user, chapter.title(), language, chapter.content(), null, false, null);
+            text.setFromBook(true);
+            Long id = text.getId();
             playlists.addItem(user, playlistId, id);
             ids.add(id);
         }
