@@ -95,6 +95,13 @@ describe("fitTags", () => {
     expect(sideBySide("Communication and everything")).toBe("hidden");
   });
 
+  it("on a wide map keeps a name on one line at the larger size, so it needs more room across", () => {
+    const near = (scale: "compact" | "wide") => fitTags([big, spot("small", 110, 0, 10, "Nature & Environment")], scale).get("small")!.show;
+    expect(near("compact")).toBe("full");
+    expect(near("wide")).not.toBe("full");
+    expect(fitTags([big, spot("small", 300, 0, 10, "Nature & Environment")], "wide").get("small")!.show).toBe("full");
+  });
+
   it("keeps room for the notes a tag shows when pointed at, which can be wider than its name and count", () => {
     const beside = (notes?: string) => fitTags([big, { ...spot("small", 62, 0, 10, "Home"), notes }]).get("small")!.show;
     expect(beside()).toBe("full");

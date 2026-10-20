@@ -44,36 +44,42 @@ export interface TagFit {
   dy: number;
 }
 
-const TAG = { letter: 5.7, line: 13, gap: 3, digit: 5.6, chip: { pad: 12, h: 16 }, notesPad: 12, margin: 1 };
+export type TagScale = "compact" | "wide";
+
+const TAGS = {
+  compact: { letter: 5.7, line: 13, gap: 3, digit: 5.6, chip: { pad: 12, h: 16 }, notesLetter: 5.7, notesPad: 12, margin: 1, split: true },
+  wide: { letter: 7.9, line: 16, gap: 3, digit: 6.6, chip: { pad: 44, h: 20 }, notesLetter: 6.2, notesPad: 12, margin: 2, split: false },
+};
 
 interface Rect { left: number; top: number; right: number; bottom: number }
 
-function tagRect(s: TagSpot, show: TagFit["show"], at: Point): Rect {
-  const lines = s.name.split(" & ").map((l, i, all) => (i < all.length - 1 ? `${l} &` : l));
-  const chip = s.count.length * TAG.digit + TAG.chip.pad;
-  const notes = s.notes ? s.notes.length * TAG.letter + TAG.notesPad : 0;
-  const w = Math.max(...lines.map((l) => l.length * TAG.letter), show === "full" ? Math.max(chip, notes) : 0) + 2 * TAG.margin;
-  const h = lines.length * TAG.line + (show === "full" ? TAG.gap + TAG.chip.h : 0) + 2 * TAG.margin;
+function tagRect(s: TagSpot, show: TagFit["show"], at: Point, scale: TagScale): Rect {
+  const tag = TAGS[scale];
+  const lines = tag.split ? s.name.split(" & ").map((l, i, all) => (i < all.length - 1 ? `${l} &` : l)) : [s.name];
+  const chip = s.count.length * tag.digit + tag.chip.pad;
+  const notes = s.notes ? s.notes.length * tag.notesLetter + tag.notesPad : 0;
+  const w = Math.max(...lines.map((l) => l.length * tag.letter), show === "full" ? Math.max(chip, notes) : 0) + 2 * tag.margin;
+  const h = lines.length * tag.line + (show === "full" ? tag.gap + tag.chip.h : 0) + 2 * tag.margin;
   return { left: at.x - w / 2, right: at.x + w / 2, top: at.y - h / 2, bottom: at.y + h / 2 };
 }
 
 const overlaps = (a: Rect, b: Rect) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
 
-export function fitTags(spots: TagSpot[]): Map<string, TagFit> {
+export function fitTags(spots: TagSpot[], scale: TagScale = "compact"): Map<string, TagFit> {
   const order = [...spots].sort((a, b) => b.weight - a.weight);
-  const first = placeTags(order);
+  const first = placeTags(order, scale);
   const left = order.filter((s) => first.get(s.id)!.show === "hidden");
   if (left.length === 0) return first;
-  const again = placeTags([...left, ...order.filter((s) => !left.includes(s))]);
+  const again = placeTags([...left, ...order.filter((s) => !left.includes(s))], scale);
   const hidden = (fits: Map<string, TagFit>) => [...fits.values()].filter((f) => f.show === "hidden").length;
   return hidden(again) < hidden(first) ? again : first;
 }
 
-function placeTags(order: TagSpot[]): Map<string, TagFit> {
+function placeTags(order: TagSpot[], scale: TagScale): Map<string, TagFit> {
   const placed: Rect[] = [];
   const out = new Map<string, TagFit>();
   for (const s of order) {
-    const tries = (["full", "name"] as const).flatMap((show) => s.places.map((at) => ({ show, at, rect: tagRect(s, show, at) })));
+    const tries = (["full", "name"] as const).flatMap((show) => s.places.map((at) => ({ show, at, rect: tagRect(s, show, at, scale) })));
     const fit = tries.find((t) => !placed.some((p) => overlaps(p, t.rect)));
     if (fit) placed.push(fit.rect);
     const [best] = s.places;
