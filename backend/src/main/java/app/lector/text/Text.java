@@ -52,6 +52,9 @@ public class Text {
     @Column(name = "is_public", nullable = false)
     private boolean isPublic;
 
+    @Column(nullable = false)
+    private boolean fromBook;
+
     private String cefrLevel;
 
     private int wordCount;
@@ -100,6 +103,8 @@ public class Text {
     public void setSourceUrl(String sourceUrl) { this.sourceUrl = sourceUrl; }
     public boolean isPublic() { return isPublic; }
     public void setPublic(boolean isPublic) { this.isPublic = isPublic; }
+    public boolean isFromBook() { return fromBook; }
+    public void setFromBook(boolean fromBook) { this.fromBook = fromBook; }
     public String getCefrLevel() { return cefrLevel; }
     public void setCefrLevel(String cefrLevel) { this.cefrLevel = cefrLevel; }
     public int getWordCount() { return wordCount; }

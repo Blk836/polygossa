@@ -30,6 +30,7 @@ public final class TextDtos {
             int wordCount,
             int uniqueWordCount,
             boolean isPublic,
+            boolean fromBook,
             String sourceUrl,
             Instant createdAt,
             OwnerDto owner,
@@ -45,8 +46,8 @@ public final class TextDtos {
             ProgressDto progress) {
 
         public TextSummary withProgress(ProgressDto p) {
-            return new TextSummary(id, title, language, cefrLevel, wordCount, uniqueWordCount, isPublic, sourceUrl,
-                    createdAt, owner, mine, hasAudio, likes, liked, bookmarked, stats, kind, video, category, p);
+            return new TextSummary(id, title, language, cefrLevel, wordCount, uniqueWordCount, isPublic, fromBook,
+                    sourceUrl, createdAt, owner, mine, hasAudio, likes, liked, bookmarked, stats, kind, video, category, p);
         }
     }
 

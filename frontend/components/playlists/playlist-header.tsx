@@ -35,7 +35,7 @@ export function PlaylistHeader({ detail, onChanged, onDeleted }: {
         {!p.mine && <SavePlaylistButton playlist={p} className="text-sm" />}
         {p.mine && !editing && <OwnerTools playlist={p} onChanged={onChanged} onDeleted={onDeleted} onEdit={() => setEditing(true)} />}
       </div>
-      {p.mine && p.isPublic && <PrivateNote count={detail.privateItems} />}
+      {p.mine && p.isPublic && <PrivateNote count={detail.privateItems} books={detail.privateBookItems} />}
     </div>
   );
 }
@@ -51,13 +51,22 @@ function Meta({ playlist: p }: { playlist: PlaylistSummary }) {
   );
 }
 
-function PrivateNote({ count }: { count: number }) {
-  if (count === 0) return null;
+function PrivateNote({ count, books }: { count: number; books: number }) {
   return (
-    <p className="mt-3 text-sm text-warn">
-      {count === 1 ? "1 item is private, so only you can see it" : `${count} items are private, so only you can see them`}
-      {" "}— share them from your library to include them.
-    </p>
+    <>
+      {count > 0 && (
+        <p className="mt-3 text-sm text-warn">
+          {count === 1 ? "1 item is private, so only you can see it" : `${count} items are private, so only you can see them`}
+          {" "}— share them from your library to include them.
+        </p>
+      )}
+      {books > 0 && (
+        <p data-testid="book-items-note" className="mt-3 text-sm text-muted">
+          {books === 1 ? "1 chapter comes from a book you imported" : `${books} chapters come from a book you imported`}
+          {" "}and {books === 1 ? "stays" : "stay"} private, so only you can see {books === 1 ? "it" : "them"}.
+        </p>
+      )}
+    </>
   );
 }
 

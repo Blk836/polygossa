@@ -67,6 +67,10 @@ public class ContentReview {
     }
 
     public void checkSharing(Text text) {
+        if (text.isFromBook()) {
+            throw ApiException.badRequest("Chapters imported from a book can't be shared: books stay private, as most "
+                    + "are copyrighted.");
+        }
         if (text.isPublic() || !ai.enabled()) {
             return;
         }

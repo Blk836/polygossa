@@ -69,6 +69,47 @@ class BookImportApiTest {
     }
 
     @Test
+    void aChapterCantBeSharedButCanStillBeEdited() throws Exception {
+        String token = api.signupPro();
+        long id = upload(token, book(2), "viaje.epub", 201).get("textIds").get(0).asLong();
+        JsonNode refused = api.patch(token, "/api/texts/" + id, "{\"isPublic\":true}", 400);
+        assertThat(refused.get("message").asString()).contains("imported from a book").contains("can't be shared");
+        JsonNode text = api.get(token, "/api/texts/" + id, 200).get("text");
+        assertThat(text.get("isPublic").asBoolean()).isFalse();
+        assertThat(text.get("fromBook").asBoolean()).isTrue();
+
+        JsonNode renamed = api.patch(token, "/api/texts/" + id, "{\"title\":\"Primero\",\"category\":\"stories\"}", 200);
+        assertThat(renamed.get("title").asString()).isEqualTo("Primero");
+        assertThat(renamed.get("category").asString()).isEqualTo("stories");
+        assertThat(renamed.get("fromBook").asBoolean()).isTrue();
+    }
+
+    @Test
+    void aPastedTextIsNotFromABookAndCanBeShared() throws Exception {
+        String token = api.signupPro();
+        long id = api.createText(token, "es", "Un texto pegado.", false);
+        assertThat(api.get(token, "/api/texts/" + id, 200).get("text").get("fromBook").asBoolean()).isFalse();
+        assertThat(api.patch(token, "/api/texts/" + id, "{\"isPublic\":true}", 200).get("isPublic").asBoolean()).isTrue();
+    }
+
+    @Test
+    void aSharedBookPlaylistCountsItsChaptersApartFromOtherPrivateItems() throws Exception {
+        String token = api.signupPro();
+        JsonNode r = upload(token, book(2), "viaje.epub", 201);
+        long playlist = r.get("playlistId").asLong();
+        api.patch(token, "/api/playlists/" + playlist, "{\"isPublic\":true}", 200);
+        JsonNode detail = api.get(token, "/api/playlists/" + playlist, 200);
+        assertThat(detail.get("privateItems").asInt()).isZero();
+        assertThat(detail.get("privateBookItems").asInt()).isEqualTo(2);
+
+        long pasted = api.createText(token, "es", "Un texto pegado.", false);
+        api.put(token, "/api/playlists/" + playlist + "/items/" + pasted, "{}", 204);
+        detail = api.get(token, "/api/playlists/" + playlist, 200);
+        assertThat(detail.get("privateItems").asInt()).isEqualTo(1);
+        assertThat(detail.get("privateBookItems").asInt()).isEqualTo(2);
+    }
+
+    @Test
     void aPdfImportsToo() throws Exception {
         String token = api.signupPro();
         byte[] pdf = BookFiles.pdf("Apuntes", List.of(List.of("Una pagina de apuntes en espanol.")), Map.of());

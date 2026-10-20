@@ -65,6 +65,7 @@ export interface TextSummary {
   wordCount: number;
   uniqueWordCount: number;
   isPublic: boolean;
+  fromBook: boolean;
   sourceUrl?: string;
   createdAt: string;
   owner: Person;

@@ -247,8 +247,8 @@ public class TextService {
     public TextSummary summarize(User viewer, Text text, KnownStats stats, Long likes, Boolean liked, Boolean bookmarked) {
         User owner = text.getOwner();
         return new TextSummary(text.getId(), text.getTitle(), text.getLanguage(), text.getCefrLevel(),
-                text.getWordCount(), text.getUniqueWordCount(), text.isPublic(), text.getSourceUrl(),
-                text.getCreatedAt(), OwnerDto.of(owner),
+                text.getWordCount(), text.getUniqueWordCount(), text.isPublic(), text.isFromBook(),
+                text.getSourceUrl(), text.getCreatedAt(), OwnerDto.of(owner),
                 owner.getId().equals(viewer.getId()), text.hasAudio(), likes, liked, bookmarked, stats,
                 MediaKind.of(text), VideoViews.info(text), text.getCategory(), null);
     }
