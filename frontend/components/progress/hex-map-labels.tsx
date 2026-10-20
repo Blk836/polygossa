@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type { CSSProperties } from "react";
-import { fitTags, type LabelPlan, type TagFit } from "@/lib/hex-view";
+import { fitTags, type LabelPlan, type TagFit, type TagScale } from "@/lib/hex-view";
 import type { HexWorld } from "@/lib/hex-world";
 import type { Camera, Size } from "@/lib/map-camera";
 import type { Point } from "@/lib/map-geometry";
@@ -69,7 +69,7 @@ function Notes({ stats, next }: { stats: TileStats; next: string | null }) {
 
 const FULL: TagFit = { show: "full", dx: 0, dy: 0 };
 
-function countryFits(world: HexWorld, byId: Map<string, VocabMapRegion>, plan: LabelPlan, view: BandView, camera: Camera, viewport: Size) {
+function countryFits(world: HexWorld, byId: Map<string, VocabMapRegion>, plan: LabelPlan, view: BandView, camera: Camera, viewport: Size, scale: TagScale) {
   return fitTags(world.countries.filter((c) => plan.countries.has(c.regionId) && byId.has(c.regionId)).map((c) => {
     const stats = tileStats(regionWords(byId.get(c.regionId)!), view.shown, view.next);
     return {
@@ -80,7 +80,7 @@ function countryFits(world: HexWorld, byId: Map<string, VocabMapRegion>, plan: L
       places: c.labelSpots.map((p) => ({ x: (p.x - camera.x) * camera.k + viewport.width / 2, y: (p.y - camera.y) * camera.k + viewport.height / 2 })),
       weight: c.areas.reduce((n, a) => n + a.slots.length, 0),
     };
-  }));
+  }), scale);
 }
 
 export function MapTags({ world, regions, plan, view, camera, viewport, compact, pointed }: {
@@ -94,14 +94,14 @@ export function MapTags({ world, regions, plan, view, camera, viewport, compact,
   pointed: string | null;
 }) {
   const byId = new Map(regions.map((r) => [r.id, r]));
-  const fits = compact ? countryFits(world, byId, plan, view, camera, viewport) : null;
+  const fits = countryFits(world, byId, plan, view, camera, viewport, compact ? "compact" : "wide");
   return (
     <div className="pointer-events-none absolute inset-0" aria-hidden>
       {world.countries.map((c) => {
         const region = byId.get(c.regionId);
         if (!region) return null;
         if (plan.countries.has(c.regionId)) {
-          const fit = fits?.get(c.regionId) ?? FULL;
+          const fit = fits.get(c.regionId) ?? FULL;
           return fit.show !== "hidden" && <Tag key={c.regionId} id={c.regionId} kind="country" name={region.name} words={regionWords(region)}
             view={view} where={c.labelAt} compact={compact} more={pointed === c.regionId} fit={fit} />;
         }
