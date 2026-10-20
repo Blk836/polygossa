@@ -16,18 +16,18 @@ const NAV = [
 export function LandingHeader({ signedIn }: { signedIn: boolean }) {
   return (
     <header className="sticky top-0 z-30 border-b border-line/70 bg-paper/85 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-6xl items-center gap-6 px-4 py-3">
-        <Link href="/" aria-label="Home"><Logo className="text-2xl md:text-3xl" /></Link>
+      <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3 sm:gap-6">
+        <Link href="/" aria-label="Home" className="whitespace-nowrap"><Logo className="text-xl min-[400px]:text-2xl md:text-3xl" /></Link>
         <nav className="hidden gap-5 text-sm text-muted md:flex" aria-label="Sections">
           {NAV.map(([label, href]) => <a key={href} href={href} className="hover:text-ink">{label}</a>)}
         </nav>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1 sm:gap-2">
           {signedIn ? (
-            <LinkButton href={HOME}>Open library</LinkButton>
+            <LinkButton href={HOME} className="whitespace-nowrap">Open library</LinkButton>
           ) : (
             <>
-              <LinkButton href="/login" variant="ghost">Sign in</LinkButton>
-              <LinkButton href={signupHref()}>Start free</LinkButton>
+              <LinkButton href="/login" variant="ghost" className="whitespace-nowrap">Sign in</LinkButton>
+              <LinkButton href={signupHref()} className="whitespace-nowrap">Start free</LinkButton>
             </>
           )}
         </div>

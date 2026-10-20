@@ -95,6 +95,8 @@ when its test is fixed.
   2026-10-11, PR #122.
 - `e2e/profile-photo.spec.ts` › "the crop starts centred: a landscape photo keeps its middle square, not squashed".
   Seen 2026-10-12, PR #160; the spec passed 33 of 33 alone.
+- `e2e/profile-photo.spec.ts` › "Cancel closes the crop dialog without uploading, and the same file can be picked
+  again": the crop dialog never became visible. Seen 2026-10-20, PR #206 (landing header); passed 3 of 3 alone.
 - `e2e/profile-photo-errors.spec.ts` › "a file that isn't an image is refused before any crop or upload": the
   alert never appeared within 5 s (likely the same picked-before-hydration cause). Seen 2026-10-11, PR #113.
 - `e2e/profile-photo-errors.spec.ts` › "a failed remove shows an error and keeps the photo": timed out at 30 s.
