@@ -97,6 +97,8 @@ when its test is fixed.
   Seen 2026-10-12, PR #160; the spec passed 33 of 33 alone.
 - `e2e/profile-photo-errors.spec.ts` › "a file that isn't an image is refused before any crop or upload": the
   alert never appeared within 5 s (likely the same picked-before-hydration cause). Seen 2026-10-11, PR #113.
+- `e2e/profile-photo-errors.spec.ts` › "a failed remove shows an error and keeps the photo": timed out at 30 s.
+  Seen 2026-10-20, PR #198; the spec passed 24 of 24 alone.
 - `e2e/wide-reader.spec.ts` › "where the mini player sits in the margin, pages use the full height". Seen
   2026-10-10, PR #89.
 - `e2e/wide-reader.spec.ts` › "where the mini player overlaps the text, every page ends above it without
