@@ -1,7 +1,16 @@
-export function makeTranscriber({ client, download }) {
+export function makeTranscriber({ client, download, duration = download.duration }) {
+  async function quoted(entry) {
+    const quote = await client.quoteTranscription(entry);
+    if (quote.outcome !== "unknown_length" || !duration) {
+      return { quote };
+    }
+    const seconds = await duration(entry.url);
+    return seconds ? { quote: await client.quoteTranscription(entry, seconds), seconds } : { quote };
+  }
+
   return {
     async importVideo(entry, dryRun) {
-      const quote = await client.quoteTranscription(entry);
+      const { quote, seconds } = await quoted(entry);
       if (quote.outcome === "has_captions") {
         return client.importVideo(entry, dryRun);
       }
@@ -19,7 +28,7 @@ export function makeTranscriber({ client, download }) {
       if (audio.error) {
         return { outcome: "failed", reason: `audio download failed: ${audio.error}`, title: "" };
       }
-      return { ...(await client.transcribe(entry, audio)), ...cost };
+      return { ...(await client.transcribe(entry, audio, seconds)), ...cost };
     },
   };
 }

@@ -34,7 +34,13 @@ Feature: Word-timed captions from a video's audio, for curated videos without ca
     When it is transcribed
     Then it is reported skipped as too long to transcribe, and nothing is downloaded or spent
 
-  Scenario: A video whose length YouTube doesn't give is skipped
+  Scenario: A video whose length the backend can't get from YouTube is quoted with yt-dlp's
+    Given the backend's own YouTube lookup gives no length (YouTube often blocks it)
+    When the tool quotes the video
+    Then it reads the length with yt-dlp, signed in, without downloading, and asks for the quote again with it
+    And the length limit and spending cap apply to that length as to any other
+
+  Scenario: A video whose length neither the backend nor yt-dlp can get is skipped
     Then it is reported skipped, since its cost can't be known in advance
 
   Scenario: The spending cap stops transcription

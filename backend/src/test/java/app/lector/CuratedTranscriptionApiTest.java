@@ -210,6 +210,31 @@ class CuratedTranscriptionApiTest {
     }
 
     @Test
+    void whenYouTubeGivesNoLengthTheCuratorsIsUsed() throws Exception {
+        JsonNode q = api.send(MockMvcRequestBuilders.post("/api/curator/transcriptions/quote")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(CuratedVideoImportApiTest.HEADER, CuratedVideoImportApiTest.TOKEN)
+                .content("{\"url\":\"https://youtu.be/" + UNKNOWN_LENGTH + "\",\"language\":\"es\",\"durationSeconds\":600}"),
+                null, 200);
+        assertThat(q.get("outcome").asString()).isEqualTo("would_transcribe");
+        assertThat(q.get("costUsd").asDouble()).isEqualTo(0.06);
+        api.send(multipart("/api/curator/transcriptions")
+                .file(new MockMultipartFile("audio", "audio.webm", "audio/webm", audio()))
+                .param("url", "https://youtu.be/" + UNKNOWN_LENGTH).param("language", "es").param("durationSeconds", "600")
+                .header(CuratedVideoImportApiTest.HEADER, CuratedVideoImportApiTest.TOKEN), null, 201);
+    }
+
+    @Test
+    void theCuratorsLengthStillMeetsTheLimit() throws Exception {
+        JsonNode q = api.send(MockMvcRequestBuilders.post("/api/curator/transcriptions/quote")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(CuratedVideoImportApiTest.HEADER, CuratedVideoImportApiTest.TOKEN)
+                .content("{\"url\":\"https://youtu.be/" + UNKNOWN_LENGTH + "\",\"language\":\"es\",\"durationSeconds\":2700}"),
+                null, 200);
+        assertThat(q.get("outcome").asString()).isEqualTo("too_long");
+    }
+
+    @Test
     void theSpendingCapStopsTranscription() throws Exception {
         spent(99_500);
         JsonNode q = quote(SILENT, 200);

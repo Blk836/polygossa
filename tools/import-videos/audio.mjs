@@ -8,12 +8,12 @@ const MISSING = "yt-dlp not found: install it (winget install yt-dlp.yt-dlp) or 
 
 export function makeDownloader({ ytDlp = "yt-dlp", cookies, cookiesFromBrowser, spawn = nodeSpawn, tmp = tmpdir() }) {
   const signIn = cookies ? ["--cookies", cookies] : cookiesFromBrowser ? ["--cookies-from-browser", cookiesFromBrowser] : [];
-  return async (url) => {
+  const common = ["--quiet", "--no-warnings", "--no-playlist", "--js-runtimes", `node:${process.execPath}`, ...signIn];
+
+  async function download(url) {
     const dir = mkdtempSync(join(tmp, "polygossa-audio-"));
     try {
-      const args = ["--quiet", "--no-warnings", "--no-playlist", "--js-runtimes", `node:${process.execPath}`, ...signIn,
-        "-f", FORMAT, "-o", join(dir, "audio.%(ext)s"), url];
-      const failure = await run(spawn, ytDlp, args);
+      const { failure } = await run(spawn, ytDlp, [...common, "-f", FORMAT, "-o", join(dir, "audio.%(ext)s"), url]);
       if (failure) {
         return { error: failure };
       }
@@ -22,16 +22,26 @@ export function makeDownloader({ ytDlp = "yt-dlp", cookies, cookiesFromBrowser, 
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  }
+
+  download.duration = async (url) => {
+    const { failure, stdout } = await run(spawn, ytDlp, [...common, "--skip-download", "--print", "duration", url]);
+    const seconds = Math.round(Number(stdout.trim()));
+    return failure || !(seconds > 0) ? null : seconds;
   };
+
+  return download;
 }
 
 function run(spawn, command, args) {
   return new Promise((resolve) => {
+    let stdout = "";
     let stderr = "";
-    const child = spawn(command, args, { stdio: ["ignore", "ignore", "pipe"] });
+    const child = spawn(command, args, { stdio: ["ignore", "pipe", "pipe"] });
+    child.stdout.on("data", (chunk) => { stdout += chunk; });
     child.stderr.on("data", (chunk) => { stderr += chunk; });
-    child.on("error", (error) => resolve(error.code === "ENOENT" ? MISSING : error.message));
-    child.on("close", (code) => resolve(code === 0 ? null : lastLine(stderr) || `yt-dlp exited with ${code}`));
+    child.on("error", (error) => resolve({ failure: error.code === "ENOENT" ? MISSING : error.message, stdout }));
+    child.on("close", (code) => resolve({ failure: code === 0 ? null : lastLine(stderr) || `yt-dlp exited with ${code}`, stdout }));
   });
 }
 

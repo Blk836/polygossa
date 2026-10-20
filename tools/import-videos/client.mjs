@@ -85,21 +85,24 @@ export function makeClient({ baseUrl, token, fetch = globalThis.fetch, label = n
       return post("/api/curator/copies", { ...video, dryRun });
     },
 
-    async quoteTranscription(entry) {
+    async quoteTranscription(entry, durationSeconds) {
       const { status, body } = await call("/api/curator/transcriptions/quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: entry.url, language: entry.language }),
+        body: JSON.stringify({ url: entry.url, language: entry.language, durationSeconds }),
       });
       return status === 200 ? body : { outcome: "failed", message: body.message ?? `HTTP ${status}` };
     },
 
-    async transcribe(entry, audio) {
+    async transcribe(entry, audio, durationSeconds) {
       const form = new FormData();
       form.append("url", entry.url);
       form.append("language", entry.language);
       if (entry.category) {
         form.append("category", entry.category);
+      }
+      if (durationSeconds) {
+        form.append("durationSeconds", String(durationSeconds));
       }
       form.append("audio", new Blob([audio.bytes]), audio.filename);
       const { status, body } = await call("/api/curator/transcriptions", { method: "POST", body: form });

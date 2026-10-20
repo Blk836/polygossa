@@ -68,6 +68,25 @@ for (const outcome of ["too_long", "over_budget", "unknown_length"]) {
   });
 }
 
+test("when the backend can't tell the length, yt-dlp's is given and the video quoted again", async () => {
+  const quotes = [{ outcome: "unknown_length", message: "no length" }, { outcome: "would_transcribe", durationSeconds: 600, costUsd: 0.06 }];
+  const asked = [];
+  const client = {
+    async quoteTranscription(e, seconds) { asked.push(seconds); return quotes.shift(); },
+    async transcribe() { return { outcome: "transcribed", reason: "news", title: "Noticias" }; },
+  };
+  const download = async () => AUDIO;
+  const result = await makeTranscriber({ client, download, duration: async () => 600 }).importVideo(entry, true);
+  assert.deepEqual(asked, [undefined, 600]);
+  assert.equal(result.outcome, "would transcribe");
+});
+
+test("when yt-dlp can't tell the length either, the video is skipped with the backend's reason", async () => {
+  const client = { async quoteTranscription() { return { outcome: "unknown_length", message: "no length" }; } };
+  const result = await makeTranscriber({ client, download: async () => AUDIO, duration: async () => null }).importVideo(entry, true);
+  assert.deepEqual(result, { outcome: "skipped", reason: "no length", title: "" });
+});
+
 test("an audio download that fails is reported failed and nothing is sent", async () => {
   const h = harness({ outcome: "would_transcribe", durationSeconds: 60, costUsd: 0.006 },
     { download: async () => ({ error: "ERROR: Private video" }) });

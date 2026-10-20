@@ -25,6 +25,14 @@ test("a quote is asked for as JSON with the token, and answered as the backend g
   assert.deepEqual(JSON.parse(calls[0].init.body), { url: entry.url, language: "es" });
 });
 
+test("a length the tool found is sent with the quote and the audio", async () => {
+  const { fetch, calls } = fakeFetch(200, { outcome: "would_transcribe" });
+  await client(fetch).quoteTranscription(entry, 600);
+  assert.equal(JSON.parse(calls[0].init.body).durationSeconds, 600);
+  await client(fetch).transcribe(entry, AUDIO, 600);
+  assert.equal(calls[1].init.body.get("durationSeconds"), "600");
+});
+
 test("transcription switched off on the backend stops the run", async () => {
   const { fetch } = fakeFetch(503, { code: "transcription_off", message: "transcription is switched off on the backend: start it with OPENAI_API_KEY set" });
   await assert.rejects(client(fetch).quoteTranscription(entry),

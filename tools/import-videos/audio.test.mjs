@@ -14,6 +14,7 @@ function fakeSpawn(behave) {
     calls.push({ command, args });
     const child = new EventEmitter();
     child.stderr = new EventEmitter();
+    child.stdout = new EventEmitter();
     queueMicrotask(() => behave(child, args));
     return child;
   };
@@ -43,6 +44,24 @@ test("yt-dlp downloads small Opus audio with the browser sign-in, and the file c
   assert.match(args[args.indexOf("--js-runtimes") + 1], /^node:/);
   assert.ok(args.includes("--no-playlist"));
   assert.equal(existsSync(dir), false);
+});
+
+test("the length is read from yt-dlp without downloading", async () => {
+  const { spawn, calls } = fakeSpawn((child) => {
+    child.stdout.emit("data", Buffer.from("600\n"));
+    child.emit("close", 0);
+  });
+  const { duration } = makeDownloader({ ytDlp: "yt-dlp", cookiesFromBrowser: "firefox", spawn, tmp: tmpdir() });
+  assert.equal(await duration(URL), 600);
+  const { args } = calls[0];
+  assert.ok(args.includes("--skip-download"));
+  assert.equal(args[args.indexOf("--print") + 1], "duration");
+  assert.equal(args[args.indexOf("--cookies-from-browser") + 1], "firefox");
+});
+
+test("a length yt-dlp can't give is null", async () => {
+  const { spawn } = fakeSpawn((child) => { child.stdout.emit("data", Buffer.from("NA\n")); child.emit("close", 0); });
+  assert.equal(await makeDownloader({ ytDlp: "yt-dlp", spawn, tmp: tmpdir() }).duration(URL), null);
 });
 
 test("a cookies file is passed instead when given", async () => {

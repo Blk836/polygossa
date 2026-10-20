@@ -35,7 +35,7 @@ public class CuratorController {
         }
     }
 
-    public record QuoteRequest(String url, Language language) {}
+    public record QuoteRequest(String url, Language language, Integer durationSeconds) {}
 
     public record PlaylistRequest(String title, String description, Language language, List<String> videoIds,
                                   boolean dryRun) {}
@@ -75,15 +75,16 @@ public class CuratorController {
 
     @PostMapping("/transcriptions/quote")
     public Transcription quoteTranscription(@RequestBody QuoteRequest req) {
-        return transcriptions.quote(req.url(), req.language());
+        return transcriptions.quote(req.url(), req.language(), req.durationSeconds());
     }
 
     @PostMapping(value = "/transcriptions", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Transcription> transcribe(@RequestParam("url") String url,
                                                     @RequestParam("language") Language language,
                                                     @RequestParam(value = "category", required = false) Category category,
+                                                    @RequestParam(value = "durationSeconds", required = false) Integer seconds,
                                                     @RequestPart(value = "audio", required = false) MultipartFile audio) {
-        Transcription result = transcriptions.transcribe(url, language, category, audio);
+        Transcription result = transcriptions.transcribe(url, language, category, seconds, audio);
         return ResponseEntity.status(result.transcribed() ? HttpStatus.CREATED : HttpStatus.OK).body(result);
     }
 

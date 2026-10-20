@@ -58,7 +58,7 @@ public class CuratedTranscriptionService {
         this.clock = clock;
     }
 
-    public Transcription quote(String url, Language language) {
+    public Transcription quote(String url, Language language, Integer curatorSeconds) {
         if (!ai.enabled()) {
             throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "transcription_off",
                     "transcription is switched off on the backend: start it with OPENAI_API_KEY set");
@@ -76,7 +76,7 @@ public class CuratedTranscriptionService {
                 .isPresent()) {
             return Transcription.refused("has_captions", videoId, null);
         }
-        return priced(videoId, player.durationSeconds());
+        return priced(videoId, player.durationSeconds() != null ? player.durationSeconds() : curatorSeconds);
     }
 
     private Transcription priced(String videoId, Integer seconds) {
@@ -96,8 +96,9 @@ public class CuratedTranscriptionService {
         return new Transcription(WOULD_TRANSCRIBE, videoId, null, null, null, seconds, cost, null);
     }
 
-    public Transcription transcribe(String url, Language language, Category category, MultipartFile audio) {
-        Transcription quote = quote(url, language);
+    public Transcription transcribe(String url, Language language, Category category, Integer curatorSeconds,
+                                    MultipartFile audio) {
+        Transcription quote = quote(url, language, curatorSeconds);
         if (!WOULD_TRANSCRIBE.equals(quote.outcome())) {
             return quote;
         }
