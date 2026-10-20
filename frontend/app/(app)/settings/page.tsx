@@ -18,7 +18,7 @@ import { settingsHashRedirect } from "@/lib/nav";
 import type { Me } from "@/lib/types";
 
 export default function ProfilePage() {
-  const { me, setMe } = useMe();
+  const { me, setMe, isPro } = useMe();
   const router = useRouter();
   const [displayName, setDisplayName] = useState(me.displayName);
   const [targetLanguage, setTargetLanguage] = useState(me.targetLanguage ?? "");
@@ -63,7 +63,7 @@ export default function ProfilePage() {
               {NATIVE_LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.nativeName}</option>)}
             </select>
           </Field>
-          <GoalFields value={goal} onChange={setGoal} />
+          <GoalFields value={goal} onChange={setGoal} offerReviews={isPro} />
           <Field label="Time zone" hint="Decides when your day (and streak) rolls over">
             <input className={inputClass} value={timezone} onChange={(e) => setTimezone(e.target.value)} />
           </Field>

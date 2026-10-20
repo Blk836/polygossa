@@ -5,6 +5,7 @@ import app.lector.session.ReadingSessionRepository;
 import app.lector.srs.ReviewLogRepository;
 import app.lector.user.DailyGoal;
 import app.lector.user.GoalKind;
+import app.lector.user.PlanService;
 import app.lector.user.User;
 import app.lector.vocab.VocabularyRepository;
 import app.lector.writing.WritingTestRepository;
@@ -28,12 +29,14 @@ public class ActivityService {
     private final ReviewLogRepository reviews;
     private final WritingTestRepository writing;
     private final WordsReadRepository wordsRead;
+    private final PlanService plans;
     private final Clock clock;
 
     public ActivityService(ReadingSessionRepository sessions, VocabularyRepository vocabulary,
                            ReviewLogRepository reviews, WritingTestRepository writing, WordsReadRepository wordsRead,
-                           Clock clock) {
+                           PlanService plans, Clock clock) {
         this.sessions = sessions;
+        this.plans = plans;
         this.wordsRead = wordsRead;
         this.vocabulary = vocabulary;
         this.reviews = reviews;
@@ -52,7 +55,7 @@ public class ActivityService {
         ZoneId zone = user.zone();
         Instant since = first.atStartOfDay(zone).toInstant();
         Long id = user.getId();
-        ActivityTally tally = new ActivityTally(zone, user.getDailyGoal(), user.isStreakNeedsGoal());
+        ActivityTally tally = new ActivityTally(zone, plans.dailyGoal(user), user.isStreakNeedsGoal());
         sessions.findSince(id, since).forEach(s -> {
             tally.reading(s.getStartedAt(), s.getDurationSeconds());
             tally.listening(s.getStartedAt(), s.getListenedSeconds());
@@ -93,7 +96,7 @@ public class ActivityService {
     @Transactional(readOnly = true)
     public GoalToday goalToday(User user) {
         LocalDate today = LocalDate.ofInstant(clock.instant(), user.zone());
-        DailyGoal goal = user.getDailyGoal();
+        DailyGoal goal = plans.dailyGoal(user);
         DailyGoal.Day day = tally(user, today).goalDay(today);
         return new GoalToday(goal.kind(), goal.target(), goal.done(day), goal.met(day));
     }

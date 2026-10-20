@@ -8,9 +8,10 @@ import type { ReviewStats } from "@/lib/types";
 
 const TICK_MS = 30_000;
 
-export function useDueCount(language: string, pathname: string, refreshed: unknown): number | null {
+export function useDueCount(language: string, pathname: string, refreshed: unknown, canReview: boolean): number | null {
   const [due, setDue] = useState<number | null>(null);
   useEffect(() => {
+    if (!canReview) return;
     let cancelled = false;
     api<ReviewStats>(`review/stats${query(language)}`)
       .then((s) => !cancelled && setDue(s.dueWords))
@@ -18,8 +19,8 @@ export function useDueCount(language: string, pathname: string, refreshed: unkno
     return () => {
       cancelled = true;
     };
-  }, [language, pathname, refreshed]);
-  return due;
+  }, [language, pathname, refreshed, canReview]);
+  return canReview ? due : null;
 }
 
 export function useHeaderStats(language: string, pathname: string, refreshed: unknown): (HeaderStats & { language: string }) | null {

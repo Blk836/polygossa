@@ -49,7 +49,9 @@ export function FinishPanel({ visible, textId, language, isPro, unseen, learning
               Next in playlist: {playlist.next.title}
             </Link>
           )}
-          <Link href="/review" className="rounded-lg bg-accent px-3 py-1.5 text-sm text-accent-ink">Review your words</Link>
+          {isPro
+            ? <Link href="/review" className="rounded-lg bg-accent px-3 py-1.5 text-sm text-accent-ink">Review your words</Link>
+            : <Link href="/vocabulary" className="rounded-lg bg-accent px-3 py-1.5 text-sm text-accent-ink">See your words</Link>}
           <Link href="/library" className="rounded-lg border border-line bg-card px-3 py-1.5 text-sm">Back to library</Link>
         </div>
       </div>
