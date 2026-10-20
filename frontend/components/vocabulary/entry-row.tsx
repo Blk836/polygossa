@@ -54,10 +54,10 @@ function DefinitionEditor({ definition, onSave }: { definition: string | undefin
     );
   }
   return (
-    <div className="mt-2 flex gap-2">
-      <input className={inputClass} value={value} onChange={(e) => setValue(e.target.value)} autoFocus />
-      <Button onClick={() => { onSave(value); setEditing(false); }}>Save</Button>
-    </div>
+    <form className="mt-2 flex gap-2" onSubmit={(e) => { e.preventDefault(); onSave(value); setEditing(false); }}>
+      <input className={inputClass} value={value} onChange={(e) => setValue(e.target.value)} aria-label="Definition" autoFocus />
+      <Button type="submit">Save</Button>
+    </form>
   );
 }
 
@@ -79,10 +79,10 @@ function MeaningEditor({ entry, onSave }: { entry: VocabularyEntry; onSave: (val
     );
   }
   return (
-    <div className="mt-2 flex gap-2">
+    <form className="mt-2 flex gap-2" onSubmit={async (e) => { e.preventDefault(); if (await onSave(value)) setEditing(false); }}>
       <input className={inputClass} value={value} onChange={(e) => setValue(e.target.value)} aria-label={label} maxLength={200} autoFocus />
-      <Button onClick={async () => { if (await onSave(value)) setEditing(false); }}>Save meaning</Button>
-    </div>
+      <Button type="submit">Save meaning</Button>
+    </form>
   );
 }
 

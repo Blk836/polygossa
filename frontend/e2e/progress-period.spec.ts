@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
+test.describe.configure({ mode: "default" });
+
 let savedWord: number | null = null;
 
 test.afterEach(async ({ page }) => {
