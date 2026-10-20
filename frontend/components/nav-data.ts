@@ -7,6 +7,11 @@ import type { HeaderStats } from "@/lib/header-stats";
 import type { ReviewStats } from "@/lib/types";
 
 const TICK_MS = 30_000;
+const DUE_CHANGED_EVENT = "due-changed";
+
+export function announceDue(dueWords: number) {
+  window.dispatchEvent(new CustomEvent<number>(DUE_CHANGED_EVENT, { detail: dueWords }));
+}
 
 export function useDueCount(language: string, pathname: string, refreshed: unknown, canReview: boolean): number | null {
   const [due, setDue] = useState<number | null>(null);
@@ -20,6 +25,11 @@ export function useDueCount(language: string, pathname: string, refreshed: unkno
       cancelled = true;
     };
   }, [language, pathname, refreshed, canReview]);
+  useEffect(() => {
+    const onChange = (e: Event) => setDue((e as CustomEvent<number>).detail);
+    window.addEventListener(DUE_CHANGED_EVENT, onChange);
+    return () => window.removeEventListener(DUE_CHANGED_EVENT, onChange);
+  }, []);
   return canReview ? due : null;
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { announceDue } from "@/components/nav-data";
 import { ApiError, api, errorMessage } from "@/lib/api";
 import type { ReviewCard, ReviewStats } from "@/lib/types";
 import { RATING_KEYS, query, type Rating } from "./review-query";
@@ -44,6 +45,7 @@ export function useReviewSession(language: string, ahead: boolean) {
           body: { rating },
         });
         setStats(r.stats);
+        announceDue(r.stats.dueWords);
         setQueue((q) => q && (rating === "forgot" ? [...q.slice(1), card] : q.slice(1)));
         setRevealed(false);
       } catch (e) {
