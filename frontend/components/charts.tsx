@@ -72,7 +72,7 @@ function Axes({ width, max, points, x }: { width: number; max: number; points: P
       ))}
       {points.map((p, i) =>
         i % labelEvery === 0 ? (
-          <text key={p.label} x={x(i)} y={HEIGHT - 6} textAnchor="middle">{shortDate(p.label)}</text>
+          <text key={p.label} x={x(i)} y={HEIGHT - 6} textAnchor={i === points.length - 1 ? "end" : "middle"}>{shortDate(p.label)}</text>
         ) : null,
       )}
     </g>
