@@ -4,7 +4,7 @@ import Link from "next/link";
 import { languageInfo } from "@/lib/languages";
 import { canSpeak, speak } from "@/lib/speech";
 import type { ReviewCard, ReviewStats } from "@/lib/types";
-import { FlameIcon, SpeakerIcon } from "../icons";
+import { SpeakerIcon } from "../icons";
 import { Button } from "../ui";
 import type { Rating } from "./use-review-session";
 
@@ -39,10 +39,9 @@ export function GoalBar({ stats }: { stats: ReviewStats }) {
           {stats.dueWords} cards due · goal {stats.dailyGoal}/day (<Link href="/settings" className="underline">change</Link>)
         </p>
       </div>
-      <div className="flex items-center gap-1 text-rubric" title="Day streak">
-        <FlameIcon className="size-6" />
-        <span className="text-xl font-semibold">{stats.streak}</span>
-      </div>
+      <p data-testid="review-goal-run" className="text-right text-sm text-muted">
+        <span className="text-xl font-semibold text-ink">{stats.streak}</span> {stats.streak === 1 ? "day" : "days"} in a row at goal
+      </p>
     </div>
   );
 }
