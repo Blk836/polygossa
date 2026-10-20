@@ -133,8 +133,9 @@ export function useReaderInput(o: Options) {
     },
     onPointerDown(e: React.PointerEvent) {
       const i = wordIndex(e.target);
-      if (i === null || e.pointerType !== "mouse" || e.button !== 0 || e.shiftKey) return;
+      if (i === null || e.pointerType !== "mouse" || e.button !== 0) return;
       e.preventDefault();
+      if (e.shiftKey) return window.getSelection()?.removeAllRanges();
       drag.current = { anchor: i, moved: false, range: null };
     },
     onPointerOver(e: React.PointerEvent) {
