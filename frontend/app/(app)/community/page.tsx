@@ -89,7 +89,7 @@ function Explore({ language }: { language: string }) {
       <ErrorNote message={error} />
       {f.query && <PlaylistShelf source="shared" language={language} query={f.query} />}
       {showShelves ? (
-        <ShelvesArea language={language} recs={recs} shelves={shelves} actions={actions} set={set} />
+        <ShelvesArea f={f} recs={recs} shelves={shelves} actions={actions} set={set} />
       ) : (
         <GridView f={f} grid={grid} error={error} actions={actions} set={set} onPage={(page) => setF((prev) => ({ ...prev, page }))} />
       )}
@@ -147,14 +147,14 @@ function GridView({ f, grid, error, actions, set, onPage }: {
   );
 }
 
-function ShelvesArea({ language, recs, shelves, actions, set }: {
-  language: string;
+function ShelvesArea({ f, recs, shelves, actions, set }: {
+  f: ExploreFilters;
   recs: ReturnType<typeof useRecommendations>;
   shelves: Shelf[] | null;
   actions: (t: TextSummary) => ReactNode;
   set: (patch: Partial<ExploreFilters>) => void;
 }) {
-  const playlists = useShelfPlaylists("shared", language);
+  const playlists = useShelfPlaylists("shared", f.language);
   if (!shelves || !recs.shelves || !playlists.ready) return <ExploreShelvesLoading />;
   return (
     <>
@@ -166,16 +166,20 @@ function ShelvesArea({ language, recs, shelves, actions, set }: {
         onSeeAll={(s) => set(s.topic ? { topic: s.topic } : { category: s.category ?? null })}
       />
       <PlaylistShelfRow source="shared" lists={playlists.lists} />
-      <ShelvesView shelves={shelves} actions={actions} onSeeAll={(category) => set({ category })} />
+      <ShelvesView f={f} shelves={shelves} actions={actions} onSeeAll={(category) => set({ category })} />
     </>
   );
 }
 
-function ShelvesView({ shelves, actions, onSeeAll }: {
+function ShelvesView({ f, shelves, actions, onSeeAll }: {
+  f: ExploreFilters;
   shelves: Shelf[];
   actions: (t: TextSummary) => ReactNode;
   onSeeAll: (category: Shelf["category"]) => void;
 }) {
+  if (shelves.length === 0 && (f.level || f.kind !== "all")) {
+    return <Empty title="Nothing matches" prop={f.kind === "video" ? "headphones" : undefined}>Try another level, type or search.</Empty>;
+  }
   if (shelves.length === 0) {
     return <Empty title="Nothing shared in this language yet">Share one of your own texts or videos from your library to get things started.</Empty>;
   }
