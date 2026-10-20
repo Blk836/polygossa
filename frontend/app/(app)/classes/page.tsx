@@ -81,7 +81,7 @@ function ClassSection({ label, classes }: { label: string; classes: ClassSummary
           <Link key={c.id} href={`/classes/${c.id}`} className="rounded-xl border border-line bg-card p-4 hover:border-accent">
             <p className="font-semibold">{c.name}</p>
             <p className="mt-1 text-sm text-muted">
-              {languageName(c.language)} · {c.studentCount} students{c.role === "student" && ` · ${c.teacherName}`}
+              {languageName(c.language)} · {c.studentCount} {c.studentCount === 1 ? "student" : "students"}{c.role === "student" && ` · ${c.teacherName}`}
             </p>
             {c.joinCode && <p className="mt-2 font-mono text-sm tracking-widest">{c.joinCode}</p>}
           </Link>

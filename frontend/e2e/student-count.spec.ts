@@ -1,11 +1,11 @@
 import { expect, test, type Browser } from "@playwright/test";
-import { signUp } from "./photo-helpers";
+import { signUp, type Person } from "./photo-helpers";
 
 async function classWith(browser: Browser, students: number) {
   const teacher = await signUp(browser, "Count teacher");
   expect((await teacher.context.request.post("/api/me/plan", { data: { tier: "CLASSROOM" } })).ok()).toBe(true);
   const cls = await (await teacher.context.request.post("/api/classes", { data: { name: `Cuenta ${students}`, language: "es" } })).json();
-  const others = [];
+  const others: Person[] = [];
   for (let i = 0; i < students; i++) {
     const s = await signUp(browser, `Count student ${i}`);
     expect((await s.context.request.post("/api/classes/join", { data: { code: cls.joinCode } })).ok()).toBe(true);
