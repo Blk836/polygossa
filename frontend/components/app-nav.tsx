@@ -83,9 +83,9 @@ function SectionTabs({ pathname }: { pathname: string }) {
 
 export function AppNav() {
   const pathname = usePathname();
-  const { me } = useMe();
+  const { me, isPro } = useMe();
   const language = me.targetLanguage ?? "";
-  const due = useDueCount(language, pathname, me);
+  const due = useDueCount(language, pathname, me, isPro);
   const stats = useHeaderStats(language, pathname, me);
   const active = activeGroup(pathname);
   const restartOn = useRestartOnSamePage();

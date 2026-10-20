@@ -30,6 +30,8 @@ public class PlanService {
 
     public record PlanInfo(Tier tier, Tier effectiveTier, boolean sponsoredByClassroom, Limits limits, Usage usage) {}
 
+    static final int FREE_WORDS_READ_GOAL = 1000;
+
     private final AppProperties.Billing billing;
     private final ClassroomMemberRepository members;
     private final TextRepository texts;
@@ -59,6 +61,14 @@ public class PlanService {
             case SRS, AUDIO_SYNC, AI -> tier != Tier.FREE;
             case CLASSROOM -> tier == Tier.CLASSROOM;
         };
+    }
+
+    public DailyGoal dailyGoal(User user) {
+        DailyGoal goal = user.getDailyGoal();
+        if (goal.kind() == GoalKind.REVIEWS && !hasFeature(user, Feature.SRS)) {
+            return new DailyGoal(GoalKind.WORDS_READ, FREE_WORDS_READ_GOAL);
+        }
+        return goal;
     }
 
     public void require(User user, Feature feature) {

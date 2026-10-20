@@ -12,7 +12,7 @@ export interface GoalChoice {
 
 const DEFAULT_TARGETS: Record<GoalKind, number> = { reviews: 20, words_read: 1000, minutes_read: 15, minutes_listened: 15 };
 
-export function GoalFields({ value, onChange }: { value: GoalChoice; onChange: (v: GoalChoice) => void }) {
+export function GoalFields({ value, onChange, offerReviews }: { value: GoalChoice; onChange: (v: GoalChoice) => void; offerReviews: boolean }) {
   return (
     <>
       <Field label="Daily goal measures" hint="Progress shows how much of it you've done today">
@@ -21,7 +21,7 @@ export function GoalFields({ value, onChange }: { value: GoalChoice; onChange: (
             const kind = e.target.value as GoalKind;
             onChange({ ...value, kind, target: DEFAULT_TARGETS[kind] });
           }}>
-          {(Object.keys(GOAL_UNITS) as GoalKind[]).map((k) => (
+          {(Object.keys(GOAL_UNITS) as GoalKind[]).filter((k) => offerReviews || k !== "reviews").map((k) => (
             <option key={k} value={k}>{GOAL_UNITS[k][0].toUpperCase() + GOAL_UNITS[k].slice(1)}</option>
           ))}
         </select>
