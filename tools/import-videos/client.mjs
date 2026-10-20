@@ -8,9 +8,11 @@ const ERRORS = {
   no_captions: ["skipped", "no captions: "],
   not_shareable: ["refused", ""],
   review_unavailable: ["failed", "review unavailable: "],
+  no_speech: ["skipped", ""],
 };
 
 const NOT_ON_SOURCE = "not_on_source";
+const TRANSCRIPTION_OFF = "transcription_off";
 
 export function makeClient({ baseUrl, token, fetch = globalThis.fetch, label = null }) {
   const base = baseUrl.replace(/\/+$/, "");
@@ -27,6 +29,9 @@ export function makeClient({ baseUrl, token, fetch = globalThis.fetch, label = n
       throw fatal("curator token rejected");
     }
     const body = await response.json().catch(() => ({}));
+    if (body.code === TRANSCRIPTION_OFF) {
+      throw fatal(body.message);
+    }
     if (response.status === 404 && body.code !== NOT_ON_SOURCE) {
       throw fatal("bulk import is off on the backend: start it with CURATOR_TOKEN set");
     }
@@ -79,11 +84,36 @@ export function makeClient({ baseUrl, token, fetch = globalThis.fetch, label = n
     async copyVideo(video, dryRun) {
       return post("/api/curator/copies", { ...video, dryRun });
     },
+
+    async quoteTranscription(entry) {
+      const { status, body } = await call("/api/curator/transcriptions/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: entry.url, language: entry.language }),
+      });
+      return status === 200 ? body : { outcome: "failed", message: body.message ?? `HTTP ${status}` };
+    },
+
+    async transcribe(entry, audio) {
+      const form = new FormData();
+      form.append("url", entry.url);
+      form.append("language", entry.language);
+      if (entry.category) {
+        form.append("category", entry.category);
+      }
+      form.append("audio", new Blob([audio.bytes]), audio.filename);
+      const { status, body } = await call("/api/curator/transcriptions", { method: "POST", body: form });
+      if (status === 200) {
+        return { outcome: "skipped", reason: body.message ?? body.outcome, title: "" };
+      }
+      return status < 300 ? success(body) : failure(status, body);
+    },
   };
 }
 
 function success(body) {
-  return { outcome: body.outcome.replace("_", " "), reason: body.outcome === "imported" ? body.category : "",
+  const placed = body.outcome === "imported" || body.outcome === "transcribed";
+  return { outcome: body.outcome.replace("_", " "), reason: placed ? body.category : "",
     title: body.title ?? "" };
 }
 

@@ -1,11 +1,13 @@
 import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
+import { makeDownloader } from "./audio.mjs";
 import { Fatal, makeClient } from "./client.mjs";
 import { makeCopier } from "./copy.mjs";
 import { makePlaylist } from "./playlist.mjs";
 import { parseList } from "./list.mjs";
-import { resultsFile, retryFile, summary } from "./report.mjs";
+import { resultsFile, retryFile, summary, transcriptionTotal } from "./report.mjs";
 import { run } from "./run.mjs";
+import { makeTranscriber } from "./transcribe.mjs";
 
 export const USAGE = `Usage: node tools/import-videos.mjs <list-file> [options]
 
@@ -22,6 +24,13 @@ Options:
 Copy mode: copies videos already imported on another backend, finished, instead of asking YouTube.
   --copy-from <url>      the source backend (any owner's copy there; public and newest first)
   --from-token <secret>  the source's curator token (default $SOURCE_CURATOR_TOKEN)
+
+Transcribe mode: videos without captions in their language get word-timed captions from OpenAI Whisper. yt-dlp
+downloads their audio on this PC; the backend (with OPENAI_API_KEY) transcribes it, within its length and cost limits.
+  --transcribe                   transcribe videos without captions (--dry-run lists each one's length and cost)
+  --cookies-from-browser <name>  the browser whose YouTube sign-in yt-dlp uses (firefox; Chrome's can't be read)
+  --cookies <file>               a cookies.txt export to use instead
+  --yt-dlp <path>                the yt-dlp program (default yt-dlp)
 
 Playlist mode: puts the list's videos, already in the community library, into a public library playlist in list
 order (the same title and language again updates it). Nothing is imported.
@@ -40,16 +49,20 @@ const OPTIONS = {
   "from-token": { type: "string" },
   playlist: { type: "string" },
   description: { type: "string" },
+  transcribe: { type: "boolean", default: false },
+  "cookies-from-browser": { type: "string" },
+  cookies: { type: "string" },
+  "yt-dlp": { type: "string" },
 };
 
-export async function main(argv, { env, print, sleep, fetch = globalThis.fetch }) {
+export async function main(argv, { env, print, sleep, fetch = globalThis.fetch, download }) {
   const settings = settingsFrom(argv, env);
   if (typeof settings === "string") {
     print(settings);
     return 1;
   }
   try {
-    return await importList(settings, { print, sleep, fetch });
+    return await importList(settings, { print, sleep, fetch, download });
   } catch (error) {
     if (error instanceof Fatal) {
       print(`Stopped: ${error.message}`);
@@ -84,6 +97,10 @@ function settingsFrom(argv, env) {
 }
 
 function modeSettings(values, env) {
+  if (values.transcribe) {
+    const other = ["copy-from", "playlist"].find((name) => values[name] !== undefined);
+    return other ? `Stopped: --transcribe doesn't go with --${other}` : { transcribe: transcribeSettings(values) };
+  }
   const playlistMode = values.playlist !== undefined || values.description !== undefined;
   return playlistMode ? playlistSettings(values) : copySettings(values, env);
 }
@@ -98,6 +115,10 @@ function playlistSettings(values) {
   return { playlist: values.playlist, description: values.description };
 }
 
+function transcribeSettings(values) {
+  return { ytDlp: values["yt-dlp"], cookies: values.cookies, cookiesFromBrowser: values["cookies-from-browser"] };
+}
+
 function copySettings(values, env) {
   const copyFrom = values["copy-from"];
   if (!copyFrom) {
@@ -110,10 +131,14 @@ function copySettings(values, env) {
   return { copyFrom, fromToken };
 }
 
-async function importer(settings, fetch) {
+async function importer(settings, fetch, download) {
   if (!settings.copyFrom) {
     const client = makeClient({ baseUrl: settings.baseUrl, token: settings.token, fetch });
-    return { client, options: await client.options() };
+    const options = await client.options();
+    if (settings.transcribe) {
+      return { client: makeTranscriber({ client, download: download ?? makeDownloader(settings.transcribe) }), options };
+    }
+    return { client, options };
   }
   const source = makeClient({ baseUrl: settings.copyFrom, token: settings.fromToken, fetch, label: "source" });
   const target = makeClient({ baseUrl: settings.baseUrl, token: settings.token, fetch, label: "target" });
@@ -121,9 +146,9 @@ async function importer(settings, fetch) {
   return { client: makeCopier({ source, target }), options: await target.options() };
 }
 
-async function importList(settings, { print, sleep, fetch }) {
+async function importList(settings, { print, sleep, fetch, download }) {
   const text = read(settings.file);
-  const { client, options } = await importer(settings, fetch);
+  const { client, options } = await importer(settings, fetch, download);
   const entries = parseList(text, { ...options, defaultLanguage: settings.language?.toLowerCase() ?? null });
   if (settings.playlist !== undefined) {
     return makePlaylist(entries, { client, title: settings.playlist, description: settings.description,
@@ -131,6 +156,10 @@ async function importList(settings, { print, sleep, fetch }) {
   }
   const results = await run(entries, { client, delayMs: settings.delayMs, dryRun: settings.dryRun, sleep, print });
   print(summary(results));
+  const total = transcriptionTotal(results);
+  if (total) {
+    print(total);
+  }
   if (!settings.dryRun) {
     save(settings.file, results, print, settings.copyFrom ? ` --copy-from ${settings.copyFrom}` : "");
   }
