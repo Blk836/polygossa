@@ -99,6 +99,9 @@ when its test is fixed.
   alert never appeared within 5 s (likely the same picked-before-hydration cause). Seen 2026-10-11, PR #113.
 - `e2e/profile-photo-errors.spec.ts` › "a failed remove shows an error and keeps the photo": timed out at 30 s.
   Seen 2026-10-20, PR #198; the spec passed 24 of 24 alone.
+- `e2e/progress-period.spec.ts` › "today keeps the last week's growth curve, streak, goal and all-time line": the
+  all-time line's known-word count changed between two reads (235 → 35), as other specs add and delete known words
+  on the shared test account. Seen 2026-10-20, PR #204 (book chapters); passes alone.
 - `e2e/privacy-settings.spec.ts` › "Delete my account needs the account's email typed, then signs out with
   everything gone": `/api/me` answered 200, not 401, after the deletion (suspected: the e2e auto-login signing the
   browser in as the test account). Seen 2026-10-20, PR #199 (a chart change); failed 1 of 3 alone too.
