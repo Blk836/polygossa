@@ -2,6 +2,7 @@ package app.lector.curator;
 
 import app.lector.common.ApiException;
 import app.lector.text.Category;
+import app.lector.text.SubtitleParser.Cue;
 import app.lector.text.Text;
 import app.lector.text.TextRepository;
 import app.lector.token.Language;
@@ -12,6 +13,7 @@ import app.lector.video.VideoImportService.VideoCopy;
 import app.lector.video.VideoImportService.VideoImport;
 import app.lector.video.YouTubeUrls;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,12 +23,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class CuratedVideoService {
 
     static final String IMPORTED = "imported";
+    static final String TRANSCRIBED = "transcribed";
+    static final String ALREADY_IMPORTED = "already_imported";
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record CuratedVideo(String outcome, Long id, String videoId, String title, Category category) {
 
         public boolean imported() {
-            return IMPORTED.equals(outcome);
+            return IMPORTED.equals(outcome) || TRANSCRIBED.equals(outcome);
         }
     }
 
@@ -56,6 +60,19 @@ public class CuratedVideoService {
         return describe(IMPORTED, videos.importForLibrary(library.getOrCreate(), request));
     }
 
+    @Transactional
+    public CuratedVideo importTranscribed(String videoId, Language language, Category category, List<Cue> cues) {
+        var request = new VideoImport(YouTubeUrls.watchUrl(videoId), language, null, true, null, null, category);
+        return describe(TRANSCRIBED, videos.importTranscribed(library.getOrCreate(), request, cues));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<CuratedVideo> existing(String videoId) {
+        return library.find()
+                .flatMap(owner -> texts.findByOwnerIdAndVideoId(owner.getId(), videoId).stream().findFirst())
+                .map(text -> describe(ALREADY_IMPORTED, text));
+    }
+
     @Transactional(readOnly = true)
     public VideoCopy export(String videoId, Language language) {
         requireLanguage(language);
@@ -79,10 +96,9 @@ public class CuratedVideoService {
     }
 
     private Optional<CuratedVideo> alreadyOrDry(String videoId, boolean dryRun) {
-        Optional<Text> existing = library.find()
-                .flatMap(owner -> texts.findByOwnerIdAndVideoId(owner.getId(), videoId).stream().findFirst());
+        Optional<CuratedVideo> existing = existing(videoId);
         if (existing.isPresent()) {
-            return Optional.of(describe("already_imported", existing.get()));
+            return existing;
         }
         return dryRun ? Optional.of(new CuratedVideo("would_import", null, videoId, null, null)) : Optional.empty();
     }

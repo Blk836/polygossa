@@ -8,10 +8,14 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import tools.jackson.databind.JsonNode;
@@ -28,15 +32,21 @@ public class AiClient {
     private final AppProperties.OpenAi config;
     private final RestClient http;
     private final RestClient quick;
+    private final RestClient slow;
+    private final String transcriptionModel;
     private final ObjectMapper json;
     private final AiSpending spending;
 
-    public AiClient(AppProperties props, RestClient.Builder builder, ObjectMapper json, AiSpending spending) {
+    public AiClient(AppProperties props, RestClient.Builder builder, ObjectMapper json, AiSpending spending,
+                    @Value("${app.transcription.model:whisper-1}") String transcriptionModel,
+                    @Value("${app.transcription.timeout:10m}") Duration transcriptionTimeout) {
         this.config = props.openai();
         this.json = json;
         this.spending = spending;
         this.http = client(builder, config.timeout());
         this.quick = client(builder, config.meaningTimeout());
+        this.slow = client(builder, transcriptionTimeout);
+        this.transcriptionModel = transcriptionModel;
     }
 
     private RestClient client(RestClient.Builder builder, Duration timeout) {
@@ -135,6 +145,29 @@ public class AiClient {
             spending.failed(job, tokensIn, tokensOut);
             log.warn("AI returned invalid JSON for {}: {}", job, e.getMessage());
             throw new ApiException(HttpStatus.BAD_GATEWAY, "ai_error", "The AI service returned an unreadable answer");
+        }
+    }
+
+    public JsonNode transcribe(byte[] audio, String filename) {
+        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+        form.add("file", new ByteArrayResource(audio) {
+            @Override
+            public String getFilename() {
+                return filename;
+            }
+        });
+        form.add("model", transcriptionModel);
+        form.add("response_format", "verbose_json");
+        form.add("timestamp_granularities[]", "word");
+        form.add("timestamp_granularities[]", "segment");
+        try {
+            JsonNode heard = slow.post().uri("/audio/transcriptions").contentType(MediaType.MULTIPART_FORM_DATA)
+                    .body(form).retrieve().body(JsonNode.class);
+            log.info("Transcribed {} bytes of audio with {}", audio.length, transcriptionModel);
+            return heard == null ? MissingNode.getInstance() : heard;
+        } catch (RestClientException e) {
+            log.warn("Transcription failed: {}", e.getMessage());
+            throw new ApiException(HttpStatus.BAD_GATEWAY, "ai_error", "The transcription service is unavailable right now");
         }
     }
 

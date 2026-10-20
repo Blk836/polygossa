@@ -62,10 +62,22 @@ public class VideoImportService {
         return save(library, YouTubeUrls.videoId(req.url()), req);
     }
 
+    public Text importTranscribed(User library, VideoImport req, List<Cue> cues) {
+        SubtitleParser.Parsed parsed = SubtitleParser.join(cues);
+        String videoId = YouTubeUrls.videoId(req.url());
+        Optional<YouTubeClient.Metadata> meta = youtube.metadata(videoId);
+        return save(library, videoId, req, meta, youtube.player(videoId),
+                new Transcript(parsed.content(), parsed.cues()));
+    }
+
     private Text save(User owner, String videoId, VideoImport req) {
         Optional<YouTubeClient.Metadata> meta = youtube.metadata(videoId);
         PlayerInfo player = youtube.player(videoId);
-        Transcript transcript = transcript(req, player);
+        return save(owner, videoId, req, meta, player, transcript(req, player));
+    }
+
+    private Text save(User owner, String videoId, VideoImport req, Optional<YouTubeClient.Metadata> meta,
+                      PlayerInfo player, Transcript transcript) {
         String title = orElse(req.title(), orElse(meta.map(YouTubeClient.Metadata::title).orElse(null),
                 "YouTube video " + videoId));
         String url = YouTubeUrls.watchUrl(videoId);

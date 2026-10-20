@@ -88,3 +88,6 @@ app:
   forum:
     admins: ${FORUM_ADMINS:test@lector.local}
   curator-token: ${CURATOR_TOKEN:}
+  transcription:
+    max-minutes: ${TRANSCRIPTION_MAX_MINUTES:30}
+    budget-usd: ${TRANSCRIPTION_BUDGET_USD:10}

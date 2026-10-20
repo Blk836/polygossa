@@ -162,7 +162,8 @@ class CuratedTranscriptionApiTest {
 
         List<Text> saved = libraryVideos();
         assertThat(saved).hasSize(1);
-        assertThat(saved.getFirst().getContent()).isEqualTo("Hola, ¿qué tal?\nMuy bien.");
+        String content = tx.execute(s -> texts.findById(saved.getFirst().getId()).orElseThrow().getContent());
+        assertThat(content).isEqualTo("Hola, ¿qué tal?\nMuy bien.");
         assertThat(saved.getFirst().isPublic()).isTrue();
         String learner = api.signupPro();
         JsonNode timings = api.get(learner, "/api/texts/" + r.get("id").asLong(), 200).get("video").get("timings");

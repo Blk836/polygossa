@@ -1,6 +1,7 @@
 package app.lector.curator;
 
 import app.lector.curator.CuratedPlaylistService.CuratedPlaylist;
+import app.lector.curator.CuratedTranscriptionService.Transcription;
 import app.lector.curator.CuratedVideoService.CuratedVideo;
 import app.lector.text.Category;
 import app.lector.text.SubtitleParser.Cue;
@@ -8,6 +9,7 @@ import app.lector.token.Language;
 import app.lector.video.VideoImportService.VideoCopy;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/curator")
@@ -31,6 +35,8 @@ public class CuratorController {
         }
     }
 
+    public record QuoteRequest(String url, Language language) {}
+
     public record PlaylistRequest(String title, String description, Language language, List<String> videoIds,
                                   boolean dryRun) {}
 
@@ -38,10 +44,13 @@ public class CuratorController {
 
     private final CuratedVideoService videos;
     private final CuratedPlaylistService playlists;
+    private final CuratedTranscriptionService transcriptions;
 
-    public CuratorController(CuratedVideoService videos, CuratedPlaylistService playlists) {
+    public CuratorController(CuratedVideoService videos, CuratedPlaylistService playlists,
+                             CuratedTranscriptionService transcriptions) {
         this.videos = videos;
         this.playlists = playlists;
+        this.transcriptions = transcriptions;
     }
 
     @GetMapping("/options")
@@ -62,6 +71,20 @@ public class CuratorController {
     @PostMapping("/copies")
     public ResponseEntity<CuratedVideo> copyVideo(@RequestBody CopyRequest req) {
         return answer(videos.copy(req.copy(), req.dryRun()));
+    }
+
+    @PostMapping("/transcriptions/quote")
+    public Transcription quoteTranscription(@RequestBody QuoteRequest req) {
+        return transcriptions.quote(req.url(), req.language());
+    }
+
+    @PostMapping(value = "/transcriptions", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Transcription> transcribe(@RequestParam("url") String url,
+                                                    @RequestParam("language") Language language,
+                                                    @RequestParam(value = "category", required = false) Category category,
+                                                    @RequestPart(value = "audio", required = false) MultipartFile audio) {
+        Transcription result = transcriptions.transcribe(url, language, category, audio);
+        return ResponseEntity.status(result.transcribed() ? HttpStatus.CREATED : HttpStatus.OK).body(result);
     }
 
     @PostMapping("/playlists")
