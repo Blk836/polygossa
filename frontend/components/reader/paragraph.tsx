@@ -15,6 +15,7 @@ interface Props {
   gaps: Set<number>;
   edges: Edges;
   hover: Range | null;
+  stop: number | null;
 }
 
 const inside = (i: number, r: Range | null) => r !== null && i >= r.start && i <= r.end;
@@ -34,14 +35,14 @@ function gapClass(t: Token, { sel, sentence, gaps, hover }: Pick<Props, "sel" | 
     .filter(Boolean).join(" ");
 }
 
-export const Paragraph = memo(function Paragraph({ tokens, gaps, edges, hover, ...rest }: Props) {
+export const Paragraph = memo(function Paragraph({ tokens, gaps, edges, hover, stop, ...rest }: Props) {
   return (
     <p className="mb-5">
       {tokens.map((t) => {
         if (t.word) {
           const extra = extraClass(t.index, rest.sel, edges, hover);
           return (
-            <span key={t.index} data-i={t.index} className={extra ? `${wordClass(t, rest)} ${extra}` : wordClass(t, rest)}>
+            <span key={t.index} data-i={t.index} tabIndex={t.index === stop ? 0 : -1} className={extra ? `${wordClass(t, rest)} ${extra}` : wordClass(t, rest)}>
               {t.text}
             </span>
           );

@@ -32,6 +32,7 @@ import { useKeepPopupPlaced, usePopupOpeners, usePopupState } from "./use-reader
 import { useReaderSettings } from "./use-reader-settings";
 import { ListenContext, useReadingSession } from "./use-reading-session";
 import { useVocabularyStatus } from "./use-vocabulary-status";
+import { useWordFocus } from "./use-word-focus";
 import { VideoPanel } from "./video-panel";
 
 const flyFromWord = ({ startToken }: { startToken: number }, saved: boolean) =>
@@ -161,6 +162,8 @@ export function Reader({ initial, initialSettings, playlist }: {
     savedPhraseAt: phraseAt, setStatus, close,
     articleRef, popupRef, turnPage: (dir) => changePage(page + dir),
   });
+  const pageWords = useMemo(() => paging.paragraphs.flat().filter((t) => t.word).map((t) => t.index), [paging.paragraphs]);
+  const focus = useWordFocus({ articleRef, tokens, pageWords, sel, popupOpen: !!shown, activate: input.activate });
   const media = mediaState(!!video, audio, showAudio);
   useMediaShortcuts(media.shortcuts ? (action) => mediaRef.current?.shortcut(action) : null);
 
@@ -221,9 +224,11 @@ export function Reader({ initial, initialSettings, playlist }: {
             onPointerOver={input.onPointerOver}
             onPointerLeave={input.onPointerLeave}
             onClick={input.onClick}
+            onFocus={focus.onFocus}
+            onKeyDown={focus.onKeyDown}
           >
             {paging.paragraphs.map((p, k) => (
-              <Paragraph key={k} tokens={p} statuses={vocab.statuses} phrases={marks} gaps={gaps} edges={edges} hover={overlapping(p, input.hover, null).sel} sentence={followsSentence(settings.follow) ? sentenceHere(p, spoken.sentence) : null} {...overlapping(p, sel, active)} />
+              <Paragraph key={k} tokens={p} statuses={vocab.statuses} phrases={marks} gaps={gaps} edges={edges} hover={overlapping(p, input.hover, null).sel} stop={p.some((t) => t.index === focus.stop) ? focus.stop : null} sentence={followsSentence(settings.follow) ? sentenceHere(p, spoken.sentence) : null} {...overlapping(p, sel, active)} />
             ))}
           </article>
           <PageArrows page={page} count={paging.count} onPage={changePage} />
