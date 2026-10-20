@@ -118,6 +118,9 @@ when its test is fixed.
   load" (a failed server render, cause not captured: the e2e servers' logs aren't kept). Seen 2026-10-10, PR #89.
 - `e2e/reader-colours.spec.ts` › "the word being spoken still shows, quiet or not": after "]" the word never got
   `w-speaking` within 5 s. Seen 2026-10-10, PR #90.
+- `e2e/reader-colours.spec.ts` › "clicking a new word makes every occurrence yellow; Known clears it; Unsave makes it
+  blue again": two "Close" buttons matched, the word popup's and a status toast's (`getByRole('status')`) that
+  appeared at the same moment. Seen 2026-10-20, PR #208 (backend and tools only); failed 1 of 3 alone too.
 - `e2e/polly-moments.spec.ts` › "Escape closes the milestone": the card stayed after Escape (suspected: Escape
   pressed before the card's keydown listener is attached in its effect). Failed 1 of 3 alone too. Seen 2026-10-11,
   PR #126.
