@@ -73,9 +73,7 @@ public class AccountController {
     @Transactional
     public MeDto update(@AuthenticationPrincipal AuthUser principal, @Valid @RequestBody UpdateMeRequest req) {
         User user = currentUser.load(principal);
-        if (req.displayName() != null) {
-            user.setDisplayName(req.displayName().trim());
-        }
+        applyName(user, req.displayName());
         if (req.targetLanguage() != null) {
             user.setTargetLanguage(req.targetLanguage());
         }
@@ -100,6 +98,16 @@ public class AccountController {
         }
         applyDisplayChoices(user, req);
         return MeDto.of(user, plans, admins);
+    }
+
+    private static void applyName(User user, String name) {
+        if (name == null) {
+            return;
+        }
+        if (name.isBlank()) {
+            throw ApiException.badRequest("Your name can't be blank.");
+        }
+        user.setDisplayName(name.trim());
     }
 
     private static void applyDisplayChoices(User user, UpdateMeRequest req) {
