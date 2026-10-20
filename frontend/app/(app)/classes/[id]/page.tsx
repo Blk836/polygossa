@@ -147,7 +147,7 @@ export default function ClassPage() {
       <Link href="/classes" className="text-sm text-muted hover:text-ink">← Classes</Link>
       <PageHeader
         title={detail.info.name}
-        subtitle={`${languageName(detail.info.language)} · ${teacher ? `${detail.info.studentCount} students` : `taught by ${detail.info.teacherName}`}`}
+        subtitle={`${languageName(detail.info.language)} · ${teacher ? `${detail.info.studentCount} ${detail.info.studentCount === 1 ? "student" : "students"}` : `taught by ${detail.info.teacherName}`}`}
         actions={
           teacher ? (
             <>
