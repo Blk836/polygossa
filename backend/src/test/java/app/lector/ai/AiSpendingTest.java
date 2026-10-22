@@ -253,9 +253,9 @@ class AiSpendingTest {
     }
 
     @Test
-    void onlyTopicTaggingAndTranscriptTidyingAreSystemJobs() {
+    void onlyTopicTaggingTranscriptTidyingAndPersonNamesAreSystemJobs() {
         assertThat(java.util.Arrays.stream(AiJob.values()).filter(AiJob::system))
-                .containsExactly(AiJob.TOPIC_TAGS, AiJob.TRANSCRIPT_TIDY);
+                .containsExactly(AiJob.TOPIC_TAGS, AiJob.TRANSCRIPT_TIDY, AiJob.PERSON_NAMES);
     }
 
     private String admin() throws Exception {
