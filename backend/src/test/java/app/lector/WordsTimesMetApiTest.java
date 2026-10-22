@@ -206,13 +206,14 @@ class WordsTimesMetApiTest {
     }
 
     @Test
-    void phrasesHaveNoCount() throws Exception {
+    void phrasesHaveACountButNoShare() throws Exception {
         api.post(token, "/api/vocabulary", "{\"language\":\"fr\",\"term\":\"la maison\",\"kind\":\"phrase\"}", 201);
         long text = api.createText(token, "fr", MAISONS, false);
         readTo(text, end(text));
         JsonNode phrases = api.get(token, "/api/vocabulary?kind=phrase&language=fr", 200).get("items");
         assertThat(phrases).hasSize(1);
-        assertThat(phrases.get(0).has("met")).isFalse();
+        assertThat(phrases.get(0).get("met").get("count").asLong()).isEqualTo(1);
+        assertThat(phrases.get(0).get("met").has("share")).isFalse();
     }
 
     @Test
