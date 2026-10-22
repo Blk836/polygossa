@@ -8,6 +8,6 @@ public final class E2eApplication {
     }
 
     public static void main(String[] args) {
-        SpringApplication.from(LectorApplication::main).withAdditionalProfiles("e2e").run(args);
+        SpringApplication.from(LectorApplication::main).with(E2eNames.class).withAdditionalProfiles("e2e").run(args);
     }
 }

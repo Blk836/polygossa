@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ApiError, api, errorMessage } from "@/lib/api";
 import { savedMeaning, wordTypeLine } from "@/lib/dictionary";
 import type { LanguageCode, TextDetail, Token, WordLookup, WordStatus } from "@/lib/types";
@@ -13,6 +13,7 @@ interface Options {
   textId: number;
   initialStatuses: Record<string, WordStatus>;
   initialPhrases: Phrase[];
+  names: string[];
   onSaved: () => void;
   onKnownWord?: (target: PopupTarget, saved: boolean) => void;
   onNotice: (message: string | null) => void;
@@ -24,6 +25,13 @@ function withStatus(map: Record<string, WordStatus>, term: string, status: WordS
   if (status) copy[term] = status;
   else delete copy[term];
   return copy;
+}
+
+function withNames(statuses: Record<string, WordStatus>, names: Set<string>): Record<string, WordStatus> {
+  if (names.size === 0) return statuses;
+  const out: Record<string, WordStatus> = { ...statuses };
+  for (const name of names) out[name] ??= "ignored";
+  return out;
 }
 
 function meaningFields(lookup: WordLookup | null): { meaning?: string; definition?: string; partOfSpeech?: string } {
@@ -46,6 +54,8 @@ export function useVocabularyStatus(opts: Options) {
   const pending = useRef(new Map<string, Promise<unknown>>());
   const justCreated = useRef(new Set<string>());
   const lastLookup = useRef<WordLookup | null>(null);
+  const names = useMemo(() => new Set(opts.names), [opts.names]);
+  const shown = useMemo(() => withNames(statuses, names), [statuses, names]);
 
   useEffect(() => {
     statusesRef.current = statuses;
@@ -72,7 +82,7 @@ export function useVocabularyStatus(opts: Options) {
   const autoSave = useCallback(
     (token: Token, sentence: string) => {
       const term = token.normalized!;
-      if (statusesRef.current[term]) return;
+      if (statusesRef.current[term] || names.has(term)) return;
       setStatuses((s) => withStatus(s, term, "learning"));
       justCreated.current.add(term);
       save(term, { displayTerm: token.text, status: "learning", contextSentence: sentence })
@@ -83,7 +93,7 @@ export function useVocabularyStatus(opts: Options) {
           reportFailure(e);
         });
     },
-    [save, onSaved, reportFailure],
+    [save, names, onSaved, reportFailure],
   );
 
   const recordLookup = useCallback(
@@ -181,10 +191,10 @@ export function useVocabularyStatus(opts: Options) {
   const markRemainingKnown = useCallback((tokens: Token[]) => {
     setStatuses((prev) => {
       const next = { ...prev };
-      for (const t of tokens) if (t.word && !next[t.normalized!]) next[t.normalized!] = "known";
+      for (const t of tokens) if (t.word && !next[t.normalized!] && !names.has(t.normalized!)) next[t.normalized!] = "known";
       return next;
     });
-  }, []);
+  }, [names]);
 
-  return { statuses, phrases, statusOf, autoSave, recordLookup, pickMeaning, setStatus, markRemainingKnown };
+  return { statuses, shown, phrases, statusOf, autoSave, recordLookup, pickMeaning, setStatus, markRemainingKnown };
 }
