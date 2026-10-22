@@ -39,7 +39,7 @@ function TermLine({ entry }: { entry: VocabularyEntry }) {
       {entry.pronunciation && <span className="text-sm text-muted">{entry.pronunciation}</span>}
       {entry.partOfSpeech && <em className="text-sm text-muted">{entry.partOfSpeech}</em>}
       {entry.kind === "phrase" && <span className="rounded bg-line px-1.5 text-xs">phrase</span>}
-      {entry.met && <span data-testid="times-met" className="text-xs text-muted" title="Times you've met this word in your reading, and its share of everything you've read in this language">{timesMetText(entry.met)}</span>}
+      {entry.met && <span data-testid="times-met" className="text-xs text-muted" title="How many times you've met this in your reading">{timesMetText(entry.met)}</span>}
       {me.ankiConnected && <AnkiBadge entry={entry} />}
     </div>
   );

@@ -45,8 +45,19 @@ public class WordCounts {
         }
     }
 
-    void add(Long userId, Language language, List<Token> tokens, int from, int to, int max) {
-        add(userId, language, tally(tokens, from, to, max));
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void add(Long userId, Language language, List<Token> tokens, int from, int to) {
+        add(userId, language, tally(tokens, from, to, Integer.MAX_VALUE));
+    }
+
+    static int cappedEnd(List<Token> tokens, int from, int to, int max) {
+        int words = 0;
+        for (Token t : tokens) {
+            if (t.word() && t.index() >= from && t.index() < to && ++words > max) {
+                return t.index();
+            }
+        }
+        return to;
     }
 
     public Map<String, Long> counts(Long userId, Language language, Collection<String> terms) {
@@ -99,7 +110,7 @@ public class WordCounts {
         if (counts.isEmpty()) {
             return;
         }
-        List<Object[]> rows = counts.entrySet().stream()
+        List<Object[]> rows = counts.entrySet().stream().sorted(Map.Entry.comparingByKey())
                 .map(e -> new Object[] {userId, language.name(), e.getKey(), e.getValue()}).toList();
         jdbc.batchUpdate("insert into word_counts (user_id, language, term, times) values (?, ?, ?, ?) "
                 + "on conflict (user_id, language, term) do update set times = word_counts.times + excluded.times", rows);

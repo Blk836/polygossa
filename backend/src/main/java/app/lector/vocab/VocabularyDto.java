@@ -33,7 +33,8 @@ public record VocabularyDto(
 
     public record SourceText(Long id, String title) {}
 
-    public record Met(long count, double share) {}
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record Met(long count, Double share) {}
 
     public record Anki(String state, boolean promoted) {
         private static final List<String> STATES = List.of("new", "young", "mature");

@@ -3,14 +3,19 @@ package app.lector.progress;
 import app.lector.token.Language;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface WordsReadRepository extends JpaRepository<WordsRead, Long> {
 
-    Optional<WordsRead> findByUserIdAndLanguageAndDay(Long userId, Language language, LocalDate day);
+    @Modifying
+    @Query(nativeQuery = true, value = "insert into words_read (user_id, language, day, words) "
+            + "values (:userId, :language, :day, :words) on conflict (user_id, language, day) "
+            + "do update set words = words_read.words + excluded.words")
+    void addWords(@Param("userId") Long userId, @Param("language") String language, @Param("day") LocalDate day,
+                  @Param("words") long words);
 
     interface DayWords {
         LocalDate getDay();

@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,16 +23,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProgressService {
 
     static final int MAX_WORDS_PER_STEP = 500;
+    private static final Logger log = LoggerFactory.getLogger(ProgressService.class);
 
     private final ReadingProgressRepository repo;
     private final WordsReadRepository wordsRead;
     private final TextService texts;
     private final WordCounts wordCounts;
+    private final PhraseCounts phraseCounts;
     private final Clock clock;
 
     public ProgressService(ReadingProgressRepository repo, WordsReadRepository wordsRead, TextService texts,
-                           WordCounts wordCounts, Clock clock) {
+                           WordCounts wordCounts, PhraseCounts phraseCounts, Clock clock) {
         this.wordCounts = wordCounts;
+        this.phraseCounts = phraseCounts;
         this.repo = repo;
         this.wordsRead = wordsRead;
         this.texts = texts;
@@ -40,7 +45,7 @@ public class ProgressService {
     @Transactional
     public ProgressDto record(User user, Long textId, int position) {
         Text text = texts.loadReadable(user, textId);
-        wordCounts.fill(user.getId());
+        fillCounts(user);
         List<Token> tokens = texts.tokens(text);
         int pos = Math.min(position, Math.max(0, tokens.size() - 1));
         ReadingProgress p = loadOrNew(user, text);
@@ -53,7 +58,7 @@ public class ProgressService {
     @Transactional
     public void complete(User user, Long textId) {
         Text text = texts.loadReadable(user, textId);
-        wordCounts.fill(user.getId());
+        fillCounts(user);
         ReadingProgress p = loadOrNew(user, text);
         if (!p.isCompleted()) {
             credit(user, text, texts.tokens(text), p.getPosition(), Integer.MAX_VALUE);
@@ -119,11 +124,24 @@ public class ProgressService {
         if (words <= 0) {
             return;
         }
-        wordCounts.add(user.getId(), text.getLanguage(), tokens, from, to, MAX_WORDS_PER_STEP);
+        int end = WordCounts.cappedEnd(tokens, from, to, MAX_WORDS_PER_STEP);
+        safely("word counts", () -> wordCounts.add(user.getId(), text.getLanguage(), tokens, from, end));
+        safely("phrase counts", () -> phraseCounts.add(user.getId(), text.getLanguage(), tokens, from, end));
         LocalDate day = LocalDate.ofInstant(clock.instant(), user.zone());
-        WordsRead row = wordsRead.findByUserIdAndLanguageAndDay(user.getId(), text.getLanguage(), day)
-                .orElseGet(() -> wordsRead.save(new WordsRead(user.getId(), text.getLanguage(), day)));
-        row.add(Math.min(words, MAX_WORDS_PER_STEP));
+        wordsRead.addWords(user.getId(), text.getLanguage().name(), day, Math.min(words, MAX_WORDS_PER_STEP));
+    }
+
+    private void fillCounts(User user) {
+        safely("filling word counts", () -> wordCounts.fill(user.getId()));
+        safely("filling phrase counts", () -> phraseCounts.fill(user.getId()));
+    }
+
+    private static void safely(String what, Runnable counting) {
+        try {
+            counting.run();
+        } catch (RuntimeException e) {
+            log.warn("Skipped {}: {}", what, e.toString());
+        }
     }
 
     private ReadingProgress loadOrNew(User user, Text text) {
