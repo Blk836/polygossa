@@ -20,7 +20,7 @@ export function WordList({ filters, onPage, onTag, onChanged }: {
   const { data, setData, error } = useRemembered(path, () => api<Page<VocabularyEntry>>(path));
 
   function replace(updated: VocabularyEntry) {
-    setData((d) => d && { ...d, items: d.items.map((x) => (x.id === updated.id ? updated : x)) });
+    setData((d) => d && { ...d, items: d.items.map((x) => (x.id === updated.id ? { ...updated, met: updated.met ?? x.met } : x)) });
     onChanged();
   }
 

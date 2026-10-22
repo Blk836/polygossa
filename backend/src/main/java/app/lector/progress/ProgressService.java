@@ -25,10 +25,12 @@ public class ProgressService {
     private final ReadingProgressRepository repo;
     private final WordsReadRepository wordsRead;
     private final TextService texts;
+    private final WordCounts wordCounts;
     private final Clock clock;
 
     public ProgressService(ReadingProgressRepository repo, WordsReadRepository wordsRead, TextService texts,
-                           Clock clock) {
+                           WordCounts wordCounts, Clock clock) {
+        this.wordCounts = wordCounts;
         this.repo = repo;
         this.wordsRead = wordsRead;
         this.texts = texts;
@@ -38,10 +40,11 @@ public class ProgressService {
     @Transactional
     public ProgressDto record(User user, Long textId, int position) {
         Text text = texts.loadReadable(user, textId);
+        wordCounts.fill(user.getId());
         List<Token> tokens = texts.tokens(text);
         int pos = Math.min(position, Math.max(0, tokens.size() - 1));
         ReadingProgress p = loadOrNew(user, text);
-        credit(user, text, wordsBetween(tokens, p.getPosition(), pos));
+        credit(user, text, tokens, p.getPosition(), pos);
         p.setPosition(pos);
         p.setPercent(Math.max(p.getPercent(), percentBefore(tokens, pos)));
         return save(p);
@@ -50,9 +53,10 @@ public class ProgressService {
     @Transactional
     public void complete(User user, Long textId) {
         Text text = texts.loadReadable(user, textId);
+        wordCounts.fill(user.getId());
         ReadingProgress p = loadOrNew(user, text);
         if (!p.isCompleted()) {
-            credit(user, text, wordsBetween(texts.tokens(text), p.getPosition(), Integer.MAX_VALUE));
+            credit(user, text, texts.tokens(text), p.getPosition(), Integer.MAX_VALUE);
         }
         p.setCompleted(true);
         p.setPercent(100);
@@ -110,10 +114,12 @@ public class ProgressService {
         return words;
     }
 
-    private void credit(User user, Text text, int words) {
+    private void credit(User user, Text text, List<Token> tokens, int from, int to) {
+        int words = wordsBetween(tokens, from, to);
         if (words <= 0) {
             return;
         }
+        wordCounts.add(user.getId(), text.getLanguage(), tokens, from, to, MAX_WORDS_PER_STEP);
         LocalDate day = LocalDate.ofInstant(clock.instant(), user.zone());
         WordsRead row = wordsRead.findByUserIdAndLanguageAndDay(user.getId(), text.getLanguage(), day)
                 .orElseGet(() -> wordsRead.save(new WordsRead(user.getId(), text.getLanguage(), day)));

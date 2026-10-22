@@ -5,6 +5,7 @@ import { useId, useState } from "react";
 import { ApiError, api, errorMessage } from "@/lib/api";
 import { ankiBadgeText } from "@/lib/anki-sync-status";
 import { NATIVE_LANGUAGES } from "@/lib/dictionary";
+import { timesMetText } from "@/lib/times-met";
 import { useMe } from "../me-context";
 import type { VocabularyEntry, WordStatus } from "@/lib/types";
 import { Button, FailureNote, chipSelectClass, inputClass } from "../ui";
@@ -38,6 +39,7 @@ function TermLine({ entry }: { entry: VocabularyEntry }) {
       {entry.pronunciation && <span className="text-sm text-muted">{entry.pronunciation}</span>}
       {entry.partOfSpeech && <em className="text-sm text-muted">{entry.partOfSpeech}</em>}
       {entry.kind === "phrase" && <span className="rounded bg-line px-1.5 text-xs">phrase</span>}
+      {entry.met && <span data-testid="times-met" className="text-xs text-muted" title="Times you've met this word in your reading, and its share of everything you've read in this language">{timesMetText(entry.met)}</span>}
       {me.ankiConnected && <AnkiBadge entry={entry} />}
     </div>
   );

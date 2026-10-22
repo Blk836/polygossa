@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PAGE_SIZE, exportParams, initialStatus, pageCount, parseTags, searchParams } from "./search";
+import { PAGE_SIZE, exportParams, initialStatus, pageCount, parseTags, searchParams, sortForKind } from "./search";
 
 const empty = { language: "", status: "", kind: "", sort: "recent", query: "", tag: "", page: 0 };
 
@@ -21,6 +21,19 @@ describe("vocabulary search params", () => {
   it("export links carry only language and status", () => {
     expect(exportParams({ language: "", status: "" }).toString()).toBe("");
     expect(exportParams({ language: "fr", status: "learning" }).toString()).toBe("language=fr&status=learning");
+  });
+
+  it("sorted by most met, export links carry the sort and the top-N cap", () => {
+    expect(exportParams({ language: "fr", status: "learning", sort: "met" }, 100).toString())
+      .toBe("language=fr&status=learning&sort=met&limit=100");
+    expect(exportParams({ language: "fr", status: "", sort: "met" }).toString()).toBe("language=fr&sort=met");
+    expect(exportParams({ language: "fr", status: "", sort: "alpha" }, 100).toString()).toBe("language=fr");
+  });
+
+  it("phrases have no most-met sort, so switching to them goes back to most recent", () => {
+    expect(sortForKind("met", "phrase")).toBe("recent");
+    expect(sortForKind("met", "word")).toBe("met");
+    expect(sortForKind("alpha", "phrase")).toBe("alpha");
   });
 
   it("counts pages", () => {

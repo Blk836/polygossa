@@ -232,7 +232,7 @@ class WordsTimesMetApiTest {
         readTo(text, end(text));
 
         String[] lines = csv("?language=fr&status=learning&sort=met&limit=2").split("\r\n");
-        assertThat(lines[0]).endsWith(",times_met,share");
+        assertThat(lines[0]).contains(",source,times_met,share_percent,created_at,");
         assertThat(lines).hasSize(3);
         assertThat(lines[1]).startsWith("maison,").contains(",5,");
         assertThat(lines[2]).startsWith("est,").contains(",2,");
