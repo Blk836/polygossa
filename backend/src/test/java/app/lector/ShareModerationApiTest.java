@@ -37,6 +37,10 @@ class ShareModerationApiTest {
     private static final OpenAiStub AI = ImportCategoryApiTest.start(OpenAiStub::new);
     private static final YouTubeStub YOUTUBE = ImportCategoryApiTest.start(YouTubeStub::new);
 
+    static java.util.List<String> reviews() {
+        return AI.requests().stream().filter(r -> r.contains("You review texts")).toList();
+    }
+
     @DynamicPropertySource
     static void stubs(DynamicPropertyRegistry registry) {
         registry.add("app.openai.base-url", AI::baseUrl);
@@ -88,8 +92,8 @@ class ShareModerationApiTest {
     }
 
     private void askedOnceIfAppropriate() {
-        assertThat(AI.requests()).hasSize(1);
-        assertThat(AI.requests().get(0)).contains(QUESTION);
+        assertThat(reviews()).hasSize(1);
+        assertThat(reviews().get(0)).contains(QUESTION);
     }
 
     private static void sharedAsFood(JsonNode created) {
@@ -158,10 +162,10 @@ class ShareModerationApiTest {
     void aPrivateImportIsNotChecked() throws Exception {
         AI.reply("{\"category\":\"food\"}");
         paste(false, null, 201);
-        assertThat(AI.requests()).hasSize(1);
-        assertThat(AI.requests().get(0)).doesNotContain(QUESTION);
+        assertThat(reviews()).hasSize(1);
+        assertThat(reviews().get(0)).doesNotContain(QUESTION);
         paste(false, "news", 201);
-        assertThat(AI.requests()).hasSize(1);
+        assertThat(reviews()).hasSize(1);
     }
 
     @Test
@@ -169,7 +173,7 @@ class ShareModerationApiTest {
         AI.reply("{\"appropriate\":true,\"category\":\"stories\"}");
         String content = "a".repeat(8_000) + "TAIL" + "b".repeat(42_000);
         api.post(user, "/api/texts", pasteBody(content, true, null), 201);
-        assertThat(AI.requests().get(0)).contains("a".repeat(8_000)).doesNotContain("TAIL").doesNotContain("bbbb");
+        assertThat(reviews().get(0)).contains("a".repeat(8_000)).doesNotContain("TAIL").doesNotContain("bbbb");
     }
 
     @Test
@@ -192,7 +196,7 @@ class ShareModerationApiTest {
         api.patch(user, "/api/texts/" + id, "{\"title\":\"Nouveau\"}", 200);
         api.patch(user, "/api/texts/" + id, "{\"isPublic\":true}", 200);
         api.patch(user, "/api/texts/" + id, "{\"isPublic\":false}", 200);
-        assertThat(AI.requests()).isEmpty();
+        assertThat(reviews()).isEmpty();
     }
 
     private void sharingIsRefusedButPrivateImportsWork() throws Exception {

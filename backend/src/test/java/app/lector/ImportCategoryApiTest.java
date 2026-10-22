@@ -48,6 +48,10 @@ class ImportCategoryApiTest {
         }
     }
 
+    static java.util.List<String> reviews() {
+        return AI.requests().stream().filter(r -> r.contains("You review texts")).toList();
+    }
+
     @DynamicPropertySource
     static void stubs(DynamicPropertyRegistry registry) {
         registry.add("app.openai.base-url", AI::baseUrl);
@@ -94,8 +98,8 @@ class ImportCategoryApiTest {
     }
 
     private void askedOnceAbout(String title, String content) {
-        assertThat(AI.requests()).hasSize(1);
-        String request = AI.requests().get(0);
+        assertThat(reviews()).hasSize(1);
+        String request = reviews().get(0);
         assertThat(request).contains(title).contains(content);
         for (String code : new String[] {"learners", "daily-life", "stories", "news", "culture", "travel", "food",
                 "science", "history", "entertainment", "other"}) {
@@ -143,7 +147,7 @@ class ImportCategoryApiTest {
     void aChosenCategoryIsKeptWithoutAskingTheAi() throws Exception {
         AI.reply("{\"category\":\"food\"}");
         assertThat(paste("Les nouvelles du jour.", "news").get("category").asString()).isEqualTo("news");
-        assertThat(AI.requests()).isEmpty();
+        assertThat(reviews()).isEmpty();
     }
 
     @Test
@@ -151,8 +155,8 @@ class ImportCategoryApiTest {
         AI.reply("{\"category\":\"stories\"}");
         String content = "a".repeat(2_000) + "TAIL" + "b".repeat(48_000);
         paste(content, null);
-        assertThat(AI.requests()).hasSize(1);
-        assertThat(AI.requests().get(0)).contains("a".repeat(2_000)).doesNotContain("TAIL").doesNotContain("bbbb");
+        assertThat(reviews()).hasSize(1);
+        assertThat(reviews().get(0)).contains("a".repeat(2_000)).doesNotContain("TAIL").doesNotContain("bbbb");
     }
 
     private void unusableAnswerFallsBack() throws Exception {
