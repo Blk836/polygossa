@@ -85,7 +85,10 @@ when its test is fixed.
 - `e2e/profile-photo.spec.ts` › "a image/webp image can be uploaded" (and the jpeg and png ones): the crop dialog
   never opened within 30 s (suspected: the file is picked before the page has hydrated). Seen 2026-10-09, PR #89;
   jpeg 2026-10-10, PR #91; png 2026-10-10, PR #93. Also "uploading a photo shows it on Profile and in the account
-  menu…" (the crop dialog never opened within 5 s), 2026-10-11, PR #136; the spec passed 45 of 45 alone.
+  menu…" (the crop dialog never opened within 5 s), 2026-10-11, PR #136; the spec passed 45 of 45 alone. The jpeg one and the Profile one again 2026-10-22, PR #209;
+  each failed 1 of 3 alone.
+- `e2e/playlist-save.spec.ts` › "Explore's playlist cards have a Save button that keeps its state": after reloading,
+  the card's Save button wasn't found within 5 s. Seen 2026-10-22, PR #209 (people's names); passed 3 of 3 alone.
 - `e2e/profile-photo.spec.ts` › "changing the photo replaces it everywhere": timed out at 30 s. Seen 2026-10-10,
   PR #100.
 - `e2e/profile-photo.spec.ts` › "removing the photo brings the initial back, also after reloading": the page closed
