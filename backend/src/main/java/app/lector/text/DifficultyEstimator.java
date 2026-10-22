@@ -15,6 +15,11 @@ public final class DifficultyEstimator {
     private DifficultyEstimator() {}
 
     public static Estimate estimate(Language language, List<Token> tokens) {
+        return estimate(language, tokens, Set.of());
+    }
+
+    public static Estimate estimate(Language language, List<Token> tokens, Set<String> names) {
+        int all = 0;
         int words = 0;
         long chars = 0;
         Set<String> unique = new HashSet<>();
@@ -23,13 +28,17 @@ public final class DifficultyEstimator {
             if (!t.word()) {
                 continue;
             }
+            all++;
+            if (names.contains(t.normalized())) {
+                continue;
+            }
             words++;
             chars += t.text().codePointCount(0, t.text().length());
             unique.add(t.normalized());
             sentences.add(t.sentence());
         }
         if (words == 0) {
-            return new Estimate("A1", 0, 0, 0);
+            return new Estimate("A1", 0, all, 0);
         }
         double guiraud = unique.size() / Math.sqrt(words);
         double avgWordLength = (double) chars / words;
@@ -46,7 +55,7 @@ public final class DifficultyEstimator {
                 + (1 - diversityWeight) * 0.55 * wordLength
                 + (1 - diversityWeight) * 0.45 * sentenceLength;
         int index = Math.min(LEVELS.size() - 1, (int) Math.floor(score * LEVELS.size()));
-        return new Estimate(LEVELS.get(index), score, words, unique.size());
+        return new Estimate(LEVELS.get(index), score, all, unique.size());
     }
 
     private static double scale(double value, double low, double high) {

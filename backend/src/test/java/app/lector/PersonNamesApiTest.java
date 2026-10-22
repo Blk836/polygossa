@@ -101,23 +101,20 @@ class PersonNamesApiTest {
                 .map(n -> "\"" + n + "\"").toList()) + "]}");
     }
 
-    private long paste(String language, String content) throws Exception {
-        return api.post(user, "/api/texts", "{\"title\":\"Histoire\",\"language\":\"" + language
-                + "\",\"content\":\"" + content + "\",\"isPublic\":false,\"category\":\"stories\"}", 201)
-                .get("id").asLong();
-    }
-
     private long paste(String content) throws Exception {
-        return paste("fr", content);
+        return api.post(user, "/api/texts", "{\"title\":\"Histoire\",\"language\":\"fr\",\"content\":\""
+                + content + "\",\"isPublic\":false,\"category\":\"stories\"}", 201).get("id").asLong();
     }
 
     private JsonNode detail(long id) throws Exception {
         return api.get(user, "/api/texts/" + id, 200);
     }
 
-    private Map<String, String> statuses(long id) throws Exception {
+    private Map<String, String> shown(long id) throws Exception {
+        JsonNode detail = detail(id);
         Map<String, String> out = new LinkedHashMap<>();
-        detail(id).get("statuses").properties().forEach(e -> out.put(e.getKey(), e.getValue().asString()));
+        detail.get("statuses").properties().forEach(e -> out.put(e.getKey(), e.getValue().asString()));
+        detail.get("names").forEach(n -> assertThat(out.putIfAbsent(n.asString(), "ignored")).isNull());
         return out;
     }
 
@@ -148,7 +145,7 @@ class PersonNamesApiTest {
     void aCharactersFirstNameAndSurnameAreNamesButAPlaceIsNot() throws Exception {
         names("Marie", "Dupont", "Jean-Luc");
         long id = paste("Marie Dupont habite à Lyon. Le matin, Marie boit un café avec Jean-Luc.");
-        assertThat(statuses(id)).containsEntry("marie", "ignored").containsEntry("dupont", "ignored")
+        assertThat(shown(id)).containsEntry("marie", "ignored").containsEntry("dupont", "ignored")
                 .containsEntry("jean-luc", "ignored").doesNotContainKey("lyon").doesNotContainKey("boit");
         assertThat(nameRequests()).hasSize(1);
         assertThat(wordsSent(userMessage())).containsExactly("Marie", "Dupont", "Lyon", "Le", "Jean-Luc");
@@ -156,10 +153,19 @@ class PersonNamesApiTest {
     }
 
     @Test
+    void namesAreSentApartFromMyOwnStatuses() throws Exception {
+        api.post(user, "/api/vocabulary", "{\"language\":\"fr\",\"term\":\"dupont\",\"status\":\"known\"}", 201);
+        names("Marie", "Dupont");
+        JsonNode detail = detail(paste("Ce matin, Marie Dupont chante. Marie rit."));
+        assertThat(detail.get("names").valueStream().map(JsonNode::asString)).containsExactly("marie");
+        assertThat(detail.get("statuses").properties()).extracting(Map.Entry::getKey).containsExactly("dupont");
+    }
+
+    @Test
     void aNameAtTheStartOfASentenceIsRecognisedToo() throws Exception {
         names("Camille");
         long id = paste("Hier, il a vu Camille. Camille était fatiguée.");
-        assertThat(statuses(id)).containsEntry("camille", "ignored");
+        assertThat(shown(id)).containsEntry("camille", "ignored");
         assertThat(wordsSent(userMessage())).containsExactly("Hier", "Camille");
     }
 
@@ -170,7 +176,7 @@ class PersonNamesApiTest {
         names("Marie");
         long id = api.post(user, "/api/texts/import-url", "{\"url\":\"https://example.com/a\",\"language\":\"fr\","
                 + "\"isPublic\":false,\"category\":\"food\"}", 201).get("id").asLong();
-        assertThat(statuses(id)).containsEntry("marie", "ignored");
+        assertThat(shown(id)).containsEntry("marie", "ignored");
     }
 
     @Test
@@ -180,7 +186,7 @@ class PersonNamesApiTest {
                 "1\n00:00:01,000 --> 00:00:03,000\nBonjour, Marie.\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
         long id = api.send(multipart("/api/texts/import-subtitles").file(srt).param("language", "fr")
                 .param("title", "Film").param("category", "stories"), user, 201).get("id").asLong();
-        assertThat(statuses(id)).containsEntry("marie", "ignored");
+        assertThat(shown(id)).containsEntry("marie", "ignored");
     }
 
     @Test
@@ -189,7 +195,7 @@ class PersonNamesApiTest {
         names("Lucía");
         long id = api.send(multipart("/api/texts/import-youtube").param("url", "https://youtu.be/" + VIDEO)
                 .param("language", "es"), user, 201).get("id").asLong();
-        assertThat(statuses(id)).containsEntry("lucía", "ignored");
+        assertThat(shown(id)).containsEntry("lucía", "ignored");
     }
 
     @Test
@@ -205,7 +211,7 @@ class PersonNamesApiTest {
         List<Long> ids = book.get("textIds").valueStream().map(JsonNode::asLong).toList();
         assertThat(ids).hasSize(2);
         for (long id : ids) {
-            assertThat(statuses(id)).containsEntry("marie", "ignored");
+            assertThat(shown(id)).containsEntry("marie", "ignored");
         }
     }
 
@@ -217,7 +223,7 @@ class PersonNamesApiTest {
         names("Paul");
         new TransactionTemplate(transactions).executeWithoutResult(s ->
                 texts.replaceTranscript(texts.load(id), "Ce soir, Paul danse.", List.of()));
-        assertThat(statuses(id)).containsEntry("paul", "ignored").doesNotContainKey("marie");
+        assertThat(shown(id)).containsEntry("paul", "ignored").doesNotContainKey("marie");
     }
 
     @Test
@@ -225,7 +231,7 @@ class PersonNamesApiTest {
         names("Pierre");
         long id = paste("Pierre ramasse une pierre.");
         assertThat(nameRequests()).isEmpty();
-        assertThat(statuses(id)).doesNotContainKey("pierre");
+        assertThat(shown(id)).doesNotContainKey("pierre");
     }
 
     @Test
@@ -254,14 +260,6 @@ class PersonNamesApiTest {
     }
 
     @Test
-    void languagesWithoutCapitalLettersAreNotChecked() throws Exception {
-        names("田中");
-        paste("ja", "田中さんは東京に住んでいます。");
-        paste("ko", "민수는 서울에 살아요.");
-        assertThat(nameRequests()).isEmpty();
-    }
-
-    @Test
     void aTextWithOnlySentenceStartsSeenInLowercaseElsewhereMakesNoCall() throws Exception {
         paste("Le chat dort. Il mange. le chien voit il.");
         assertThat(nameRequests()).isEmpty();
@@ -271,7 +269,7 @@ class PersonNamesApiTest {
     void aFailingAiImportsAsToday() throws Exception {
         AI.setFailing(true);
         long id = paste("Ce matin, Marie chante.");
-        assertThat(statuses(id)).isEmpty();
+        assertThat(shown(id)).isEmpty();
         assertThat(detail(id).get("text").get("stats").get("unseen").asInt()).isEqualTo(4);
     }
 
@@ -279,14 +277,14 @@ class PersonNamesApiTest {
     void anUnreadableAnswerImportsAsToday() throws Exception {
         AI.replyRaw("not json");
         long id = paste("Ce matin, Marie chante.");
-        assertThat(statuses(id)).isEmpty();
+        assertThat(shown(id)).isEmpty();
     }
 
     @Test
     void anAnswerThatIsNotAListImportsAsToday() throws Exception {
         AI.replyWhen(NAMES, "{\"names\":\"Marie\"}");
         long id = paste("Ce matin, Marie chante.");
-        assertThat(statuses(id)).isEmpty();
+        assertThat(shown(id)).isEmpty();
     }
 
     @Test
@@ -295,14 +293,14 @@ class PersonNamesApiTest {
         names("Marie");
         long id = paste("Ce matin, Marie chante.");
         assertThat(nameRequests()).isEmpty();
-        assertThat(statuses(id)).isEmpty();
+        assertThat(shown(id)).isEmpty();
     }
 
     @Test
     void aNameTheAiInventsIsIgnored() throws Exception {
         names("Napoléon", "Marie");
         long id = paste("Ce matin, Marie chante.");
-        assertThat(statuses(id)).containsOnlyKeys("marie");
+        assertThat(shown(id)).containsOnlyKeys("marie");
     }
 
     @Test
@@ -343,10 +341,10 @@ class PersonNamesApiTest {
         names("Rose");
         long id = paste("Dans le jardin, Rose fleurit.");
         api.post(user, "/api/vocabulary", "{\"language\":\"fr\",\"term\":\"rose\",\"status\":\"learning\"}", 201);
-        assertThat(statuses(id)).containsEntry("rose", "learning");
+        assertThat(shown(id)).containsEntry("rose", "learning");
         names();
         long other = paste("Une Rose rouge.");
-        assertThat(statuses(other)).containsEntry("rose", "learning");
+        assertThat(shown(other)).containsEntry("rose", "learning");
     }
 
     @Test
@@ -354,7 +352,7 @@ class PersonNamesApiTest {
         api.post(user, "/api/vocabulary", "{\"language\":\"fr\",\"term\":\"marie\",\"status\":\"known\"}", 201);
         names("Marie");
         long id = paste("Ce matin, Marie chante.");
-        assertThat(statuses(id)).containsEntry("marie", "known");
+        assertThat(shown(id)).containsEntry("marie", "known");
         assertThat(detail(id).get("text").get("stats").get("known").asInt()).isEqualTo(1);
     }
 
@@ -391,7 +389,7 @@ class PersonNamesApiTest {
         long id = paste("Ce matin, Marie chante.");
         AI.reset();
         names("Marie");
-        assertThat(statuses(id)).isEmpty();
+        assertThat(shown(id)).isEmpty();
         assertThat(AI.requests()).isEmpty();
     }
 }

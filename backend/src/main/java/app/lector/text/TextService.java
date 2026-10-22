@@ -24,7 +24,6 @@ import app.lector.vocab.VocabularyRepository;
 import app.lector.vocab.WordStatus;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,6 +53,7 @@ public class TextService {
     private final ObjectMapper json;
     private final UniqueWordsCache uniqueWords;
     private final ApplicationEventPublisher events;
+    private final PersonNames names;
 
     public TextService(TextRepository texts, VocabularyRepository vocabulary,
                        ReadingSessionRepository sessions, ReadingProgressRepository progress,
@@ -61,7 +61,7 @@ public class TextService {
                        AssignmentRepository assignments,
                        WritingSubmissionRepository writings, TokenizationService tokenizer, PlanService plans,
                        StorageService storage, ObjectMapper json,
-                       UniqueWordsCache uniqueWords, ApplicationEventPublisher events) {
+                       UniqueWordsCache uniqueWords, ApplicationEventPublisher events, PersonNames names) {
         this.texts = texts;
         this.vocabulary = vocabulary;
         this.sessions = sessions;
@@ -76,6 +76,7 @@ public class TextService {
         this.json = json;
         this.uniqueWords = uniqueWords;
         this.events = events;
+        this.names = names;
     }
 
     @Transactional
@@ -102,18 +103,12 @@ public class TextService {
         if (title == null || title.isBlank()) {
             throw ApiException.badRequest("A title is required");
         }
-        List<Token> tokens = tokenizer.tokenize(language, clean);
-        DifficultyEstimator.Estimate estimate = DifficultyEstimator.estimate(language, tokens);
         String trimmedTitle = title.strip();
         Text text = new Text(owner, trimmedTitle.length() > 250 ? trimmedTitle.substring(0, 250) : trimmedTitle,
                 language, clean);
-        text.setTokensJson(json.writeValueAsString(tokens));
-        text.setWordsJson(KnownWords.wordsJson(tokens, json));
+        setTokens(text, tokenizer.tokenize(language, clean));
         text.setSourceUrl(sourceUrl);
         text.setPublic(isPublic);
-        text.setCefrLevel(estimate.level());
-        text.setWordCount(estimate.wordCount());
-        text.setUniqueWordCount(estimate.uniqueWordCount());
         if (cues != null && !cues.isEmpty()) {
             text.setCuesJson(json.writeValueAsString(cues));
         }
@@ -122,15 +117,21 @@ public class TextService {
 
     public List<Token> replaceTranscript(Text text, String content, List<SubtitleParser.Cue> cues) {
         List<Token> tokens = tokenizer.tokenize(text.getLanguage(), content);
-        DifficultyEstimator.Estimate estimate = DifficultyEstimator.estimate(text.getLanguage(), tokens);
         text.setContent(content);
+        setTokens(text, tokens);
+        text.setCuesJson(json.writeValueAsString(cues));
+        return tokens;
+    }
+
+    private void setTokens(Text text, List<Token> tokens) {
+        Set<String> found = names.find(text.getLanguage(), tokens);
+        DifficultyEstimator.Estimate estimate = DifficultyEstimator.estimate(text.getLanguage(), tokens, found);
         text.setTokensJson(json.writeValueAsString(tokens));
         text.setWordsJson(KnownWords.wordsJson(tokens, json));
+        text.setPersonNamesJson(names.toJson(found));
         text.setCefrLevel(estimate.level());
         text.setWordCount(estimate.wordCount());
         text.setUniqueWordCount(estimate.uniqueWordCount());
-        text.setCuesJson(json.writeValueAsString(cues));
-        return tokens;
     }
 
     public Text importSubtitles(User owner, MultipartFile file, String title, Language language, boolean isPublic) {
@@ -195,17 +196,13 @@ public class TextService {
                 all.put(ts.getTerm(), ts.getStatus());
             }
         }
-        Map<String, WordStatus> statuses = new LinkedHashMap<>();
-        for (Token t : tokens) {
-            if (t.word() && all.containsKey(t.normalized())) {
-                statuses.put(t.normalized(), all.get(t.normalized()));
-            }
-        }
+        Set<String> textNames = names.of(text);
         String content = TokenizationService.phraseForm(text.getContent(), text.getLanguage());
         phrases.removeIf(p -> !content.contains(TokenizationService.phraseForm(p.term(), text.getLanguage())));
-        return new TextDetail(summarize(user, text, stats(tokens, all), null, null, null), tokens, statuses, phrases,
+        return new TextDetail(summarize(user, text, KnownWords.stats(tokens, all, textNames), null, null, null),
+                tokens, KnownWords.statuses(tokens, all), phrases,
                 audio(text), VideoViews.dto(text, timings(text), () -> AudioAligner.fromCues(tokens, cues(text))),
-                text.getLanguage().speechLocale());
+                text.getLanguage().speechLocale(), KnownWords.namesToShow(tokens, all, textNames));
     }
 
     @Transactional(readOnly = true)
@@ -237,11 +234,11 @@ public class TextService {
         });
         Set<String> words = text.getWordsJson() == null ? UniqueWordsCache.distinct(tokens(text))
                 : uniqueWords.words(text.getId(), text.getWordsJson(), stored -> KnownWords.readWords(stored, json));
-        return KnownWords.stats(words, statuses);
+        return KnownWords.stats(words, statuses, names.of(text));
     }
 
     static KnownStats stats(List<Token> tokens, Map<String, WordStatus> statuses) {
-        return KnownWords.stats(tokens, statuses);
+        return KnownWords.stats(tokens, statuses, Set.of());
     }
 
     public TextSummary summarize(User viewer, Text text, KnownStats stats, Long likes, Boolean liked, Boolean bookmarked) {
