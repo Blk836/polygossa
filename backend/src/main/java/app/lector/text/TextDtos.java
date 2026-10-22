@@ -71,5 +71,6 @@ public final class TextDtos {
             List<PhraseStatus> phrases,
             AudioDto audio,
             VideoDto video,
-            String speechLocale) {}
+            String speechLocale,
+            List<String> names) {}
 }

@@ -121,6 +121,7 @@ export interface TextDetail {
   audio: { src: string; contentType?: string; timings: WordTiming[]; hasCues: boolean } | null;
   video: { videoId: string; durationSeconds?: number; timings: WordTiming[]; hasCues: boolean } | null;
   speechLocale: string;
+  names: string[];
 }
 
 export interface Sense {

@@ -3,6 +3,7 @@ package app.lector.text;
 import app.lector.text.TextDtos.KnownStats;
 import app.lector.token.Token;
 import app.lector.vocab.WordStatus;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -22,16 +23,41 @@ final class KnownWords {
         return new LinkedHashSet<>(json.readValue(wordsJson, new TypeReference<List<String>>() {}));
     }
 
-    static KnownStats stats(List<Token> tokens, Map<String, WordStatus> statuses) {
-        return stats(UniqueWordsCache.distinct(tokens), statuses);
+    static KnownStats stats(List<Token> tokens, Map<String, WordStatus> statuses, Set<String> names) {
+        return stats(UniqueWordsCache.distinct(tokens), statuses, names);
     }
 
-    static KnownStats stats(Set<String> unique, Map<String, WordStatus> statuses) {
+    static WordStatus status(String term, Map<String, WordStatus> statuses, Set<String> names) {
+        WordStatus s = statuses.get(term);
+        return s == null && names.contains(term) ? WordStatus.IGNORED : s;
+    }
+
+    static Map<String, WordStatus> statuses(List<Token> tokens, Map<String, WordStatus> all) {
+        Map<String, WordStatus> out = new LinkedHashMap<>();
+        for (Token t : tokens) {
+            if (t.word() && all.containsKey(t.normalized())) {
+                out.put(t.normalized(), all.get(t.normalized()));
+            }
+        }
+        return out;
+    }
+
+    static List<String> namesToShow(List<Token> tokens, Map<String, WordStatus> all, Set<String> names) {
+        Set<String> out = new LinkedHashSet<>();
+        for (Token t : tokens) {
+            if (t.word() && names.contains(t.normalized()) && !all.containsKey(t.normalized())) {
+                out.add(t.normalized());
+            }
+        }
+        return List.copyOf(out);
+    }
+
+    static KnownStats stats(Set<String> unique, Map<String, WordStatus> statuses, Set<String> names) {
         int known = 0;
         int learning = 0;
         int ignored = 0;
         for (String term : unique) {
-            WordStatus s = statuses.get(term);
+            WordStatus s = status(term, statuses, names);
             if (s == WordStatus.KNOWN) {
                 known++;
             } else if (s == WordStatus.LEARNING) {

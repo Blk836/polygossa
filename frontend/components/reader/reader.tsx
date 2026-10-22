@@ -69,6 +69,7 @@ export function Reader({ initial, initialSettings, playlist }: {
     textId: text.id,
     initialStatuses: initial.statuses,
     initialPhrases: initial.phrases,
+    names: initial.names,
     onSaved,
     onKnownWord: flyFromWord,
     onNotice: popup.setNotice,
@@ -89,15 +90,15 @@ export function Reader({ initial, initialSettings, playlist }: {
   const gaps = useMemo(() => learningGaps(tokens, spans), [tokens, spans]);
   const edges = useMemo(() => learningEdges(spans), [spans]);
   const phraseAt = useCallback((i: number) => savedPhraseAt(spans, i), [spans]);
-  const stats = useMemo(() => readerStats(tokens, vocab.statuses), [tokens, vocab.statuses]);
-  const unseenHere = useMemo(() => unseenOnPage(paging.paragraphs, vocab.statuses), [paging.paragraphs, vocab.statuses]);
+  const stats = useMemo(() => readerStats(tokens, vocab.shown), [tokens, vocab.shown]);
+  const unseenHere = useMemo(() => unseenOnPage(paging.paragraphs, vocab.shown), [paging.paragraphs, vocab.shown]);
 
   const pageStart = pageRange(paging.paragraphs)?.from ?? null;
   const cueToken = page > 1 ? pageStart : null;
   const isShown = useCallback((i: number) => pageOfToken(pages, i) === page, [pages, page]);
   const startPage = useCallback((i: number | null) => mediaRef.current?.startPage(i), []);
 
-  const markPageKnown = usePageKnown({ textId: text.id, statuses: vocab.statuses, markRemainingKnown, onSaved, onError: setError });
+  const markPageKnown = usePageKnown({ textId: text.id, statuses: vocab.shown, markRemainingKnown, onSaved, onError: setError });
   const leavePage = useCallback(
     (n: number) => {
       if (settings.pageKnown && n === page + 1 && n <= paging.count) markPageKnown(paging.paragraphs);
@@ -228,7 +229,7 @@ export function Reader({ initial, initialSettings, playlist }: {
             onKeyDown={focus.onKeyDown}
           >
             {paging.paragraphs.map((p, k) => (
-              <Paragraph key={k} tokens={p} statuses={vocab.statuses} phrases={marks} gaps={gaps} edges={edges} hover={overlapping(p, input.hover, null).sel} stop={p.some((t) => t.index === focus.stop) ? focus.stop : null} sentence={followsSentence(settings.follow) ? sentenceHere(p, spoken.sentence) : null} {...overlapping(p, sel, active)} />
+              <Paragraph key={k} tokens={p} statuses={vocab.shown} phrases={marks} gaps={gaps} edges={edges} hover={overlapping(p, input.hover, null).sel} stop={p.some((t) => t.index === focus.stop) ? focus.stop : null} sentence={followsSentence(settings.follow) ? sentenceHere(p, spoken.sentence) : null} {...overlapping(p, sel, active)} />
             ))}
           </article>
           <PageArrows page={page} count={paging.count} onPage={changePage} />
@@ -242,7 +243,7 @@ export function Reader({ initial, initialSettings, playlist }: {
               language={language}
               speechLocale={initial.speechLocale}
               status={vocab.statusOf(shown)}
-              statuses={vocab.statuses}
+              statuses={vocab.shown}
               onOpenWord={openWordOfPhrase}
               onBack={backToPhrase}
               isPro={isPro}

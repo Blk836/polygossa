@@ -47,6 +47,9 @@ public class Text {
     @Column(columnDefinition = "text")
     private String wordsJson;
 
+    @Column(columnDefinition = "text")
+    private String personNamesJson;
+
     private String sourceUrl;
 
     @Column(name = "is_public", nullable = false)
@@ -99,6 +102,8 @@ public class Text {
     public void setTokensJson(String tokensJson) { body.setTokensJson(tokensJson); }
     public String getWordsJson() { return wordsJson; }
     public void setWordsJson(String wordsJson) { this.wordsJson = wordsJson; }
+    public String getPersonNamesJson() { return personNamesJson; }
+    public void setPersonNamesJson(String personNamesJson) { this.personNamesJson = personNamesJson; }
     public String getSourceUrl() { return sourceUrl; }
     public void setSourceUrl(String sourceUrl) { this.sourceUrl = sourceUrl; }
     public boolean isPublic() { return isPublic; }

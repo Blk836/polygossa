@@ -1,6 +1,7 @@
 package app.lector.vocab;
 
 import app.lector.common.ApiException;
+import app.lector.text.PersonNames;
 import app.lector.text.Text;
 import app.lector.text.TextService;
 import app.lector.token.Language;
@@ -48,11 +49,13 @@ public class VocabularyService {
     private final VocabularyRepository repo;
     private final PlanService plans;
     private final TextService texts;
+    private final PersonNames names;
 
-    public VocabularyService(VocabularyRepository repo, PlanService plans, TextService texts) {
+    public VocabularyService(VocabularyRepository repo, PlanService plans, TextService texts, PersonNames names) {
         this.repo = repo;
         this.plans = plans;
         this.texts = texts;
+        this.names = names;
     }
 
     @Transactional
@@ -122,6 +125,7 @@ public class VocabularyService {
         for (var ts : repo.findTermStatuses(user.getId(), text.getLanguage())) {
             unseen.remove(ts.getTerm());
         }
+        unseen.keySet().removeAll(names.of(text));
         List<VocabularyEntry> created = new ArrayList<>();
         unseen.forEach((term, display) -> {
             VocabularyEntry entry = new VocabularyEntry(user, text.getLanguage(), term, display, EntryKind.WORD);

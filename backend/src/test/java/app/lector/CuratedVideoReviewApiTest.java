@@ -32,6 +32,10 @@ class CuratedVideoReviewApiTest {
     private static final OpenAiStub AI = ImportCategoryApiTest.start(OpenAiStub::new);
     private static final YouTubeStub YOUTUBE = ImportCategoryApiTest.start(YouTubeStub::new);
 
+    static java.util.List<String> reviews() {
+        return AI.requests().stream().filter(r -> r.contains("You review texts")).toList();
+    }
+
     @DynamicPropertySource
     static void stubs(DynamicPropertyRegistry registry) {
         registry.add("app.openai.base-url", AI::baseUrl);
@@ -80,8 +84,8 @@ class CuratedVideoReviewApiTest {
     void theAiFilesItAndChecksItCanBeShared() throws Exception {
         AI.reply("{\"appropriate\":true,\"category\":\"food\"}");
         assertThat(curate(VIDEOS[0], 201).get("category").asString()).isEqualTo("food");
-        assertThat(AI.requests()).hasSize(1);
-        assertThat(AI.requests().getFirst()).contains("appropriate");
+        assertThat(reviews()).hasSize(1);
+        assertThat(reviews().getFirst()).contains("appropriate");
     }
 
     @Test
@@ -116,8 +120,8 @@ class CuratedVideoReviewApiTest {
     void aCopyIsCheckedForSharingButKeepsItsCategory() throws Exception {
         AI.reply("{\"appropriate\":true,\"category\":\"food\"}");
         assertThat(copy("DDDDDDDDDDD", false, 201).get("category").asString()).isEqualTo("learners");
-        assertThat(AI.requests()).hasSize(1);
-        assertThat(AI.requests().getFirst()).contains("appropriate").doesNotContain("File the text under");
+        assertThat(reviews()).hasSize(1);
+        assertThat(reviews().getFirst()).contains("appropriate").doesNotContain("File the text under");
         assertThat(YOUTUBE.requests()).isEmpty();
     }
 
