@@ -1,6 +1,5 @@
 package app.lector.progress;
 
-import app.lector.text.Text;
 import app.lector.text.TextService;
 import app.lector.token.Language;
 import app.lector.token.Token;
@@ -40,20 +39,25 @@ public class PhraseCounts {
             return;
         }
         Map<Long, Long> counts = new HashMap<>();
-        missing.forEach(p -> counts.put(p.id(), 0L));
-        for (ReadingProgress p : progress.findAllForUser(userId)) {
-            Text text = p.getText();
-            List<Phrase> here = missing.stream().filter(m -> m.language() == text.getLanguage()).toList();
-            if (!here.isEmpty()) {
+        Map<Long, List<Phrase>> byText = new HashMap<>();
+        for (Phrase phrase : missing) {
+            counts.put(phrase.id(), 0L);
+            for (Long text : textsContaining(userId, phrase)) {
+                byText.computeIfAbsent(text, t -> new ArrayList<>()).add(phrase);
+            }
+        }
+        if (!byText.isEmpty()) {
+            for (ReadingProgress p : progress.findForTexts(userId, byText.keySet())) {
                 int to = p.isCompleted() ? Integer.MAX_VALUE : p.getPosition();
-                tally(new PhraseMatcher(texts.tokens(text)), here, 0, to, counts);
+                tally(new PhraseMatcher(texts.tokens(p.getText())), byText.get(p.getTextId()), 0, to, counts);
             }
         }
         jdbc.batchUpdate("insert into phrase_counts (entry_id, times) values (?, ?) on conflict do nothing",
-                counts.entrySet().stream().map(e -> new Object[] {e.getKey(), e.getValue()}).toList());
+                counts.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(e -> new Object[] {e.getKey(), e.getValue()}).toList());
     }
 
-    void add(Long userId, Language language, List<Token> tokens, int from, int to) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void add(Long userId, Language language, List<Token> tokens, int from, int to) {
         List<Phrase> phrases = jdbc.query("select v.id, v.language, v.term from vocabulary_entries v "
                 + "join phrase_counts p on p.entry_id = v.id "
                 + "where v.user_id = ? and v.language = ? and v.kind = 'PHRASE'",
@@ -64,6 +68,7 @@ public class PhraseCounts {
         Map<Long, Long> counts = new HashMap<>();
         tally(new PhraseMatcher(tokens), phrases, from, to, counts);
         List<Object[]> rows = counts.entrySet().stream().filter(e -> e.getValue() > 0)
+                .sorted(Map.Entry.comparingByKey())
                 .map(e -> new Object[] {e.getValue(), e.getKey()}).toList();
         jdbc.batchUpdate("update phrase_counts set times = times + ? where entry_id = ?", rows);
     }
@@ -79,6 +84,13 @@ public class PhraseCounts {
             }, new ArrayList<Object>(chunk).toArray());
         }
         return out;
+    }
+
+    private List<Long> textsContaining(Long userId, Phrase phrase) {
+        return jdbc.queryForList("select p.text_id from reading_progress p join texts t on t.id = p.text_id "
+                + "join text_bodies b on b.id = t.body_id where p.user_id = ? and t.language = ? "
+                + "and strpos(regexp_replace(lower(replace(b.content, '’', '''')), '\\s+', ' ', 'g'), ?) > 0",
+                Long.class, userId, phrase.language().name(), PhraseMatcher.normalize(phrase.term()));
     }
 
     private static void tally(PhraseMatcher matcher, List<Phrase> phrases, int from, int to, Map<Long, Long> counts) {

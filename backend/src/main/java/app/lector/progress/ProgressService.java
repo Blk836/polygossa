@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProgressService {
 
     static final int MAX_WORDS_PER_STEP = 500;
+    private static final Logger log = LoggerFactory.getLogger(ProgressService.class);
 
     private final ReadingProgressRepository repo;
     private final WordsReadRepository wordsRead;
@@ -122,8 +125,8 @@ public class ProgressService {
             return;
         }
         int end = WordCounts.cappedEnd(tokens, from, to, MAX_WORDS_PER_STEP);
-        wordCounts.add(user.getId(), text.getLanguage(), tokens, from, end);
-        phraseCounts.add(user.getId(), text.getLanguage(), tokens, from, end);
+        safely("word counts", () -> wordCounts.add(user.getId(), text.getLanguage(), tokens, from, end));
+        safely("phrase counts", () -> phraseCounts.add(user.getId(), text.getLanguage(), tokens, from, end));
         LocalDate day = LocalDate.ofInstant(clock.instant(), user.zone());
         WordsRead row = wordsRead.findByUserIdAndLanguageAndDay(user.getId(), text.getLanguage(), day)
                 .orElseGet(() -> wordsRead.save(new WordsRead(user.getId(), text.getLanguage(), day)));
@@ -131,8 +134,16 @@ public class ProgressService {
     }
 
     private void fillCounts(User user) {
-        wordCounts.fill(user.getId());
-        phraseCounts.fill(user.getId());
+        safely("filling word counts", () -> wordCounts.fill(user.getId()));
+        safely("filling phrase counts", () -> phraseCounts.fill(user.getId()));
+    }
+
+    private static void safely(String what, Runnable counting) {
+        try {
+            counting.run();
+        } catch (RuntimeException e) {
+            log.warn("Skipped {}: {}", what, e.toString());
+        }
     }
 
     private ReadingProgress loadOrNew(User user, Text text) {

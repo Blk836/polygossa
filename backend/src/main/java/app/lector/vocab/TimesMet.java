@@ -9,10 +9,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TimesMet {
+
+    private static final Logger log = LoggerFactory.getLogger(TimesMet.class);
 
     private final WordCounts counts;
     private final PhraseCounts phrases;
@@ -23,8 +27,12 @@ public class TimesMet {
     }
 
     public void fill(Long userId) {
-        counts.fill(userId);
-        phrases.fill(userId);
+        try {
+            counts.fill(userId);
+            phrases.fill(userId);
+        } catch (RuntimeException e) {
+            log.warn("Skipped filling counts: {}", e.toString());
+        }
     }
 
     public Map<Long, VocabularyDto.Met> of(Long userId, Collection<VocabularyEntry> entries) {
