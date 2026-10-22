@@ -47,14 +47,16 @@ public interface VocabularyRepository extends JpaRepository<VocabularyEntry, Lon
     @Query(value = """
             select v from VocabularyEntry v
             left join app.lector.progress.WordCount c
-              on c.userId = v.user.id and c.language = v.language and c.term = v.term
+              on v.kind = app.lector.vocab.EntryKind.WORD
+              and c.userId = v.user.id and c.language = v.language and c.term = v.term
+            left join app.lector.progress.PhraseCount pc on pc.entryId = v.id
             where v.user.id = :userId
               and (:language is null or v.language = :language)
               and (:status is null or v.status = :status)
               and (:kind is null or v.kind = :kind)
               and (:q is null or v.term like :q or lower(v.definition) like :q or lower(v.note) like :q)
               and (:tag is null or v.tags like :tag)
-            order by coalesce(c.times, 0) desc, v.term asc
+            order by coalesce(c.times, pc.times, 0) desc, v.term asc
             """, countQuery = """
             select count(v) from VocabularyEntry v
             where v.user.id = :userId

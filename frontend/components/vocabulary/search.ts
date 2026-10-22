@@ -17,21 +17,11 @@ export function searchParams(f: Filters): URLSearchParams {
   return params;
 }
 
-export const EXPORT_TOPS = [50, 100, 200, 500] as const;
-
-export function exportParams(f: Pick<Filters, "language" | "status"> & Partial<Pick<Filters, "sort">>, top?: number): URLSearchParams {
+export function exportParams(f: Pick<Filters, "language" | "status">): URLSearchParams {
   const params = new URLSearchParams();
   if (f.language) params.set("language", f.language);
   if (f.status) params.set("status", f.status);
-  if (f.sort === "met") {
-    params.set("sort", "met");
-    if (top) params.set("limit", String(top));
-  }
   return params;
-}
-
-export function sortForKind(sort: string, kind: string): string {
-  return kind === "phrase" && sort === "met" ? "recent" : sort;
 }
 
 export function parseTags(input: string): string[] {

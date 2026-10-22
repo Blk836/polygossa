@@ -178,6 +178,7 @@ public class VocabularyService {
                                       String tag, String sort, int page, int size) {
         String pattern = q == null || q.isBlank() ? null : "%" + q.strip().toLowerCase(Locale.ROOT) + "%";
         String tagPattern = tag == null || tag.isBlank() ? null : "% " + tag.strip().toLowerCase(Locale.ROOT) + " %";
+        timesMet.fill(user.getId());
         int number = Math.max(0, page);
         int length = Math.min(Math.max(1, size), 200);
         Page<VocabularyEntry> found = "met".equals(sort)

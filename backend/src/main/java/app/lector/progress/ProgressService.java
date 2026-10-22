@@ -26,11 +26,13 @@ public class ProgressService {
     private final WordsReadRepository wordsRead;
     private final TextService texts;
     private final WordCounts wordCounts;
+    private final PhraseCounts phraseCounts;
     private final Clock clock;
 
     public ProgressService(ReadingProgressRepository repo, WordsReadRepository wordsRead, TextService texts,
-                           WordCounts wordCounts, Clock clock) {
+                           WordCounts wordCounts, PhraseCounts phraseCounts, Clock clock) {
         this.wordCounts = wordCounts;
+        this.phraseCounts = phraseCounts;
         this.repo = repo;
         this.wordsRead = wordsRead;
         this.texts = texts;
@@ -40,7 +42,7 @@ public class ProgressService {
     @Transactional
     public ProgressDto record(User user, Long textId, int position) {
         Text text = texts.loadReadable(user, textId);
-        wordCounts.fill(user.getId());
+        fillCounts(user);
         List<Token> tokens = texts.tokens(text);
         int pos = Math.min(position, Math.max(0, tokens.size() - 1));
         ReadingProgress p = loadOrNew(user, text);
@@ -53,7 +55,7 @@ public class ProgressService {
     @Transactional
     public void complete(User user, Long textId) {
         Text text = texts.loadReadable(user, textId);
-        wordCounts.fill(user.getId());
+        fillCounts(user);
         ReadingProgress p = loadOrNew(user, text);
         if (!p.isCompleted()) {
             credit(user, text, texts.tokens(text), p.getPosition(), Integer.MAX_VALUE);
@@ -119,11 +121,18 @@ public class ProgressService {
         if (words <= 0) {
             return;
         }
-        wordCounts.add(user.getId(), text.getLanguage(), tokens, from, to, MAX_WORDS_PER_STEP);
+        int end = WordCounts.cappedEnd(tokens, from, to, MAX_WORDS_PER_STEP);
+        wordCounts.add(user.getId(), text.getLanguage(), tokens, from, end);
+        phraseCounts.add(user.getId(), text.getLanguage(), tokens, from, end);
         LocalDate day = LocalDate.ofInstant(clock.instant(), user.zone());
         WordsRead row = wordsRead.findByUserIdAndLanguageAndDay(user.getId(), text.getLanguage(), day)
                 .orElseGet(() -> wordsRead.save(new WordsRead(user.getId(), text.getLanguage(), day)));
         row.add(Math.min(words, MAX_WORDS_PER_STEP));
+    }
+
+    private void fillCounts(User user) {
+        wordCounts.fill(user.getId());
+        phraseCounts.fill(user.getId());
     }
 
     private ReadingProgress loadOrNew(User user, Text text) {

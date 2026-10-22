@@ -45,8 +45,18 @@ public class WordCounts {
         }
     }
 
-    void add(Long userId, Language language, List<Token> tokens, int from, int to, int max) {
-        add(userId, language, tally(tokens, from, to, max));
+    void add(Long userId, Language language, List<Token> tokens, int from, int to) {
+        add(userId, language, tally(tokens, from, to, Integer.MAX_VALUE));
+    }
+
+    static int cappedEnd(List<Token> tokens, int from, int to, int max) {
+        int words = 0;
+        for (Token t : tokens) {
+            if (t.word() && t.index() >= from && t.index() < to && ++words > max) {
+                return t.index();
+            }
+        }
+        return to;
     }
 
     public Map<String, Long> counts(Long userId, Language language, Collection<String> terms) {

@@ -15,12 +15,17 @@ async function readThrough(page: Page, created: Created) {
   expect(res.ok(), await res.text()).toBe(true);
 }
 
-async function save(page: Page, created: Created, term: string) {
-  const res = await page.request.post("/api/vocabulary", { data: { language: created.language, term, status: "learning" } });
+async function save(page: Page, created: Created, term: string, kind = "word") {
+  const res = await page.request.post("/api/vocabulary", { data: { language: created.language, term, kind, status: "learning" } });
   expect(res.ok(), await res.text()).toBe(true);
 }
 
-test("Words shows how often I've met each word, sorts by it and exports the top words", async ({ page }) => {
+async function searchFor(page: Page, q: string) {
+  await search(page).fill(q);
+  await search(page).press("Enter");
+}
+
+test("Words shows how often I've met each word and sorts by it, with no export picker", async ({ page }) => {
   let created: Created | null = null;
   try {
     created = await createTextWith(page, (w) => `${w(1)} ${w(2)} ${w(1)}. ${w(1)} ${w(2)} ${w(3)}. ${w(4)} ${w(1)}.`);
@@ -29,26 +34,41 @@ test("Words shows how often I've met each word, sorts by it and exports the top 
     for (const term of [never, once, often, twice]) await save(page, created, term);
 
     await page.goto("/vocabulary");
-    await search(page).fill(created.prefix);
-    await search(page).press("Enter");
+    await searchFor(page, created.prefix);
 
-    await expect(row(page, often).getByTestId("times-met")).toHaveText(/^4× · (\d+(\.\d+)?|<0\.01)%$/);
-    await expect(row(page, twice).getByTestId("times-met")).toHaveText(/^2× · /);
+    await expect(row(page, often).getByTestId("times-met")).toHaveText(/^Met 4 times · 1 in [\d,]+ words$/);
+    await expect(row(page, once).getByTestId("times-met")).toHaveText(/^Met once · 1 in [\d,]+ words$/);
     await expect(row(page, never).getByTestId("times-met")).toHaveText("Not met yet");
 
-    await expect(page.getByRole("combobox", { name: "Words to export" })).toHaveCount(0);
     await filter(page, "Sort").selectOption("met");
-    const terms = page.getByRole("listitem").locator(".font-reading.text-lg");
-    await expect(terms).toHaveText([often, twice, once, never]);
+    await expect(page.getByRole("listitem").locator(".font-reading.text-lg")).toHaveText([often, twice, once, never]);
+    await expect(page.getByRole("combobox", { name: "Words to export" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Export to Anki" })).not.toHaveAttribute("href", /limit=/);
+  } finally {
+    await cleanUp(page, created);
+  }
+});
 
-    await page.getByRole("combobox", { name: "Words to export" }).selectOption("100");
-    const anki = page.getByRole("link", { name: "Export to Anki" });
-    await expect(anki).toHaveAttribute("href", /sort=met&limit=100$/);
-    await expect(page.getByRole("link", { name: "Export CSV" })).toHaveAttribute("href", /sort=met&limit=100$/);
+test("Phrases show how often I've met them and sort by it", async ({ page }) => {
+  let created: Created | null = null;
+  try {
+    created = await createTextWith(page, (w) => `${w(1)} ${w(2)} ${w(3)}. ${w(1)} ${w(2)} ${w(4)}. ${w(3)} ${w(4)}.`);
+    const twice = `${created.word(1)} ${created.word(2)}`;
+    const once = `${created.word(3)} ${created.word(4)}`;
+    const never = `${created.word(4)} ${created.word(1)}`;
+    await readThrough(page, created);
+    for (const term of [never, once, twice]) await save(page, created, term, "phrase");
 
+    await page.goto("/vocabulary");
     await section(page).getByRole("button", { name: "Phrases", exact: true }).click();
-    await expect(filter(page, "Sort")).toHaveValue("recent");
-    await expect(filter(page, "Sort").locator("option[value=met]")).toHaveCount(0);
+    await searchFor(page, created.prefix);
+
+    await expect(row(page, twice).getByTestId("times-met")).toHaveText("Met 2 times");
+    await expect(row(page, once).getByTestId("times-met")).toHaveText("Met once");
+    await expect(row(page, never).getByTestId("times-met")).toHaveText("Not met yet");
+
+    await filter(page, "Sort").selectOption("met");
+    await expect(page.getByRole("listitem").locator(".font-reading.text-lg")).toHaveText([twice, once, never]);
   } finally {
     await cleanUp(page, created);
   }

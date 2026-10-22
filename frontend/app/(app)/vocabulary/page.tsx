@@ -5,9 +5,9 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { ANKI_SYNCED_EVENT } from "@/components/anki-auto-sync";
 import { useMe } from "@/components/me-context";
 import { AnkiBar } from "@/components/vocabulary/anki-bar";
-import { PageHeader, Spinner, selectClass } from "@/components/ui";
+import { PageHeader, Spinner } from "@/components/ui";
 import { FilterBar } from "@/components/vocabulary/filters";
-import { EXPORT_TOPS, exportParams, initialStatus, sortForKind, type Filters } from "@/components/vocabulary/search";
+import { exportParams, initialStatus, type Filters } from "@/components/vocabulary/search";
 import { WordImports } from "@/components/vocabulary/word-import";
 import { WordList } from "@/components/vocabulary/word-list";
 import type { PlanInfo } from "@/lib/types";
@@ -44,8 +44,7 @@ function VocabularyView() {
     page: 0,
   }));
   const update = useCallback((patch: Partial<Filters>) => setFilters((f) => ({ ...f, ...patch })), []);
-  const [top, setTop] = useState(0);
-  const exportQuery = exportParams(filters, top);
+  const exportQuery = exportParams(filters);
   const [importOpen, setImportOpen] = useState(false);
   const [reload, setReload] = useState(0);
   const imported = useCallback(() => {
@@ -65,12 +64,6 @@ function VocabularyView() {
         actions={
           <>
             <button type="button" className={linkClass} data-tour="words-import" aria-expanded={importOpen} onClick={() => setImportOpen((o) => !o)}>Import words</button>
-            {filters.sort === "met" && (
-              <select className={selectClass} value={top} onChange={(e) => setTop(Number(e.target.value))} aria-label="Words to export">
-                <option value={0}>Export all</option>
-                {EXPORT_TOPS.map((n) => <option key={n} value={n}>Export top {n}</option>)}
-              </select>
-            )}
             <a className={linkClass} href={`/api/vocabulary/export.csv?${exportQuery}`}>Export CSV</a>
             <a className={linkClass} href={`/api/vocabulary/export.apkg?${exportQuery}`}>Export to Anki</a>
           </>
@@ -79,7 +72,7 @@ function VocabularyView() {
       <WordImports open={importOpen} defaultLanguage={me.targetLanguage ?? ""} onImported={imported} />
       <div className="mb-4 flex gap-1 rounded-lg border border-line bg-card p-1 text-sm sm:w-fit" role="group" aria-label="Vocabulary section">
         {SECTIONS.map(({ kind, label }) => (
-          <button key={kind} type="button" aria-pressed={filters.kind === kind} onClick={() => update({ kind, page: 0, sort: sortForKind(filters.sort, kind) })}
+          <button key={kind} type="button" aria-pressed={filters.kind === kind} onClick={() => update({ kind, page: 0 })}
             className={`flex-1 whitespace-nowrap rounded-md px-4 py-1.5 ${filters.kind === kind ? "bg-accent-soft font-medium" : "text-muted"}`}>
             {label}
           </button>

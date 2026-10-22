@@ -39,7 +39,7 @@ public final class CsvExporter {
     }
 
     private static String percent(VocabularyDto.Met met) {
-        if (met == null) {
+        if (met == null || met.share() == null) {
             return null;
         }
         return BigDecimal.valueOf(met.share() * 100).setScale(4, RoundingMode.HALF_UP).stripTrailingZeros()
