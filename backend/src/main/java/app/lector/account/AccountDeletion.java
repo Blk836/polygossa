@@ -18,7 +18,8 @@ public class AccountDeletion {
     static final List<String> OWN_ROWS = List.of(
             "ai_usage", "anki_links", "anki_sync_runs", "anki_decks", "playlist_bookmarks", "reading_progress",
             "reading_sessions", "recommendation_events", "review_logs","text_dismissals", "text_reactions", "user_days", "user_interests",
-            "vocabulary_entries", "word_imports", "words_read", "writing_submissions", "writing_tests",
+            "vocabulary_entries", "word_count_fills", "word_counts", "word_imports", "words_read",
+            "writing_submissions", "writing_tests",
             "subscriptions");
 
     private final JdbcTemplate jdbc;

@@ -50,8 +50,11 @@ public class VocabularyService {
     private final PlanService plans;
     private final TextService texts;
     private final PersonNames names;
+    private final TimesMet timesMet;
 
-    public VocabularyService(VocabularyRepository repo, PlanService plans, TextService texts, PersonNames names) {
+    public VocabularyService(VocabularyRepository repo, PlanService plans, TextService texts, PersonNames names,
+                             TimesMet timesMet) {
+        this.timesMet = timesMet;
         this.repo = repo;
         this.plans = plans;
         this.texts = texts;
@@ -175,13 +178,23 @@ public class VocabularyService {
                                       String tag, String sort, int page, int size) {
         String pattern = q == null || q.isBlank() ? null : "%" + q.strip().toLowerCase(Locale.ROOT) + "%";
         String tagPattern = tag == null || tag.isBlank() ? null : "% " + tag.strip().toLowerCase(Locale.ROOT) + " %";
-        Sort order = switch (sort == null ? "recent" : sort) {
+        int number = Math.max(0, page);
+        int length = Math.min(Math.max(1, size), 200);
+        Page<VocabularyEntry> found = "met".equals(sort)
+                ? repo.searchByTimesMet(user.getId(), language, status, kind, pattern, tagPattern,
+                        PageRequest.of(number, length))
+                : repo.search(user.getId(), language, status, kind, pattern, tagPattern,
+                        PageRequest.of(number, length, order(sort)));
+        Map<Long, VocabularyDto.Met> met = timesMet.of(user.getId(), found.getContent());
+        return found.map(e -> VocabularyDto.of(e).withMet(met.get(e.getId())));
+    }
+
+    private static Sort order(String sort) {
+        return switch (sort == null ? "recent" : sort) {
             case "alpha" -> Sort.by("term").ascending();
             case "due" -> Sort.by("srs.dueAt").ascending();
             default -> Sort.by("updatedAt").descending();
         };
-        var pageable = PageRequest.of(Math.max(0, page), Math.min(Math.max(1, size), 200), order);
-        return repo.search(user.getId(), language, status, kind, pattern, tagPattern, pageable).map(VocabularyDto::of);
     }
 
     @Transactional(readOnly = true)

@@ -25,6 +25,7 @@ export function FilterBar({ filters, onChange }: {
         <option value="recent">Recently updated</option>
         <option value="alpha">A–Z</option>
         <option value="due">Due for review</option>
+        {filters.kind !== "phrase" && <option value="met">Most met</option>}
       </select>
     </div>
   );

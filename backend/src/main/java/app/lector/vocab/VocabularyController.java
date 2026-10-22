@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -85,9 +86,11 @@ public class VocabularyController {
     private final VocabularyRepository repo;
     private final CurrentUser currentUser;
     private final Brand brand;
+    private final TimesMet timesMet;
 
     public VocabularyController(VocabularyService service, VocabularyRepository repo, CurrentUser currentUser,
-                                Brand brand) {
+                                Brand brand, TimesMet timesMet) {
+        this.timesMet = timesMet;
         this.brand = brand;
         this.service = service;
         this.repo = repo;
@@ -162,23 +165,37 @@ public class VocabularyController {
     @Transactional(readOnly = true)
     public ResponseEntity<byte[]> exportCsv(@AuthenticationPrincipal AuthUser principal,
                                             @RequestParam(required = false) Language language,
-                                            @RequestParam(required = false) WordStatus status) {
-        List<VocabularyEntry> entries = entriesForExport(principal, language, status);
-        return download(CsvExporter.export(entries), "text/csv; charset=utf-8", fileName(language, "csv"));
+                                            @RequestParam(required = false) WordStatus status,
+                                            @RequestParam(required = false) String sort,
+                                            @RequestParam(required = false) Integer limit) {
+        User user = currentUser.load(principal);
+        List<VocabularyEntry> all = entriesForExport(user, language, status);
+        Map<Long, VocabularyDto.Met> met = timesMet.of(user.getId(), all);
+        List<VocabularyEntry> entries = ordered(all, met, sort, limit);
+        return download(CsvExporter.export(entries, met), "text/csv; charset=utf-8", fileName(language, "csv"));
     }
 
     @GetMapping("/export.apkg")
     @Transactional(readOnly = true)
     public ResponseEntity<byte[]> exportAnki(@AuthenticationPrincipal AuthUser principal,
                                              @RequestParam(required = false) Language language,
-                                             @RequestParam(required = false) WordStatus status) {
-        List<VocabularyEntry> entries = entriesForExport(principal, language, status);
+                                             @RequestParam(required = false) WordStatus status,
+                                             @RequestParam(required = false) String sort,
+                                             @RequestParam(required = false) Integer limit) {
+        User user = currentUser.load(principal);
+        List<VocabularyEntry> all = entriesForExport(user, language, status);
+        List<VocabularyEntry> entries = "met".equals(sort) ? ordered(all, timesMet.of(user.getId(), all), sort, limit)
+                : all;
         String deckName = brand.name() + (language == null ? "" : "::" + language.displayName());
         return download(AnkiExporter.export(brand.name(), deckName, entries), "application/octet-stream", fileName(language, "apkg"));
     }
 
-    private List<VocabularyEntry> entriesForExport(AuthUser principal, Language language, WordStatus status) {
-        User user = currentUser.load(principal);
+    private static List<VocabularyEntry> ordered(List<VocabularyEntry> all, Map<Long, VocabularyDto.Met> met,
+                                                 String sort, Integer limit) {
+        return "met".equals(sort) ? TimesMet.mostMet(all, met, limit) : all;
+    }
+
+    private List<VocabularyEntry> entriesForExport(User user, Language language, WordStatus status) {
         return repo.findForExport(user.getId(), language).stream()
                 .filter(e -> status == null || e.getStatus() == status)
                 .toList();

@@ -44,6 +44,30 @@ public interface VocabularyRepository extends JpaRepository<VocabularyEntry, Lon
                                  @Param("status") WordStatus status, @Param("kind") EntryKind kind,
                                  @Param("q") String q, @Param("tag") String tag, Pageable pageable);
 
+    @Query(value = """
+            select v from VocabularyEntry v
+            left join app.lector.progress.WordCount c
+              on c.userId = v.user.id and c.language = v.language and c.term = v.term
+            where v.user.id = :userId
+              and (:language is null or v.language = :language)
+              and (:status is null or v.status = :status)
+              and (:kind is null or v.kind = :kind)
+              and (:q is null or v.term like :q or lower(v.definition) like :q or lower(v.note) like :q)
+              and (:tag is null or v.tags like :tag)
+            order by coalesce(c.times, 0) desc, v.term asc
+            """, countQuery = """
+            select count(v) from VocabularyEntry v
+            where v.user.id = :userId
+              and (:language is null or v.language = :language)
+              and (:status is null or v.status = :status)
+              and (:kind is null or v.kind = :kind)
+              and (:q is null or v.term like :q or lower(v.definition) like :q or lower(v.note) like :q)
+              and (:tag is null or v.tags like :tag)
+            """)
+    Page<VocabularyEntry> searchByTimesMet(@Param("userId") Long userId, @Param("language") Language language,
+                                           @Param("status") WordStatus status, @Param("kind") EntryKind kind,
+                                           @Param("q") String q, @Param("tag") String tag, Pageable pageable);
+
     @Query("select v.tags from VocabularyEntry v where v.user.id = :userId "
             + "and (:language is null or v.language = :language) and v.tags is not null")
     List<String> findTagColumns(@Param("userId") Long userId, @Param("language") Language language);

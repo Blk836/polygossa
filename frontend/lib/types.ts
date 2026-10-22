@@ -177,6 +177,7 @@ export interface VocabularyEntry {
   updatedAt: string;
   dueAt?: string;
   anki?: { state: "new" | "young" | "mature"; promoted: boolean };
+  met?: { count: number; share: number };
 }
 
 export interface Page<T> {
