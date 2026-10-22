@@ -128,9 +128,7 @@ public class ProgressService {
         safely("word counts", () -> wordCounts.add(user.getId(), text.getLanguage(), tokens, from, end));
         safely("phrase counts", () -> phraseCounts.add(user.getId(), text.getLanguage(), tokens, from, end));
         LocalDate day = LocalDate.ofInstant(clock.instant(), user.zone());
-        WordsRead row = wordsRead.findByUserIdAndLanguageAndDay(user.getId(), text.getLanguage(), day)
-                .orElseGet(() -> wordsRead.save(new WordsRead(user.getId(), text.getLanguage(), day)));
-        row.add(Math.min(words, MAX_WORDS_PER_STEP));
+        wordsRead.addWords(user.getId(), text.getLanguage().name(), day, Math.min(words, MAX_WORDS_PER_STEP));
     }
 
     private void fillCounts(User user) {

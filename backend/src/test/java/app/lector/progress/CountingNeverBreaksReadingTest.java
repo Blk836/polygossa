@@ -41,8 +41,6 @@ class CountingNeverBreaksReadingTest {
                 new Token(1, " ", false, null, null, null, 0), new Token(2, "deux", true, "deux", null, null, 0)));
         when(repo.findOne(anyLong(), anyLong())).thenReturn(Optional.empty());
         when(repo.save(any())).thenAnswer(a -> a.getArgument(0));
-        when(wordsRead.findByUserIdAndLanguageAndDay(anyLong(), any(), any())).thenReturn(Optional.empty());
-        when(wordsRead.save(any())).thenAnswer(a -> a.getArgument(0));
         doThrow(new DataIntegrityViolationException("phrase deleted meanwhile")).when(phrases).fill(7L);
         doThrow(new DataIntegrityViolationException("text deleted meanwhile")).when(words).fill(7L);
         doThrow(new DataIntegrityViolationException("lock timeout")).when(phrases)
