@@ -1,4 +1,4 @@
-package app.lector.curator;
+package app.lector.video;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

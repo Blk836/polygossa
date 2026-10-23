@@ -1,4 +1,4 @@
-package app.lector.curator;
+package app.lector.video;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

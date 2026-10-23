@@ -1,4 +1,4 @@
-package app.lector.curator;
+package app.lector.video;
 
 import java.util.Locale;
 import java.util.Optional;
@@ -44,6 +44,10 @@ public class TranscriptionLimits {
         }
         return Optional.of("transcription budget used up: " + money(spent) + " of " + money(budgetUsd)
                 + " spent, and this would cost " + money(cost));
+    }
+
+    public long maxAudioBytes() {
+        return maxAudioBytes;
     }
 
     public Optional<String> tooBig(long bytes) {

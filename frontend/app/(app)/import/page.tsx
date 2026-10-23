@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState, type FormEvent } from "react";
+import { Suspense, useEffect, useState, type FormEvent } from "react";
 import { useMe } from "@/components/me-context";
 import { Button, FailureNote, Field, PageHeader, inputClass, selectClass } from "@/components/ui";
 import { ApiError, api, errorMessage } from "@/lib/api";
@@ -201,8 +201,23 @@ function ImportForm() {
         </label>
       )}
       <FailureNote error={error} />
+      <SlowVideoNote key={String(busy)} busy={busy} mode={mode} />
       <Button type="submit" disabled={busy}>{busy ? "Importing…" : mode === "youtube" ? "Import and start watching" : "Import and start reading"}</Button>
     </form>
+  );
+}
+
+function SlowVideoNote({ busy, mode }: { busy: boolean; mode: Mode }) {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setSlow(true), 4000);
+    return () => clearTimeout(timer);
+  }, []);
+  if (!slow || !busy || mode !== "youtube") return null;
+  return (
+    <p role="status" className="text-sm text-muted">
+      Still working: a video without captions we can read is transcribed from its audio, which can take a minute or two.
+    </p>
   );
 }
 
