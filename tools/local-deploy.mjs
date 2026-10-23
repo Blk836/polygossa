@@ -132,6 +132,7 @@ process.exitCode = await runDeploy(process.argv.slice(2), {
   account: async () => (signedInAccount = tryRun(() => run(AWS, ["sts", "get-caller-identity", "--profile", PROFILE,
     "--query", "Account", "--output", "text"]))),
   expectedAccount: process.env.CDK_DEFAULT_ACCOUNT ?? tryRun(() => run(GH, ["variable", "get", "AWS_ACCOUNT_ID"], { cwd: root })),
+  ownerEmail: async () => tryRun(() => JSON.parse(readFileSync(join(homedir(), ".cdk.json"), "utf8")).context["owner-email"]),
   dockerRunning: async () => tryRun(() => run("docker", ["info"], { env: { ...process.env, PATH } })) !== null,
   mainSha: async () => { git("fetch", "--quiet", "origin", "main"); return git("rev-parse", "origin/main"); },
   deployState: async (sha) => deployState(sha),

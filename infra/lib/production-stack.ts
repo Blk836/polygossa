@@ -22,7 +22,7 @@ export interface ProductionProps extends cdk.StackProps {
   readonly domain?: string;
   readonly domainLive?: boolean;
   readonly googleClientId?: string;
-  readonly alertEmail?: string;
+  readonly ownerEmail?: string;
   readonly paused?: boolean;
   readonly databaseSnapshot?: string;
 }
@@ -86,10 +86,11 @@ export class ProductionStack extends cdk.Stack {
       const database = appDatabase(this, vpc, "small", props.databaseSnapshot);
       const app = appServices(this, {
         vpc, listener, database, login, siteUrl: this.siteUrl, uploads, jwtSecret, curatorToken,
+        admins: props.ownerEmail ?? "",
       });
       watched = { ...app, database };
     }
-    if (props.alertEmail) monitoring(this, props.alertEmail, watched);
+    if (props.ownerEmail) monitoring(this, props.ownerEmail, watched);
 
     domain?.pointAt(distribution);
     new cdk.CfnOutput(this, "SiteUrl", { value: this.siteUrl, description: "The production site" });

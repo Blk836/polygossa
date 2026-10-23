@@ -14,7 +14,7 @@ export function defineApp(app: cdk.App, env: cdk.Environment, cloudFrontPrefixLi
     domain: app.node.tryGetContext("domain") as string | undefined,
     domainLive: app.node.tryGetContext("domain-live") === true,
     googleClientId,
-    alertEmail: app.node.tryGetContext("alert-email") as string | undefined,
+    ownerEmail: app.node.tryGetContext("owner-email") as string | undefined,
     paused: [true, "true"].includes(app.node.tryGetContext("paused")),
     databaseSnapshot: app.node.tryGetContext("database-snapshot") as string | undefined,
   });

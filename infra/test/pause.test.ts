@@ -13,7 +13,7 @@ function production(context: Record<string, unknown> = {}): Template {
   const app = new cdk.App({
     context: {
       "github-repo": "owner/repo", "github-subject": "repo:owner/repo", domain: DOMAIN, "domain-live": true,
-      "alert-email": "owner@example.com", ...context,
+      "owner-email": "owner@example.com", ...context,
     },
   });
   return Template.fromStack(defineApp(app, { account: "111111111111", region: "eu-west-1" }, "pl-cloudfront").production);

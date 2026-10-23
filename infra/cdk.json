@@ -8,7 +8,6 @@
     "domain-live": true,
     "paused": true,
     "database-snapshot": "polygossastaging-snapshot-databaseb269d8bb-wr7g1suqcjme",
-    "alert-email": "owner@example.com",
     "google-client-id": "397936511684-pjgldi7ogcrl4kub1s7qairl877k55v1.apps.googleusercontent.com"
   }
 }

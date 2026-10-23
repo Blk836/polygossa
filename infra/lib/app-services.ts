@@ -23,6 +23,7 @@ export interface AppParts {
   readonly database: AppDatabase;
   readonly login: Login;
   readonly siteUrl: string;
+  readonly admins: string;
   readonly uploads: s3.IBucket;
   readonly jwtSecret: secretsmanager.ISecret;
   readonly curatorToken: secretsmanager.ISecret;
@@ -93,7 +94,7 @@ function backendService(scope: cdk.Stack, cluster: ecs.Cluster, parts: AppParts)
       STORAGE_S3_REGION: scope.region,
       COGNITO_ISSUER: login.issuer,
       COGNITO_CLIENT_ID: login.clientId,
-      FORUM_ADMINS: "owner@example.com",
+      FORUM_ADMINS: parts.admins,
       APP_URL: parts.siteUrl,
       TRANSLATION_ENABLED: "true",
       TRANSLATION_REGION: scope.region,

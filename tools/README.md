@@ -52,7 +52,9 @@ node tools/local-deploy.mjs --again   # deploy it even so (say, to retry after A
 It deploys from the PC's own checkout of main (`polygossa-deploy` in the main checkout's `.git` folder), so no
 session's worktree changes, and takes the same turn as the local checks. It needs Docker Desktop running and the
 `polygossa` AWS profile signed in (`aws login --profile polygossa`, 12 hours), and refuses if that profile is another
-account than the `AWS_ACCOUNT_ID` repository variable. It runs `cdk deploy PolygossaStaging PolygossaQa`, then checks
+account than the `AWS_ACCOUNT_ID` repository variable. Production's alert email and admin come from
+`{ "context": { "owner-email": "…" } }` in `~/.cdk.json` (outside the repository; GitHub's deploy uses the
+`OWNER_EMAIL` secret), and it refuses without it. It runs `cdk deploy PolygossaStaging PolygossaQa`, then checks
 the sign-in page and the languages list through the site, and marks main's commit "deploy production" on GitHub
 (pending, then green or red); a green mark is how it knows main is already live. `AWS_CLI` and `GH` override where the
 AWS and GitHub CLIs are.
