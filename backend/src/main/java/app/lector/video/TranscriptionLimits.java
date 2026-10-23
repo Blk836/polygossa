@@ -1,4 +1,4 @@
-package app.lector.curator;
+package app.lector.video;
 
 import java.util.Locale;
 import java.util.Optional;

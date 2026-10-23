@@ -3,8 +3,8 @@ package app.lector;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
-import app.lector.curator.AudioTranscription;
-import app.lector.curator.AudioTranscriptionRepository;
+import app.lector.video.AudioTranscription;
+import app.lector.video.AudioTranscriptionRepository;
 import app.lector.seed.SampleContentSeeder;
 import app.lector.text.Text;
 import app.lector.text.TextRepository;
