@@ -201,7 +201,7 @@ jobs:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: eu-west-1
       - run: npm ci
-      - run: npx cdk deploy PolygossaStaging PolygossaQa --require-approval never --progress events
+      - run: npx cdk deploy PolygossaStaging PolygossaQa --require-approval never --progress events -c owner-email="${{ secrets.OWNER_EMAIL }}"
       - name: The site answers
         run: |
           url=$(aws cloudformation describe-stacks --stack-name PolygossaStaging \

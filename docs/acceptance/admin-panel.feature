@@ -20,7 +20,7 @@ Feature: Admin panel (see docs/architecture/platform.md)
 
   Scenario: The site's admins are set in the infrastructure
     Given the live site is deployed from infra/
-    Then its backend's FORUM_ADMINS is exactly owner@example.com
+    Then its backend's FORUM_ADMINS is exactly the owner's email, given at deploy time (owner-email-outside-repo.feature)
     And signing in there with that email shows the "Admin" item, while every other account gets 403
 
   # --- Stats ---

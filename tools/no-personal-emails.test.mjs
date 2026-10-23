@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ALLOWED = ["example.com", "test.co", "b.co", "x.co", "lector.local", "users.noreply.github.com"];
 const EMAIL = /[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})/g;
+const AT = "@";
 const SKIPPED = /(^|\/)package-lock\.json$|\.(png|jpe?g|webp|gif|ico|woff2?|ttf|jar|zip|gz)$/i;
 
 export function personalEmails(path, text) {
@@ -23,8 +24,8 @@ export function personalEmails(path, text) {
 
 test("only placeholder and test addresses are allowed", () => {
   assert.deepEqual(personalEmails("a.md", "ana@example.com a@b.co x@test.co t@lector.local 1+me@users.noreply.github.com"), []);
-  assert.deepEqual(personalEmails("a.md", "ok\nwrite to someone@gmail.com"), ["a.md:2 someone@gmail.com"]);
-  assert.deepEqual(personalEmails("a.md", "me@notexample.com"), ["a.md:1 me@notexample.com"]);
+  assert.deepEqual(personalEmails("a.md", `ok\nwrite to someone${AT}gmail.com`), [`a.md:2 someone${AT}gmail.com`]);
+  assert.deepEqual(personalEmails("a.md", `me${AT}notexample.com`), [`a.md:1 me${AT}notexample.com`]);
 });
 
 test("no tracked file holds a personal email address", () => {

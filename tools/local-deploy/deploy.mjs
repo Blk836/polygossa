@@ -26,6 +26,11 @@ async function ready(deps) {
       + ` ${deps.expectedAccount}.`);
     return false;
   }
+  if (!(await deps.ownerEmail())) {
+    deps.log('No owner email for production\'s alerts and admin: add "owner-email" to the "context" in ~/.cdk.json,'
+      + ' e.g. { "context": { "owner-email": "you@example.com" } }, then run this again.');
+    return false;
+  }
   if (!(await deps.dockerRunning())) {
     deps.log("Docker isn't running: start Docker Desktop (the deploy builds the app's images), then run this again.");
     return false;
