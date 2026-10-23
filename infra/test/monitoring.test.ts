@@ -12,7 +12,7 @@ before(() => {
   const stack = new ProductionStack(app, "Production", {
     env: { account: "111111111111", region: "eu-west-1" },
     cloudFrontPrefixListId: "pl-cloudfront",
-    alertEmail: EMAIL,
+    ownerEmail: EMAIL,
   });
   template = Template.fromStack(stack);
 });

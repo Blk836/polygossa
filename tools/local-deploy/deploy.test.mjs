@@ -13,6 +13,7 @@ function world(overrides = {}) {
     account: async () => { calls.order.push("account"); return ACCOUNT; },
     expectedAccount: ACCOUNT,
     dockerRunning: async () => { calls.order.push("docker"); return true; },
+    ownerEmail: async () => "owner@example.com",
     mainSha: async () => { calls.order.push("main"); return MAIN; },
     deployState: async () => null,
     lock: async (holder) => { calls.order.push("lock"); calls.locks.push(holder); return () => { calls.released++; }; },
@@ -252,3 +253,12 @@ for (const [label, live, planned] of [
     assert.ok(calls.order.includes("deploy"));
   });
 }
+
+test("no owner email for alerts and admins: stops before anything, says where to set it", async () => {
+  const { deps, calls, output } = world({ ownerEmail: async () => null });
+  assert.equal(await runDeploy([], deps), 2);
+  assert.deepEqual(calls.locks, []);
+  assert.deepEqual(calls.status, []);
+  assert.match(output(), /"owner-email"/);
+  assert.match(output(), /~\/\.cdk\.json/);
+});

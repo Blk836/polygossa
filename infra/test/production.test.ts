@@ -13,6 +13,7 @@ before(() => {
   const stack = new ProductionStack(app, "Production", {
     env: { account: "111111111111", region: "eu-west-1" },
     cloudFrontPrefixListId: "pl-cloudfront",
+    ownerEmail: "owner@example.com",
   });
   template = Template.fromStack(stack);
 });
@@ -87,8 +88,20 @@ describe("production stack", () => {
     assert.equal(envOf(container("frontend")).AUTO_LOGIN, "false");
   });
 
-  it("names the site's admins", () => {
+  it("makes the owner, given at deploy time, the site's admin", () => {
     assert.equal(envOf(container("backend")).FORUM_ADMINS, "owner@example.com");
+  });
+
+  it("without the owner's email, has no admins and emails no alerts", () => {
+    const bare = Template.fromStack(new ProductionStack(new cdk.App(), "Bare", {
+      env: { account: "111111111111", region: "eu-west-1" },
+      cloudFrontPrefixListId: "pl-cloudfront",
+    }));
+    const backend = Object.values(bare.findResources("AWS::ECS::TaskDefinition"))
+      .flatMap((t) => t.Properties.ContainerDefinitions as Record<string, unknown>[])
+      .find((c) => c.Name === "backend")!;
+    assert.equal(envOf(backend).FORUM_ADMINS, "");
+    bare.resourceCountIs("AWS::SNS::Subscription", 0);
   });
 
   it("lets only the frontend reach the backend, and only the backend reach the database", () => {
