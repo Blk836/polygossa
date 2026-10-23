@@ -46,6 +46,10 @@ public class TranscriptionLimits {
                 + " spent, and this would cost " + money(cost));
     }
 
+    public long maxAudioBytes() {
+        return maxAudioBytes;
+    }
+
     public Optional<String> tooBig(long bytes) {
         if (bytes <= maxAudioBytes) {
             return Optional.empty();

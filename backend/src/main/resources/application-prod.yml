@@ -22,5 +22,8 @@ app:
   forum:
     admins: ${FORUM_ADMINS:}
   dev-auto-login: false
+  youtube:
+    audio:
+      enabled: false
   login:
     local-accounts: ${LOCAL_ACCOUNTS:false}

@@ -88,6 +88,11 @@ app:
   forum:
     admins: ${FORUM_ADMINS:test@lector.local}
   curator-token: ${CURATOR_TOKEN:}
+  youtube:
+    audio:
+      enabled: ${YOUTUBE_AUDIO_DOWNLOAD:true}
+      yt-dlp: ${YTDLP:yt-dlp}
+      cookies-from-browser: ${YTDLP_COOKIES_FROM_BROWSER:firefox}
   transcription:
     max-minutes: ${TRANSCRIPTION_MAX_MINUTES:30}
     budget-usd: ${TRANSCRIPTION_BUDGET_USD:10}
