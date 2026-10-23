@@ -3,7 +3,7 @@
   "watch": { "include": ["bin/**", "lib/**"] },
   "context": {
     "github-repo": "Blk836/polygossa",
-    "github-subject": "repo:Blk836@15254657/polygossa@1405831822",
+    "github-subject": "repo:Blk836@15254657/polygossa@1431095259",
     "domain": "polygossa.com",
     "domain-live": true,
     "paused": true,
