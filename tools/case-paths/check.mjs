@@ -16,21 +16,25 @@ function files(dir, keep) {
   });
 }
 
-function exactlyExists(root, path) {
+function entries(dir) {
+  return existsSync(dir) && statSync(dir).isDirectory() ? readdirSync(dir) : [];
+}
+
+function lookUp(root, path) {
   let dir = root;
+  let exact = true;
   for (const part of relative(root, path).split(sep)) {
     if (part === "..") {
       dir = dirname(dir);
       continue;
     }
-    if (!readdirSync(dir).includes(part)) return false;
-    dir = join(dir, part);
+    const names = entries(dir);
+    const name = names.includes(part) ? part : names.find((n) => n.toLowerCase() === part.toLowerCase());
+    if (name === undefined) return null;
+    exact &&= name === part;
+    dir = join(dir, name);
   }
-  return true;
-}
-
-function isFile(path) {
-  return existsSync(path) && statSync(path).isFile();
+  return statSync(dir).isFile() ? { exact } : null;
 }
 
 function target(root, file, spec) {
@@ -42,8 +46,8 @@ function target(root, file, spec) {
 function caseProblem(root, file, spec) {
   const base = target(root, file, spec);
   if (base === null) return false;
-  const found = ENDINGS.map((ending) => base + ending).filter(isFile);
-  return found.length > 0 && !found.some((path) => exactlyExists(root, path));
+  const found = ENDINGS.map((ending) => lookUp(root, base + ending)).filter(Boolean);
+  return found.length > 0 && !found.some((match) => match.exact);
 }
 
 const shown = (root, file) => relative(root, file).split(sep).join("/");

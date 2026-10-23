@@ -15,7 +15,7 @@ personal vocabulary, review it with spaced repetition, and watch your known-word
   why in the commit message, and guard a trap with a test or lint rule rather than a warning. Tool directives that
   must be comments (`eslint-disable`, `@ts-expect-error`, `CHECKSTYLE`, shebangs) stay; `tools/no-comments.test.mjs`
   enforces the rest.
-- `docs/` holds only the acceptance scenarios. Business plans (go-to-market: #147) are GitHub issues too, and
+- `docs/` holds only the acceptance scenarios. Business plans (go-to-market: polygossa-archive#147) are private issues in the archive, and
   operating procedures live with their tools in `tools/README.md`.
 
 ```
@@ -39,38 +39,33 @@ so the checks must prove it is correct.
    For bug fixes, write a regression test that reproduces the bug first.
 3. Never delete, skip, or weaken an existing test or assertion to make
    something pass. If a test seems wrong, stop and tell me why.
-4. **The full suites run on this PC, one run at a time, through `node tools/local-checks.mjs`** ("cheap mode":
-   GitHub runs nothing by default, to save Actions minutes). Before opening or merging a pull request, commit, push,
-   and run it from your worktree. **Always merge the latest main in first** (`git fetch`, `git merge origin/main`,
-   push), before any run of the local checks, so conflicts surface now and the run tests what will land, not a
-   stale branch that has to go round again at merge time. The tool: it picks the suites your branch's changes need (`--all` runs everything), waits its
-   turn if another session's run is going, and puts a green or red **"local checks"** mark on the commit on GitHub.
-   Its green mark is the proof. Never start a whole suite directly: two at once overload the machine and the
-   end-to-end suite's fixed ports collide. For TDD's red and green, run only the individual tests you are writing or
-   changing; a heavy one (a backend test class, a Playwright spec, mutation testing) takes its turn with
-   `node tools/local-checks.mjs --run -- <command>`. Backend and end-to-end runs need `JAVA_HOME` (see Running it).
-   Mutation testing (PIT `./gradlew :backend:pitest -Ppitest.since=<commit>`, Stryker `cd frontend && npm run mutate`)
+4. **Every pull request runs the full checks on GitHub** (the repository is public, so Actions minutes are free;
+   the repository variable `CHECKS_ON_GITHUB` is `true`). Commit and push from your worktree; GitHub picks the suites
+   your branch's changes need (`.github/workflows/ci.yml`). **Always merge the latest main in first** (`git fetch`,
+   `git merge origin/main`, push), so conflicts surface now and the run tests what will land, not a stale branch that
+   has to go round again at merge time. **Locally, run only the individual tests you are writing or changing** (TDD's
+   red and green), never a whole suite: two at once overload the machine and the end-to-end suite's fixed ports
+   collide. A heavy one (a backend test class, a Playwright spec, mutation testing) takes its turn with
+   `node tools/local-checks.mjs --run -- <command>`; `node tools/local-checks.mjs` alone still runs the suites here and
+   marks the commit "local checks", for when GitHub can't. Backend and end-to-end runs need `JAVA_HOME` (see Running
+   it). Mutation testing (PIT `./gradlew :backend:pitest -Ppitest.since=<commit>`, Stryker `cd frontend && npm run mutate`)
    isn't run unless the user asks, so say so in the report; in Git Bash append `/c/Windows/System32` to `PATH` before
-   Stryker. **Checks on GitHub are paused, not gone:** label a pull request `ci` to run them there once, or set the
-   repository variable `CHECKS_ON_GITHUB` to `true`; while it is `true`, follow the GitHub wording in steps 6 and 7.
-   What each suite runs is in `tools/local-checks/` and `.github/workflows/ci.yml`. Any UI change needs a Playwright
-   scenario (`frontend/e2e/`), since there are no component tests. Complexity limits (cyclomatic 10, 300 lines a
-   file) are enforced by Checkstyle and ESLint.
+   Stryker. Any UI change needs a Playwright scenario (`frontend/e2e/`), since there are no component tests.
+   Complexity limits (cyclomatic 10, 300 lines a file) are enforced by Checkstyle and ESLint.
 5. Respect module boundaries (see below). Do not add new dependencies without asking.
-6. End with a short report: what changed, the local checks' summary (each suite passed or failed, and the commit it
-   marked; with GitHub checks on, the CI run's result and link instead), the individual tests you ran, and anything
-   you're unsure about. "Should work" is not an acceptable status.
+6. End with a short report: what changed, the GitHub checks' result (each job passed or failed, with the run's link),
+   the individual tests you ran, and anything you're unsure about. "Should work" is not an acceptable status.
 7. Commit each incremental change to git as you go (e.g. scenarios, failing tests, implementation, a fix): one
    focused commit per step with a message saying what changed and why. Work on a feature branch, never on main:
-   push it, open a pull request (`gh pr create`), run the local checks on its latest commit (step 4), and merge it
-   yourself (`gh pr merge --merge --delete-branch`, keeping the commits) only when that commit has a green "local
-   checks" mark (`gh pr checks`). If main moved since the checks ran, merge main into the branch, push, and run the
-   checks again first. Keep few branches finishing at the same time, since each merge sends the others round again.
+   push it, open a pull request (`gh pr create`), and merge it yourself (`gh pr merge --merge --delete-branch`,
+   keeping the commits) only when GitHub's checks on its latest commit are green (`gh pr checks --watch`). If main
+   moved since they ran, merge main into the branch and push, so they run again first. Keep few branches finishing at the same time, since each merge sends the others round again.
    If a check fails, fix it on the branch; never merge red, **except for a flaky test**: one that fails in a full
    run but passes when run alone (`--repeat-each=3`) and that the branch's changes don't touch. Then merge anyway,
-   add it to "Flaky tests (tech debt)" below, and say so in the report. (`gh pr merge` can't merge a change to a workflow file
+   add it to "Flaky tests (tech debt)" below, and say so in the report. Re-run only the failed jobs
+   (`gh run rerun <id> --failed`), not the whole run. (`gh pr merge` can't merge a change to a workflow file
    without the CLI's `workflow` scope; merge locally with `git merge --no-ff` and push instead.) "Green before
-   merging" is our rule, not GitHub's (branch protection needs GitHub Pro). Don't batch unrelated work into one
+   merging" is our rule. Don't batch unrelated work into one
    commit, and list the commits in the final report.
    **Merging is the end: don't deploy to production unless the user asks.** When asked, deploy with
    `node tools/local-deploy.mjs` from your worktree: it deploys the latest main from the PC's copy, skips a main that
@@ -194,7 +189,8 @@ Tools on the dev machine (not on PATH in every shell, so use the full paths):
   **"polygossa-app"** in the browser. If the CLI asks to overwrite the profile with any other account ID, the
   answer is **n**. Check with `aws sts get-caller-identity --profile polygossa`. The **AWS Agent Toolkit** gives
   Claude the MCP server `aws-mcp` (via `uvx` in `~/.local/bin`) and AWS skills.
-- **GitHub CLI** `C:\Program Files\GitHub CLI\gh.exe`, signed in as the owner (`Blk836/polygossa`, private).
+- **GitHub CLI** `C:\Program Files\GitHub CLI\gh.exe`, signed in as the owner (`Blk836/polygossa`, public; the private `Blk836/polygossa-archive` keeps
+  the history before it went public, its pull requests and the private issues).
 - **AWS CDK** comes with `infra/` (`npx cdk diff|deploy`); deploying needs Docker running.
 
 Rules:
