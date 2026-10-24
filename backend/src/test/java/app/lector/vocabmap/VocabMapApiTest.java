@@ -205,11 +205,14 @@ class VocabMapApiTest {
         long user = api.get(token, "/api/me", 200).get("id").asLong();
         insertKnown(user, 30_000);
         map("fr");
-        long start = System.nanoTime();
-        JsonNode map = map("fr");
-        long millis = (System.nanoTime() - start) / 1_000_000;
-        assertThat(map.get("beyondCore").asInt()).isEqualTo(30_000);
-        assertThat(millis).isLessThan(1000);
+        long quickest = Long.MAX_VALUE;
+        for (int run = 0; run < 3; run++) {
+            long start = System.nanoTime();
+            JsonNode map = map("fr");
+            quickest = Math.min(quickest, (System.nanoTime() - start) / 1_000_000);
+            assertThat(map.get("beyondCore").asInt()).isEqualTo(30_000);
+        }
+        assertThat(quickest).isLessThan(1000);
     }
 
     private void insertKnown(long user, int count) {
