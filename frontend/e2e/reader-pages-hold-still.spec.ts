@@ -75,6 +75,18 @@ test("the video gives way so three lines of text fit, and no page scrolls", asyn
   expect(most).toBeGreaterThanOrEqual(3);
 });
 
+test("a lesson under a video splits the same whichever page it opens on, also once the end is reached", async ({ page }) => {
+  await openVideo(page, { width: 930, height: 810 });
+  await expect.poll(async () => (await video(page)).height).toBeLessThan(0.42 * 810 - 2);
+  const count = await pageCount(page);
+  await openReader(page, `/read/${created!.id}?page=${count - 1}`);
+  await expect(pager(page)).toContainText(`Page ${count - 1} of ${count}`);
+  await nextPage(page);
+  await expect(page.locator("[data-finish]")).toBeVisible();
+  await page.waitForTimeout(500);
+  await expect(pager(page)).toContainText(`Page ${count} of ${count}`);
+});
+
 test("a video with room to spare keeps its usual size, and the page doesn't scroll", async ({ page }) => {
   await openVideo(page, { width: 930, height: 1100 });
   await expect.poll(async () => Math.round((await video(page)).height)).toBe(Math.round(0.42 * 1100));
