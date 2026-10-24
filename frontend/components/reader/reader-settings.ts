@@ -85,19 +85,22 @@ export function parseReaderSettings(value: string | null | undefined): ReaderSet
   return Object.values(parsed).includes(null) ? DEFAULT_READER_SETTINGS : (parsed as ReaderSettings);
 }
 
+const COOKIE_KEYS: [keyof ReaderSettings, string, (s: ReaderSettings) => string][] = [
+  ["size", "size", (s) => String(s.size)],
+  ["quiet", "quiet", () => "1"],
+  ["pauseOnLookup", "pause", () => "0"],
+  ["pageKnown", "known", () => "0"],
+  ["follow", "follow", (s) => s.follow],
+  ["width", "width", (s) => s.width],
+  ["video", "video", (s) => s.video],
+  ["tucked", "tuck", () => "1"],
+  ["view", "view", (s) => s.view],
+  ["pauseEach", "each", () => "1"],
+];
+
 export function readerSettingsCookie(settings: ReaderSettings): string {
-  const d = DEFAULT_READER_SETTINGS;
   const params = new URLSearchParams();
-  if (settings.size !== d.size) params.set("size", String(settings.size));
-  if (settings.quiet !== d.quiet) params.set("quiet", "1");
-  if (settings.pauseOnLookup !== d.pauseOnLookup) params.set("pause", "0");
-  if (settings.pageKnown !== d.pageKnown) params.set("known", "0");
-  if (settings.follow !== d.follow) params.set("follow", settings.follow);
-  if (settings.width !== d.width) params.set("width", settings.width);
-  if (settings.video !== d.video) params.set("video", settings.video);
-  if (settings.tucked !== d.tucked) params.set("tuck", "1");
-  if (settings.view !== d.view) params.set("view", settings.view);
-  if (settings.pauseEach !== d.pauseEach) params.set("each", "1");
+  for (const [field, key, value] of COOKIE_KEYS) if (settings[field] !== DEFAULT_READER_SETTINGS[field]) params.set(key, value(settings));
   const value = params.toString();
   const maxAge = value ? ONE_YEAR_SECONDS : 0;
   return `${READER_SETTINGS_COOKIE}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;

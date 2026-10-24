@@ -64,8 +64,9 @@ export function useFitPages(
   textRef: RefObject<HTMLDivElement | null>,
   measuring: boolean,
   layout: unknown,
-): { pages: ReaderPage[] | null; videoMax: number | null } {
+): { pages: ReaderPage[] | null; videoMax: number | null; height: number | null } {
   const [starts, setStarts] = useState<number[] | null>(null);
+  const [height, setHeight] = useState<number | null>(null);
   const [videoMax, setVideoMax] = useState<number | null>(null);
   const finish = useRef(FINISH_ESTIMATE);
   const breaks = useMemo(() => wordBreaks(paragraphs), [paragraphs]);
@@ -81,6 +82,7 @@ export function useFitPages(
       const line = px(getComputedStyle(measure).lineHeight);
       const minHeight = MIN_LINES * line;
       setVideoMax(videoHeight(space.height - Math.max(minHeight, line + finish.current)));
+      setHeight(Math.floor(Math.max(space.height, minHeight)));
       const next = fitPages(wordBoxes(measure, breaks), {
         height: Math.max(space.height, minHeight),
         maxWords: PAGE_WORDS,
@@ -102,5 +104,5 @@ export function useFitPages(
   }, [breaks, measureRef, textRef, measuring, layout]);
 
   const pages = useMemo(() => (starts ? splitPages(paragraphs, starts) : null), [paragraphs, starts]);
-  return { pages, videoMax };
+  return { pages, videoMax, height };
 }

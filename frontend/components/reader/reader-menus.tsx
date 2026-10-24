@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { TEXT_SIZES, type Follow, type ReaderSettings, type TextWidth } from "./reader-settings";
+import { TEXT_SIZES, type Follow, type ReaderSettings, type ReaderView, type TextWidth } from "./reader-settings";
 
 export const toolButton = "flex size-8 items-center justify-center rounded-full text-sm text-muted transition-colors hover:bg-card hover:text-ink";
 
@@ -63,21 +63,32 @@ const WIDTHS: { value: TextWidth; label: string }[] = [
   { value: "full", label: "Full" },
 ];
 
-function TextWidthPicker({ value, onChange }: { value: TextWidth; onChange: (width: TextWidth) => void }) {
+const VIEWS: { value: ReaderView; label: string }[] = [
+  { value: "pages", label: "Pages" },
+  { value: "sentences", label: "Sentences" },
+];
+
+function Picker<T extends string>({ id, label, choices, value, onChange }: {
+  id: string;
+  label: string;
+  choices: { value: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+}) {
   return (
     <div className="flex items-center justify-between gap-3 py-1.5">
-      <span id="reader-text-width">Text width</span>
-      <div role="radiogroup" aria-labelledby="reader-text-width" className="inline-flex rounded-lg border border-line bg-paper p-0.5 text-xs">
-        {WIDTHS.map((w) => (
+      <span id={id}>{label}</span>
+      <div role="radiogroup" aria-labelledby={id} className="inline-flex rounded-lg border border-line bg-paper p-0.5 text-xs">
+        {choices.map((c) => (
           <button
-            key={w.value}
+            key={c.value}
             type="button"
             role="radio"
-            aria-checked={value === w.value}
-            onClick={() => onChange(w.value)}
-            className={`rounded-md px-2.5 py-1 transition ${value === w.value ? "bg-card font-medium text-ink shadow-sm ring-1 ring-line" : "text-muted hover:text-ink"}`}
+            aria-checked={value === c.value}
+            onClick={() => onChange(c.value)}
+            className={`rounded-md px-2.5 py-1 transition ${value === c.value ? "bg-card font-medium text-ink shadow-sm ring-1 ring-line" : "text-muted hover:text-ink"}`}
           >
-            {w.label}
+            {c.label}
           </button>
         ))}
       </div>
@@ -95,7 +106,8 @@ export function SettingsMenu({ settings, onChange }: { settings: ReaderSettings;
           <button className={sizeButton} onClick={() => onChange({ size: settings.size + 1 })} disabled={settings.size >= TEXT_SIZES - 1} aria-label="Larger text">A+</button>
         </span>
       </div>
-      <TextWidthPicker value={settings.width} onChange={(width) => onChange({ width })} />
+      <Picker id="reader-view" label="View" choices={VIEWS} value={settings.view} onChange={(view) => onChange({ view })} />
+      <Picker id="reader-text-width" label="Text width" choices={WIDTHS} value={settings.width} onChange={(width) => onChange({ width })} />
       <Toggle label="Quiet colours" hint="Hide new-word highlighting." checked={settings.quiet} onChange={(quiet) => onChange({ quiet })} />
       <Toggle
         label="Pause when looking up a word"

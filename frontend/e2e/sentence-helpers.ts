@@ -3,7 +3,7 @@ import { article, PER_SENTENCE, setReaderCookie, wordAt } from "./reader-helpers
 
 export const SENTENCE_VIEW = "view%3Dsentences";
 
-export const useSentenceView = (page: Page, more = "") => setReaderCookie(page, more ? `${SENTENCE_VIEW}%26${more}` : SENTENCE_VIEW);
+export const setSentenceView = (page: Page, more = "") => setReaderCookie(page, more ? `${SENTENCE_VIEW}%26${more}` : SENTENCE_VIEW);
 
 export const sentenceNav = (page: Page) => page.getByRole("navigation", { name: "Sentences" });
 export const nextSentence = (page: Page) => sentenceNav(page).getByRole("button", { name: "Next sentence" });

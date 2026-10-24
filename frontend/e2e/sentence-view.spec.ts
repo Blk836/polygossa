@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { article, cleanUp, createText, createTextWith, openReader, pager, popupClose, TALL, wordAt, type Created } from "./reader-helpers";
-import { after, before, current, firstWordOf, nextSentence, onSentence, previousSentence, sentenceNav, sentenceWord, useSentenceView } from "./sentence-helpers";
+import { after, before, current, firstWordOf, nextSentence, onSentence, previousSentence, sentenceNav, sentenceWord, setSentenceView } from "./sentence-helpers";
 
 let created: Created | null = null;
 
@@ -12,7 +12,7 @@ test.afterEach(async ({ page }) => {
 });
 
 async function openSentences(page: Page, words = 300, path = "") {
-  await useSentenceView(page, "known%3D0");
+  await setSentenceView(page, "known%3D0");
   created = await createText(page, words);
   await openReader(page, `/read/${created.id}${path}`);
 }
@@ -97,7 +97,7 @@ test("the first and last sentences have nothing on one side", async ({ page }) =
 });
 
 test("a lesson of a single sentence has both ways disabled", async ({ page }) => {
-  await useSentenceView(page);
+  await setSentenceView(page);
   created = await createTextWith(page, (w) => `${w(1)} ${w(2)} ${w(3)}.`);
   await openReader(page, `/read/${created.id}`);
   await expect(current(page)).toContainText(created.word(1));
@@ -115,7 +115,7 @@ test("progress through the lesson is shown", async ({ page }) => {
 
 test("a sentence too long for the screen scrolls inside its own area, never the window", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
-  await useSentenceView(page);
+  await setSentenceView(page);
   created = await createTextWith(page, (w) => `${w(1)} ${w(2)}. ${Array.from({ length: 400 }, (_, k) => w(k + 3)).join(" ")}. ${w(500)} ${w(501)}.`);
   await openReader(page, `/read/${created.id}?page=2`);
   await expect(sentenceNav(page)).toContainText("2 / 3");
@@ -129,8 +129,8 @@ const moves: [string, (page: Page) => Promise<void>, number][] = [
   ["the left arrow", (page) => page.keyboard.press("ArrowLeft"), 4],
   ['"Next sentence"', (page) => nextSentence(page).click(), 6],
   ['"Previous sentence"', (page) => previousSentence(page).click(), 4],
-  ["the faded sentence below", (page) => after(page).click({ position: { x: 2, y: 2 } }), 6],
-  ["the faded sentence above", (page) => before(page).click({ position: { x: 2, y: 2 } }), 4],
+  ["the faded sentence below", (page) => after(page).click({ position: { x: 14, y: 3 } }), 6],
+  ["the faded sentence above", (page) => before(page).click({ position: { x: 14, y: 3 } }), 4],
 ];
 
 for (const [how, move, shown] of moves) {
@@ -139,7 +139,7 @@ for (const [how, move, shown] of moves) {
     await onSentence(page, 5, 30);
     await move(page);
     await onSentence(page, shown, 30);
-    expect(await current(page).evaluate((e) => e.getAnimations().length)).toBeGreaterThan(0);
+    expect(await current(page).evaluate((e) => getComputedStyle(e).animationName)).toMatch(/^sentence-in-/);
   });
 }
 
@@ -163,7 +163,7 @@ test("with reduced motion, the next sentence appears without sliding", async ({ 
   await openSentences(page, 300, "?page=5");
   await nextSentence(page).click();
   await onSentence(page, 6, 30);
-  expect(await current(page).evaluate((e) => e.getAnimations().length)).toBe(0);
+  expect(await current(page).evaluate((e) => getComputedStyle(e).animationName)).toBe("none");
 });
 
 test("clicking a word in a faded sentence opens that word and keeps the sentence in focus", async ({ page }) => {

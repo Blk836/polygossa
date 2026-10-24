@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { signUp } from "./photo-helpers";
 import { addSyncedAudio, cleanUp, createText, openReader, player, TALL, type Created } from "./reader-helpers";
-import { current, firstWordOf, markKnownCalls, nextSentence, onSentence, previousSentence, sentenceWord, useSentenceView } from "./sentence-helpers";
+import { current, firstWordOf, markKnownCalls, nextSentence, onSentence, previousSentence, sentenceWord, setSentenceView } from "./sentence-helpers";
 
 let created: Created | null = null;
 
@@ -13,7 +13,7 @@ test.afterEach(async ({ page }) => {
 });
 
 async function openSentences(page: Page, opts: { cookie?: string; path?: string; audio?: number } = {}) {
-  await useSentenceView(page, opts.cookie);
+  await setSentenceView(page, opts.cookie);
   created = await createText(page, 300);
   if (opts.audio) await addSyncedAudio(page, created.id, opts.audio);
   await openReader(page, `/read/${created.id}${opts.path ?? ""}`);
@@ -34,7 +34,7 @@ test.describe("moving on marks new words known", () => {
       return route.fulfill({ json: { current: 1, best: 1, activeToday: true, secondsLeftToday: 3600, knownWords: header * 100 } });
     });
     const calls = markKnownCalls(page);
-    await useSentenceView(page);
+    await setSentenceView(page);
     created = await createText(page, 300);
     await save(page, created.word(firstWordOf(2) + 1), "learning");
     await save(page, created.word(firstWordOf(2) + 2), "known");
@@ -70,7 +70,7 @@ test.describe("moving on marks new words known", () => {
 
   test("a sentence with no blue words sends nothing", async ({ page }) => {
     const calls = markKnownCalls(page);
-    await useSentenceView(page);
+    await setSentenceView(page);
     created = await createText(page, 300);
     for (let k = 0; k < 10; k++) await save(page, created.word(k), "learning");
     await openReader(page, `/read/${created.id}`);
@@ -186,7 +186,7 @@ test.describe("translation", () => {
 
   test("without Pro the translation area points to Pro", async ({ browser }) => {
     const { context, page } = await signUp(browser, "Free reader", TALL);
-    await useSentenceView(page);
+    await setSentenceView(page);
     const mine = await createText(page, 30);
     await openReader(page, `/read/${mine.id}`);
     await expect(page.getByRole("link", { name: "Sentence translations with Pro" })).toHaveAttribute("href", "/settings/subscription");
