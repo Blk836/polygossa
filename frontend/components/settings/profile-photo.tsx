@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Avatar } from "@/components/avatar";
 import { useMe } from "@/components/me-context";
 import { Button, ErrorNote } from "@/components/ui";
+import { useHydrated } from "@/components/use-hydrated";
 import { api, errorMessage } from "@/lib/api";
 import { photoFileError } from "@/lib/photo";
 import type { Me } from "@/lib/types";
@@ -27,6 +28,7 @@ function decode(file: File): Promise<HTMLImageElement> {
 
 export function ProfilePhoto() {
   const { me, setMe } = useMe();
+  const ready = useHydrated();
   const input = useRef<HTMLInputElement>(null);
   const [picked, setPicked] = useState<HTMLImageElement | null>(null);
   const [removing, setRemoving] = useState(false);
@@ -74,7 +76,7 @@ export function ProfilePhoto() {
       <div className="flex flex-wrap items-center gap-4">
         <Avatar name={me.displayName || me.email} photoUrl={me.photoUrl} size="lg" />
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="secondary" onClick={() => input.current?.click()}>
+          <Button type="button" variant="secondary" disabled={!ready} onClick={() => input.current?.click()}>
             {me.photoUrl ? "Change photo" : "Upload photo"}
           </Button>
           {me.photoUrl && (
@@ -83,7 +85,7 @@ export function ProfilePhoto() {
         </div>
         <input
           ref={input} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
-          aria-label="Choose a photo" data-testid="photo-input" onChange={(e) => void onPick(e)}
+          aria-label="Choose a photo" data-testid="photo-input" disabled={!ready} onChange={(e) => void onPick(e)}
         />
       </div>
       <ErrorNote message={error} />
