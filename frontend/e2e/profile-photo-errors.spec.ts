@@ -123,3 +123,13 @@ test("at phone width the photo controls and the crop dialog fit, and a finger ca
   await touch("touchEnd", -30);
   expect((await image.boundingBox())!.x).toBeCloseTo(before - 30, 0);
 });
+
+test("the photo can't be picked until the page is ready, so an early pick is never lost", async ({ browser }) => {
+  ana = await signUp(browser, "ana");
+  const html = await (await ana.context.request.get("/settings")).text();
+  const input = html.match(/<input[^>]*data-testid="photo-input"[^>]*>/)?.[0] ?? "";
+  expect(input).toMatch(/\sdisabled/);
+  await ana.page.goto("/settings");
+  await expect(ana.page.getByTestId("photo-input")).toBeEnabled();
+  await expect(photoSection(ana.page).getByRole("button", { name: "Upload photo" })).toBeEnabled();
+});

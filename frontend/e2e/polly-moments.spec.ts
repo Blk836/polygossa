@@ -74,6 +74,27 @@ test.describe("known-word milestones", () => {
     await expect(milestone(page)).toHaveCount(0);
   });
 
+  test("Escape pressed the instant the milestone appears closes it", async ({ page }) => {
+    await page.addInitScript(() => {
+      new MutationObserver((records) => {
+        for (const r of records) {
+          for (const n of r.addedNodes) {
+            if (!(n instanceof Element) || !n.matches("[data-testid=milestone]")) continue;
+            (window as unknown as { sawMilestone: boolean }).sawMilestone = true;
+            window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+          }
+        }
+      }).observe(document, { childList: true, subtree: true });
+    });
+    const h = await stubHeader(page, { knownWords: 498 });
+    await page.goto("/library");
+    await expect(known(page)).toHaveText("498 known");
+    h.knownWords = 503;
+    await moveSection(page);
+    await expect.poll(() => page.evaluate(() => (window as unknown as { sawMilestone?: boolean }).sawMilestone ?? false)).toBe(true);
+    await expect(milestone(page)).toHaveCount(0);
+  });
+
   test("passing two milestones at once shows only the higher one", async ({ page }) => {
     const h = await stubHeader(page, { knownWords: 480 });
     await page.goto("/library");
