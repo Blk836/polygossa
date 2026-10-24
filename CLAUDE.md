@@ -82,6 +82,9 @@ when its test is fixed.
   jpeg 2026-10-10, PR #91; png 2026-10-10, PR #93. Also "uploading a photo shows it on Profile and in the account
   menu…" (the crop dialog never opened within 5 s), 2026-10-11, PR #136; the spec passed 45 of 45 alone. The jpeg one and the Profile one again 2026-10-22, PR #209;
   each failed 1 of 3 alone.
+- `e2e/page-skeletons.spec.ts` › "with reduced motion the outline doesn't pulse": the outline's animation name read
+  "" instead of "pulse" (suspected: read before the stylesheet applied). Seen 2026-10-24, PR #73 (sentence view);
+  passed 3 of 3 alone.
 - `e2e/playlist-save.spec.ts` › "Explore's playlist cards have a Save button that keeps its state": after reloading,
   the card's Save button wasn't found within 5 s. Seen 2026-10-22, PR #209 (people's names); passed 3 of 3 alone.
 - `e2e/profile-photo.spec.ts` › "changing the photo replaces it everywhere": timed out at 30 s. Seen 2026-10-10,
@@ -101,7 +104,7 @@ when its test is fixed.
   Seen 2026-10-20, PR #198; the spec passed 24 of 24 alone.
 - `e2e/progress-period.spec.ts` › "today keeps the last week's growth curve, streak, goal and all-time line": the
   all-time line's known-word count changed between two reads (235 → 35), as other specs add and delete known words
-  on the shared test account. Seen 2026-10-20, PR #204 (book chapters); passes alone.
+  on the shared test account. Seen 2026-10-20, PR #204 (book chapters); passes alone. Again 2026-10-24, PR #73 (sentence view).
 - `e2e/privacy-settings.spec.ts` › "Delete my account needs the account's email typed, then signs out with
   everything gone": `/api/me` answered 200, not 401, after the deletion (suspected: the e2e auto-login signing the
   browser in as the test account). Seen 2026-10-20, PR #199 (a chart change); failed 1 of 3 alone too.
@@ -126,7 +129,7 @@ when its test is fixed.
   Seen 2026-10-11, PR #128 and PR #135; passed 12 of 12 alone. Also PR #143: fails about 1 run in 3 to 6 even
   alone, on main's code too; the page count changes while reading through (re-split, e.g. "Page 57 of 57").
   Again PR #165 (a backend-only revert); passed 24 of 24 alone. Again 2026-10-19, PR #176; the spec passed 54 of 54
-  alone. Again 2026-10-20, PR #195 (a Words-page change), passed 24 of 24 alone; PR #196 (Explore) and PR #197 (shift-click; 1 of 3 alone), PR #199.
+  alone. Again 2026-10-20, PR #195 (a Words-page change), passed 24 of 24 alone; PR #196 (Explore) and PR #197 (shift-click; 1 of 3 alone), PR #199; 2026-10-24, PR #73 (sentence view).
 - `e2e/reader-media-resume.spec.ts` › "pressing Play twice while the video is still starting keeps the bar at the
   page's start". Seen 2026-10-10, PR #94.
 - Backend `VocabMapApiTest` › `theMapAnswersQuicklyForALargeVocabulary`: took 1,094 ms against its 1,000 ms limit
