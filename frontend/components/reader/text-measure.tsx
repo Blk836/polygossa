@@ -5,6 +5,7 @@ import type { Token } from "@/lib/types";
 import { FinishPrompt } from "./finish-panel";
 
 const nothing = () => {};
+const hidden = "pointer-events-none invisible absolute inset-x-0 top-0 h-0 overflow-hidden";
 
 export const TextMeasure = memo(function TextMeasure({ paragraphs, className, unseen, ref }: {
   paragraphs: Token[][];
@@ -13,7 +14,22 @@ export const TextMeasure = memo(function TextMeasure({ paragraphs, className, un
   ref: Ref<HTMLDivElement>;
 }) {
   return (
-    <div aria-hidden inert className="pointer-events-none invisible absolute inset-x-0 top-0 h-0 overflow-hidden">
+    <>
+      <MeasuredText paragraphs={paragraphs} className={className} ref={ref} />
+      <div aria-hidden inert className={hidden}>
+        <FinishPrompt data-finish-measure="" unseen={unseen} finishing={false} onFinish={nothing} />
+      </div>
+    </>
+  );
+});
+
+const MeasuredText = memo(function MeasuredText({ paragraphs, className, ref }: {
+  paragraphs: Token[][];
+  className: string;
+  ref: Ref<HTMLDivElement>;
+}) {
+  return (
+    <div aria-hidden className={hidden}>
       <div ref={ref} className={className}>
         {paragraphs.map((p, k) => (
           <p key={k} className="mb-5">
@@ -21,7 +37,6 @@ export const TextMeasure = memo(function TextMeasure({ paragraphs, className, un
           </p>
         ))}
       </div>
-      <FinishPrompt data-finish-measure="" unseen={unseen} finishing={false} onFinish={nothing} />
     </div>
   );
 });
