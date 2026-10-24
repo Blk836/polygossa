@@ -20,6 +20,7 @@ interface Props {
   onSpoken: (spoken: Spoken) => void;
   onJumpToToken: (tokenIndex: number) => void;
   cueToken: number | null;
+  pauseEach?: boolean;
   maxHeight: number | null;
   layout: VideoLayout;
   onLayout: (layout: VideoLayout) => void;
@@ -143,7 +144,7 @@ function LayoutButton({ layout, onLayout }: { layout: VideoLayout; onLayout: (la
   );
 }
 
-const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video, tokens, onSpoken, onJumpToToken, cueToken, maxHeight, layout, onLayout, tucked, onTucked }, ref) {
+const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video, tokens, onSpoken, onJumpToToken, cueToken, pauseEach, maxHeight, layout, onLayout, tucked, onTucked }, ref) {
   const host = useRef<HTMLDivElement>(null);
   const yt = useRef<YTPlayer | null>(null);
   const [smooth] = useState(createMediaClock);
@@ -187,13 +188,14 @@ const VideoPlayer = forwardRef<MediaHandle, Props>(function VideoPlayer({ video,
     const given = [...video.timings].sort((a, b) => a.s - b.s);
     return given.length ? given : estimateTimings(tokens, duration);
   }, [video.timings, tokens, duration]);
-  const player = useMediaPlayer({ media, timings, tokens, duration, playing, onSpoken, onJumpToToken, cueToken });
+  const player = useMediaPlayer({ media, timings, tokens, duration, playing, onSpoken, onJumpToToken, cueToken, pauseEach });
 
   useImperativeHandle(ref, () => ({
     playFromToken: player.playFromToken,
     startPage: player.startPage,
     pause: () => yt.current?.pauseVideo(),
     shortcut: player.shortcut,
+    carryOn: player.carryOn,
   }));
 
   return (

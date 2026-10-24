@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cueMs, loopRestart, mediaShortcut, segmentAt, sentenceStart, spokenAt, SPEEDS } from "./media-nav";
+import { cueMs, holdAt, loopRestart, mediaShortcut, segmentAt, sentenceStart, spokenAt, SPEEDS } from "./media-nav";
 import type { Segment } from "./audio-sync";
 
 const segments: Segment[] = [
@@ -153,5 +153,23 @@ describe("spokenAt", () => {
 
   it("has nothing without timings", () => {
     expect(spokenAt([], [], 1000)).toEqual({ token: null, sentence: null });
+  });
+});
+
+describe("holdAt", () => {
+  it("holds just before the end of the sentence that was playing once playback crosses it", () => {
+    expect(holdAt(segments, 1, 9000)).toBe(8999);
+    expect(holdAt(segments, 1, 9030)).toBe(8999);
+  });
+
+  it("does nothing inside the sentence", () => {
+    expect(holdAt(segments, 1, 4000)).toBeNull();
+    expect(holdAt(segments, 1, 8998)).toBeNull();
+  });
+
+  it("does nothing after a jump far past the sentence, or with no sentence playing", () => {
+    expect(holdAt(segments, 0, 11000)).toBeNull();
+    expect(holdAt(segments, -1, 4000)).toBeNull();
+    expect(holdAt([], 0, 4000)).toBeNull();
   });
 });

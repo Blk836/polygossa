@@ -42,8 +42,8 @@ export function ReaderPager({ page, count, onPage, className = "", note }: Props
   );
 }
 
-export function PageArrows({ page, count, onPage }: { page: number; count: number; onPage: (page: number) => void }) {
-  if (count <= 1) return null;
+export function PageArrows({ page, count, onPage, hidden = false }: { page: number; count: number; onPage: (page: number) => void; hidden?: boolean }) {
+  if (count <= 1 || hidden) return null;
   return (
     <>
       {page > 1 && <PageArrow side="previous" onClick={() => onPage(page - 1)} />}

@@ -25,6 +25,7 @@ describe("links into Settings", () => {
     expect(linking(/href="\/settings\/subscription"/)).toEqual([
       "app/(app)/classes/page.tsx",
       "components/reader/popup-parts.tsx",
+      "components/reader/sentence-tools.tsx",
       "components/settings/anki/anki-run-summary.tsx",
       "components/ui.tsx",
       "components/vocabulary/word-import.tsx",

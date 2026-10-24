@@ -108,3 +108,14 @@ export function unseenOnPage(page: ReaderPage, statuses: Record<string, WordStat
   for (const t of pageTokens(page)) if (t.word && !statuses[t.normalized!]) unseen.add(t.normalized!);
   return unseen.size;
 }
+
+export function sentencePages(paragraphs: Token[][]): ReaderPage[] {
+  const groups = splitBefore(paragraphs.flat(), (t, prev) => t.sentence !== prev.sentence);
+  const pages: Token[][] = [];
+  for (const g of groups) {
+    const prev = pages[pages.length - 1];
+    if (prev && (!g.some((t) => t.word) || !prev.some((t) => t.word))) prev.push(...g);
+    else pages.push(g);
+  }
+  return pages.map((p) => [p]);
+}

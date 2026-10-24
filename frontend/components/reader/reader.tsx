@@ -1,9 +1,8 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { api, errorMessage } from "@/lib/api";
 import type { ReaderPlaylist } from "@/lib/playlist-types";
-import type { TextDetail, WordLookup, WordStatus } from "@/lib/types";
+import type { TextDetail, Token } from "@/lib/types";
 import { useMe } from "../me-context";
 import { expectPolly, sendPollyFrom } from "../polly-flight";
 import { ErrorNote } from "../ui";
@@ -14,17 +13,20 @@ import { slideBudgets } from "./follow-marker";
 import type { Spoken } from "./media-nav";
 import { Paragraph } from "./paragraph";
 import { ReaderHeader } from "./reader-header";
-import { pageOfToken, pageRange, unseenOnPage } from "./reader-pages";
-import { PageArrows, ReaderPager } from "./reader-pager";
+import { pageOfToken, pageRange, sentencePages, unseenOnPage } from "./reader-pages";
+import { PageArrows } from "./reader-pager";
 import { articleClass, audioToggle, layoutProps, mediaState, onPage, pageNote, PhraseHint, showsMarker } from "./reader-parts";
 import { ReaderPopup } from "./reader-popup";
 import { followsSentence, followsWord, type ReaderSettings } from "./reader-settings";
 import { learningEdges, learningGaps, nextWord, overlapping, phraseMarks, phraseSpans, readerStats, savedPhraseAt, sentenceHere, sentenceTexts, toParagraphs } from "./reader-text";
 import { transcriptParagraphs } from "./reader-transcript";
+import { SentenceExtras, SentenceTranslation } from "./sentence-tools";
+import { ArticleBody, ReaderNav, sentenceMode, sentenceOf } from "./sentence-view";
 import { TextMeasure } from "./text-measure";
 import { NOTHING_SPOKEN, type MediaHandle } from "./use-media-player";
 import { usePageKnown } from "./use-page-known";
 import { useFitPages, useMeasuring } from "./use-fit-pages";
+import { useLessonActions } from "./use-lesson-actions";
 import { usePageTurns } from "./use-page-turns";
 import { useMediaShortcuts, useReaderInput } from "./use-reader-input";
 import { useReaderPages } from "./use-reader-pages";
@@ -52,8 +54,6 @@ export function Reader({ initial, initialSettings, playlist }: {
   const [showAudio, setShowAudio] = useState(!!initial.audio);
   const [spoken, setSpoken] = useState<Spoken>(NOTHING_SPOKEN);
   const active = spoken.token;
-  const [finished, setFinished] = useState<number | null>(null);
-  const [finishing, setFinishing] = useState(false);
   const { settings, update: updateSettings } = useReaderSettings(initialSettings);
 
   const articleRef = useRef<HTMLDivElement>(null);
@@ -75,14 +75,19 @@ export function Reader({ initial, initialSettings, playlist }: {
     onNotice: popup.setNotice,
     onError: setError,
   });
-  const { autoSave, recordLookup, pickMeaning, setStatus: setVocabStatus, markRemainingKnown } = vocab;
+  const { autoSave, markRemainingKnown } = vocab;
+  const actions = useLessonActions({ target, textId: text.id, language, tokens, vocab, completeSession: session.complete, refresh, setError });
+  const [translations] = useState(() => new Map<string, string>());
 
   const sentences = useMemo(() => sentenceTexts(tokens), [tokens]);
   const paragraphs = useMemo(() => (video ? transcriptParagraphs(tokens) : toParagraphs(tokens)), [tokens, video]);
   const measuring = useMeasuring();
-  const { pages: fitted, videoMax } = useFitPages(paragraphs, measureRef, articleRef, measuring, `${settings.video}:${settings.tucked}`);
-  const paging = useReaderPages(text.id, tokens, paragraphs, fitted, text.progress?.position ?? null);
+  const { pages: fitted, videoMax, height } = useFitPages(paragraphs, measureRef, articleRef, measuring, `${settings.video}:${settings.tucked}:${settings.view}`);
+  const bySentence = useMemo(() => sentencePages(paragraphs), [paragraphs]);
+  const mode = sentenceMode(settings, bySentence, fitted);
+  const paging = useReaderPages(text.id, tokens, paragraphs, mode.pages, text.progress?.position ?? null);
   const { page, pages, goTo, goToToken } = paging;
+  const { reach } = mode;
   const budgets = useMemo(() => slideBudgets(audio?.timings ?? video?.timings ?? []), [audio, video]);
   const nextOf = useCallback((i: number) => nextWord(tokens, i, 1), [tokens]);
   const spans = useMemo(() => phraseSpans(tokens, vocab.phrases), [tokens, vocab.phrases]);
@@ -96,6 +101,7 @@ export function Reader({ initial, initialSettings, playlist }: {
   const pageStart = pageRange(paging.paragraphs)?.from ?? null;
   const cueToken = page > 1 ? pageStart : null;
   const isShown = useCallback((i: number) => pageOfToken(pages, i) === page, [pages, page]);
+  const goToNear = useCallback((i: number, mode?: "push" | "replace") => Math.abs(pageOfToken(pages, i) - page) > reach && goToToken(i, mode), [pages, page, reach, goToToken]);
   const startPage = useCallback((i: number | null) => mediaRef.current?.startPage(i), []);
 
   const markPageKnown = usePageKnown({ textId: text.id, statuses: vocab.shown, markRemainingKnown, onSaved, onError: setError });
@@ -113,14 +119,15 @@ export function Reader({ initial, initialSettings, playlist }: {
     },
     [pages, leavePage, goTo],
   );
-  const { reveal, turnPage } = usePageTurns({ page, goTo, goToToken, follow, articleRef, place, close, active, pageStart, onPage: isShown, startPage });
+  const { reveal, turnPage } = usePageTurns({ page, goTo, goToToken: goToNear, follow, articleRef, place, close, active, pageStart, onPage: isShown, startPage });
 
   const changePage = useCallback(
     (n: number) => {
+      if (mode.on && n === page + 1 && mediaRef.current?.carryOn()) return;
       leavePage(n);
       turnPage(n);
     },
-    [leavePage, turnPage],
+    [mode.on, page, leavePage, turnPage],
   );
 
   const onOpen = useCallback(() => {
@@ -129,38 +136,11 @@ export function Reader({ initial, initialSettings, playlist }: {
   const revealPopup = useCallback((i: number) => reveal(i, "nearest", true), [reveal]);
   const { openWord, openPhrase, openWordOfPhrase, backToPhrase } = usePopupOpeners({ tokens, sentences, popup, reveal: revealPopup, autoSave, onError: setError, onOpen });
 
-  const setStatus = useCallback(
-    (status: WordStatus | null) => {
-      if (target) void setVocabStatus(target, status);
-    },
-    [target, setVocabStatus],
-  );
-  const onLookup = useCallback(
-    (lookup: WordLookup) => {
-      if (target) recordLookup(target, lookup);
-    },
-    [target, recordLookup],
-  );
-  const onPickMeaning = useCallback(
-    (meaning: string) => {
-      if (target) void pickMeaning(target, meaning);
-    },
-    [target, pickMeaning],
-  );
-  const saveSentence = useCallback(
-    async (translation?: string) => {
-      if (!target) return;
-      await api("vocabulary", { body: { language, term: target.sentence, kind: "phrase", definition: translation, textId: text.id } });
-      void refresh();
-    },
-    [target, language, text.id, refresh],
-  );
-
-  const shown = onPage(target, pages, page);
+  const shown = onPage(target, pages, page, reach);
   useKeepPopupPlaced(popupRef, popup.position, shown);
   const input = useReaderInput({
     tokens, sel, setSel: popup.setSel, popup: shown && shown.kind, phraseMode: popup.phraseMode, openWord, openPhrase,
-    savedPhraseAt: phraseAt, setStatus, close,
+    savedPhraseAt: phraseAt, setStatus: actions.setStatus, close,
     articleRef, popupRef, turnPage: (dir) => changePage(page + dir),
   });
   const pageWords = useMemo(() => paging.paragraphs.flat().filter((t) => t.word).map((t) => t.index), [paging.paragraphs]);
@@ -176,22 +156,6 @@ export function Reader({ initial, initialSettings, playlist }: {
     [reveal, tokens],
   );
 
-  async function finish() {
-    setFinishing(true);
-    setError(null);
-    try {
-      const r = await api<{ markedKnown: number }>(`texts/${text.id}/complete`, { method: "POST" });
-      await session.complete();
-      markRemainingKnown(tokens);
-      setFinished(r.markedKnown);
-      void refresh();
-    } catch (e) {
-      setError(errorMessage(e));
-    } finally {
-      setFinishing(false);
-    }
-  }
-
   function playFromHere() {
     if (!target) return;
     if (!video) setShowAudio(true);
@@ -200,6 +164,12 @@ export function Reader({ initial, initialSettings, playlist }: {
 
   const isOwner = text.owner.id === me.id;
   const audioButton = audioToggle(audio, isOwner, !!video, showAudio, () => setShowAudio(!showAudio));
+  const paragraph = (p: Token[], k: number) => (
+    <Paragraph key={k} tokens={p} statuses={vocab.shown} phrases={marks} gaps={gaps} edges={edges} hover={overlapping(p, input.hover, null).sel} stop={p.some((t) => t.index === focus.stop) ? focus.stop : null} sentence={followsSentence(settings.follow) ? sentenceHere(p, spoken.sentence) : null} {...overlapping(p, sel, active)} />
+  );
+  const sentenceText = sentenceOf(sentences, paging.paragraphs);
+  const { pauseEach } = mode;
+  const note = pageNote(settings.pageKnown, page, paging.count, unseenHere, mode.unit);
 
   return (
     <ListenContext.Provider value={session.listen}>
@@ -208,7 +178,7 @@ export function Reader({ initial, initialSettings, playlist }: {
         <ReaderHeader text={text} playlist={playlist} stats={stats} settings={settings} onSettings={updateSettings} audio={audioButton} media={media.shortcuts} />
       </div>
       <VideoPanel
-        ref={mediaRef} video={video} tokens={tokens} onSpoken={setSpoken} onJumpToToken={jumpToToken} cueToken={cueToken} maxHeight={videoMax}
+        ref={mediaRef} video={video} tokens={tokens} onSpoken={setSpoken} onJumpToToken={jumpToToken} cueToken={cueToken} pauseEach={pauseEach} maxHeight={videoMax}
         layout={settings.video} onLayout={(layout) => updateSettings({ video: layout })}
         tucked={settings.tucked} onTucked={(tucked) => updateSettings({ tucked })}
       />
@@ -228,11 +198,10 @@ export function Reader({ initial, initialSettings, playlist }: {
             onFocus={focus.onFocus}
             onKeyDown={focus.onKeyDown}
           >
-            {paging.paragraphs.map((p, k) => (
-              <Paragraph key={k} tokens={p} statuses={vocab.shown} phrases={marks} gaps={gaps} edges={edges} hover={overlapping(p, input.hover, null).sel} stop={p.some((t) => t.index === focus.stop) ? focus.stop : null} sentence={followsSentence(settings.follow) ? sentenceHere(p, spoken.sentence) : null} {...overlapping(p, sel, active)} />
-            ))}
+            <ArticleBody on={mode.on} paragraphs={paging.paragraphs} pages={pages} page={page} height={height} paragraph={paragraph} onMove={(dir) => changePage(page + dir)}
+              below={<SentenceTranslation key={page} text={sentenceText} language={language} isPro={isPro} cache={translations} />} />
           </article>
-          <PageArrows page={page} count={paging.count} onPage={changePage} />
+          <PageArrows page={page} count={paging.count} onPage={changePage} hidden={mode.on} />
           <FollowMarker enabled={showsMarker(followsWord(settings.follow), media.playerBar)} containerRef={articleRef} active={active} nextOf={nextOf} budgets={budgets} page={page} />
 
           {measuring && <TextMeasure ref={measureRef} paragraphs={paragraphs} className={articleClass(language, settings.size, false)} />}
@@ -249,24 +218,24 @@ export function Reader({ initial, initialSettings, playlist }: {
               isPro={isPro}
               notice={popup.notice}
               hasAudio={media.synced}
-              onStatus={setStatus}
-              onLookup={onLookup}
-              onPickMeaning={onPickMeaning}
-              onSaveSentence={saveSentence}
+              onStatus={actions.setStatus}
+              onLookup={actions.onLookup}
+              onPickMeaning={actions.onPickMeaning}
+              onSaveSentence={actions.saveSentence}
               onPlayFromHere={playFromHere}
               onPhraseMode={() => popup.setPhraseMode(true)}
               onClose={close}
             />
         </div>
 
-        <ReaderPager
-          page={page} count={paging.count} onPage={changePage} className="mt-3"
-          note={pageNote(settings.pageKnown, page, paging.count, unseenHere)}
-        />
+        <ReaderNav on={mode.on} page={page} count={paging.count} onPage={changePage} note={note}>
+          <SentenceExtras key={page} text={sentenceText} language={language} textId={text.id} onSaved={onSaved} media={media}
+            pauseEach={settings.pauseEach} onPauseEach={(each) => updateSettings({ pauseEach: each })} />
+        </ReaderNav>
 
         <FinishPanel
           visible={page >= paging.count} textId={text.id} language={language} isPro={isPro} unseen={stats.unseen}
-          learning={stats.learning} finished={finished} finishing={finishing} onFinish={finish} playlist={playlist}
+          learning={stats.learning} finished={actions.finished} finishing={actions.finishing} onFinish={actions.finish} playlist={playlist}
         />
       </div>
 
@@ -282,6 +251,7 @@ export function Reader({ initial, initialSettings, playlist }: {
           onJumpToToken={jumpToToken}
           onAudioChanged={setAudio}
           cueToken={cueToken}
+          pauseEach={pauseEach}
           onClose={() => {
             setShowAudio(false);
             setSpoken(NOTHING_SPOKEN);

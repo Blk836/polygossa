@@ -37,8 +37,8 @@ export function PhraseHint({ show }: { show: boolean }) {
   return <p className="mb-3 rounded-lg bg-accent-soft px-3 py-2 text-sm">Tap the last word of the phrase.</p>;
 }
 
-export function onPage(target: PopupTarget | null, pages: ReaderPage[], page: number): PopupTarget | null {
-  return target && pageOfToken(pages, target.startToken) === page ? target : null;
+export function onPage(target: PopupTarget | null, pages: ReaderPage[], page: number, reach = 0): PopupTarget | null {
+  return target && Math.abs(pageOfToken(pages, target.startToken) - page) <= reach ? target : null;
 }
 
 export function layoutProps(settings: Pick<ReaderSettings, "width" | "video">, video: boolean, playerBar: boolean) {
@@ -50,9 +50,10 @@ export function layoutProps(settings: Pick<ReaderSettings, "width" | "video">, v
   };
 }
 
-export function pageNote(pageKnown: boolean, page: number, count: number, unseen: number): string | null {
+export function pageNote(pageKnown: boolean, page: number, count: number, unseen: number, unit: "page" | "sentence" = "page"): string | null {
   if (!pageKnown || page >= count || unseen === 0) return null;
-  return `Turning the page marks the ${unseen} new ${unseen === 1 ? "word" : "words"} on this page as known.`;
+  const words = `${unseen} new ${unseen === 1 ? "word" : "words"}`;
+  return unit === "page" ? `Turning the page marks the ${words} on this page as known.` : `Moving on marks the ${words} in this sentence as known.`;
 }
 
 export function showsMarker(followWord: boolean, playerBar: boolean): boolean {

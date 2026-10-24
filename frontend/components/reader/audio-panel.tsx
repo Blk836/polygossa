@@ -18,6 +18,7 @@ interface Props {
   onJumpToToken: (tokenIndex: number) => void;
   onAudioChanged: (audio: TextDetail["audio"]) => void;
   cueToken: number | null;
+  pauseEach?: boolean;
   onClose: () => void;
 }
 
@@ -36,7 +37,7 @@ function AddAudio({ children, onClose }: { children: React.ReactNode; onClose: (
 }
 
 export const AudioPanel = forwardRef<MediaHandle, Props>(function AudioPanel(props, ref) {
-  const { audio, tokens, onSpoken, onJumpToToken, cueToken } = props;
+  const { audio, tokens, onSpoken, onJumpToToken, cueToken, pauseEach } = props;
   const el = useRef<HTMLAudioElement>(null);
   const media = useMemo<MediaElement>(
     () => ({
@@ -56,7 +57,7 @@ export const AudioPanel = forwardRef<MediaHandle, Props>(function AudioPanel(pro
   const [duration, setDuration] = useState(0);
   const [showTools, setShowTools] = useState(!audio);
   const timings = useMemo(() => [...(audio?.timings ?? [])].sort((a, b) => a.s - b.s), [audio]);
-  const player = useMediaPlayer({ media, timings, tokens, duration, playing, onSpoken, onJumpToToken, cueToken });
+  const player = useMediaPlayer({ media, timings, tokens, duration, playing, onSpoken, onJumpToToken, cueToken, pauseEach });
 
   useEffect(() => {
     const a = el.current;
@@ -68,6 +69,7 @@ export const AudioPanel = forwardRef<MediaHandle, Props>(function AudioPanel(pro
     startPage: player.startPage,
     pause: () => el.current?.pause(),
     shortcut: player.shortcut,
+    carryOn: player.carryOn,
   }));
 
   const controls: PlayerControls = useMemo(

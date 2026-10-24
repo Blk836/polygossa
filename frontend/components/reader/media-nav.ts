@@ -19,6 +19,14 @@ export function loopRestart(looped: Segment | null, ms: number): number | null {
   return ms >= looped.end || ms < looped.start ? looped.start : null;
 }
 
+const HOLD_WINDOW_MS = 1000;
+
+export function holdAt(segments: Segment[], playing: number, ms: number): number | null {
+  const seg = segments[playing];
+  if (!seg || ms < seg.end || ms >= seg.end + HOLD_WINDOW_MS) return null;
+  return seg.end - 1;
+}
+
 export function cueMs(timings: WordTiming[], fromToken: number | null): number {
   if (fromToken === null) return 0;
   let best: WordTiming | null = null;

@@ -4,6 +4,8 @@ export type TextWidth = "standard" | "wide" | "full";
 
 export type VideoLayout = "beside" | "mini";
 
+export type ReaderView = "pages" | "sentences";
+
 export interface ReaderSettings {
   size: number;
   quiet: boolean;
@@ -13,11 +15,13 @@ export interface ReaderSettings {
   width: TextWidth;
   video: VideoLayout;
   tucked: boolean;
+  view: ReaderView;
+  pauseEach: boolean;
 }
 
 export const READER_SETTINGS_COOKIE = "lector_reader";
 export const TEXT_SIZES = 4;
-export const DEFAULT_READER_SETTINGS: ReaderSettings = { size: 1, quiet: false, pauseOnLookup: true, pageKnown: true, follow: "word", width: "wide", video: "beside", tucked: false };
+export const DEFAULT_READER_SETTINGS: ReaderSettings = { size: 1, quiet: false, pauseOnLookup: true, pageKnown: true, follow: "word", width: "wide", video: "beside", tucked: false, view: "pages", pauseEach: false };
 
 const ONE_YEAR_SECONDS = 365 * 24 * 60 * 60;
 
@@ -51,6 +55,7 @@ function oneOf<T extends string>(value: string | null, choices: readonly T[], fa
 
 const WIDTHS: TextWidth[] = ["standard", "wide", "full"];
 const VIDEO_LAYOUTS: VideoLayout[] = ["beside", "mini"];
+const VIEWS: ReaderView[] = ["pages", "sentences"];
 
 function size(value: string | null): number | null {
   if (value === null) return DEFAULT_READER_SETTINGS.size;
@@ -74,21 +79,28 @@ export function parseReaderSettings(value: string | null | undefined): ReaderSet
     width: oneOf(params.get("width"), WIDTHS, d.width),
     video: oneOf(params.get("video"), VIDEO_LAYOUTS, d.video),
     tucked: flag(params.get("tuck"), d.tucked),
+    view: oneOf(params.get("view"), VIEWS, d.view),
+    pauseEach: flag(params.get("each"), d.pauseEach),
   };
   return Object.values(parsed).includes(null) ? DEFAULT_READER_SETTINGS : (parsed as ReaderSettings);
 }
 
+const COOKIE_KEYS: [keyof ReaderSettings, string, (s: ReaderSettings) => string][] = [
+  ["size", "size", (s) => String(s.size)],
+  ["quiet", "quiet", () => "1"],
+  ["pauseOnLookup", "pause", () => "0"],
+  ["pageKnown", "known", () => "0"],
+  ["follow", "follow", (s) => s.follow],
+  ["width", "width", (s) => s.width],
+  ["video", "video", (s) => s.video],
+  ["tucked", "tuck", () => "1"],
+  ["view", "view", (s) => s.view],
+  ["pauseEach", "each", () => "1"],
+];
+
 export function readerSettingsCookie(settings: ReaderSettings): string {
-  const d = DEFAULT_READER_SETTINGS;
   const params = new URLSearchParams();
-  if (settings.size !== d.size) params.set("size", String(settings.size));
-  if (settings.quiet !== d.quiet) params.set("quiet", "1");
-  if (settings.pauseOnLookup !== d.pauseOnLookup) params.set("pause", "0");
-  if (settings.pageKnown !== d.pageKnown) params.set("known", "0");
-  if (settings.follow !== d.follow) params.set("follow", settings.follow);
-  if (settings.width !== d.width) params.set("width", settings.width);
-  if (settings.video !== d.video) params.set("video", settings.video);
-  if (settings.tucked !== d.tucked) params.set("tuck", "1");
+  for (const [field, key, value] of COOKIE_KEYS) if (settings[field] !== DEFAULT_READER_SETTINGS[field]) params.set(key, value(settings));
   const value = params.toString();
   const maxAge = value ? ONE_YEAR_SECONDS : 0;
   return `${READER_SETTINGS_COOKIE}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
