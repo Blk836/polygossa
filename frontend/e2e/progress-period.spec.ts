@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { signUp } from "./photo-helpers";
 
 test.describe.configure({ mode: "default" });
 
@@ -126,8 +127,15 @@ test("nothing done today or yesterday says start today on every tile", async ({ 
   await expect(today.getByText("Nothing yet — start today")).toHaveCount(4);
 });
 
-test("today keeps the last week's growth curve, streak, goal and all-time line", async ({ page }) => {
+test("today keeps the last week's growth curve, streak, goal and all-time line", async ({ browser }) => {
+  const { context, page } = await signUp(browser, "Steady");
+  expect((await page.request.patch("/api/me", { data: { targetLanguage: "es" } })).ok()).toBe(true);
+  for (const term of ["casa", "perro", "gato", "libro"]) {
+    expect((await page.request.post("/api/vocabulary", { data: { language: "es", term, status: "known" } })).ok()).toBe(true);
+  }
   await openProgress(page);
+  savedWord = null;
+  await expect(page.getByTestId("all-time")).toContainText("5");
   await expect(stats(page, "Last week")).toBeVisible();
   const goal = page.getByRole("region", { name: "Today's goal" });
   const streak = await page.getByTestId("streak-count").textContent();
@@ -139,6 +147,7 @@ test("today keeps the last week's growth curve, streak, goal and all-time line",
   await expect(page.getByTestId("streak-count")).toHaveText(streak!);
   await expect(page.getByTestId("all-time")).toHaveText(allTime!);
   await expect(goal).toHaveText(goalText!);
+  await context.close();
 });
 
 test("a failing request for today keeps the last stats and says so", async ({ page }) => {
