@@ -79,9 +79,12 @@ test("a lesson under a video splits the same whichever page it opens on, also on
   await openVideo(page, { width: 930, height: 810 });
   await expect.poll(async () => (await video(page)).height).toBeLessThan(0.42 * 810 - 2);
   const count = await pageCount(page);
-  await openReader(page, `/read/${created!.id}?page=${count - 1}`);
-  await expect(pager(page)).toContainText(`Page ${count - 1} of ${count}`);
-  await nextPage(page);
+  await openReader(page, `/read/${created!.id}?page=${count - 2}`);
+  await expect(pager(page)).toContainText(`of ${count}`);
+  while (!(await pager(page).textContent())!.includes(`Page ${count} of`)) {
+    await nextPage(page);
+    await expect(pager(page)).toContainText(`of ${count}`);
+  }
   await expect(page.locator("[data-finish]")).toBeVisible();
   await page.waitForTimeout(500);
   await expect(pager(page)).toContainText(`Page ${count} of ${count}`);

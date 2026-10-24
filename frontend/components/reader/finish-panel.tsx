@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ComponentProps } from "react";
 import { playlistReadHref } from "@/lib/playlists";
 import type { ReaderPlaylist } from "@/lib/playlist-types";
 import type { LanguageCode } from "@/lib/types";
@@ -21,21 +22,23 @@ interface Props {
   playlist: ReaderPlaylist | null;
 }
 
+export function FinishPrompt({ unseen, finishing, onFinish, ...rest }: { unseen: number; finishing: boolean; onFinish: () => void } & ComponentProps<"div">) {
+  return (
+    <div {...rest} className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-line bg-card px-4 py-3">
+      <div className="min-w-0 flex-1">
+        <p className="font-medium">Finished reading?</p>
+        <p className="text-sm text-muted">
+          {unseen > 0 ? `The ${unseen} words you didn't click will be marked as known.` : "Great — you've looked at every word."}
+        </p>
+      </div>
+      <Button onClick={onFinish} disabled={finishing}>{finishing ? "Saving…" : "Finish lesson"}</Button>
+    </div>
+  );
+}
+
 export function FinishPanel({ visible, textId, language, isPro, unseen, learning, finished, finishing, onFinish, playlist }: Props) {
   if (!visible) return null;
-  if (finished === null) {
-    return (
-      <div data-finish="prompt" data-tour="reader-next" className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-line bg-card px-4 py-3">
-        <div className="min-w-0 flex-1">
-          <p className="font-medium">Finished reading?</p>
-          <p className="text-sm text-muted">
-            {unseen > 0 ? `The ${unseen} words you didn't click will be marked as known.` : "Great — you've looked at every word."}
-          </p>
-        </div>
-        <Button onClick={onFinish} disabled={finishing}>{finishing ? "Saving…" : "Finish lesson"}</Button>
-      </div>
-    );
-  }
+  if (finished === null) return <FinishPrompt data-finish="prompt" data-tour="reader-next" unseen={unseen} finishing={finishing} onFinish={onFinish} />;
   return (
     <div data-finish="summary" className="mt-10 space-y-6">
       <div className="rounded-xl border border-accent/40 bg-accent-soft/40 p-5">

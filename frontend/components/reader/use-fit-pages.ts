@@ -28,19 +28,23 @@ function wordBoxes(measure: HTMLElement, breaks: ReturnType<typeof wordBreaks>):
   });
 }
 
+const outerHeight = (el: HTMLElement) => el.getBoundingClientRect().height + px(getComputedStyle(el).marginTop);
+
 function room(text: HTMLElement): { height: number; finish: number | null } {
   const column = text.parentElement!;
   const layout = column.parentElement!;
   const main = layout.parentElement!;
   const finish = column.querySelector<HTMLElement>("[data-finish]");
-  const finishHeight = finish ? finish.getBoundingClientRect().height + px(getComputedStyle(finish).marginTop) : 0;
+  const finishHeight = finish ? outerHeight(finish) : 0;
+  const copy = text.querySelector<HTMLElement>("[data-finish-measure]");
   const end = column.lastElementChild!.getBoundingClientRect().bottom;
   const padding = px(getComputedStyle(layout).paddingBottom) + px(getComputedStyle(main).paddingBottom);
   const box = text.getBoundingClientRect();
   const docks = fixedDocks();
   const above = box.top + window.scrollY;
   const below = end - box.bottom - finishHeight + Math.max(padding, reservedBelow(window.innerHeight, box, docks));
-  return { height: window.innerHeight - above - below - SLACK, finish: finish?.dataset.finish === "prompt" ? finishHeight : null };
+  const prompt = finish?.dataset.finish === "prompt" ? finishHeight : null;
+  return { height: window.innerHeight - above - below - SLACK, finish: prompt ?? (copy ? outerHeight(copy) : null) };
 }
 
 function videoHeight(spare: number): number | null {
@@ -81,7 +85,7 @@ export function useFitPages(
       if (space.finish !== null) finish.current = space.finish;
       const line = px(getComputedStyle(measure).lineHeight);
       const minHeight = MIN_LINES * line;
-      setVideoMax(videoHeight(space.height - Math.max(minHeight, line + finish.current)));
+      setVideoMax(videoHeight(space.height - Math.max(minHeight, line + FINISH_ESTIMATE)));
       setHeight(Math.floor(Math.max(space.height, minHeight)));
       const next = fitPages(wordBoxes(measure, breaks), {
         height: Math.max(space.height, minHeight),
