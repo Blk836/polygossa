@@ -36,7 +36,9 @@ export async function stripes(page: Page, width: number, height: number, type = 
 const MIME: Record<string, string> = { png: "image/png", jpg: "image/jpeg", webp: "image/webp" };
 
 export async function pick(page: Page, buffer: Buffer, name: string, mimeType = MIME[name.split(".").pop()!]) {
-  await page.getByTestId("photo-input").setInputFiles({ name, mimeType, buffer });
+  const input = page.getByTestId("photo-input");
+  await expect(input).toBeEnabled();
+  await input.setInputFiles({ name, mimeType, buffer });
 }
 
 export const cropDialog = (page: Page) => page.getByRole("dialog", { name: "Crop your photo" });

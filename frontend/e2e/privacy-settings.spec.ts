@@ -55,10 +55,18 @@ test("Delete my account needs the account's email typed, then signs out with eve
   await confirm.fill("someone-else@test.co");
   await expect(button).toBeDisabled();
   await confirm.fill(email.toUpperCase());
+  const session = (await context.cookies()).find((c) => c.name === "lector_token")!.value;
   await button.click();
 
   await expect(page).toHaveURL((url) => url.pathname === "/");
-  expect((await context.request.get("/api/me")).status()).toBe(401);
+  expect((await context.cookies()).find((c) => c.name === "lector_token")?.value).not.toBe(session);
+  await page.goto("/library");
+  const now = await context.request.get("/api/me");
+  expect(now.ok() ? (await now.json()).email : null).not.toBe(email);
+  const stranger = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+  const old = await stranger.request.get("/api/me", { headers: { cookie: `lector_token=${session}` } });
+  expect(old.status()).toBe(401);
+  await stranger.close();
   const login = await context.request.post("/api/auth/login", { data: { email, password: "password123" } });
   expect(login.status()).toBe(401);
   await context.close();

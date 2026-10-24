@@ -36,7 +36,17 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   } else {
     console.log("[e2e-server] frontend build is up to date");
   }
-  const server = spawn(process.execPath, [next, "start", "-p", port], { cwd: root, stdio: "inherit" });
+  fs.mkdirSync(path.join(root, "e2e-logs"), { recursive: true });
+  const log = fs.createWriteStream(path.join(root, "e2e-logs", "frontend.log"));
+  const server = spawn(process.execPath, [next, "start", "-p", port], { cwd: root, stdio: ["inherit", "pipe", "pipe"] });
+  server.stdout.on("data", (chunk) => {
+    process.stdout.write(chunk);
+    log.write(chunk);
+  });
+  server.stderr.on("data", (chunk) => {
+    process.stderr.write(chunk);
+    log.write(chunk);
+  });
   for (const signal of ["SIGINT", "SIGTERM"]) process.on(signal, () => server.kill(signal));
   server.on("exit", (code) => process.exit(code ?? 0));
 }

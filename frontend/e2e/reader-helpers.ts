@@ -108,7 +108,7 @@ export const bottomPager = (page: Page) => page.getByRole("navigation", { name: 
 export const article = (page: Page) => page.locator("article");
 export const wordAt = (page: Page, n: number) => article(page).locator(`[data-i="${2 * n}"]`);
 export const player = (page: Page) => page.getByRole("region", { name: "Player" });
-export const popupClose = (page: Page) => page.getByRole("button", { name: "Close", exact: true });
+export const popupClose = (page: Page) => page.locator("[data-word-popup]").getByRole("button", { name: "Close", exact: true });
 
 export function silentWav(seconds: number): Buffer {
   const rate = 8000;

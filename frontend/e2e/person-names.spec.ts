@@ -65,7 +65,7 @@ test("finishing the lesson marks the other words known but not the name", async 
   const t = await textWithAName(page);
   created = t.created;
   await openReader(page, `/read/${created.id}`);
-  await expect(page.getByText("The 4 words you didn't click will be marked as known.")).toBeVisible();
+  await expect(page.locator("[data-finish=prompt]").getByText("The 4 words you didn't click will be marked as known.")).toBeVisible();
   const completed = page.waitForResponse((r) => r.url().endsWith(`/api/texts/${created!.id}/complete`));
   await page.getByRole("button", { name: "Finish lesson" }).click();
   expect((await completed).ok()).toBe(true);

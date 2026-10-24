@@ -77,63 +77,18 @@ so the checks must prove it is correct.
 End-to-end tests that fail in a full run on a loaded PC but pass alone. Each run usually fails at most one, a
 different one each time; the same commit has gone red then green on a re-run since at least PR #55. Remove a line
 when its test is fixed.
-- `e2e/profile-photo.spec.ts` › "a image/webp image can be uploaded" (and the jpeg and png ones): the crop dialog
-  never opened within 30 s (suspected: the file is picked before the page has hydrated). Seen 2026-10-09, PR #89;
-  jpeg 2026-10-10, PR #91; png 2026-10-10, PR #93. Also "uploading a photo shows it on Profile and in the account
-  menu…" (the crop dialog never opened within 5 s), 2026-10-11, PR #136; the spec passed 45 of 45 alone. The jpeg one and the Profile one again 2026-10-22, PR #209;
-  each failed 1 of 3 alone.
 - `e2e/page-skeletons.spec.ts` › "with reduced motion the outline doesn't pulse": the outline's animation name read
   "" instead of "pulse" (suspected: read before the stylesheet applied). Seen 2026-10-24, PR #73 (sentence view);
   passed 3 of 3 alone.
 - `e2e/playlist-save.spec.ts` › "Explore's playlist cards have a Save button that keeps its state": after reloading,
   the card's Save button wasn't found within 5 s. Seen 2026-10-22, PR #209 (people's names); passed 3 of 3 alone.
-- `e2e/profile-photo.spec.ts` › "changing the photo replaces it everywhere": timed out at 30 s. Seen 2026-10-10,
-  PR #100.
-- `e2e/profile-photo.spec.ts` › "removing the photo brings the initial back, also after reloading": the page closed
-  while clicking "Save photo" in the crop dialog. Seen 2026-10-10, PR #102.
-- `e2e/profile-photo.spec.ts` › "dragging moves the image, stopping at its edge, and the saved photo is what was in
-  the frame": the crop frame never appeared within 30 s (likely the same picked-before-hydration cause). Seen
-  2026-10-11, PR #122.
-- `e2e/profile-photo.spec.ts` › "the crop starts centred: a landscape photo keeps its middle square, not squashed".
-  Seen 2026-10-12, PR #160; the spec passed 33 of 33 alone.
-- `e2e/profile-photo.spec.ts` › "Cancel closes the crop dialog without uploading, and the same file can be picked
-  again": the crop dialog never became visible. Seen 2026-10-20, PR #206 (landing header); passed 3 of 3 alone.
-- `e2e/profile-photo-errors.spec.ts` › "a file that isn't an image is refused before any crop or upload": the
-  alert never appeared within 5 s (likely the same picked-before-hydration cause). Seen 2026-10-11, PR #113.
-- `e2e/profile-photo-errors.spec.ts` › "a failed remove shows an error and keeps the photo": timed out at 30 s.
-  Seen 2026-10-20, PR #198; the spec passed 24 of 24 alone.
-- `e2e/progress-period.spec.ts` › "today keeps the last week's growth curve, streak, goal and all-time line": the
-  all-time line's known-word count changed between two reads (235 → 35), as other specs add and delete known words
-  on the shared test account. Seen 2026-10-20, PR #204 (book chapters); passes alone. Again 2026-10-24, PR #73 (sentence view).
-- `e2e/privacy-settings.spec.ts` › "Delete my account needs the account's email typed, then signs out with
-  everything gone": `/api/me` answered 200, not 401, after the deletion (suspected: the e2e auto-login signing the
-  browser in as the test account). Seen 2026-10-20, PR #199 (a chart change); failed 1 of 3 alone too.
-- `e2e/wide-reader.spec.ts` › "where the mini player sits in the margin, pages use the full height". Seen
-  2026-10-10, PR #89.
-- `e2e/wide-reader.spec.ts` › "where the mini player overlaps the text, every page ends above it without
-  scrolling". Seen 2026-10-10, PR #100.
-- `e2e/app-nav-header.spec.ts` › "marking a word known raises the real count after moving page": expects the
-  account-wide known count to rise by exactly one, so a test running beside it that saves a known word breaks it
-  (three copies run in parallel all fail; serially they pass). Seen 2026-10-10, PR #100.
 - `e2e/card-layout.spec.ts` › "a category or search grid follows the layout": Explore showed "This page couldn't
-  load" (a failed server render, cause not captured: the e2e servers' logs aren't kept). Seen 2026-10-10, PR #89.
+  load" (a failed server render). Seen 2026-10-10, PR #89. Since PR #74 a failed run uploads both servers' logs
+  (`frontend/e2e-logs`) with its report, so the next occurrence shows the cause.
 - `e2e/reader-colours.spec.ts` › "the word being spoken still shows, quiet or not": after "]" the word never got
-  `w-speaking` within 5 s. Seen 2026-10-10, PR #90.
-- `e2e/reader-colours.spec.ts` › "clicking a new word makes every occurrence yellow; Known clears it; Unsave makes it
-  blue again": two "Close" buttons matched, the word popup's and a status toast's (`getByRole('status')`) that
-  appeared at the same moment. Seen 2026-10-20, PR #208 (backend and tools only); failed 1 of 3 alone too.
-- `e2e/polly-moments.spec.ts` › "Escape closes the milestone": the card stayed after Escape (suspected: Escape
-  pressed before the card's keydown listener is attached in its effect). Failed 1 of 3 alone too. Seen 2026-10-11,
-  PR #126.
-- `e2e/reader-pages-hold-still.spec.ts` › "the video gives way so three lines of text fit, and no page scrolls".
-  Seen 2026-10-11, PR #128 and PR #135; passed 12 of 12 alone. Also PR #143: fails about 1 run in 3 to 6 even
-  alone, on main's code too; the page count changes while reading through (re-split, e.g. "Page 57 of 57").
-  Again PR #165 (a backend-only revert); passed 24 of 24 alone. Again 2026-10-19, PR #176; the spec passed 54 of 54
-  alone. Again 2026-10-20, PR #195 (a Words-page change), passed 24 of 24 alone; PR #196 (Explore) and PR #197 (shift-click; 1 of 3 alone), PR #199; 2026-10-24, PR #73 (sentence view).
+  `w-speaking` within 5 s. Seen 2026-10-10, PR #90; passed 20 of 20 alone on 2026-10-24 (PR #74), cause unknown.
 - `e2e/reader-media-resume.spec.ts` › "pressing Play twice while the video is still starting keeps the bar at the
-  page's start". Seen 2026-10-10, PR #94.
-- Backend `VocabMapApiTest` › `theMapAnswersQuicklyForALargeVocabulary`: took 1,094 ms against its 1,000 ms limit
-  in a full run on a loaded PC (a dev backend was also up); passed alone. Seen 2026-10-14, PR #168.
+  page's start". Seen 2026-10-10, PR #94; passed 20 of 20 alone on 2026-10-24 (PR #74), cause unknown.
 
 ### One worktree per session
 Several Claude sessions often work on this repository at once, and in one shared folder they switch branches under

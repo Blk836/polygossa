@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { signUp } from "./photo-helpers";
 
 const HOUR = 3600;
 const flame = (page: Page) => page.getByRole("banner").getByTestId("streak-flame");
@@ -133,18 +134,16 @@ test("known words are asked for in the language picked in the top bar", async ({
   expect(asked.at(-1)).toBe(me.targetLanguage ?? "");
 });
 
-test("marking a word known raises the real count after moving page", async ({ page }) => {
+test("marking a word known raises the real count after moving page", async ({ browser }) => {
+  const { context, page } = await signUp(browser, "Counter");
+  expect((await page.request.patch("/api/me", { data: { targetLanguage: "es" } })).ok()).toBe(true);
+  const knowWord = async (term: string) =>
+    expect((await page.request.post("/api/vocabulary", { data: { language: "es", term, status: "known" } })).ok()).toBe(true);
+  for (const term of ["casa", "perro", "gato"]) await knowWord(term);
   await page.goto("/library");
-  const me = await (await page.request.get("/api/me")).json();
-  const language = me.targetLanguage ?? "es";
-  const before = Number((await known(page).textContent())!.replace(/\D/g, ""));
-  const res = await page.request.post("/api/vocabulary", { data: { language, term: `sabido${Date.now()}`, status: "known" } });
-  expect(res.ok(), await res.text()).toBe(true);
-  const id = (await res.json()).id;
-  try {
-    await page.getByRole("navigation", { name: "Section" }).getByRole("link", { name: "Explore" }).click();
-    await expect(known(page)).toHaveText(`${(before + 1).toLocaleString("en-US")} known`);
-  } finally {
-    await page.request.delete(`/api/vocabulary/${id}`);
-  }
+  await expect(known(page)).toHaveText("3 known");
+  await knowWord("sabido");
+  await page.getByRole("navigation", { name: "Section" }).getByRole("link", { name: "Explore" }).click();
+  await expect(known(page)).toHaveText("4 known");
+  await context.close();
 });

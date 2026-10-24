@@ -26,6 +26,24 @@ test.afterEach(async ({ page }) => {
 
 const NONE = "rgba(0, 0, 0, 0)";
 
+test("the word card's Close is the one clicked while a milestone with its own Close shows", async ({ page }) => {
+  let knownWords = 99;
+  await page.route("**/api/dashboard/header*", (route) =>
+    route.fulfill({ json: { current: 1, best: 1, activeToday: true, secondsLeftToday: 3600, knownWords } }));
+  created = await createText(page, 30);
+  await openReader(page, `/read/${created.id}`);
+  await wordAt(page, 1).click();
+  await expect(page.getByTestId("meanings")).toBeVisible();
+  knownWords = 100;
+  await page.keyboard.press("k");
+  await expect(page.getByTestId("milestone")).toBeVisible();
+  await wordAt(page, 2).click();
+  await expect(page.locator("[data-word-popup]")).toBeVisible();
+  await popupClose(page).click();
+  await expect(page.locator("[data-word-popup]")).toHaveCount(0);
+  await expect(page.getByTestId("milestone")).toBeVisible();
+});
+
 async function tokenColour(page: Page, name: string): Promise<string> {
   return page.evaluate((v) => {
     const probe = document.createElement("span");

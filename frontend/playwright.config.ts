@@ -18,6 +18,7 @@ const backend = {
   OPENAI_API_KEY: "",
   STORAGE_DIR: "./data/e2e-uploads",
   CURATOR_TOKEN: "e2e-curator-token",
+  LOGGING_FILE_NAME: path.join(__dirname, "e2e-logs", "backend.log"),
 };
 
 export default defineConfig({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { reachedMilestone, saveSeenMilestones, seenMilestones, streakNews } from "@/lib/milestones";
 import { CloseIcon } from "./icons";
@@ -34,7 +34,7 @@ export function MilestoneCard({ words, onClose }: { words: number; onClose: () =
   useEffect(() => {
     close.current = onClose;
   }, [onClose]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const escape = (e: KeyboardEvent) => e.key === "Escape" && close.current();
     window.addEventListener("keydown", escape);
     return () => window.removeEventListener("keydown", escape);

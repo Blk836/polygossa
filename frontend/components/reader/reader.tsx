@@ -204,7 +204,7 @@ export function Reader({ initial, initialSettings, playlist }: {
           <PageArrows page={page} count={paging.count} onPage={changePage} hidden={mode.on} />
           <FollowMarker enabled={showsMarker(followsWord(settings.follow), media.playerBar)} containerRef={articleRef} active={active} nextOf={nextOf} budgets={budgets} page={page} />
 
-          {measuring && <TextMeasure ref={measureRef} paragraphs={paragraphs} className={articleClass(language, settings.size, false)} />}
+          {measuring && <TextMeasure ref={measureRef} paragraphs={paragraphs} unseen={stats.unseen} className={articleClass(language, settings.size, false)} />}
 
           <ReaderPopup
               ref={popupRef}
