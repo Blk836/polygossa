@@ -3,7 +3,10 @@ package app.lector.recommend;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import app.lector.TestApi;
+import app.lector.ai.AiClient;
+import app.lector.text.NotWords;
 import app.lector.text.TextFeatureRepository;
+import app.lector.text.WordVerdicts;
 import app.lector.writing.MutableClock;
 import app.lector.writing.OpenAiStub;
 import java.time.Clock;
@@ -47,6 +50,17 @@ class SystemAiCeilingTest {
         @Primary
         Clock testClock() {
             return CLOCK;
+        }
+
+        @Bean
+        @Primary
+        NotWords importsLeaveTheCeilingToTagging(AiClient ai, WordVerdicts verdicts, ObjectMapper json) {
+            return new NotWords(ai, verdicts, json) {
+                @Override
+                public boolean canCall() {
+                    return false;
+                }
+            };
         }
     }
 
