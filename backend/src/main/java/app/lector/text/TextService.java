@@ -51,9 +51,8 @@ public class TextService {
     private final PlanService plans;
     private final StorageService storage;
     private final ObjectMapper json;
-    private final UniqueWordsCache uniqueWords;
     private final ApplicationEventPublisher events;
-    private final PersonNames names;
+    private final TextWords textWords;
 
     public TextService(TextRepository texts, VocabularyRepository vocabulary,
                        ReadingSessionRepository sessions, ReadingProgressRepository progress,
@@ -61,7 +60,7 @@ public class TextService {
                        AssignmentRepository assignments,
                        WritingSubmissionRepository writings, TokenizationService tokenizer, PlanService plans,
                        StorageService storage, ObjectMapper json,
-                       UniqueWordsCache uniqueWords, ApplicationEventPublisher events, PersonNames names) {
+                       ApplicationEventPublisher events, TextWords textWords) {
         this.texts = texts;
         this.vocabulary = vocabulary;
         this.sessions = sessions;
@@ -74,9 +73,8 @@ public class TextService {
         this.plans = plans;
         this.storage = storage;
         this.json = json;
-        this.uniqueWords = uniqueWords;
         this.events = events;
-        this.names = names;
+        this.textWords = textWords;
     }
 
     @Transactional
@@ -124,14 +122,7 @@ public class TextService {
     }
 
     private void setTokens(Text text, List<Token> tokens) {
-        Set<String> found = names.find(text.getLanguage(), tokens);
-        DifficultyEstimator.Estimate estimate = DifficultyEstimator.estimate(text.getLanguage(), tokens, found);
-        text.setTokensJson(json.writeValueAsString(tokens));
-        text.setWordsJson(KnownWords.wordsJson(tokens, json));
-        text.setPersonNamesJson(names.toJson(found));
-        text.setCefrLevel(estimate.level());
-        text.setWordCount(estimate.wordCount());
-        text.setUniqueWordCount(estimate.uniqueWordCount());
+        textWords.setTokens(text, tokens);
     }
 
     public Text importSubtitles(User owner, MultipartFile file, String title, Language language, boolean isPublic) {
@@ -196,7 +187,7 @@ public class TextService {
                 all.put(ts.getTerm(), ts.getStatus());
             }
         }
-        Set<String> textNames = names.of(text);
+        Set<String> textNames = textWords.setAside(text);
         String content = TokenizationService.phraseForm(text.getContent(), text.getLanguage());
         phrases.removeIf(p -> !content.contains(TokenizationService.phraseForm(p.term(), text.getLanguage())));
         return new TextDetail(summarize(user, text, KnownWords.stats(tokens, all, textNames), null, null, null),
@@ -232,9 +223,7 @@ public class TextService {
             }
             return m;
         });
-        Set<String> words = text.getWordsJson() == null ? UniqueWordsCache.distinct(tokens(text))
-                : uniqueWords.words(text.getId(), text.getWordsJson(), stored -> KnownWords.readWords(stored, json));
-        return KnownWords.stats(words, statuses, names.of(text));
+        return KnownWords.stats(textWords.words(text), statuses, textWords.setAside(text));
     }
 
     static KnownStats stats(List<Token> tokens, Map<String, WordStatus> statuses) {

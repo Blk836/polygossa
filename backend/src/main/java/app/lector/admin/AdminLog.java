@@ -20,6 +20,10 @@ public class AdminLog {
         this.clock = clock;
     }
 
+    void record(User admin, String action, String detail) {
+        actions.save(new AdminAction(clock.instant(), admin.getEmail(), action, null, null, detail));
+    }
+
     void record(User admin, String action, User target, String detail) {
         actions.save(new AdminAction(clock.instant(), admin.getEmail(), action, target.getId(), target.getEmail(),
                 detail));

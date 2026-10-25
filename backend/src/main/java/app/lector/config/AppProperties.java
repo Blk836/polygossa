@@ -33,7 +33,8 @@ public record AppProperties(
             @DefaultValue("text-embedding-3-small") String embeddingModel,
             @DefaultValue("5s") Duration meaningTimeout,
             @DefaultValue("gpt-4.1-mini") String meaningModel,
-            @DefaultValue("500000") long systemDailyTokens) {
+            @DefaultValue("500000") long systemDailyTokens,
+            @DefaultValue("gpt-4.1") String notWordsModel) {
 
         public boolean enabled() {
             return apiKey != null && !apiKey.isBlank();

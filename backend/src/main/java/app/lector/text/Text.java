@@ -50,6 +50,9 @@ public class Text {
     @Column(columnDefinition = "text")
     private String personNamesJson;
 
+    @Column(columnDefinition = "text")
+    private String notWordsJson;
+
     private String sourceUrl;
 
     @Column(name = "is_public", nullable = false)
@@ -104,6 +107,8 @@ public class Text {
     public void setWordsJson(String wordsJson) { this.wordsJson = wordsJson; }
     public String getPersonNamesJson() { return personNamesJson; }
     public void setPersonNamesJson(String personNamesJson) { this.personNamesJson = personNamesJson; }
+    public String getNotWordsJson() { return notWordsJson; }
+    public void setNotWordsJson(String notWordsJson) { this.notWordsJson = notWordsJson; }
     public String getSourceUrl() { return sourceUrl; }
     public void setSourceUrl(String sourceUrl) { this.sourceUrl = sourceUrl; }
     public boolean isPublic() { return isPublic; }

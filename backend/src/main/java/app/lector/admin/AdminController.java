@@ -2,6 +2,7 @@ package app.lector.admin;
 
 import app.lector.common.ApiException;
 import app.lector.forum.ForumService;
+import app.lector.token.Language;
 import app.lector.user.Admins;
 import app.lector.user.AuthUser;
 import app.lector.user.CurrentUser;
@@ -10,6 +11,7 @@ import app.lector.user.User;
 import app.lector.video.TranscriptRetidy;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +35,9 @@ public class AdminController {
 
     public record PlanRequest(@NotNull Tier tier) {}
 
+    public record NotWordsRequest(@NotNull Language language, @PositiveOrZero int maxCalls,
+                                  @PositiveOrZero long maxTokens) {}
+
     private final CurrentUser currentUser;
     private final Admins admins;
     private final AdminStats stats;
@@ -41,9 +46,11 @@ public class AdminController {
     private final AdminTranslations translations;
     private final AdminAi ai;
     private final AdminTranscripts transcripts;
+    private final AdminNotWords notWords;
 
     public AdminController(CurrentUser currentUser, Admins admins, AdminStats stats, AdminUsers users, AdminLog log,
-                           AdminTranslations translations, AdminAi ai, AdminTranscripts transcripts) {
+                           AdminTranslations translations, AdminAi ai, AdminTranscripts transcripts,
+                           AdminNotWords notWords) {
         this.currentUser = currentUser;
         this.admins = admins;
         this.stats = stats;
@@ -52,6 +59,7 @@ public class AdminController {
         this.translations = translations;
         this.ai = ai;
         this.transcripts = transcripts;
+        this.notWords = notWords;
     }
 
     private User admin(AuthUser principal) {
@@ -151,6 +159,19 @@ public class AdminController {
     public TranscriptRetidy.Report tidyTranscript(@AuthenticationPrincipal AuthUser principal,
                                                    @PathVariable Long id) {
         return transcripts.tidy(admin(principal), id);
+    }
+
+    @GetMapping("/not-words")
+    public AdminNotWords.Plan notWordsPlan(@AuthenticationPrincipal AuthUser principal,
+                                           @RequestParam Language language) {
+        admin(principal);
+        return notWords.plan(language);
+    }
+
+    @PostMapping("/not-words")
+    public AdminNotWords.Report notWordsCleanup(@AuthenticationPrincipal AuthUser principal,
+                                                @Valid @RequestBody NotWordsRequest req) {
+        return notWords.run(admin(principal), req.language(), req.maxCalls(), req.maxTokens());
     }
 
     @GetMapping("/actions")

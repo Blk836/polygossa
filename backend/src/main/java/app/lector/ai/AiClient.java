@@ -86,6 +86,14 @@ public class AiClient {
         return complete(http, job, config.model(), system, user, temperature).json();
     }
 
+    public Reply reply(AiJob job, String model, String system, String user) {
+        return complete(http, job, model, system, user, 0);
+    }
+
+    public String notWordsModel() {
+        return config.notWordsModel();
+    }
+
     public Reply quickReply(AiJob job, String system, String user) {
         return complete(quick, job, config.meaningModel(), system, user, 0);
     }

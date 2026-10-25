@@ -72,5 +72,5 @@ public final class TextDtos {
             AudioDto audio,
             VideoDto video,
             String speechLocale,
-            List<String> names) {}
+            List<String> setAside) {}
 }

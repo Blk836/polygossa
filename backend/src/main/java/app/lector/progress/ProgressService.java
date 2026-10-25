@@ -92,7 +92,7 @@ public class ProgressService {
     public TextDetail attach(User user, TextDetail d) {
         ProgressDto p = repo.findOne(user.getId(), d.text().id()).map(ProgressService::dto).orElse(null);
         return new TextDetail(d.text().withProgress(p), d.tokens(), d.statuses(), d.phrases(), d.audio(), d.video(),
-                d.speechLocale(), d.names());
+                d.speechLocale(), d.setAside());
     }
 
     static int percentBefore(List<Token> tokens, int position) {

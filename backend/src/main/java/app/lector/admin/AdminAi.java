@@ -34,7 +34,7 @@ public class AdminAi {
         LocalDate today = spending.today();
         List<Row> jobs = usage.since(today.minusDays(days - 1L)).stream()
                 .map(s -> new Row(s.getJob(), AiJob.valueOf(s.getJob()).system(), s.getCalls(), s.getFailures(),
-                        s.getTokensIn(), s.getTokensOut(), prices.cost(0, s.getTokensIn(), s.getTokensOut())))
+                        s.getTokensIn(), s.getTokensOut(), prices.cost(AiJob.valueOf(s.getJob()), s.getTokensIn(), s.getTokensOut())))
                 .sorted(Comparator.comparingDouble(Row::cost).reversed().thenComparing(Row::job))
                 .toList();
         Row total = new Row(null, false, jobs.stream().mapToLong(Row::calls).sum(),

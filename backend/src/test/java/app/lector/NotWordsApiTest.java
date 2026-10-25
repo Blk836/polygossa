@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -78,6 +79,9 @@ class NotWordsApiTest {
     TextService texts;
 
     @Autowired
+    JdbcTemplate jdbc;
+
+    @Autowired
     PlatformTransactionManager transactions;
 
     @MockitoBean
@@ -91,6 +95,7 @@ class NotWordsApiTest {
         AI.reset();
         YOUTUBE.reset();
         jobUsage.deleteAll();
+        jdbc.update("delete from word_verdicts");
         api = new TestApi(mvc, json);
         user = api.signupPro();
         verdicts(List.of(), List.of());
@@ -374,6 +379,7 @@ class NotWordsApiTest {
     @Test
     void choosingAStatusTurnsANotWordBackIntoAWordForMeOnly() throws Exception {
         misspelt("calanques");
+        AI.reply("{\"appropriate\":true,\"category\":\"travel\"}");
         long id = api.createText(user, "fr", "Les calanques sont belles.", true);
         api.post(user, "/api/vocabulary", "{\"language\":\"fr\",\"term\":\"calanques\",\"status\":\"learning\"}", 201);
         assertThat(shown(id)).containsEntry("calanques", "learning");

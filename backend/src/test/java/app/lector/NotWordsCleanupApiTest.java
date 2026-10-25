@@ -186,10 +186,11 @@ class NotWordsCleanupApiTest {
     @Test
     void theRunStopsBeforeGoingOverItsTokenCap() throws Exception {
         importWithoutVerdicts(manyWords(350));
+        misspelt();
         AI.usage(1000, 50);
-        JsonNode report = run(10, 1500);
+        JsonNode report = run(10, 2000);
         assertThat(report.get("calls").asInt()).isEqualTo(1);
-        assertThat(report.get("tokensIn").asLong() + report.get("tokensOut").asLong()).isLessThanOrEqualTo(1500);
+        assertThat(report.get("tokensIn").asLong() + report.get("tokensOut").asLong()).isLessThanOrEqualTo(2000);
         assertThat(report.get("stopped").asString()).isEqualTo("cap");
         assertThat(report.get("wordsLeft").asInt()).isEqualTo(250);
     }
