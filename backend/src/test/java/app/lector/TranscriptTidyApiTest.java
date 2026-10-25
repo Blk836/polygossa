@@ -407,6 +407,23 @@ class TranscriptTidyApiTest {
     }
 
     @Test
+    void tidyingAgainKeepsTheLevelTheAiGaveOnImport() throws Exception {
+        video(BARE, true);
+        AI.replyWhen("You review texts", "{\"category\":\"food\",\"level\":\"C1\"}");
+        AI.replyWhen(TIDY, lines("hola amigos", "hoy cocinamos arroz"));
+        long id = importVideo().get("text").get("id").asLong();
+        assertThat(api.get(user, "/api/texts/" + id, 200).get("text").get("cefrLevel").asString()).isEqualTo("C1");
+        AI.reset();
+        AI.replyWhen(TIDY, lines("¡Hola, amigos!", "Hoy cocinamos arroz."));
+
+        api.post(admin(), "/api/admin/texts/" + id + "/tidy-transcript", "{}", 200);
+
+        JsonNode text = api.get(user, "/api/texts/" + id, 200).get("text");
+        assertThat(content(api.get(user, "/api/texts/" + id, 200))).isEqualTo("¡Hola, amigos! Hoy cocinamos arroz.");
+        assertThat(text.get("cefrLevel").asString()).isEqualTo("C1");
+    }
+
+    @Test
     void nothingRunsOverTheLibraryWhenTheServerStarts() {
         assertThat(context.getBeansOfType(ApplicationRunner.class).values())
                 .noneMatch(runner -> runner.getClass().getName().startsWith("app.lector.video."));

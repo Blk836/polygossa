@@ -5,7 +5,9 @@ import app.lector.ai.AiJob;
 import app.lector.common.ApiException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -47,6 +49,9 @@ public class ContentReview {
             + "harassment, encouraging self-harm or crime, spam or scams, private people's personal data. News, "
             + "history and fiction that deal with hard subjects are fine.";
 
+    private static final String LEVEL_RULES = "Rate the CEFR level a learner needs to read it comfortably, judging "
+            + "how common its words are, how complex its grammar is and how abstract its ideas are, not its length.";
+
     private final AiClient ai;
 
     public ContentReview(AiClient ai) {
@@ -56,14 +61,24 @@ public class ContentReview {
     public Category reviewImport(Category chosen, Text text, Category fallback) {
         boolean categorise = chosen == null;
         boolean moderate = text.isPublic();
-        if (!ai.enabled() || !(categorise || moderate)) {
+        if (!ai.enabled()) {
             return categorise ? fallback : chosen;
         }
-        Optional<JsonNode> answer = ask(text, categorise, moderate);
+        Optional<JsonNode> answer = ask(text, categorise, moderate, true);
         if (moderate) {
             requireShareable(answer, AFTER_IMPORT_REFUSED);
         }
+        answer.flatMap(ContentReview::level).ifPresent(text::setCefrLevel);
         return categorise ? answer.flatMap(ContentReview::category).orElse(fallback) : chosen;
+    }
+
+    public void levelBook(List<Text> chapters) {
+        if (!ai.enabled() || chapters.isEmpty()) {
+            return;
+        }
+        Text longest = chapters.stream().max(Comparator.comparingInt(t -> t.getContent().length())).orElseThrow();
+        ask(longest, false, false, true).flatMap(ContentReview::level)
+                .ifPresent(level -> chapters.forEach(t -> t.setCefrLevel(level)));
     }
 
     public void checkSharing(Text text) {
@@ -74,12 +89,12 @@ public class ContentReview {
         if (text.isPublic() || !ai.enabled()) {
             return;
         }
-        requireShareable(ask(text, false, true), AFTER_SHARE_REFUSED);
+        requireShareable(ask(text, false, true, false), AFTER_SHARE_REFUSED);
     }
 
-    private Optional<JsonNode> ask(Text text, boolean categorise, boolean moderate) {
+    private Optional<JsonNode> ask(Text text, boolean categorise, boolean moderate, boolean rate) {
         try {
-            return Optional.of(ai.completeJson(AiJob.CONTENT_REVIEW, prompt(categorise, moderate),
+            return Optional.of(ai.completeJson(AiJob.CONTENT_REVIEW, prompt(categorise, moderate, rate),
                     "Language: " + text.getLanguage().displayName() + "\nTitle: " + text.getTitle() + "\n\n"
                             + excerpt(text.getContent(), moderate ? MODERATION_EXCERPT : CATEGORY_EXCERPT),
                     0));
@@ -89,7 +104,7 @@ public class ContentReview {
         }
     }
 
-    static String prompt(boolean categorise, boolean moderate) {
+    static String prompt(boolean categorise, boolean moderate, boolean rate) {
         StringBuilder system = new StringBuilder("You review texts for a language-learning library.");
         List<String> fields = new ArrayList<>();
         if (categorise) {
@@ -100,7 +115,16 @@ public class ContentReview {
             system.append(' ').append(RULES);
             fields.add("\"appropriate\": boolean, \"reason\": short English reason when not appropriate");
         }
+        if (rate) {
+            system.append(' ').append(LEVEL_RULES);
+            fields.add("\"level\": one of " + String.join(", ", DifficultyEstimator.LEVELS));
+        }
         return system.append(" Reply with JSON: {").append(String.join(", ", fields)).append("}.").toString();
+    }
+
+    private static Optional<String> level(JsonNode answer) {
+        String level = answer.path("level").asString("").strip().toUpperCase(Locale.ROOT);
+        return DifficultyEstimator.LEVELS.contains(level) ? Optional.of(level) : Optional.empty();
     }
 
     private static Optional<Category> category(JsonNode answer) {
