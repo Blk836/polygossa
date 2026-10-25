@@ -86,16 +86,17 @@ Feature: Imports get their CEFR level from AI
     When the sample library is seeded
     Then no AI request is made and the samples keep the formula's levels
 
-  Scenario Outline: Re-splitting a text's words keeps its level
-    Given a text imported with the AI's level "C1", which the formula would call "A2"
-    When <change> rewrites its words
+  Scenario: Tidying a transcript again keeps its level
+    Given a video imported with the AI's level "C1", which the formula would call "A1"
+    When an admin tidies its automatic YouTube transcript again
     Then its level is still "C1"
 
-    Examples:
-      | change                                          |
-      | tidying its automatic YouTube transcript        |
-      | the startup job removing caption annotations    |
-      | the startup job joining split elisions (fr, it) |
+  Scenario: The startup clean-up jobs still re-rate the texts they fix
+    # They only touch texts imported before their fixes, whose levels came from the formula (and were thrown off by
+    # the bug they fix), so they never meet an AI level.
+    Given a text imported before captions' [annotations] or split elisions were fixed
+    When the backend starts
+    Then its words are fixed and its level is worked out again by the formula, as before
 
   Scenario: Texts imported before this change keep their levels
     Given texts already in the library
