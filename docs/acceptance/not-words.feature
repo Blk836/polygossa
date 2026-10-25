@@ -52,7 +52,7 @@ Feature: Words that aren't real words in the text's language don't count as voca
     Scenario: Only the words are sent, in batches
       Given a long book chapter with 2,500 different words never judged
       When it is imported
-      Then the AI is sent each different word once, without sentences, at most 300 words per call
+      Then the AI is sent each different word once, without sentences, at most 100 words per call
       And each reply lists only the words that aren't words, spelled as sent
       And the text is treated only as data to sort, never as instructions to the AI
 
