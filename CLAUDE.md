@@ -47,8 +47,8 @@ so the checks must prove it is correct.
    red and green), never a whole suite: two at once overload the machine and the end-to-end suite's fixed ports
    collide. A heavy one (a backend test class, a Playwright spec, mutation testing) takes its turn with
    `node tools/local-checks.mjs --run -- <command>`; `node tools/local-checks.mjs` alone still runs the suites here and
-   marks the commit "local checks", for when GitHub can't. It sets `JAVA_HOME` when it's missing; run directly,
-   backend and end-to-end runs need it (see Running it). Mutation testing (PIT `./gradlew :backend:pitest -Ppitest.since=<commit>`, Stryker `cd frontend && npm run mutate`)
+   marks the commit "local checks", for when GitHub can't. Backend and end-to-end runs need `JAVA_HOME` (see Running
+   it). Mutation testing (PIT `./gradlew :backend:pitest -Ppitest.since=<commit>`, Stryker `cd frontend && npm run mutate`)
    isn't run unless the user asks, so say so in the report; in Git Bash append `/c/Windows/System32` to `PATH` before
    Stryker. Any UI change needs a Playwright scenario (`frontend/e2e/`), since there are no component tests.
    Complexity limits (cyclomatic 10, 300 lines a file) are enforced by Checkstyle and ESLint.
@@ -176,7 +176,9 @@ and Frontend (`npm run dev`, :3000), each in its own Run tab, plus a browser ope
 cd frontend && npm install && npm run dev  # web app on :3000
 ```
 
-`java` isn't on PATH: set `JAVA_HOME` to `~/.jdks/openjdk-26.0.1` (the IntelliJ SDK) first.
+`java` isn't on PATH, and Windows' own `JAVA_HOME` is Java 11, too old for Gradle: `JAVA_HOME` must be
+`~/.jdks/openjdk-26.0.1` (the IntelliJ SDK). Claude Code sessions get it from `.claude/settings.local.json` in the main
+folder (this PC only, git-ignored); elsewhere set it first.
 
 **Claude managing the servers:** check what's listening before starting anything
 (`Get-NetTCPConnection -State Listen -LocalPort 8080,3000`). If the servers are already up (e.g. the user's IntelliJ
