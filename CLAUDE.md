@@ -85,6 +85,10 @@ when its test is fixed.
 - `e2e/card-layout.spec.ts` › "a category or search grid follows the layout": Explore showed "This page couldn't
   load" (a failed server render). Seen 2026-10-10, PR #89. Since PR #74 a failed run uploads both servers' logs
   (`frontend/e2e-logs`) with its report, so the next occurrence shows the cause.
+- `e2e/card-layout.spec.ts` › mobile › "Explore's list rows fit the screen, with no sideways page scroll": timed out
+  at 30 s. Seen 2026-10-25, PR #75 (AI import levels, backend only); passed 3 of 3 alone.
+- `e2e/long-video-speed.spec.ts` › "a five-hour video lesson opens, turns pages and opens a word nearly as quickly as
+  a short one": failed its timing in a full run. Seen 2026-10-25, PR #75; passed 3 of 3 alone.
 - `e2e/reader-colours.spec.ts` › "the word being spoken still shows, quiet or not": after "]" the word never got
   `w-speaking` within 5 s. Seen 2026-10-10, PR #90; passed 20 of 20 alone on 2026-10-24 (PR #74), cause unknown.
 - `e2e/reader-media-resume.spec.ts` › "pressing Play twice while the video is still starting keeps the bar at the
