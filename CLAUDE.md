@@ -93,6 +93,10 @@ when its test is fixed.
   `w-speaking` within 5 s. Seen 2026-10-10, PR #90; passed 20 of 20 alone on 2026-10-24 (PR #74), cause unknown.
 - `e2e/tab-click-restart.spec.ts` › "clicking the tab you are on › Words drops the address's filter and the typed
   search": expected "known". Seen 2026-10-25, PR #78 (not-words); passed 24 of 24 alone.
+- `e2e/sentence-view-known.spec.ts` › "audio › Pause after each sentence stops at the sentence's end, and Space
+  carries on with the next": still "1 / 30" where "2 / 30" was expected. Seen 2026-10-25, PR #78; passed 3 of 3 alone.
+- `e2e/shelf-gutter.spec.ts` › "on a laptop every shelf's first card lines up with its heading": a shelf never became
+  visible. Seen 2026-10-25, PR #78; passed 3 of 3 alone.
 - `e2e/reader-media-resume.spec.ts` › "pressing Play twice while the video is still starting keeps the bar at the
   page's start". Seen 2026-10-10, PR #94; passed 20 of 20 alone on 2026-10-24 (PR #74), cause unknown.
 
