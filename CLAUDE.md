@@ -87,6 +87,8 @@ when its test is fixed.
   (`frontend/e2e-logs`) with its report, so the next occurrence shows the cause.
 - `e2e/reader-colours.spec.ts` › "the word being spoken still shows, quiet or not": after "]" the word never got
   `w-speaking` within 5 s. Seen 2026-10-10, PR #90; passed 20 of 20 alone on 2026-10-24 (PR #74), cause unknown.
+- `e2e/tab-click-restart.spec.ts` › "clicking the tab you are on › Words drops the address's filter and the typed
+  search": expected "known". Seen 2026-10-25, PR #78 (not-words); passed 24 of 24 alone.
 - `e2e/reader-media-resume.spec.ts` › "pressing Play twice while the video is still starting keeps the bar at the
   page's start". Seen 2026-10-10, PR #94; passed 20 of 20 alone on 2026-10-24 (PR #74), cause unknown.
 
