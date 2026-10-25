@@ -114,7 +114,7 @@ class PersonNamesApiTest {
         JsonNode detail = detail(id);
         Map<String, String> out = new LinkedHashMap<>();
         detail.get("statuses").properties().forEach(e -> out.put(e.getKey(), e.getValue().asString()));
-        detail.get("names").forEach(n -> assertThat(out.putIfAbsent(n.asString(), "ignored")).isNull());
+        detail.get("setAside").forEach(n -> assertThat(out.putIfAbsent(n.asString(), "ignored")).isNull());
         return out;
     }
 
@@ -157,7 +157,7 @@ class PersonNamesApiTest {
         api.post(user, "/api/vocabulary", "{\"language\":\"fr\",\"term\":\"dupont\",\"status\":\"known\"}", 201);
         names("Marie", "Dupont");
         JsonNode detail = detail(paste("Ce matin, Marie Dupont chante. Marie rit."));
-        assertThat(detail.get("names").valueStream().map(JsonNode::asString)).containsExactly("marie");
+        assertThat(detail.get("setAside").valueStream().map(JsonNode::asString)).containsExactly("marie");
         assertThat(detail.get("statuses").properties()).extracting(Map.Entry::getKey).containsExactly("dupont");
     }
 
