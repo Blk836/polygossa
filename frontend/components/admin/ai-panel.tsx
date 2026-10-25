@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { NotWordsPanel } from "@/components/admin/not-words-panel";
 import { Period, Table } from "@/components/admin/translations-panel";
 import { ErrorNote, Spinner } from "@/components/ui";
 import { aiJobName, dollars, type AdminAi, type AiJobRow } from "@/lib/admin";
@@ -68,6 +69,7 @@ export function AiPanel() {
       <Period days={days} onDays={setDays} />
       <ErrorNote message={error} />
       {report ? <Report report={report} /> : !error && <Spinner />}
+      <NotWordsPanel />
     </div>
   );
 }

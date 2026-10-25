@@ -18,7 +18,7 @@ class E2eNotWords {
 
     @Bean
     @Primary
-    NotWords e2eNotWords(AiClient ai, WordVerdicts verdicts, ObjectMapper json) {
+    NotWords fakeNotWords(AiClient ai, WordVerdicts verdicts, ObjectMapper json) {
         return new NotWords(ai, verdicts, json) {
             @Override
             public boolean aiEnabled() {
