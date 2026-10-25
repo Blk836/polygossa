@@ -47,4 +47,5 @@ __pycache__/
 /frontend/playwright-report/
 
 .claude/worktrees/
+.claude/settings.local.json
 /frontend/e2e-logs/

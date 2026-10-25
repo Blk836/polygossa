@@ -10,7 +10,6 @@ import { suitesFor } from "./local-checks/suites.mjs";
 const WIN = process.platform === "win32";
 const GH_WINDOWS = "C:\\Program Files\\GitHub CLI\\gh.exe";
 const DOCKER_BIN = join(homedir(), "AppData", "Local", "Programs", "DockerDesktop", "resources", "bin");
-const JDK = join(homedir(), ".jdks", "openjdk-26.0.1");
 const GH = process.env.GH ??(WIN && existsSync(GH_WINDOWS) ? GH_WINDOWS : "gh");
 
 const git = (...args) => execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
@@ -60,7 +59,6 @@ function exec(step) {
   const env = { ...process.env };
   const pathKey = Object.keys(env).find((key) => key.toUpperCase() === "PATH") ?? "PATH";
   if (existsSync(DOCKER_BIN)) env[pathKey] = `${env[pathKey] ?? ""}${delimiter}${DOCKER_BIN}`;
-  if (!env.JAVA_HOME && existsSync(JDK)) env.JAVA_HOME = JDK;
   for (const [key, value] of Object.entries(step.env ?? {})) if (value !== undefined) env[key] = value;
   console.log(`\n> ${step.cwd === "." ? "" : `(${step.cwd}) `}${step.command}`);
   return new Promise((done, fail) => {
