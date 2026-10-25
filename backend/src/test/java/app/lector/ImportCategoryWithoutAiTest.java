@@ -60,6 +60,18 @@ class ImportCategoryWithoutAiTest {
     }
 
     @Test
+    void importsGetTheFormulasLevelWithoutCallingTheAi() throws Exception {
+        TestApi api = new TestApi(mvc, json);
+        String user = api.signupPro();
+        AI.reply("{\"level\":\"C2\"}");
+        String level = api.post(user, "/api/texts",
+                "{\"title\":\"Chat\",\"language\":\"fr\",\"content\":\"Le chat mange.\",\"isPublic\":false}", 201)
+                .get("cefrLevel").asString();
+        assertThat(level).isEqualTo("A1");
+        assertThat(AI.requests()).isEmpty();
+    }
+
+    @Test
     void sharedImportsAreNotChecked() throws Exception {
         TestApi api = new TestApi(mvc, json);
         String user = api.signupPro();

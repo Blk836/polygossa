@@ -33,21 +33,21 @@ public class TextWords {
         this.json = json;
     }
 
-    void setTokens(Text text, List<Token> tokens) {
+    DifficultyEstimator.Estimate setTokens(Text text, List<Token> tokens) {
         Set<String> found = names.find(text.getLanguage(), tokens);
         text.setTokensJson(json.writeValueAsString(tokens));
         text.setWordsJson(KnownWords.wordsJson(tokens, json));
         text.setPersonNamesJson(names.toJson(found));
-        setNotWords(text, tokens, notWords.find(text.getLanguage(), tokens, found));
+        return setNotWords(text, tokens, notWords.find(text.getLanguage(), tokens, found));
     }
 
-    private void setNotWords(Text text, List<Token> tokens, Set<String> found) {
+    private DifficultyEstimator.Estimate setNotWords(Text text, List<Token> tokens, Set<String> found) {
         text.setNotWordsJson(notWords.toJson(found));
         DifficultyEstimator.Estimate estimate = DifficultyEstimator.estimate(text.getLanguage(), tokens,
                 setAside(text));
-        text.setCefrLevel(estimate.level());
         text.setWordCount(estimate.wordCount());
         text.setUniqueWordCount(estimate.uniqueWordCount());
+        return estimate;
     }
 
     public Set<String> setAside(Text text) {

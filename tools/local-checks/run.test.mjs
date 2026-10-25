@@ -140,6 +140,27 @@ test("--run runs the command in the folder it was started from", async () => {
   assert.deepEqual(steps, [{ command: "npx playwright test", cwd: "frontend" }]);
 });
 
+test("--run on Windows runs the Gradle wrapper however it is written, since cmd won't look in the folder", async () => {
+  for (const program of ["./gradlew", "gradlew", "gradlew.bat", ".\\gradlew.bat", "./gradlew.bat"]) {
+    const { deps, calls } = world({ deps: { win: true } });
+    await runChecks(["--run", "--", program, ":backend:test", "--tests", "X"], deps);
+    assert.deepEqual(calls.exec, [".\\gradlew.bat :backend:test --tests X"], program);
+  }
+});
+
+test("--run on Windows writes a ./ program path with backslashes and leaves other commands alone", async () => {
+  const { deps, calls } = world({ deps: { win: true } });
+  await runChecks(["--run", "--", "./node_modules/.bin/stryker", "run"], deps);
+  await runChecks(["--run", "--", "npx", "playwright", "test", "./e2e/a.spec.ts"], deps);
+  assert.deepEqual(calls.exec, [".\\node_modules\\.bin\\stryker run", "npx playwright test ./e2e/a.spec.ts"]);
+});
+
+test("--run elsewhere runs the command as written", async () => {
+  const { deps, calls } = world({ deps: { win: false } });
+  await runChecks(["--run", "--", "./gradlew", ":backend:test"], deps);
+  assert.deepEqual(calls.exec, ["./gradlew :backend:test"]);
+});
+
 test("--run works with uncommitted changes (it marks nothing)", async () => {
   const { deps } = world({ git: { isClean: () => false } });
   assert.equal(await runChecks(["--run", "--", "npm", "test"], deps), 0);

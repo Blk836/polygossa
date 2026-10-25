@@ -228,13 +228,16 @@ class NotWordsCleanupApiTest {
     @Test
     void textsAlreadyInTheAppGetTheirNotWordsMarkedAndTheirCountsRedone() throws Exception {
         long id = importWithoutVerdicts("Le matin il mange zzaa une pomme. Puis il boit zzbb du lait.");
-        int before = api.get(user, "/api/texts/" + id, 200).get("text").get("uniqueWordCount").asInt();
+        JsonNode was = api.get(user, "/api/texts/" + id, 200).get("text");
+        int before = was.get("uniqueWordCount").asInt();
+        jdbc.update("update texts set cefr_level = 'C2' where id = ?", id);
         misspelt("zzaa", "zzbb");
         JsonNode report = run(10, 1_000_000);
         assertThat(report.get("textsUpdated").asInt()).isEqualTo(1);
         JsonNode detail = api.get(user, "/api/texts/" + id, 200);
         assertThat(detail.get("setAside").valueStream().map(JsonNode::asString)).containsExactlyInAnyOrder("zzaa", "zzbb");
         assertThat(detail.get("text").get("uniqueWordCount").asInt()).isEqualTo(before - 2);
+        assertThat(detail.get("text").get("cefrLevel").asString()).isEqualTo("C2");
         assertThat(api.post(user, "/api/texts/" + id + "/complete", "", 200).get("markedKnown").asInt())
                 .isEqualTo(before - 2);
     }

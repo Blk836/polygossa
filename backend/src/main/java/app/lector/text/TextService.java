@@ -104,7 +104,7 @@ public class TextService {
         String trimmedTitle = title.strip();
         Text text = new Text(owner, trimmedTitle.length() > 250 ? trimmedTitle.substring(0, 250) : trimmedTitle,
                 language, clean);
-        setTokens(text, tokenizer.tokenize(language, clean));
+        text.setCefrLevel(setTokens(text, tokenizer.tokenize(language, clean)).level());
         text.setSourceUrl(sourceUrl);
         text.setPublic(isPublic);
         if (cues != null && !cues.isEmpty()) {
@@ -121,8 +121,8 @@ public class TextService {
         return tokens;
     }
 
-    private void setTokens(Text text, List<Token> tokens) {
-        textWords.setTokens(text, tokens);
+    private DifficultyEstimator.Estimate setTokens(Text text, List<Token> tokens) {
+        return textWords.setTokens(text, tokens);
     }
 
     public Text importSubtitles(User owner, MultipartFile file, String title, Language language, boolean isPublic) {

@@ -122,7 +122,7 @@ Feature: Words that aren't real words in the text's language don't count as voca
 
     Scenario: The level estimate leaves not-words out
       Given two French texts identical except that one has many garbled caption words
-      When both are imported
+      When both are imported, and the AI rates neither's level (ai-import-level.feature)
       Then they get the same level and unique-word count
       And the word count still counts every word, as it measures length
 
@@ -152,7 +152,7 @@ Feature: Words that aren't real words in the text's language don't count as voca
     Scenario: Texts already in the app get their not-words marked
       Given the cleanup has judged the words of "Les effets psychologiques du confinement"
       Then the text marks "imé", "inquièteent", "j'hésitaé", "british" and "medical" as not words
-      And its level and unique-word count are worked out again without them
+      And its unique-word count is worked out again without them, and its level stays as it was
 
     Scenario: Known words that aren't words move to Ignored
       Given my vocabulary has "imé" and "until" as Known, with no note or tags

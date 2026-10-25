@@ -144,10 +144,11 @@ class ImportCategoryApiTest {
     }
 
     @Test
-    void aChosenCategoryIsKeptWithoutAskingTheAi() throws Exception {
+    void aChosenCategoryIsKeptWithoutAskingTheAiForOne() throws Exception {
         AI.reply("{\"category\":\"food\"}");
         assertThat(paste("Les nouvelles du jour.", "news").get("category").asString()).isEqualTo("news");
-        assertThat(reviews()).isEmpty();
+        assertThat(reviews()).hasSize(1);
+        assertThat(reviews().getFirst()).doesNotContain("category").doesNotContain("entertainment");
     }
 
     @Test

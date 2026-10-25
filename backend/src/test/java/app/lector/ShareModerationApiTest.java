@@ -165,7 +165,8 @@ class ShareModerationApiTest {
         assertThat(reviews()).hasSize(1);
         assertThat(reviews().get(0)).doesNotContain(QUESTION);
         paste(false, "news", 201);
-        assertThat(reviews()).hasSize(1);
+        assertThat(reviews()).hasSize(2);
+        assertThat(reviews().get(1)).doesNotContain(QUESTION).doesNotContain("category");
     }
 
     @Test
