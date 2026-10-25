@@ -130,6 +130,9 @@ If it can't be reproduced, say so and ask instead of guessing. Pick the browser 
   `TranslationClient`, and every feature using one keeps working without it.
 
 ### AWS, GitHub and production
+**Production is not being worked on (since 2026-10-25).** The local app is the only environment that matters: don't
+deploy, run one-off jobs or cleanups against production, or plan work or costs for it, unless the user asks.
+
 **Production:** https://polygossa.com (the `SiteUrl` output of the `PolygossaStaging` stack; it was
 built as staging, and renaming a stack rebuilds everything). No real users yet. Test accounts made there use
 `@example.com` addresses. **QA** is the local app, signing in through the QA Cognito user pool (stack `PolygossaQa`).
