@@ -47,8 +47,8 @@ so the checks must prove it is correct.
    red and green), never a whole suite: two at once overload the machine and the end-to-end suite's fixed ports
    collide. A heavy one (a backend test class, a Playwright spec, mutation testing) takes its turn with
    `node tools/local-checks.mjs --run -- <command>`; `node tools/local-checks.mjs` alone still runs the suites here and
-   marks the commit "local checks", for when GitHub can't. Backend and end-to-end runs need `JAVA_HOME` (see Running
-   it). Mutation testing (PIT `./gradlew :backend:pitest -Ppitest.since=<commit>`, Stryker `cd frontend && npm run mutate`)
+   marks the commit "local checks", for when GitHub can't. It sets `JAVA_HOME` when it's missing; run directly,
+   backend and end-to-end runs need it (see Running it). Mutation testing (PIT `./gradlew :backend:pitest -Ppitest.since=<commit>`, Stryker `cd frontend && npm run mutate`)
    isn't run unless the user asks, so say so in the report; in Git Bash append `/c/Windows/System32` to `PATH` before
    Stryker. Any UI change needs a Playwright scenario (`frontend/e2e/`), since there are no component tests.
    Complexity limits (cyclomatic 10, 300 lines a file) are enforced by Checkstyle and ESLint.
