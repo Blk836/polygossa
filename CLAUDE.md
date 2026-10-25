@@ -91,6 +91,15 @@ when its test is fixed.
   a short one": failed its timing in a full run. Seen 2026-10-25, PR #75; passed 3 of 3 alone.
 - `e2e/reader-colours.spec.ts` › "the word being spoken still shows, quiet or not": after "]" the word never got
   `w-speaking` within 5 s. Seen 2026-10-10, PR #90; passed 20 of 20 alone on 2026-10-24 (PR #74), cause unknown.
+- `e2e/tab-click-restart.spec.ts` › "clicking the tab you are on › Words drops the address's filter and the typed
+  search": expected "known". Seen 2026-10-25, PR #78 (not-words); passed 24 of 24 alone.
+- `e2e/sentence-view-known.spec.ts` › "audio › Pause after each sentence stops at the sentence's end, and Space
+  carries on with the next": still "1 / 30" where "2 / 30" was expected. Seen 2026-10-25, PR #78; passed 3 of 3 alone.
+- `e2e/shelf-gutter.spec.ts` › "on a laptop every shelf's first card lines up with its heading": a shelf never became
+  visible. Seen 2026-10-25, PR #78; passed 3 of 3 alone.
+- `e2e/long-video-speed.spec.ts` › "a five-hour video lesson opens, turns pages and opens a word nearly as quickly as
+  a short one": over its time limit (1,542 ms) on GitHub. Seen 2026-10-25, PR #78's third run (it passed the first
+  two); passed 3 of 3 alone.
 - `e2e/reader-media-resume.spec.ts` › "pressing Play twice while the video is still starting keeps the bar at the
   page's start". Seen 2026-10-10, PR #94; passed 20 of 20 alone on 2026-10-24 (PR #74), cause unknown.
 
@@ -134,6 +143,9 @@ If it can't be reproduced, say so and ask instead of guessing. Pick the browser 
   `TranslationClient`, and every feature using one keeps working without it.
 
 ### AWS, GitHub and production
+**Production is not being worked on (since 2026-10-25).** The local app is the only environment that matters: don't
+deploy, run one-off jobs or cleanups against production, or plan work or costs for it, unless the user asks.
+
 **Production:** https://polygossa.com (the `SiteUrl` output of the `PolygossaStaging` stack; it was
 built as staging, and renaming a stack rebuilds everything). No real users yet. Test accounts made there use
 `@example.com` addresses. **QA** is the local app, signing in through the QA Cognito user pool (stack `PolygossaQa`).

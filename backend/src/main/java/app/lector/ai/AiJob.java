@@ -10,7 +10,8 @@ public enum AiJob {
     CONTENT_REVIEW(false, 150, 0),
     TOPIC_TAGS(true, 400, 0),
     TRANSCRIPT_TIDY(true, 300, 0.5),
-    PERSON_NAMES(true, 150, 0.05);
+    PERSON_NAMES(true, 150, 0.05),
+    NOT_WORDS(true, 100, 0.5);
 
     private final boolean system;
     private final int baseTokens;

@@ -69,7 +69,7 @@ export function Reader({ initial, initialSettings, playlist }: {
     textId: text.id,
     initialStatuses: initial.statuses,
     initialPhrases: initial.phrases,
-    names: initial.names,
+    names: initial.setAside,
     onSaved,
     onKnownWord: flyFromWord,
     onNotice: popup.setNotice,

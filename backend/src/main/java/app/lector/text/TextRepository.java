@@ -28,6 +28,8 @@ public interface TextRepository extends JpaRepository<Text, Long> {
     @Query("select t from Text t where t.body.content like '%[%' or t.body.content like '%［%' or t.body.content like '%【%'")
     List<Text> findWithSquareBrackets();
 
+    List<Text> findByLanguage(Language language);
+
     @Query("select t.id from Text t where t.language in :languages and (t.body.tokensJson like '%''\",\"word\":true%'"
             + " or t.body.tokensJson like '%’\",\"word\":true%')")
     List<Long> findIdsWithSplitElisions(@Param("languages") Collection<Language> languages);

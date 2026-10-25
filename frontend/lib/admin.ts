@@ -200,7 +200,31 @@ const AI_JOBS: Record<string, string> = {
   CONTENT_REVIEW: "Content review",
   TOPIC_TAGS: "Topic tagging",
   TRANSCRIPT_TIDY: "Transcript tidying",
+  PERSON_NAMES: "People's names",
+  NOT_WORDS: "Not-words check",
 };
+
+export interface NotWordsPlan {
+  language: string;
+  texts: number;
+  words: number;
+  calls: number;
+  estimatedTokens: number;
+  estimatedCost: number;
+}
+
+export interface NotWordsReport {
+  language: string;
+  calls: number;
+  tokensIn: number;
+  tokensOut: number;
+  cost: number;
+  notWords: string[];
+  wordsLeft: number;
+  textsUpdated: number;
+  wordsIgnored: number;
+  stopped: "done" | "calls" | "cap" | "ceiling" | "off" | "failed";
+}
 
 export function aiJobName(job: string | null): string {
   return job === null ? "Total" : AI_JOBS[job] ?? job;

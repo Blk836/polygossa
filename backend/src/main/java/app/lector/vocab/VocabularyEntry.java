@@ -98,6 +98,8 @@ public class VocabularyEntry {
 
     private Instant knownAt;
 
+    private Instant setAsideAt;
+
     @Formula("(select max(case l.state when 'MATURE' then 3 when 'YOUNG' then 2 else 1 end) "
             + "from anki_links l where l.entry_id = id)")
     private Integer ankiRank;
