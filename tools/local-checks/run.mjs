@@ -7,12 +7,19 @@ export async function runChecks(args, deps) {
 }
 
 async function runOne(args, deps) {
-  const command = args.slice(args.indexOf("--") + 1).join(" ");
-  if (!args.includes("--") || !command) {
+  const words = args.slice(args.indexOf("--") + 1);
+  if (!args.includes("--") || !words.length) {
     deps.log(`${USAGE}\n  (--run -- <command> runs one heavy command in its turn)`);
     return 2;
   }
+  const [program, ...rest] = words;
+  const command = [deps.win ? forCmd(program) : program, ...rest].join(" ");
   return inTurn(deps, () => deps.exec({ command, cwd: deps.here ?? "." }));
+}
+
+function forCmd(program) {
+  if (/^(\.[/\\])?gradlew(\.bat)?$/.test(program)) return ".\\gradlew.bat";
+  return /^\.[/\\]/.test(program) ? program.replaceAll("/", "\\") : program;
 }
 
 async function runSuites(args, deps) {
