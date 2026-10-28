@@ -23,6 +23,10 @@ public record InContext(String before, String word, String after) {
         return Optional.of(new InContext(b.substring(b.length() - keepBefore), word, a.substring(0, keepAfter)));
     }
 
+    public static InContext alone(String word) {
+        return new InContext("", word, "");
+    }
+
     public String marked() {
         return escape(before) + OPEN + escape(word) + CLOSE + escape(after);
     }

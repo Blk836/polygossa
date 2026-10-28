@@ -19,6 +19,8 @@ public final class OpenAiStub implements AutoCloseable {
     private volatile boolean failing;
     private volatile String rawContent;
     private volatile long delayMillis;
+    private final java.util.concurrent.atomic.AtomicLong nextDelayMillis = new java.util.concurrent.atomic.AtomicLong();
+    private final java.util.Queue<Integer> nextStatuses = new java.util.concurrent.ConcurrentLinkedQueue<>();
     private volatile String usage = "";
     private volatile String finishReason = "stop";
     private final java.util.Map<String, String> repliesWhen = java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>());
@@ -63,6 +65,14 @@ public final class OpenAiStub implements AutoCloseable {
 
     public void delay(java.time.Duration delay) {
         this.delayMillis = delay.toMillis();
+    }
+
+    public void slowNext(java.time.Duration delay) {
+        nextDelayMillis.set(delay.toMillis());
+    }
+
+    public void failNext(int status) {
+        nextStatuses.add(status);
     }
 
     public void setFailing(boolean failing) {
@@ -123,6 +133,8 @@ public final class OpenAiStub implements AutoCloseable {
         reply = "{}";
         rawContent = null;
         delayMillis = 0;
+        nextDelayMillis.set(0);
+        nextStatuses.clear();
         usage = "";
         finishReason = "stop";
         failing = false;
@@ -142,9 +154,10 @@ public final class OpenAiStub implements AutoCloseable {
     private void handle(HttpExchange ex) throws IOException {
         String body = new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
         requests.add(body);
-        pause();
-        if (failing) {
-            send(ex, 500, "{\"error\":\"boom\"}");
+        Integer status = nextStatuses.poll();
+        sleep(Math.max(delayMillis, nextDelayMillis.getAndSet(0)));
+        if (failing || status != null) {
+            send(ex, status != null ? status : 500, "{\"error\":\"boom\"}");
             return;
         }
         String answer = reply;
@@ -200,9 +213,13 @@ public final class OpenAiStub implements AutoCloseable {
     }
 
     private void pause() {
-        if (delayMillis > 0) {
+        sleep(delayMillis);
+    }
+
+    private static void sleep(long millis) {
+        if (millis > 0) {
             try {
-                Thread.sleep(delayMillis);
+                Thread.sleep(millis);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

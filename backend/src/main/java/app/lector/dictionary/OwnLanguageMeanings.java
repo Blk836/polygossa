@@ -30,27 +30,42 @@ public class OwnLanguageMeanings {
     }
 
     public WordLookup lookup(Long userId, Language language, NativeLanguage nativeLanguage, String key, String surface,
-                             Optional<InContext> context) {
+                             Optional<InContext> context, boolean bare) {
         if (nativeLanguage.code().equals(language.code())) {
             return new WordLookup(key, language.code(), List.of(), null, null);
         }
         LookupTally tally = new LookupTally();
-        WordLookup found = shared(language, nativeLanguage, key, surface, context, tally);
+        WordLookup found = bare
+                ? bareWord(language, nativeLanguage, key, surface, context, tally)
+                : inReader(language, nativeLanguage, key, context.orElseGet(() -> InContext.alone(surface)), tally);
         counters.count(language, nativeLanguage, layer(found, tally), tally);
         return community.mine(userId, language, key, nativeLanguage).map(mine -> leadingWith(found, mine)).orElse(found);
     }
 
-    private WordLookup shared(Language language, NativeLanguage nativeLanguage, String key, String surface,
-                              Optional<InContext> context, LookupTally tally) {
+    private WordLookup inReader(Language language, NativeLanguage nativeLanguage, String key, InContext context,
+                                LookupTally tally) {
         List<String> shared = community.top(language, key, nativeLanguage);
-        Optional<SentenceMeanings.Found> inSentence =
-                context.flatMap(c -> sentences.meaning(language, nativeLanguage, key, c, tally));
+        Optional<SentenceMeanings.Found> inSentence = sentences.meaning(language, nativeLanguage, key, context, tally);
         if (inSentence.isPresent()) {
             return new WordLookup(key, language.code(), firstThen(inSentence.get().meaning(), shared),
                     nativeLanguage.code(), WordLookup.SENTENCE, inSentence.get().wordType());
         }
+        return fromOthers(language, nativeLanguage, key, shared);
+    }
+
+    private static WordLookup fromOthers(Language language, NativeLanguage nativeLanguage, String key,
+                                         List<String> shared) {
+        if (shared.isEmpty()) {
+            return new WordLookup(key, language.code(), List.of(), nativeLanguage.code(), null);
+        }
+        return new WordLookup(key, language.code(), shared, nativeLanguage.code(), WordLookup.COMMUNITY);
+    }
+
+    private WordLookup bareWord(Language language, NativeLanguage nativeLanguage, String key, String surface,
+                                Optional<InContext> context, LookupTally tally) {
+        List<String> shared = community.top(language, key, nativeLanguage);
         if (!shared.isEmpty()) {
-            return new WordLookup(key, language.code(), shared, nativeLanguage.code(), WordLookup.COMMUNITY);
+            return fromOthers(language, nativeLanguage, key, shared);
         }
         Optional<String> translated = machine.translate(language, nativeLanguage, key, surface, context, tally);
         return translated

@@ -2,6 +2,7 @@ package app.lector.ai;
 
 import app.lector.common.ApiException;
 import app.lector.config.AppProperties;
+import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.util.List;
@@ -18,6 +19,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.MissingNode;
@@ -94,8 +96,39 @@ public class AiClient {
         return config.notWordsModel();
     }
 
-    public Reply quickReply(AiJob job, String system, String user) {
-        return complete(quick, job, config.meaningModel(), system, user, 0);
+    public Reply quickReply(AiJob job, String system, String user, Runnable onFailedTry) {
+        try {
+            return complete(quick, job, config.meaningModel(), system, user, 0);
+        } catch (RequestFailed e) {
+            if (!e.worthRetrying) {
+                throw e;
+            }
+            onFailedTry.run();
+            return complete(quick, job, config.meaningModel(), system, user, 0);
+        }
+    }
+
+    private static final class RequestFailed extends ApiException {
+
+        private final boolean worthRetrying;
+
+        RequestFailed(boolean worthRetrying) {
+            super(HttpStatus.BAD_GATEWAY, "ai_error", "The AI service is unavailable right now");
+            this.worthRetrying = worthRetrying;
+        }
+    }
+
+    private static boolean worthRetrying(RestClientException e) {
+        if (e instanceof RestClientResponseException r) {
+            return r.getStatusCode().value() == HttpStatus.TOO_MANY_REQUESTS.value()
+                    || r.getStatusCode().is5xxServerError();
+        }
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            if (t instanceof IOException) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Reply complete(RestClient client, AiJob job, String model, String system, String user,
@@ -128,7 +161,7 @@ public class AiClient {
         } catch (RestClientException e) {
             spending.failed(job, 0, timedOut(e) ? cap : 0);
             log.warn("AI request for {} failed: {}", job, e.getMessage());
-            throw new ApiException(HttpStatus.BAD_GATEWAY, "ai_error", "The AI service is unavailable right now");
+            throw new RequestFailed(worthRetrying(e));
         }
         return read(job, model, response == null ? MissingNode.getInstance() : response);
     }

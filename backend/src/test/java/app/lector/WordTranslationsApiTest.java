@@ -111,11 +111,30 @@ class WordTranslationsApiTest {
     }
 
     private JsonNode lookup(String token, String term, int status) throws Exception {
-        return api.send(get("/api/dictionary").param("language", "fr").param("term", term), token, status);
+        return api.send(get("/api/dictionary").param("language", "fr").param("term", term).param("bare", "true"),
+                token, status);
     }
 
     private static List<String> meanings(JsonNode result) {
         return result.path("meanings").valueStream().map(JsonNode::asString).toList();
+    }
+
+    @Test
+    void withTheAiTurnedOffTheReaderShowsOnlyOtherLearnersMeaningsAndAmazonIsNotAsked() throws Exception {
+        String word = fresh();
+        TRANSLATE.answer(word, "en", "house");
+        JsonNode alone = api.send(get("/api/dictionary").param("language", "fr").param("term", word)
+                .param("before", "La ").param("after", " est grande."), learner("en"), 200);
+        assertThat(meanings(alone)).isEmpty();
+        assertThat(alone.get("source").isNull()).isTrue();
+        assertThat(api.send(get("/api/dictionary").param("language", "fr").param("term", word), learner("en"), 200)
+                .path("meanings").isEmpty()).isTrue();
+        assertThat(TRANSLATE.requests()).isEmpty();
+        saveMeaning("en", word, "home");
+        saveMeaning("en", word, "home");
+        assertThat(meanings(api.send(get("/api/dictionary").param("language", "fr").param("term", word)
+                .param("before", "La ").param("after", " est grande."), learner("en"), 200))).containsExactly("home");
+        assertThat(TRANSLATE.requests()).isEmpty();
     }
 
     @Test
