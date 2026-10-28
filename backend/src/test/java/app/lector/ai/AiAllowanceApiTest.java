@@ -118,9 +118,9 @@ class AiAllowanceApiTest {
     }
 
     @Test
-    void aLookupNeverCallsTheAiButExplainDoesInTheLearnersLanguage() throws Exception {
+    void theVocabularyMapsLookupNeverCallsTheAiButExplainDoesInTheLearnersLanguage() throws Exception {
         api.patch(user, "/api/me", "{\"nativeLanguage\":\"fr\"}", 200);
-        api.get(user, "/api/dictionary?language=es&term=zzqx", 200);
+        api.get(user, "/api/dictionary?language=es&term=zzqx&bare=true", 200);
         assertThat(AI.requests()).isEmpty();
         JsonNode explained = api.send(get("/api/dictionary/explain").param("language", "es").param("term", "zzqx")
                 .param("context", "Un zzqx"), user, 200);

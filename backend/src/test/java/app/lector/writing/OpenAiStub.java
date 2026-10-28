@@ -154,8 +154,8 @@ public final class OpenAiStub implements AutoCloseable {
     private void handle(HttpExchange ex) throws IOException {
         String body = new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
         requests.add(body);
-        sleep(Math.max(delayMillis, nextDelayMillis.getAndSet(0)));
         Integer status = nextStatuses.poll();
+        sleep(Math.max(delayMillis, nextDelayMillis.getAndSet(0)));
         if (failing || status != null) {
             send(ex, status != null ? status : 500, "{\"error\":\"boom\"}");
             return;

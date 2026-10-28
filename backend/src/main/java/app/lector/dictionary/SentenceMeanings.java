@@ -86,7 +86,7 @@ public class SentenceMeanings {
 
     private Optional<JsonNode> ask(String instructions, String marked, LookupTally tally) {
         try {
-            AiClient.Reply reply = ai.quickReply(AiJob.WORD_MEANING, instructions, marked);
+            AiClient.Reply reply = ai.quickReply(AiJob.WORD_MEANING, instructions, marked, tally::aiFailed);
             tally.aiCall(reply.tokensIn(), reply.tokensOut());
             return Optional.of(reply.json());
         } catch (ApiException e) {

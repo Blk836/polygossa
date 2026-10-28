@@ -49,12 +49,13 @@ public class DictionaryController {
                              @RequestParam Language language,
                              @RequestParam String term,
                              @RequestParam(required = false) String before,
-                             @RequestParam(required = false) String after) {
+                             @RequestParam(required = false) String after,
+                             @RequestParam(defaultValue = "false") boolean bare) {
         String surface = checked(term);
         User user = currentUser.load(principal);
         return meanings.lookup(user.getId(), language, user.getNativeLanguage(),
                 TokenizationService.normalize(surface, language),
-                surface, InContext.of(before, surface, after));
+                surface, InContext.of(before, surface, after), bare);
     }
 
     @GetMapping("/explain")

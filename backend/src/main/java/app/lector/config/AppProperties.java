@@ -31,7 +31,7 @@ public record AppProperties(
             @DefaultValue("30s") Duration timeout,
             @DefaultValue("30") int dailyLimit,
             @DefaultValue("text-embedding-3-small") String embeddingModel,
-            @DefaultValue("5s") Duration meaningTimeout,
+            @DefaultValue("15s") Duration meaningTimeout,
             @DefaultValue("gpt-4.1-mini") String meaningModel,
             @DefaultValue("500000") long systemDailyTokens,
             @DefaultValue("gpt-4.1") String notWordsModel) {
