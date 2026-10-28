@@ -12,6 +12,7 @@ import type { Range, TextAround } from "./reader-text";
 import { AiExplanation, DictionaryLinks, ExtraActions, Meanings, PopupHeader, StatusButtons, type SentenceState } from "./popup-parts";
 
 const lookupCache = new Map<string, Promise<WordLookup>>();
+const unpicked = new WeakSet<Promise<WordLookup>>();
 
 function wordKey(language: LanguageCode, term: string, nativeLanguage: string): string {
   return JSON.stringify([nativeLanguage, language, term]);
@@ -38,13 +39,15 @@ function lookup(language: LanguageCode, term: string, nativeLanguage: string, ar
     p = api<WordLookup>(`dictionary?${params}`);
     p.catch(() => lookupCache.delete(key));
     lookupCache.set(key, p);
+    unpicked.add(p);
   }
   return p;
 }
 
 function forgetUnlessFromTheAi(key: string) {
   const p = lookupCache.get(key);
-  void p?.then((r) => {
+  if (!p || !unpicked.has(p)) return;
+  void p.then((r) => {
     if (r.source !== "sentence" && lookupCache.get(key) === p) lookupCache.delete(key);
   }, () => undefined);
 }
