@@ -17,7 +17,7 @@ function useMeaning(language: LanguageCode, word: VocabMapWord): string | null |
   useEffect(() => {
     if (word.meaning) return;
     let cancelled = false;
-    api<WordLookup>(`dictionary?${new URLSearchParams({ language, term: word.term })}`)
+    api<WordLookup>(`dictionary?${new URLSearchParams({ language, term: word.term, bare: "true" })}`)
       .then((l) => !cancelled && setFound({ term: word.term, meaning: l.meanings.length ? l.meanings.join(", ") : null }))
       .catch(() => !cancelled && setFound({ term: word.term, meaning: null }));
     return () => {

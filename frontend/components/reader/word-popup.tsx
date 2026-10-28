@@ -42,6 +42,13 @@ function lookup(language: LanguageCode, term: string, nativeLanguage: string, ar
   return p;
 }
 
+function forgetUnlessFromTheAi(key: string) {
+  const p = lookupCache.get(key);
+  void p?.then((r) => {
+    if (r.source !== "sentence" && lookupCache.get(key) === p) lookupCache.delete(key);
+  }, () => undefined);
+}
+
 function lookupTerm(target: PopupTarget): string {
   return target.kind === "word" ? target.display : target.term;
 }
@@ -124,6 +131,9 @@ export function WordPopup(props: Props) {
       cancelled = true;
     };
   }, [language, target, onLookup, me.nativeLanguage]);
+
+  const key = cacheKey(language, lookupTerm(target), me.nativeLanguage, target.around);
+  useEffect(() => () => forgetUnlessFromTheAi(key), [key]);
 
   function pickMeaning(meaning: string) {
     if (!result) return;
