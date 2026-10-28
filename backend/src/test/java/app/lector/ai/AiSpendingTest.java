@@ -131,7 +131,7 @@ class AiSpendingTest {
         assertThat(lastRequest().path("max_completion_tokens").asInt()).isEqualTo(150);
         ai.completeJson(AiJob.TOPIC_TAGS, "system", "x".repeat(5000), 0);
         assertThat(lastRequest().path("max_completion_tokens").asInt()).isEqualTo(400);
-        ai.quickReply(AiJob.WORD_MEANING, "system", "Le <b>chat</b>.");
+        ai.quickReply(AiJob.WORD_MEANING, "system", "Le <b>chat</b>.", () -> { });
         assertThat(lastRequest().path("max_completion_tokens").asInt()).isEqualTo(200);
     }
 
@@ -189,6 +189,30 @@ class AiSpendingTest {
         assertThatThrownBy(() -> ai.completeJson(AiJob.TRANSLATION, "system", "hello"))
                 .isInstanceOf(ApiException.class);
         assertUsage(day, AiJob.TRANSLATION, 1, 1, 0, 205);
+    }
+
+    @Test
+    void aWordMeaningTryThatTimesOutIsChargedItsCapAndTriedOnceMore() {
+        AI.reply("{\"meaning\":\"cat\"}");
+        AI.usage(40, 4);
+        AI.slowNext(Duration.ofMillis(1500));
+        int[] failedTries = {0};
+        ai.quickReply(AiJob.WORD_MEANING, "system", "Le <b>chat</b>.", () -> failedTries[0]++);
+        assertThat(failedTries[0]).isEqualTo(1);
+        assertThat(AI.requests()).hasSize(2);
+        assertUsage(day, AiJob.WORD_MEANING, 2, 1, 40, 204);
+    }
+
+    @Test
+    void otherJobsAreNotTriedAgain() {
+        AI.failNext(500);
+        assertThatThrownBy(() -> ai.completeJson(AiJob.TRANSLATION, "system", "hello"))
+                .isInstanceOf(ApiException.class);
+        assertThat(AI.requests()).hasSize(1);
+        AI.delay(Duration.ofMillis(1500));
+        assertThatThrownBy(() -> ai.completeJson(AiJob.TRANSLATION, "system", "hello"))
+                .isInstanceOf(ApiException.class);
+        assertThat(AI.requests()).hasSize(2);
     }
 
     @Test

@@ -103,7 +103,8 @@ class TranslationInContextApiTest {
     }
 
     private JsonNode lookup(String token, String language, String term, String before, String after) throws Exception {
-        MockHttpServletRequestBuilder request = get("/api/dictionary").param("language", language).param("term", term);
+        MockHttpServletRequestBuilder request = get("/api/dictionary").param("language", language).param("term", term)
+                .param("bare", "true");
         if (before != null) {
             request.param("before", before);
         }

@@ -122,7 +122,8 @@ class AdminTranslationsApiTest {
     }
 
     private void lookup(String token, String language, String term, String before, String after) throws Exception {
-        MockHttpServletRequestBuilder request = get("/api/dictionary").param("language", language).param("term", term);
+        MockHttpServletRequestBuilder request = get("/api/dictionary").param("language", language).param("term", term)
+                .param("bare", "true");
         if (before != null) {
             request.param("before", before).param("after", after);
         }
@@ -131,6 +132,11 @@ class AdminTranslationsApiTest {
 
     private void lookup(String term, String before, String after) throws Exception {
         lookup(learner("en"), "fr", term, before, after);
+    }
+
+    private void readerLookup(String term, String before, String after) throws Exception {
+        api.send(get("/api/dictionary").param("language", "fr").param("term", term).param("before", before)
+                .param("after", after), learner("en"), 200);
     }
 
     private JsonNode report(int days) throws Exception {
@@ -181,8 +187,8 @@ class AdminTranslationsApiTest {
         String word = fresh();
         AI.reply("{\"meaning\":\"standing\"}");
         JsonNode before = frEn();
-        lookup(word, "si on est ", " sur la table.");
-        lookup(word, "si on est ", " sur la table.");
+        readerLookup(word, "si on est ", " sur la table.");
+        readerLookup(word, "si on est ", " sur la table.");
         JsonNode after = frEn();
         assertThat(delta(before, after, "layers.aiNew")).isEqualTo(1);
         assertThat(delta(before, after, "layers.aiStored")).isEqualTo(1);
@@ -294,7 +300,7 @@ class AdminTranslationsApiTest {
         AI.reply("{\"meaning\":\"standing\"}");
         AI.usage(120, 8);
         JsonNode before = frEn();
-        lookup(fresh(), "si on est ", " sur la table.");
+        readerLookup(fresh(), "si on est ", " sur la table.");
         JsonNode after = frEn();
         assertThat(delta(before, after, "aiCalls")).isEqualTo(1);
         assertThat(delta(before, after, "aiTokensIn")).isEqualTo(120);
@@ -302,18 +308,19 @@ class AdminTranslationsApiTest {
     }
 
     @Test
-    void aLookupThatUsedBothServicesCountsBoth() throws Exception {
+    void aLookupWhoseFirstTryTimedOutCountsBothTries() throws Exception {
+        AI.reply("{\"meaning\":\"standing\"}");
         AI.usage(50, 3);
-        String word = fresh();
+        AI.slowNext(Duration.ofMillis(1500));
         JsonNode before = frEn();
-        lookup(word, "si on est ", " sur la table.");
+        readerLookup(fresh(), "si on est ", " sur la table.");
         JsonNode after = frEn();
-        assertThat(delta(before, after, "layers.machineNew")).isEqualTo(1);
-        assertThat(delta(before, after, "aiCalls")).isEqualTo(1);
+        assertThat(delta(before, after, "layers.aiNew")).isEqualTo(1);
+        assertThat(delta(before, after, "aiCalls")).isEqualTo(2);
+        assertThat(delta(before, after, "aiFailures")).isEqualTo(1);
         assertThat(delta(before, after, "aiTokensIn")).isEqualTo(50);
         assertThat(delta(before, after, "aiTokensOut")).isEqualTo(3);
-        assertThat(delta(before, after, "translateCalls")).isEqualTo(1);
-        assertThat(delta(before, after, "translateCharacters")).isEqualTo(word.length());
+        assertThat(delta(before, after, "translateCalls")).isZero();
     }
 
     @Test
@@ -322,14 +329,18 @@ class AdminTranslationsApiTest {
         AI.usage(120, 8);
         TRANSLATE.failing(true);
         JsonNode before = frEn();
-        lookup(fresh(), "si on est ", " sur la table.");
-        JsonNode after = frEn();
-        assertThat(delta(before, after, "layers.none")).isEqualTo(1);
-        assertThat(delta(before, after, "aiCalls")).isEqualTo(1);
-        assertThat(delta(before, after, "aiFailures")).isEqualTo(1);
-        assertThat(delta(before, after, "aiTokensIn")).isZero();
-        assertThat(delta(before, after, "translateCalls")).isEqualTo(1);
-        assertThat(delta(before, after, "translateFailures")).isEqualTo(1);
+        readerLookup(fresh(), "si on est ", " sur la table.");
+        JsonNode afterReader = frEn();
+        assertThat(delta(before, afterReader, "layers.none")).isEqualTo(1);
+        assertThat(delta(before, afterReader, "aiCalls")).isEqualTo(2);
+        assertThat(delta(before, afterReader, "aiFailures")).isEqualTo(2);
+        assertThat(delta(before, afterReader, "aiTokensIn")).isZero();
+        assertThat(delta(before, afterReader, "translateCalls")).isZero();
+        lookup(fresh(), null, null);
+        JsonNode afterMap = frEn();
+        assertThat(delta(afterReader, afterMap, "layers.none")).isEqualTo(1);
+        assertThat(delta(afterReader, afterMap, "translateCalls")).isEqualTo(1);
+        assertThat(delta(afterReader, afterMap, "translateFailures")).isEqualTo(1);
     }
 
     @Test
@@ -337,10 +348,11 @@ class AdminTranslationsApiTest {
         AI.delay(Duration.ofMillis(1500));
         TRANSLATE.delay(1500);
         JsonNode before = frEn();
-        lookup(fresh(), "si on est ", " sur la table.");
-        JsonNode after = frEn();
-        assertThat(delta(before, after, "aiFailures")).isEqualTo(1);
-        assertThat(delta(before, after, "translateFailures")).isEqualTo(1);
+        readerLookup(fresh(), "si on est ", " sur la table.");
+        JsonNode afterReader = frEn();
+        assertThat(delta(before, afterReader, "aiFailures")).isEqualTo(2);
+        lookup(fresh(), null, null);
+        assertThat(delta(afterReader, frEn(), "translateFailures")).isEqualTo(1);
     }
 
     @Test
