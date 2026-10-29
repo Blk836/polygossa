@@ -70,7 +70,7 @@ test.describe("on a laptop", () => {
       await released;
       const also = Array.from({ length: 24 }, (_, k) => `meaning number ${k + 1}`);
       await route.fulfill({
-        json: { term: "x", language: created!.language, meanings: ["a long first meaning that needs a couple of lines", ...also], meaningLanguage: "en", source: "machine" },
+        json: { term: "x", language: created!.language, meanings: ["a long first meaning that needs a couple of lines", ...also], meaningLanguage: "en", source: "sentence" },
       });
     });
     created = await createText(page);

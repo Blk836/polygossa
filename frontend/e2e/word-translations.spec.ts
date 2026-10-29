@@ -63,13 +63,13 @@ test.describe("the word popup", () => {
     await expect(page.getByTestId("meaning-also")).toHaveText("also: home · dwelling");
   });
 
-  test("a single machine translation is the headline alone, with a small source note", async ({ page }) => {
+  test("a single meaning is the headline alone, with a small source note", async ({ page }) => {
     created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
-    await lookupAnswer(page, created, { meanings: ["attainment"], source: "machine" });
+    await lookupAnswer(page, created, { meanings: ["attainment"], source: "sentence" });
     await openWord(page, created);
     await expect(page.getByTestId("meaning-headline")).toHaveText("attainment");
     await expect(page.getByTestId("meaning-also")).toHaveCount(0);
-    await expect(page.getByTestId("meaning-source")).toHaveText("machine translation");
+    await expect(page.getByTestId("meaning-source")).toHaveText("in this sentence");
     await expect(page.getByTestId("meanings")).not.toContainText("English");
     const size = (id: string) => page.getByTestId(id).evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
     expect(await size("meaning-headline")).toBeGreaterThan(await size("meaning-source"));
@@ -87,7 +87,7 @@ test.describe("the word popup", () => {
     await page.setViewportSize({ width: 375, height: 740 });
     created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
     const long = "the state of having reached a particular level of achievement after a long effort";
-    await lookupAnswer(page, created, { meanings: [long], source: "machine" });
+    await lookupAnswer(page, created, { meanings: [long], source: "sentence" });
     await openWord(page, created);
     const headline = page.getByTestId("meaning-headline");
     await expect(headline).toHaveText(long);
@@ -99,7 +99,7 @@ test.describe("the word popup", () => {
 
   test("a phrase leads with its first meaning the same way", async ({ page }) => {
     created = await createTextWith(page, (w) => `${w(1)} ${w(2)} ${w(3)}.`);
-    await lookupAnswer(page, created, { meanings: ["however", "nevertheless"], source: "machine" });
+    await lookupAnswer(page, created, { meanings: ["however", "nevertheless"], source: "sentence" });
     await openWord(page, created);
     await article(page).getByText(created.word(2), { exact: true }).click({ modifiers: ["Shift"] });
     await expect(page.getByText("Phrase", { exact: true })).toBeVisible();
@@ -107,13 +107,13 @@ test.describe("the word popup", () => {
     await expect(page.getByTestId("meaning-also")).toHaveText("also: nevertheless");
   });
 
-  test("labels a machine translation and links out to dictionaries in a new tab", async ({ page }) => {
+  test("labels the meaning's source and links out to dictionaries in a new tab", async ({ page }) => {
     created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
-    await lookupAnswer(page, created, { meanings: ["refrigerator"], source: "machine" });
+    await lookupAnswer(page, created, { meanings: ["refrigerator"], source: "sentence" });
     await openWord(page, created);
 
     await expect(page.getByTestId("meanings")).toContainText("refrigerator");
-    await expect(page.getByTestId("meanings")).toContainText("machine translation");
+    await expect(page.getByTestId("meanings")).toContainText("in this sentence");
     const links = page.getByTestId("dictionary-links").getByRole("link");
     const word = encodeURIComponent(created.word(1));
     const from = created.language;
@@ -139,7 +139,7 @@ test.describe("the word popup", () => {
     const asked: URLSearchParams[] = [];
     await page.route("**/api/dictionary?*", (route) => {
       asked.push(new URL(route.request().url()).searchParams);
-      return route.fulfill({ json: { term: created!.word(1), language: created!.language, meaningLanguage: "en", meanings: ["limping"], source: "machine" } });
+      return route.fulfill({ json: { term: created!.word(1), language: created!.language, meaningLanguage: "en", meanings: ["limping"], source: "sentence" } });
     });
     await openReader(page, `/read/${created.id}`);
     await article(page).getByText(created.word(1), { exact: true }).nth(1).click();
@@ -177,7 +177,7 @@ test.describe("the word popup", () => {
 
   test("shows no type line when the meaning has no type", async ({ page }) => {
     created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
-    await lookupAnswer(page, created, { meanings: ["refrigerator"], source: "machine", wordType: null });
+    await lookupAnswer(page, created, { meanings: ["refrigerator"], source: "sentence", wordType: null });
     const sent = vocabularyWrites(page);
     await openWord(page, created);
     await expect(page.getByTestId("meaning-headline")).toHaveText("refrigerator");
@@ -243,7 +243,7 @@ test.describe("the word popup", () => {
 
   test("shows no dictionary definitions, and the AI explains only when asked", async ({ page }) => {
     created = await createTextWith(page, (w) => `${w(1)} ${w(2)}.`);
-    await lookupAnswer(page, created, { meanings: ["house"], source: "machine" });
+    await lookupAnswer(page, created, { meanings: ["house"], source: "sentence" });
     let explained = 0;
     await page.route("**/api/dictionary/explain?*", (route) => {
       explained += 1;

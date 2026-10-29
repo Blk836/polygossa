@@ -168,7 +168,7 @@ test("a native language the list doesn't cover gets the reader's lookup", async 
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
   });
   await page.route("**/api/dictionary?**", (route) => route.fulfill({ status: 200, contentType: "application/json",
-    body: JSON.stringify({ term: "pomme", language: "fr", meanings: ["jabłko"], meaningLanguage: "pl", source: "machine" }) }));
+    body: JSON.stringify({ term: "pomme", language: "fr", meanings: ["jabłko"], meaningLanguage: "pl", source: "sentence" }) }));
   await openInFrench(page, "/dashboard?map=food/fruit-veg");
   await wordTile(page, "pomme").click();
   await expect(map(page).getByTestId("map-word-meaning")).toHaveText("jabłko");

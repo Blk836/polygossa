@@ -5,12 +5,10 @@ import static org.assertj.core.api.Assertions.within;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-import app.lector.translation.TranslateStub;
 import app.lector.writing.OpenAiStub;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,40 +39,29 @@ import tools.jackson.databind.ObjectMapper;
         "app.openai.api-key=test-key",
         "app.openai.daily-limit=0",
         "app.openai.meaning-timeout=1s",
-        "app.translation.enabled=true",
-        "app.translation.region=eu-west-1",
-        "app.translation.timeout=1s",
-        "app.translation.monthly-character-cap=5000000",
-        "app.lookup-prices.translate-per-million-characters=20",
         "app.lookup-prices.ai-input-per-million-tokens=0.3",
         "app.lookup-prices.ai-output-per-million-tokens=1.2"
 })
 @AutoConfigureMockMvc
 class AdminTranslationsApiTest {
 
-    private static final TranslateStub TRANSLATE;
     private static final OpenAiStub AI;
 
     static {
         try {
-            TRANSLATE = new TranslateStub();
             AI = new OpenAiStub();
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-        System.setProperty("aws.accessKeyId", "test");
-        System.setProperty("aws.secretAccessKey", "test");
     }
 
     @DynamicPropertySource
     static void stubs(DynamicPropertyRegistry registry) {
-        registry.add("app.translation.endpoint", TRANSLATE::endpoint);
         registry.add("app.openai.base-url", AI::baseUrl);
     }
 
     @AfterAll
     static void stop() {
-        TRANSLATE.close();
         AI.close();
     }
 
@@ -96,7 +83,6 @@ class AdminTranslationsApiTest {
     @BeforeEach
     void setUp() throws Exception {
         api = new TestApi(mvc, json);
-        TRANSLATE.reset();
         AI.reset();
         String body = "{\"email\":\"" + AdminApiTest.ADMIN + "\",\"password\":\"password123\"}";
         var signup = mvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON).content(body))
@@ -172,14 +158,12 @@ class AdminTranslationsApiTest {
         return LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC);
     }
 
-    private void counter(LocalDate day, String source, String target, String layer, long lookups, long characters,
+    private void counter(LocalDate day, String source, String target, String layer, long lookups,
                          long tokensIn, long tokensOut) {
         jdbc.update("""
-                insert into lookup_counters (day, source_language, target_language, layer, lookups, translate_calls,
-                    translate_characters, translate_failures, translate_capped, ai_calls, ai_tokens_in,
-                    ai_tokens_out, ai_failures)
-                values (?, ?, ?, ?, ?, 0, ?, 0, 0, 0, ?, ?, 0)""", day, source, target, layer, lookups, characters,
-                tokensIn, tokensOut);
+                insert into lookup_counters (day, source_language, target_language, layer, lookups, ai_calls,
+                    ai_tokens_in, ai_tokens_out, ai_failures)
+                values (?, ?, ?, ?, ?, 0, ?, ?, 0)""", day, source, target, layer, lookups, tokensIn, tokensOut);
     }
 
     @Test
@@ -211,39 +195,57 @@ class AdminTranslationsApiTest {
         JsonNode after = frEn();
         assertThat(delta(before, after, "layers.community")).isEqualTo(1);
         assertThat(n(after, "stored.communityWords")).isGreaterThanOrEqualTo(1);
-        assertThat(TRANSLATE.requests()).isEmpty();
+        assertThat(AI.requests()).isEmpty();
     }
 
     @Test
-    void aNewAndAStoredMachineTranslationAreCountedApart() throws Exception {
+    void aMapLookupTheAiAnswersCountsAsNewAndThenAsStored() throws Exception {
         String word = fresh();
+        AI.reply("{\"meaning\":\"bank, bench\"}");
         JsonNode before = frEn();
         lookup(word, null, null);
         lookup(word, null, null);
         JsonNode after = frEn();
-        assertThat(delta(before, after, "layers.machineNew")).isEqualTo(1);
-        assertThat(delta(before, after, "layers.machineStored")).isEqualTo(1);
-        assertThat(delta(before, after, "translateCalls")).isEqualTo(1);
-        assertThat(delta(before, after, "translateCharacters")).isEqualTo(word.length());
-        assertThat(delta(before, after, "stored.machineWords")).isEqualTo(1);
-        assertThat(delta(before, after, "stored.machineNoUse")).isZero();
+        assertThat(delta(before, after, "layers.aiNew")).isEqualTo(1);
+        assertThat(delta(before, after, "layers.aiStored")).isEqualTo(1);
+        assertThat(delta(before, after, "aiCalls")).isEqualTo(1);
+        assertThat(delta(before, after, "stored.sentenceMeanings")).isEqualTo(1);
     }
 
     @Test
     void aLookupWithNoMeaningIsCountedAsNothingFound() throws Exception {
-        TRANSLATE.echo(true);
+        AI.reply("{}");
         JsonNode before = frEn();
         lookup(fresh(), null, null);
         JsonNode after = frEn();
         assertThat(delta(before, after, "layers.none")).isEqualTo(1);
-        assertThat(delta(before, after, "stored.machineWords")).isEqualTo(1);
-        assertThat(delta(before, after, "stored.machineNoUse")).isEqualTo(1);
+        assertThat(delta(before, after, "stored.sentenceMeanings")).isZero();
+    }
+
+    @Test
+    void theReportHasNothingAboutAmazonTranslate() throws Exception {
+        AI.reply("{\"meaning\":\"bank, bench\"}");
+        lookup(fresh(), null, null);
+        JsonNode report = report(30);
+        assertThat(report.has("month")).isFalse();
+        assertThat(report.get("prices").has("translatePerMillionCharacters")).isFalse();
+        JsonNode row = frEn();
+        for (String gone : List.of("translateCalls", "translateCharacters", "translateFailures", "translateCapped")) {
+            assertThat(row.has(gone)).as(gone).isFalse();
+            assertThat(report.get("total").has(gone)).as(gone).isFalse();
+        }
+        assertThat(row.get("layers").has("machineStored")).isFalse();
+        assertThat(row.get("layers").has("machineNew")).isFalse();
+        assertThat(row.get("stored").has("machineWords")).isFalse();
+        assertThat(row.get("stored").has("machineNoUse")).isFalse();
+        assertThat(report.get("trend").get(0).get("layers").has("machineNew")).isFalse();
     }
 
     @Test
     void eachLanguagePairHasItsOwnRow() throws Exception {
         JsonNode esFrBefore = pair("es", "fr");
         JsonNode frEnBefore = frEn();
+        AI.reply("{\"meaning\":\"chien\"}");
         lookup(learner("fr"), "es", fresh(), null, null);
         assertThat(delta(esFrBefore, pair("es", "fr"), "lookups")).isEqualTo(1);
         assertThat(delta(frEnBefore, frEn(), "lookups")).isZero();
@@ -254,12 +256,13 @@ class AdminTranslationsApiTest {
         JsonNode before = report(30).get("total");
         lookup(learner("fr"), "fr", fresh(), null, null);
         assertThat(delta(before, report(30).get("total"), "lookups")).isZero();
-        assertThat(TRANSLATE.requests()).isEmpty();
+        assertThat(AI.requests()).isEmpty();
     }
 
     @Test
     void lookupsAtTheSameMomentAllCount() throws Exception {
         String word = fresh();
+        AI.reply("{\"meaning\":\"bank, bench\"}");
         lookup(word, null, null);
         List<String> learners = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
@@ -278,21 +281,7 @@ class AdminTranslationsApiTest {
         } finally {
             pool.shutdown();
         }
-        assertThat(delta(before, frEn(), "layers.machineStored")).isEqualTo(10);
-    }
-
-    @Test
-    void amazonCallsAndCharactersAreCountedOnTheLookupTheyServed() throws Exception {
-        String word = fresh();
-        TRANSLATE.answer(word, "en", word);
-        String marked = "Hier, je <b>" + word + "</b> dans la rue.";
-        TRANSLATE.answer(marked, "en", "Yesterday I <b>was limping</b> in the street.");
-        JsonNode before = frEn();
-        lookup(word, "Hier, je ", " dans la rue.");
-        JsonNode after = frEn();
-        assertThat(delta(before, after, "layers.machineNew")).isEqualTo(1);
-        assertThat(delta(before, after, "translateCalls")).isEqualTo(2);
-        assertThat(delta(before, after, "translateCharacters")).isEqualTo(word.length() + marked.length());
+        assertThat(delta(before, frEn(), "layers.aiStored")).isEqualTo(10);
     }
 
     @Test
@@ -320,14 +309,12 @@ class AdminTranslationsApiTest {
         assertThat(delta(before, after, "aiFailures")).isEqualTo(1);
         assertThat(delta(before, after, "aiTokensIn")).isEqualTo(50);
         assertThat(delta(before, after, "aiTokensOut")).isEqualTo(3);
-        assertThat(delta(before, after, "translateCalls")).isZero();
     }
 
     @Test
     void failedCallsAreCountedAsFailures() throws Exception {
         AI.setFailing(true);
         AI.usage(120, 8);
-        TRANSLATE.failing(true);
         JsonNode before = frEn();
         readerLookup(fresh(), "si on est ", " sur la table.");
         JsonNode afterReader = frEn();
@@ -335,57 +322,34 @@ class AdminTranslationsApiTest {
         assertThat(delta(before, afterReader, "aiCalls")).isEqualTo(2);
         assertThat(delta(before, afterReader, "aiFailures")).isEqualTo(2);
         assertThat(delta(before, afterReader, "aiTokensIn")).isZero();
-        assertThat(delta(before, afterReader, "translateCalls")).isZero();
         lookup(fresh(), null, null);
         JsonNode afterMap = frEn();
         assertThat(delta(afterReader, afterMap, "layers.none")).isEqualTo(1);
-        assertThat(delta(afterReader, afterMap, "translateCalls")).isEqualTo(1);
-        assertThat(delta(afterReader, afterMap, "translateFailures")).isEqualTo(1);
+        assertThat(delta(afterReader, afterMap, "aiCalls")).isEqualTo(2);
+        assertThat(delta(afterReader, afterMap, "aiFailures")).isEqualTo(2);
     }
 
     @Test
     void timedOutCallsAreCountedAsFailures() throws Exception {
         AI.delay(Duration.ofMillis(1500));
-        TRANSLATE.delay(1500);
         JsonNode before = frEn();
         readerLookup(fresh(), "si on est ", " sur la table.");
         JsonNode afterReader = frEn();
         assertThat(delta(before, afterReader, "aiFailures")).isEqualTo(2);
         lookup(fresh(), null, null);
-        assertThat(delta(afterReader, frEn(), "translateFailures")).isEqualTo(1);
-    }
-
-    @Test
-    void aLookupRefusedByTheCapIsCountedAsRefused() throws Exception {
-        String month = YearMonth.now(clock.withZone(ZoneOffset.UTC)).toString();
-        Long was = jdbc.query("select characters from translation_usage where month = ?",
-                rs -> rs.next() ? rs.getLong(1) : null, month);
-        jdbc.update("insert into translation_usage (month, characters) values (?, 5000000) "
-                + "on conflict (month) do update set characters = 5000000", month);
-        try {
-            JsonNode before = frEn();
-            lookup(fresh(), null, null);
-            JsonNode after = frEn();
-            assertThat(delta(before, after, "translateCapped")).isEqualTo(1);
-            assertThat(delta(before, after, "translateCalls")).isZero();
-            assertThat(delta(before, after, "translateCharacters")).isZero();
-            assertThat(delta(before, after, "layers.none")).isEqualTo(1);
-            assertThat(report(30).get("month").get("characters").asLong()).isEqualTo(5000000);
-        } finally {
-            jdbc.update("update translation_usage set characters = ? where month = ?", was == null ? 0 : was, month);
-        }
+        assertThat(delta(afterReader, frEn(), "aiFailures")).isEqualTo(2);
     }
 
     @Test
     void thePeriodTheCostAndTheTotal() throws Exception {
-        counter(today().minusDays(5), "DE", "PL", "MACHINE_NEW", 1000, 200_000, 1_000_000, 100_000);
-        counter(today().minusDays(40), "DE", "PL", "COMMUNITY", 7, 0, 0, 0);
+        counter(today().minusDays(5), "DE", "PL", "AI_NEW", 1000, 1_000_000, 100_000);
+        counter(today().minusDays(40), "DE", "PL", "COMMUNITY", 7, 0, 0);
         JsonNode dePl = pair("de", "pl");
         assertThat(n(dePl, "lookups")).isEqualTo(1000);
-        assertThat(n(dePl, "layers.machineNew")).isEqualTo(1000);
+        assertThat(n(dePl, "layers.aiNew")).isEqualTo(1000);
         assertThat(dePl.get("hitRate").asDouble()).isZero();
-        assertThat(dePl.get("cost").asDouble()).isCloseTo(4.0 + 0.3 + 0.12, within(1e-9));
-        assertThat(dePl.get("costPer1000Lookups").asDouble()).isCloseTo(4.42, within(1e-9));
+        assertThat(dePl.get("cost").asDouble()).isCloseTo(0.3 + 0.12, within(1e-9));
+        assertThat(dePl.get("costPer1000Lookups").asDouble()).isCloseTo(0.42, within(1e-9));
 
         JsonNode ninety = report(90);
         long sum = 0;
@@ -397,23 +361,23 @@ class AdminTranslationsApiTest {
             }
         }
         assertThat(n(ninety.get("total"), "lookups")).isEqualTo(sum);
-        assertThat(ninety.get("prices").get("translatePerMillionCharacters").asDouble()).isEqualTo(20);
+        assertThat(ninety.get("prices").get("aiInputPerMillionTokens").asDouble()).isEqualTo(0.3);
     }
 
     @Test
     void aPairWithNothingLookedUpHasNoCostPerThousand() throws Exception {
-        jdbc.update("insert into machine_translations (source_language, target_language, term, translation, "
-                + "created_at, tried_in_context) values ('IT', 'SV', ?, 'x', now(), false)", fresh());
+        jdbc.update("insert into sentence_meanings (source_language, target_language, term, context_hash, meaning, "
+                + "created_at) values ('IT', 'SV', ?, ?, 'x', now())", fresh(), fresh());
         JsonNode itSv = pair("it", "sv");
         assertThat(n(itSv, "lookups")).isZero();
-        assertThat(n(itSv, "stored.machineWords")).isGreaterThanOrEqualTo(1);
+        assertThat(n(itSv, "stored.sentenceMeanings")).isGreaterThanOrEqualTo(1);
         assertThat(itSv.get("costPer1000Lookups").isNull()).isTrue();
         assertThat(itSv.get("hitRate").isNull()).isTrue();
     }
 
     @Test
     void theTrendHasEveryDayOfThePeriod() throws Exception {
-        counter(today().minusDays(3), "DE", "SV", "AI_NEW", 4, 0, 1_000_000, 0);
+        counter(today().minusDays(3), "DE", "SV", "AI_NEW", 4, 1_000_000, 0);
         JsonNode trend = report(7).get("trend");
         assertThat(trend).hasSize(7);
         assertThat(trend.get(6).get("day").asString()).isEqualTo(today().toString());
@@ -422,13 +386,6 @@ class AdminTranslationsApiTest {
         assertThat(day.get("day").asString()).isEqualTo(today().minusDays(3).toString());
         assertThat(n(day, "layers.aiNew")).isGreaterThanOrEqualTo(4);
         assertThat(day.get("cost").asDouble()).isGreaterThanOrEqualTo(0.3);
-    }
-
-    @Test
-    void thisMonthAgainstTheCap() throws Exception {
-        JsonNode month = report(30).get("month");
-        assertThat(month.get("month").asString()).isEqualTo(YearMonth.now(clock.withZone(ZoneOffset.UTC)).toString());
-        assertThat(month.get("cap").asLong()).isEqualTo(5_000_000);
     }
 
     @Test

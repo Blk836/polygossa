@@ -3,7 +3,7 @@ import { cleanUpAfterEach, map, openInFrench, wordTile } from "./vocab-map-helpe
 
 cleanUpAfterEach();
 
-test("the vocabulary map looks a word up on its own, the lookup that may use Amazon Translate", async ({ page }) => {
+test("the vocabulary map looks a word up on its own, which the AI answers", async ({ page }) => {
   await page.route("**/api/vocab-map?**", async (route) => {
     const body = await (await route.fetch()).json();
     body.meaningLanguage = "pl";
@@ -13,7 +13,7 @@ test("the vocabulary map looks a word up on its own, the lookup that may use Ama
   const asked: URL[] = [];
   await page.route("**/api/dictionary?**", (route) => {
     asked.push(new URL(route.request().url()));
-    return route.fulfill({ json: { term: "pomme", language: "fr", meanings: ["jabłko"], meaningLanguage: "pl", source: "machine" } });
+    return route.fulfill({ json: { term: "pomme", language: "fr", meanings: ["jabłko"], meaningLanguage: "pl", source: "sentence" } });
   });
   await openInFrench(page, "/dashboard?map=food/fruit-veg");
   await wordTile(page, "pomme").click();

@@ -99,8 +99,6 @@ describe("translation figures", () => {
       ["aiStored", "AI, stored"],
       ["aiNew", "AI, new"],
       ["community", "Community"],
-      ["machineStored", "Machine, stored"],
-      ["machineNew", "Machine, new"],
       ["none", "Nothing found"],
     ]);
   });

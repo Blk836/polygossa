@@ -3,29 +3,26 @@ import type { AdminTranslations, TranslationRow } from "../lib/admin";
 
 const tabs = (page: Page) => page.getByRole("navigation", { name: "Admin pages" });
 
-const NO_LAYERS = { aiStored: 0, aiNew: 0, community: 0, machineStored: 0, machineNew: 0, none: 0 };
+const NO_LAYERS = { aiStored: 0, aiNew: 0, community: 0, none: 0 };
 
 function row(source: string | null, target: string | null, extra: Partial<TranslationRow>): TranslationRow {
   return {
-    source, target, lookups: 0, layers: NO_LAYERS, hitRate: null, translateCalls: 0, translateCharacters: 0,
-    translateFailures: 0, translateCapped: 0, aiCalls: 0, aiTokensIn: 0, aiTokensOut: 0, aiFailures: 0, cost: 0,
-    costPer1000Lookups: null, stored: { machineWords: 0, machineNoUse: 0, sentenceMeanings: 0, communityWords: 0 }, ...extra,
+    source, target, lookups: 0, layers: NO_LAYERS, hitRate: null, aiCalls: 0, aiTokensIn: 0, aiTokensOut: 0,
+    aiFailures: 0, cost: 0, costPer1000Lookups: null, stored: { sentenceMeanings: 0, communityWords: 0 }, ...extra,
   };
 }
 
 const FR_EN = row("fr", "en", {
-  lookups: 1000, layers: { aiStored: 300, aiNew: 100, community: 120, machineStored: 200, machineNew: 250, none: 30 },
-  hitRate: 0.62, translateCalls: 260, translateCharacters: 200_000, translateFailures: 2, translateCapped: 1,
-  aiCalls: 101, aiTokensIn: 1_000_000, aiTokensOut: 100_000, aiFailures: 1, cost: 3.21, costPer1000Lookups: 3.21,
-  stored: { machineWords: 4321, machineNoUse: 87, sentenceMeanings: 950, communityWords: 64 },
+  lookups: 1000, layers: { aiStored: 500, aiNew: 350, community: 120, none: 30 },
+  hitRate: 0.62, aiCalls: 351, aiTokensIn: 1_000_000, aiTokensOut: 100_000, aiFailures: 1, cost: 3.21,
+  costPer1000Lookups: 3.21, stored: { sentenceMeanings: 4321, communityWords: 87 },
 });
 
 function report(days: number, pairs: TranslationRow[]): AdminTranslations {
   const today = new Date();
   return {
     days,
-    prices: { translatePerMillionCharacters: 15, aiInputPerMillionTokens: 0.15, aiOutputPerMillionTokens: 0.6 },
-    month: { month: today.toISOString().slice(0, 7), characters: 12_000, cap: 1_333_333 },
+    prices: { aiInputPerMillionTokens: 0.15, aiOutputPerMillionTokens: 0.6 },
     pairs,
     total: row(null, null, pairs[0] ? { ...pairs[0], source: null, target: null } : {}),
     trend: Array.from({ length: days }, (_, i) => ({
@@ -77,7 +74,7 @@ test("an unknown tab shows Overview", async ({ page }) => {
   await expect(page.getByTestId("admin-tiles")).toBeVisible();
 });
 
-test("the Translations tab shows a pair's numbers, a total, the cap and the trend", async ({ page }) => {
+test("the Translations tab shows a pair's numbers, a total and the trend, with nothing about Amazon Translate", async ({ page }) => {
   const asked = await stubTranslations(page, [FR_EN]);
   await page.goto("/admin?tab=translations");
 
@@ -87,18 +84,28 @@ test("the Translations tab shows a pair's numbers, a total, the cap and the tren
   await expect(french).toContainText("62%");
   await expect(french).toContainText("12%");
   await expect(lookups.getByRole("row").filter({ hasText: "Total" })).toContainText("1,000");
+  await expect(lookups.getByRole("columnheader")).toHaveText(
+    ["Pair", "Lookups", "Hit rate", "AI, stored", "AI, new", "Community", "Nothing found"]);
+  await expect(lookups).toContainText("stored AI, community)");
 
   const costs = page.getByRole("region", { name: "Calls and cost per language pair" });
+  await expect(costs.getByRole("columnheader")).toHaveText(
+    ["Pair", "AI calls", "Tokens in", "Tokens out", "Failures", "Cost", "Per 1,000 lookups"]);
   const frenchCost = costs.getByRole("row").filter({ hasText: "French → English" });
-  await expect(frenchCost).toContainText("200,000");
+  await expect(frenchCost).toContainText("351");
   await expect(frenchCost).toContainText("1,000,000");
   await expect(frenchCost).toContainText("$3.21");
+  await expect(costs).toContainText("$0.15 per million tokens in and $0.6 out");
+  await expect(costs).not.toContainText("characters");
 
   const stored = page.getByRole("region", { name: "Stored so far" });
+  await expect(stored.getByRole("columnheader")).toHaveText(["Pair", "AI meanings", "Words with a community meaning"]);
   await expect(stored.getByRole("row").filter({ hasText: "French → English" })).toContainText("4,321");
   await expect(stored.getByRole("row").filter({ hasText: "French → English" })).toContainText("87");
 
-  await expect(page.getByTestId("translation-month")).toContainText("12,000 of 1,333,333 characters");
+  await expect(page.getByTestId("translation-month")).toHaveCount(0);
+  await expect(page.getByText(/Amazon|machine/i)).toHaveCount(0);
+  await expect(page.getByRole("img", { name: /machine translation/ })).toHaveCount(0);
   await expect(page.getByRole("img", { name: "Lookups answered by the community" })).toBeVisible();
   await expect(page.getByRole("img", { name: /Estimated cost/ })).toBeVisible();
   expect(asked).toContain(30);
@@ -108,11 +115,10 @@ test("the Translations tab shows a pair's numbers, a total, the cap and the tren
   await expect(page.getByRole("img", { name: "Lookups answered by the community" })).toBeVisible();
 });
 
-test("a period without lookups says so and still shows the cap and what is stored", async ({ page }) => {
-  await stubTranslations(page, [row("fr", "en", { stored: { machineWords: 12, machineNoUse: 1, sentenceMeanings: 3, communityWords: 0 } })]);
+test("a period without lookups says so and still shows what is stored", async ({ page }) => {
+  await stubTranslations(page, [row("fr", "en", { stored: { sentenceMeanings: 12, communityWords: 0 } })]);
   await page.goto("/admin?tab=translations");
   await expect(page.getByText("No lookups were counted in this period.")).toBeVisible();
-  await expect(page.getByTestId("translation-month")).toContainText("12,000 of 1,333,333 characters");
   await expect(page.getByRole("region", { name: "Stored so far" }).getByRole("row").filter({ hasText: "French → English" })).toContainText("12");
   await expect(page.getByRole("region", { name: "Calls and cost per language pair" }).getByRole("row").filter({ hasText: "French → English" })).toContainText("—");
 });
