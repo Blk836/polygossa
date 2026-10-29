@@ -118,15 +118,22 @@ class AiAllowanceApiTest {
     }
 
     @Test
-    void theVocabularyMapsLookupNeverCallsTheAiButExplainDoesInTheLearnersLanguage() throws Exception {
+    void theVocabularyMapsLookupAsksTheAiOutsideTheAllowanceAndExplainAsksInTheLearnersLanguage() throws Exception {
         api.patch(user, "/api/me", "{\"nativeLanguage\":\"fr\"}", 200);
-        api.get(user, "/api/dictionary?language=es&term=zzqx&bare=true", 200);
-        assertThat(AI.requests()).isEmpty();
         JsonNode explained = api.send(get("/api/dictionary/explain").param("language", "es").param("term", "zzqx")
                 .param("context", "Un zzqx"), user, 200);
         assertThat(explained.get("senses").get(0).get("definition").asString()).isEqualTo("hi");
         assertThat(AI.requests()).hasSize(1);
         assertThat(AI.requests().get(0)).contains("zzqx").contains("French").contains("Un zzqx");
+        translate(user, 200);
+        translate(user, 200);
+        assertLimitError(translate(user, 429));
+        AI.reset();
+        AI.reply("{\"meaning\": \"salut\"}");
+        JsonNode onTheMap = api.get(user, "/api/dictionary?language=es&term=zzqx&bare=true", 200);
+        assertThat(onTheMap.get("meanings").get(0).asString()).isEqualTo("salut");
+        assertThat(AI.requests()).hasSize(1);
+        assertThat(AI.requests().get(0)).contains("zzqx").contains("French");
     }
 
     @Test
