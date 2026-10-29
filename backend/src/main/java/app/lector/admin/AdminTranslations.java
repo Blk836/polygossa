@@ -3,14 +3,10 @@ package app.lector.admin;
 import app.lector.token.Language;
 import app.lector.token.NativeLanguage;
 import app.lector.translation.LookupCounterRepository;
-import app.lector.translation.TranslationProperties;
-import app.lector.translation.TranslationUsage;
-import app.lector.translation.TranslationUsageRepository;
 import app.lector.vocab.CommunityMeanings;
 import jakarta.persistence.EntityManager;
 import java.time.Clock;
 import java.time.LocalDate;
-import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -26,25 +22,18 @@ public class AdminTranslations {
 
     public record Day(LocalDate day, LookupSums.Layers layers, double cost) {}
 
-    public record Month(String month, long characters, long cap) {}
-
-    public record Report(int days, LookupPrices prices, Month month, List<LookupSums.Row> pairs, LookupSums.Row total,
+    public record Report(int days, LookupPrices prices, List<LookupSums.Row> pairs, LookupSums.Row total,
                          List<Day> trend) {}
 
     private record Pair(String source, String target) {}
 
     private final LookupCounterRepository counters;
-    private final TranslationUsageRepository usage;
-    private final TranslationProperties settings;
     private final LookupPrices prices;
     private final EntityManager em;
     private final Clock clock;
 
-    public AdminTranslations(LookupCounterRepository counters, TranslationUsageRepository usage,
-                             TranslationProperties settings, LookupPrices prices, EntityManager em, Clock clock) {
+    public AdminTranslations(LookupCounterRepository counters, LookupPrices prices, EntityManager em, Clock clock) {
         this.counters = counters;
-        this.usage = usage;
-        this.settings = settings;
         this.prices = prices;
         this.em = em;
         this.clock = clock;
@@ -69,7 +58,7 @@ public class AdminTranslations {
                 .toList());
         rows.sort(Comparator.comparingLong(LookupSums.Row::lookups).reversed()
                 .thenComparing(LookupSums.Row::source).thenComparing(LookupSums.Row::target));
-        return new Report(days, prices, month(), rows, total.row(null, null, prices), trend(first, today, byDay));
+        return new Report(days, prices, rows, total.row(null, null, prices), trend(first, today, byDay));
     }
 
     private List<Day> trend(LocalDate first, LocalDate today, Map<LocalDate, LookupSums> byDay) {
@@ -81,18 +70,7 @@ public class AdminTranslations {
         return out;
     }
 
-    private Month month() {
-        String month = YearMonth.now(clock.withZone(ZoneOffset.UTC)).toString();
-        long characters = usage.findById(month).map(TranslationUsage::getCharacters).orElse(0L);
-        return new Month(month, characters, settings.monthlyCharacterCap());
-    }
-
     private void stored(Map<Pair, LookupSums> pairs) {
-        for (Object[] r : rows("""
-                select source_language, target_language, count(*), count(*) filter (where translation is null)
-                from machine_translations group by source_language, target_language""")) {
-            sums(pairs, r).machineWords(number(r[2]), number(r[3]));
-        }
         for (Object[] r : rows("""
                 select source_language, target_language, count(*) from sentence_meanings
                 group by source_language, target_language""")) {

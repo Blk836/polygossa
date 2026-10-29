@@ -6,7 +6,6 @@ import app.lector.translation.InContext;
 import app.lector.translation.LookupCounters;
 import app.lector.translation.LookupLayer;
 import app.lector.translation.LookupTally;
-import app.lector.translation.MachineTranslations;
 import app.lector.vocab.CommunityMeanings;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,14 +17,11 @@ public class OwnLanguageMeanings {
 
     private final CommunityMeanings community;
     private final SentenceMeanings sentences;
-    private final MachineTranslations machine;
     private final LookupCounters counters;
 
-    public OwnLanguageMeanings(CommunityMeanings community, SentenceMeanings sentences, MachineTranslations machine,
-                               LookupCounters counters) {
+    public OwnLanguageMeanings(CommunityMeanings community, SentenceMeanings sentences, LookupCounters counters) {
         this.community = community;
         this.sentences = sentences;
-        this.machine = machine;
         this.counters = counters;
     }
 
@@ -36,7 +32,7 @@ public class OwnLanguageMeanings {
         }
         LookupTally tally = new LookupTally();
         WordLookup found = bare
-                ? bareWord(language, nativeLanguage, key, surface, context, tally)
+                ? bareWord(language, nativeLanguage, key, tally)
                 : inReader(language, nativeLanguage, key, context.orElseGet(() -> InContext.alone(surface)), tally);
         counters.count(language, nativeLanguage, layer(found, tally), tally);
         return community.mine(userId, language, key, nativeLanguage).map(mine -> leadingWith(found, mine)).orElse(found);
@@ -61,27 +57,25 @@ public class OwnLanguageMeanings {
         return new WordLookup(key, language.code(), shared, nativeLanguage.code(), WordLookup.COMMUNITY);
     }
 
-    private WordLookup bareWord(Language language, NativeLanguage nativeLanguage, String key, String surface,
-                                Optional<InContext> context, LookupTally tally) {
+    private WordLookup bareWord(Language language, NativeLanguage nativeLanguage, String key, LookupTally tally) {
         List<String> shared = community.top(language, key, nativeLanguage);
         if (!shared.isEmpty()) {
             return fromOthers(language, nativeLanguage, key, shared);
         }
-        Optional<String> translated = machine.translate(language, nativeLanguage, key, surface, context, tally);
-        return translated
-                .map(t -> new WordLookup(key, language.code(), List.of(t), nativeLanguage.code(), WordLookup.MACHINE))
-                .orElseGet(() -> new WordLookup(key, language.code(), List.of(), nativeLanguage.code(), null));
+        return sentences.alone(language, nativeLanguage, key, tally)
+                .map(f -> new WordLookup(key, language.code(), List.of(f.meaning()), nativeLanguage.code(),
+                        WordLookup.SENTENCE))
+                .orElseGet(() -> fromOthers(language, nativeLanguage, key, List.of()));
     }
 
     private static LookupLayer layer(WordLookup found, LookupTally tally) {
         if (found.source() == null) {
             return LookupLayer.NONE;
         }
-        return switch (found.source()) {
-            case WordLookup.SENTENCE -> tally.aiCalls() > 0 ? LookupLayer.AI_NEW : LookupLayer.AI_STORED;
-            case WordLookup.COMMUNITY -> LookupLayer.COMMUNITY;
-            default -> tally.translateCalls() > 0 ? LookupLayer.MACHINE_NEW : LookupLayer.MACHINE_STORED;
-        };
+        if (WordLookup.COMMUNITY.equals(found.source())) {
+            return LookupLayer.COMMUNITY;
+        }
+        return tally.aiCalls() > 0 ? LookupLayer.AI_NEW : LookupLayer.AI_STORED;
     }
 
     private static WordLookup leadingWith(WordLookup found, String mine) {

@@ -55,7 +55,6 @@ export function withMeaningFirst(lookup: WordLookup, meaning: string): WordLooku
 export function meaningNote(lookup: WordLookup): string | null {
   if (lookup.meanings.length === 0) return null;
   if (lookup.source === "community") return "saved by other learners";
-  if (lookup.source === "machine") return "machine translation";
   if (lookup.source === "sentence") return "in this sentence";
   return null;
 }

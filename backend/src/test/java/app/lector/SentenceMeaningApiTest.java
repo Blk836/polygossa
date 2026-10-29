@@ -6,8 +6,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import app.lector.dictionary.SentenceMeaningRepository;
 import app.lector.token.Language;
 import app.lector.token.NativeLanguage;
-import app.lector.translation.MachineTranslationRepository;
-import app.lector.translation.TranslateStub;
 import app.lector.writing.OpenAiStub;
 import java.time.Duration;
 import java.time.Instant;
@@ -36,37 +34,28 @@ import tools.jackson.databind.ObjectMapper;
         "app.storage.dir=build/test-uploads",
         "app.openai.api-key=test-key",
         "app.openai.daily-limit=0",
-        "app.openai.meaning-timeout=1s",
-        "app.translation.enabled=true",
-        "app.translation.region=eu-west-1",
-        "app.translation.timeout=1s"
+        "app.openai.meaning-timeout=1s"
 })
 @AutoConfigureMockMvc
 class SentenceMeaningApiTest {
 
-    private static final TranslateStub TRANSLATE;
     private static final OpenAiStub AI;
 
     static {
         try {
-            TRANSLATE = new TranslateStub();
             AI = new OpenAiStub();
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-        System.setProperty("aws.accessKeyId", "test");
-        System.setProperty("aws.secretAccessKey", "test");
     }
 
     @DynamicPropertySource
     static void stubs(DynamicPropertyRegistry registry) {
-        registry.add("app.translation.endpoint", TRANSLATE::endpoint);
         registry.add("app.openai.base-url", AI::baseUrl);
     }
 
     @AfterAll
     static void stop() {
-        TRANSLATE.close();
         AI.close();
     }
 
@@ -77,9 +66,6 @@ class SentenceMeaningApiTest {
     ObjectMapper json;
 
     @Autowired
-    MachineTranslationRepository bareWords;
-
-    @Autowired
     SentenceMeaningRepository sentenceMeanings;
 
     private TestApi api;
@@ -87,7 +73,6 @@ class SentenceMeaningApiTest {
     @BeforeEach
     void setUp() {
         api = new TestApi(mvc, json);
-        TRANSLATE.reset();
         AI.reset();
     }
 
@@ -124,11 +109,6 @@ class SentenceMeaningApiTest {
         return lookup(learner("en"), term, before, after);
     }
 
-    private JsonNode bareLookup(String term) throws Exception {
-        return api.send(get("/api/dictionary").param("language", "fr").param("term", term).param("bare", "true"),
-                learner("en"), 200);
-    }
-
     private long storedFor(String word) {
         return sentenceMeanings.countBySourceLanguageAndTargetLanguageAndTerm(Language.FR, NativeLanguage.EN, word);
     }
@@ -150,7 +130,6 @@ class SentenceMeaningApiTest {
         assertThat(meanings(result)).containsExactly("standing");
         assertThat(result.get("source").asString()).isEqualTo("sentence");
         assertThat(result.get("meaningLanguage").asString()).isEqualTo("en");
-        assertThat(TRANSLATE.requests()).isEmpty();
     }
 
     @Test
@@ -265,19 +244,16 @@ class SentenceMeaningApiTest {
         JsonNode result = lookup(learner("fr"), word, "si on est ", " sur la table.");
         assertThat(meanings(result)).isEmpty();
         assertThat(AI.requests()).isEmpty();
-        assertThat(TRANSLATE.requests()).isEmpty();
     }
 
     @Test
-    void whenBothTriesFailThereIsNoMeaningAmazonIsNotAskedAndTheNextClickAsksAgain() throws Exception {
+    void whenBothTriesFailThereIsNoMeaningAndTheNextClickAsksAgain() throws Exception {
         String word = fresh();
         AI.setFailing(true);
-        TRANSLATE.answer(word, "en", "up");
         JsonNode result = lookup(word, "si on est ", " sur la table.");
         assertThat(meanings(result)).isEmpty();
         assertThat(result.get("source").isNull()).isTrue();
         assertThat(AI.requests()).hasSize(2);
-        assertThat(TRANSLATE.requests()).isEmpty();
         assertThat(storedFor(word)).isZero();
 
         AI.setFailing(false);
@@ -307,16 +283,14 @@ class SentenceMeaningApiTest {
     }
 
     @Test
-    void twoSlowTriesAreGivenUpOnWithoutAskingAmazon() throws Exception {
+    void twoSlowTriesAreGivenUp() throws Exception {
         String word = fresh();
         AI.delay(Duration.ofMillis(2500));
         AI.reply(meaning("standing"));
-        TRANSLATE.answer(word, "en", "up");
         long start = System.nanoTime();
         assertThat(meanings(lookup(word, "si on est ", " sur la table."))).isEmpty();
         assertThat((System.nanoTime() - start) / 1_000_000).isLessThan(4000);
         assertThat(AI.requests()).hasSize(2);
-        assertThat(TRANSLATE.requests()).isEmpty();
         assertThat(storedFor(word)).isZero();
     }
 
@@ -343,15 +317,6 @@ class SentenceMeaningApiTest {
             assertThat(meanings(lookup(word, "si on est ", " sur la table."))).as("status " + status).isEmpty();
             assertThat(AI.requests()).as("status " + status).hasSize(1);
         }
-        assertThat(TRANSLATE.requests()).isEmpty();
-    }
-
-    @Test
-    void anAmazonAnswerStoredEarlierIsNotShownInTheReader() throws Exception {
-        String word = fresh();
-        bareWords.insertIfAbsent("FR", "EN", word, "up", Instant.now());
-        AI.setFailing(true);
-        assertThat(meanings(lookup(word, "si on est ", " sur la table."))).isEmpty();
     }
 
     @Test
@@ -375,17 +340,8 @@ class SentenceMeaningApiTest {
     }
 
     @Test
-    void amazonSendingTheWordBackOnTheVocabularyMapStillCountsAsNoAnswer() throws Exception {
+    void anUnusableAiAnswerIsNotAskedAgain() throws Exception {
         String word = fresh();
-        TRANSLATE.answer(word, "en", word);
-        assertThat(meanings(bareLookup(word))).isEmpty();
-        assertThat(AI.requests()).isEmpty();
-    }
-
-    @Test
-    void anUnusableAiAnswerIsNotAskedAgainAndAmazonIsNotAsked() throws Exception {
-        String word = fresh();
-        TRANSLATE.answer(word, "en", "up");
         for (String answer : List.of(meaning(""), meaning("  "), "{}", "{\"meaning\":42}", meaning("x".repeat(101)))) {
             AI.reset();
             AI.reply(answer);
@@ -401,7 +357,6 @@ class SentenceMeaningApiTest {
         AI.finishReason("length");
         assertThat(meanings(lookup(word, "si on est ", " sur la table."))).isEmpty();
         assertThat(AI.requests()).hasSize(1);
-        assertThat(TRANSLATE.requests()).isEmpty();
         assertThat(storedFor(word)).isZero();
     }
 
@@ -413,10 +368,9 @@ class SentenceMeaningApiTest {
     }
 
     @Test
-    void neitherCanAnswer() throws Exception {
+    void whenTheAiFailsTheMeaningLanguageIsStillGiven() throws Exception {
         String word = fresh();
         AI.setFailing(true);
-        TRANSLATE.failing(true);
         JsonNode result = lookup(word, "si on est ", " sur la table.");
         assertThat(meanings(result)).isEmpty();
         assertThat(result.get("meaningLanguage").asString()).isEqualTo("en");
@@ -471,19 +425,8 @@ class SentenceMeaningApiTest {
     }
 
     @Test
-    void theVocabularyMapsBareLookupGetsAmazonsAnswerAndTheAiIsNotAsked() throws Exception {
-        String word = fresh();
-        TRANSLATE.answer(word, "en", "up");
-        JsonNode result = bareLookup(word);
-        assertThat(meanings(result)).containsExactly("up");
-        assertThat(result.get("source").asString()).isEqualTo("machine");
-        assertThat(AI.requests()).isEmpty();
-    }
-
-    @Test
     void aWordWithNoTextAroundItIsAskedAboutOnItsOwn() throws Exception {
         String word = fresh();
-        TRANSLATE.answer(word, "en", "up");
         AI.reply(meaning("standing"));
         JsonNode result = lookup(word, null, null);
         assertThat(meanings(result)).containsExactly("standing");
@@ -493,15 +436,6 @@ class SentenceMeaningApiTest {
         String other = fresh();
         assertThat(meanings(lookup(other, " ", ""))).containsExactly("standing");
         assertThat(AI.requests()).hasSize(2);
-        assertThat(TRANSLATE.requests()).isEmpty();
-    }
-
-    @Test
-    void aStoredBareWordAnswerIsNotUsedInASentence() throws Exception {
-        String word = fresh();
-        bareWords.insertIfAbsent("FR", "EN", word, "up", Instant.now());
-        AI.reply(meaning("standing"));
-        assertThat(meanings(lookup(word, "si on est ", " sur la table."))).containsExactly("standing");
     }
 
     @Test
@@ -608,12 +542,10 @@ class SentenceMeaningApiTest {
         saveMeaning(word, "upright");
         saveMeaning(word, "upright");
         AI.setFailing(true);
-        TRANSLATE.answer(word, "en", "up");
         JsonNode result = lookup(word, "si on est ", " sur la table.");
         assertThat(meanings(result)).containsExactly("upright");
         assertThat(result.get("source").asString()).isEqualTo("community");
         assertThat(type(result).isNull()).isTrue();
-        assertThat(TRANSLATE.requests()).isEmpty();
     }
 
     @Test

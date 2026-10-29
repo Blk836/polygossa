@@ -41,18 +41,6 @@ public class LookupCounter {
     private long lookups;
 
     @Column(nullable = false)
-    private long translateCalls;
-
-    @Column(nullable = false)
-    private long translateCharacters;
-
-    @Column(nullable = false)
-    private long translateFailures;
-
-    @Column(nullable = false)
-    private long translateCapped;
-
-    @Column(nullable = false)
     private long aiCalls;
 
     @Column(nullable = false)

@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import { browserNativeLanguage, dictionaryLinks, meaningNote, meaningView, NATIVE_LANGUAGES, savedMeaning, withMeaningFirst, wordTypeLine } from "./dictionary";
 import type { WordLookup } from "./types";
 
-const base: WordLookup = { term: "maison", language: "fr", meanings: ["house", "home"], meaningLanguage: "en", source: "machine" };
+const base: WordLookup = { term: "maison", language: "fr", meanings: ["house", "home"], meaningLanguage: "en", source: "sentence" };
 
 describe("meaningView", () => {
   it("leads with the first meaning, lists the rest under it, and says where they came from, with no language label", () => {
     expect(meaningView({ ...base, meanings: ["dog", "hound", "cur"] })).toEqual({
-      missing: false, headline: "dog", also: ["hound", "cur"], note: "machine translation",
+      missing: false, headline: "dog", also: ["hound", "cur"], note: "in this sentence",
     });
     expect(meaningView({ ...base, meanings: ["casa"], meaningLanguage: "es", source: "community" })).toEqual({
       missing: false, headline: "casa", also: [], note: "saved by other learners",
@@ -20,7 +20,7 @@ describe("meaningView", () => {
 
   it("says when there is no meaning yet, naming the language", () => {
     expect(meaningView({ ...base, meanings: [], source: null })).toEqual({ missing: true, text: "No English meaning yet" });
-    expect(meaningView({ ...base, meanings: [], meaningLanguage: "es", source: "machine" })).toEqual({ missing: true, text: "No Spanish meaning yet" });
+    expect(meaningView({ ...base, meanings: [], meaningLanguage: "es", source: "sentence" })).toEqual({ missing: true, text: "No Spanish meaning yet" });
   });
 
   it("is nothing when reading my own language", () => {
@@ -53,13 +53,12 @@ describe("withMeaningFirst", () => {
 describe("meaningNote", () => {
   it("says where the meanings came from", () => {
     expect(meaningNote({ ...base, source: "community" })).toBe("saved by other learners");
-    expect(meaningNote({ ...base, source: "machine" })).toBe("machine translation");
     expect(meaningNote({ ...base, source: "sentence" })).toBe("in this sentence");
   });
 
   it("is nothing without meanings", () => {
     expect(meaningNote({ ...base, meanings: [], source: null })).toBeNull();
-    expect(meaningNote({ ...base, meanings: [], source: "machine" })).toBeNull();
+    expect(meaningNote({ ...base, meanings: [], source: "sentence" })).toBeNull();
   });
 });
 

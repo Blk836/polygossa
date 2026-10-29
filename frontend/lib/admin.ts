@@ -133,14 +133,12 @@ export function adminTab(param: string | string[] | undefined): AdminTabKey {
   return ADMIN_TABS.find((t) => t.key === value)?.key ?? "overview";
 }
 
-export type LookupLayer = "aiStored" | "aiNew" | "community" | "machineStored" | "machineNew" | "none";
+export type LookupLayer = "aiStored" | "aiNew" | "community" | "none";
 
 export const LOOKUP_LAYERS: { key: LookupLayer; label: string; chart: string }[] = [
   { key: "aiStored", label: "AI, stored", chart: "Lookups answered by a stored AI meaning" },
   { key: "aiNew", label: "AI, new", chart: "Lookups answered by a new AI call" },
   { key: "community", label: "Community", chart: "Lookups answered by the community" },
-  { key: "machineStored", label: "Machine, stored", chart: "Lookups answered by a stored machine translation" },
-  { key: "machineNew", label: "Machine, new", chart: "Lookups answered by a new machine translation" },
   { key: "none", label: "Nothing found", chart: "Lookups with nothing found" },
 ];
 
@@ -150,23 +148,18 @@ export interface TranslationRow {
   lookups: number;
   layers: Record<LookupLayer, number>;
   hitRate: number | null;
-  translateCalls: number;
-  translateCharacters: number;
-  translateFailures: number;
-  translateCapped: number;
   aiCalls: number;
   aiTokensIn: number;
   aiTokensOut: number;
   aiFailures: number;
   cost: number;
   costPer1000Lookups: number | null;
-  stored: { machineWords: number; machineNoUse: number; sentenceMeanings: number; communityWords: number };
+  stored: { sentenceMeanings: number; communityWords: number };
 }
 
 export interface AdminTranslations {
   days: number;
-  prices: { translatePerMillionCharacters: number; aiInputPerMillionTokens: number; aiOutputPerMillionTokens: number };
-  month: { month: string; characters: number; cap: number };
+  prices: { aiInputPerMillionTokens: number; aiOutputPerMillionTokens: number };
   pairs: TranslationRow[];
   total: TranslationRow;
   trend: { day: string; layers: Record<LookupLayer, number>; cost: number }[];

@@ -5,7 +5,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import app.lector.token.Language;
 import app.lector.token.NativeLanguage;
-import app.lector.translation.TranslationClient;
 import app.lector.vocab.CommunityMeanings;
 import java.util.List;
 import java.util.UUID;
@@ -27,9 +26,6 @@ class WordMeaningsApiTest {
 
     @Autowired
     CommunityMeanings community;
-
-    @Autowired
-    TranslationClient translationClient;
 
     private TestApi api;
     private String word;
@@ -198,11 +194,5 @@ class WordMeaningsApiTest {
         save(ana, "de", word, "perro");
         api.patch(ana, "/api/me", "{\"nativeLanguage\":\"fr\"}", 200);
         assertThat(meanings(lookUp(ana, "de", word))).isEmpty();
-    }
-
-    @Test
-    void machineTranslationIsOffWithoutSettings() {
-        assertThat(translationClient.enabled()).isFalse();
-        assertThat(translationClient.translate("Hund", "de", "es", () -> {})).isEmpty();
     }
 }

@@ -77,9 +77,9 @@ class AdminApiTest {
     }
 
     @Test
-    void lookupCostsUseAmazonTranslateAndGpt4oMiniPricesUnlessConfigured() throws Exception {
+    void lookupCostsUseGpt4oMiniPricesUnlessConfigured() throws Exception {
         JsonNode prices = api.get(admin, "/api/admin/translations", 200).get("prices");
-        assertThat(prices.get("translatePerMillionCharacters").asDouble()).isEqualTo(15);
+        assertThat(prices.has("translatePerMillionCharacters")).isFalse();
         assertThat(prices.get("aiInputPerMillionTokens").asDouble()).isEqualTo(0.15);
         assertThat(prices.get("aiOutputPerMillionTokens").asDouble()).isEqualTo(0.6);
     }

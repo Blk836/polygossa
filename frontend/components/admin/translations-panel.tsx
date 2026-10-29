@@ -58,16 +58,12 @@ function Row({ row, cells }: { row: TranslationRow; cells: ReactNode[] }) {
 
 function Report({ report }: { report: AdminTranslations }) {
   const rows = [...report.pairs, report.total];
-  const { month } = report;
   return (
     <>
-      <p data-testid="translation-month" className="text-sm">
-        Amazon Translate this month ({month.month}): <strong className="tabular-nums">{count(month.characters)} of {count(month.cap)} characters</strong> ({share(month.characters, month.cap)} of the cap)
-      </p>
       {report.total.lookups === 0 && <p className="rounded-xl border border-line bg-card p-5 text-sm text-muted">No lookups were counted in this period.</p>}
 
       <Table
-        label="Lookups per language pair" title="Lookups" hint="Hit rate: the share answered without a new paid call (stored AI, community, stored machine)."
+        label="Lookups per language pair" title="Lookups" hint="Hit rate: the share answered without a new paid call (stored AI, community)."
         head={["Pair", "Lookups", "Hit rate", ...LOOKUP_LAYERS.map((l) => l.label)]}
         rows={rows.map((r) => (
           <Row key={pairName(r.source, r.target)} row={r} cells={[count(r.lookups), percent(r.hitRate), ...LOOKUP_LAYERS.map((l) => share(r.layers[l.key], r.lookups))]} />
@@ -76,21 +72,20 @@ function Report({ report }: { report: AdminTranslations }) {
 
       <Table
         label="Calls and cost per language pair" title="Calls and cost"
-        hint={`Estimated at $${report.prices.translatePerMillionCharacters} per million characters, $${report.prices.aiInputPerMillionTokens} per million tokens in and $${report.prices.aiOutputPerMillionTokens} out.`}
-        head={["Pair", "Amazon calls", "Characters", "AI calls", "Tokens in", "Tokens out", "Failures", "Over the cap", "Cost", "Per 1,000 lookups"]}
+        hint={`Estimated at $${report.prices.aiInputPerMillionTokens} per million tokens in and $${report.prices.aiOutputPerMillionTokens} out.`}
+        head={["Pair", "AI calls", "Tokens in", "Tokens out", "Failures", "Cost", "Per 1,000 lookups"]}
         rows={rows.map((r) => (
           <Row key={pairName(r.source, r.target)} row={r} cells={[
-            count(r.translateCalls), count(r.translateCharacters), count(r.aiCalls), count(r.aiTokensIn), count(r.aiTokensOut),
-            `${count(r.translateFailures)} Amazon · ${count(r.aiFailures)} AI`, count(r.translateCapped), dollars(r.cost), dollars(r.costPer1000Lookups),
+            count(r.aiCalls), count(r.aiTokensIn), count(r.aiTokensOut), count(r.aiFailures), dollars(r.cost), dollars(r.costPer1000Lookups),
           ]} />
         ))}
       />
 
       <Table
         label="Stored so far" title="Stored so far" hint="Everything stored, including what was stored before counting began."
-        head={["Pair", "Machine-translated words", "Of which no use", "Sentence meanings", "Words with a community meaning"]}
+        head={["Pair", "AI meanings", "Words with a community meaning"]}
         rows={rows.map((r) => (
-          <Row key={pairName(r.source, r.target)} row={r} cells={[count(r.stored.machineWords), count(r.stored.machineNoUse), count(r.stored.sentenceMeanings), count(r.stored.communityWords)]} />
+          <Row key={pairName(r.source, r.target)} row={r} cells={[count(r.stored.sentenceMeanings), count(r.stored.communityWords)]} />
         ))}
       />
 

@@ -2,7 +2,6 @@ import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
-import * as iam from "aws-cdk-lib/aws-iam";
 import type * as s3 from "aws-cdk-lib/aws-s3";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import type { Construct } from "constructs";
@@ -96,9 +95,6 @@ function backendService(scope: cdk.Stack, cluster: ecs.Cluster, parts: AppParts)
       COGNITO_CLIENT_ID: login.clientId,
       FORUM_ADMINS: parts.admins,
       APP_URL: parts.siteUrl,
-      TRANSLATION_ENABLED: "true",
-      TRANSLATION_REGION: scope.region,
-      TRANSLATION_MONTHLY_CHARACTER_CAP: "1333333",
     },
     secrets: {
       DATABASE_USER: ecs.Secret.fromSecretsManager(database.secret!, "username"),
@@ -116,11 +112,6 @@ function backendService(scope: cdk.Stack, cluster: ecs.Cluster, parts: AppParts)
         }))),
     },
   });
-  backendTask.addToTaskRolePolicy(new iam.PolicyStatement({
-    actions: ["translate:TranslateText"],
-    resources: ["*"],
-    conditions: { StringEquals: { "aws:RequestedRegion": scope.region } },
-  }));
   const backend = new ecs.FargateService(scope, "Backend", {
     cluster,
     taskDefinition: backendTask,
