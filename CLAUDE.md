@@ -95,6 +95,7 @@ when its test is fixed.
   search": expected "known". Seen 2026-10-25, PR #78 (not-words); passed 24 of 24 alone.
 - `e2e/sentence-view-known.spec.ts` › "audio › Pause after each sentence stops at the sentence's end, and Space
   carries on with the next": still "1 / 30" where "2 / 30" was expected. Seen 2026-10-25, PR #78; passed 3 of 3 alone.
+  Again on 2026-10-28 (PR #79) and 2026-10-29 (PR #81, second run); passed 3 of 3 alone.
 - `e2e/shelf-gutter.spec.ts` › "on a laptop every shelf's first card lines up with its heading": a shelf never became
   visible. Seen 2026-10-25, PR #78; passed 3 of 3 alone.
 - `e2e/long-video-speed.spec.ts` › "a five-hour video lesson opens, turns pages and opens a word nearly as quickly as
