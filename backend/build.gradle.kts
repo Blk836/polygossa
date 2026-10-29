@@ -55,11 +55,25 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+val testShard = (findProperty("test.shard") as String?)?.let { setting ->
+    val parts = Regex("""(\d+)/(\d+)""").matchEntire(setting.trim())?.groupValues?.drop(1)?.map(String::toInt)
+    require(parts != null && parts[0] in 1..parts[1]) {
+        "test.shard must be <number>/<count> with 1 <= number <= count, not \"$setting\""
+    }
+    parts[0] - 1 to parts[1]
+}
+
 tasks.test {
     useJUnitPlatform { excludeTags("live") }
     maxParallelForks = (findProperty("test.forks") as String?)?.toInt()
         ?: (Runtime.getRuntime().availableProcessors() - 2).coerceIn(1, 4)
     jvmArgs("-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC")
+    testShard?.let { (index, count) ->
+        exclude { file ->
+            !file.isDirectory && Math.floorMod(
+                file.relativePath.pathString.substringBefore('$').removeSuffix(".class").hashCode(), count) != index
+        }
+    }
 }
 
 val liveTest by tasks.registering(Test::class) {
