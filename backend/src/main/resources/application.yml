@@ -63,12 +63,7 @@ app:
     system-daily-tokens: ${AI_SYSTEM_DAILY_TOKENS:500000}
     embedding-model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
     not-words-model: ${OPENAI_NOT_WORDS_MODEL:gpt-4.1}
-  translation:
-    enabled: ${TRANSLATION_ENABLED:false}
-    region: ${TRANSLATION_REGION:eu-west-1}
-    monthly-character-cap: ${TRANSLATION_MONTHLY_CHARACTER_CAP:1333333}
   lookup-prices:
-    translate-per-million-characters: ${PRICE_TRANSLATE_PER_MILLION_CHARACTERS:15}
     ai-input-per-million-tokens: ${PRICE_AI_INPUT_PER_MILLION_TOKENS:0.15}
     ai-output-per-million-tokens: ${PRICE_AI_OUTPUT_PER_MILLION_TOKENS:0.60}
     not-words-input-per-million-tokens: ${PRICE_NOT_WORDS_INPUT_PER_MILLION_TOKENS:2}

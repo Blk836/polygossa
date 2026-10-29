@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import type { AdminAi, AiJobRow } from "../lib/admin";
 
-const PRICES = { translatePerMillionCharacters: 15, aiInputPerMillionTokens: 0.15, aiOutputPerMillionTokens: 0.6 };
+const PRICES = { aiInputPerMillionTokens: 0.15, aiOutputPerMillionTokens: 0.6 };
 
 function job(name: string | null, extra: Partial<AiJobRow>): AiJobRow {
   return { job: name, system: false, calls: 0, failures: 0, tokensIn: 0, tokensOut: 0, cost: 0, ...extra };

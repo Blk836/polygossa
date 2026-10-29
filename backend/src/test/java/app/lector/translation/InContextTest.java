@@ -2,7 +2,6 @@ package app.lector.translation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class InContextTest {
@@ -53,45 +52,5 @@ class InContextTest {
     void cuttingNeverSplitsAnEscapeOrCountsItTwice() {
         String marked = InContext.of("&".repeat(600), "os", "").orElseThrow().marked();
         assertThat(marked).isEqualTo("&amp;".repeat(498) + "<b>os</b>");
-    }
-
-    @Test
-    void readsTheMarkedWords() {
-        assertThat(InContext.meaning("Yesterday I <b>was limping</b> in the street.", "boitais"))
-                .contains("was limping");
-    }
-
-    @Test
-    void dropsPunctuationAndSpacesAroundTheMarkedWords() {
-        assertThat(InContext.meaning("The dog eats a <b> bone, </b> today.", "os")).contains("bone");
-        assertThat(InContext.meaning("<b>«bone»</b>", "os")).contains("bone");
-    }
-
-    @Test
-    void keepsPunctuationInsideTheMeaning() {
-        assertThat(InContext.meaning("He <b>didn't limp</b>.", "boitait")).contains("didn't limp");
-    }
-
-    @Test
-    void unescapesWhatComesBack() {
-        assertThat(InContext.meaning("<b>salt &amp; pepper</b>", "x")).contains("salt & pepper");
-    }
-
-    @Test
-    void noUsableMarkMeansNoMeaning() {
-        assertThat(InContext.meaning("Yesterday I was limping.", "boitais")).isEmpty();
-        assertThat(InContext.meaning("Yesterday I <b></b> limped.", "boitais")).isEmpty();
-        assertThat(InContext.meaning("I <b> . </b> limped.", "boitais")).isEmpty();
-        assertThat(InContext.meaning("<b>was</b> <b>limping</b>", "boitais")).isEmpty();
-        assertThat(InContext.meaning("I <b>was limping", "boitais")).isEmpty();
-        assertThat(InContext.meaning("I </b>was<b> limping", "boitais")).isEmpty();
-        assertThat(InContext.meaning("The <b>Boitais</b> again.", "boitais")).isEmpty();
-        assertThat(InContext.meaning(null, "boitais")).isEqualTo(Optional.empty());
-    }
-
-    @Test
-    void aVeryLongMeaningIsCut() {
-        assertThat(InContext.meaning("<b>" + "x".repeat(600) + "</b>", "os")).hasValueSatisfying(m ->
-                assertThat(m).hasSize(500));
     }
 }

@@ -34,9 +34,6 @@ dependencies {
     implementation("software.amazon.awssdk:s3") {
         exclude(group = "software.amazon.awssdk", module = "netty-nio-client")
     }
-    implementation("software.amazon.awssdk:translate") {
-        exclude(group = "software.amazon.awssdk", module = "netty-nio-client")
-    }
 
     implementation("com.stripe:stripe-java:34.0.0")
 

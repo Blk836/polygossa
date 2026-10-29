@@ -11,7 +11,7 @@ const REPORT: NotWordsReport = {
 async function stub(page: Page): Promise<{ plans: string[]; runs: unknown[] }> {
   const seen = { plans: [] as string[], runs: [] as unknown[] };
   await page.route("**/api/admin/ai?*", (route) => route.fulfill({
-    json: { days: 30, prices: { translatePerMillionCharacters: 15, aiInputPerMillionTokens: 0.15, aiOutputPerMillionTokens: 0.6 },
+    json: { days: 30, prices: { aiInputPerMillionTokens: 0.15, aiOutputPerMillionTokens: 0.6 },
       today: { day: "2026-10-25", systemTokens: 0, ceiling: 500_000 }, jobs: [],
       total: { job: null, system: false, calls: 0, failures: 0, tokensIn: 0, tokensOut: 0, cost: 0 } },
   }));

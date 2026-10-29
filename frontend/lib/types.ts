@@ -152,7 +152,7 @@ export interface WordLookup {
   language: LanguageCode;
   meanings: string[];
   meaningLanguage: string | null;
-  source: "community" | "machine" | "sentence" | null;
+  source: "community" | "sentence" | null;
   wordType?: WordType | null;
 }
 

@@ -20,7 +20,6 @@ public class LookupCounters {
 
     public void count(Language source, NativeLanguage target, LookupLayer layer, LookupTally t) {
         counters.addLookup(LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC), source.name(), target.name(),
-                layer.name(), t.translateCalls(), t.translateCharacters(), t.translateFailures(), t.translateCapped(),
-                t.aiCalls(), t.aiTokensIn(), t.aiTokensOut(), t.aiFailures());
+                layer.name(), t.aiCalls(), t.aiTokensIn(), t.aiTokensOut(), t.aiFailures());
     }
 }
