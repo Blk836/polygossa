@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ACTIONS, ADMIN_TABS, actionSummary, adminTab, aiJobName, cents, dollars, LOOKUP_LAYERS, pairName, percent, planCounts, share, usersPath } from "./admin";
+import { ACTIONS, ADMIN_TABS, actionSummary, adminTab, aiJobName, cents, dollars, LOOKUP_LAYERS, pairName, percent, planCounts, share, tidySummary, usersPath } from "./admin";
 
 describe("usersPath", () => {
   it("searches and pages", () => {
@@ -123,5 +123,12 @@ describe("translation figures", () => {
   it("charts cost in cents", () => {
     expect(cents(3.21)).toBe(321);
     expect(cents(0.0042)).toBe(0.42);
+  });
+});
+
+describe("tidySummary", () => {
+  it("says how many of the episode's lines changed", () => {
+    expect(tidySummary({ textId: 1, title: "Episode 4", ownerId: 2, lines: 40, tidiedLines: 12 }))
+      .toBe("Tidied 12 of 40 lines in “Episode 4”");
   });
 });
