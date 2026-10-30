@@ -57,6 +57,18 @@ export interface AdminItem {
   kind: "text" | "video" | "playlist";
 }
 
+export interface TidyReport {
+  textId: number;
+  title: string;
+  ownerId: number;
+  lines: number;
+  tidiedLines: number;
+}
+
+export function tidySummary(r: TidyReport): string {
+  return `Tidied ${r.tidiedLines} of ${r.lines} lines in “${r.title}”`;
+}
+
 export interface AdminUserDetail {
   user: AdminUserRow;
   suspendedReason: string | null;

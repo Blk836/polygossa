@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button, ErrorNote, Spinner, inputClass, selectClass } from "@/components/ui";
-import { ACTIONS, actionSummary, type ActionKey, type AdminUserDetail } from "@/lib/admin";
+import { ACTIONS, actionSummary, tidySummary, type ActionKey, type AdminUserDetail, type TidyReport } from "@/lib/admin";
 import { api, errorMessage } from "@/lib/api";
 import type { Tier } from "@/lib/types";
 
@@ -19,7 +19,12 @@ function Confirm({ text, yes, onYes, onNo }: { text: string; yes: string; onYes:
   );
 }
 
-function ItemList({ title, items, onRemove }: { title: string; items: AdminUserDetail["texts"]; onRemove?: (id: number) => void }) {
+interface Tidy {
+  busy: number | null;
+  onTidy: (id: number) => void;
+}
+
+function ItemList({ title, items, onRemove, tidy }: { title: string; items: AdminUserDetail["texts"]; onRemove?: (id: number) => void; tidy?: Tidy }) {
   return (
     <div>
       <h3 className="text-sm font-medium">{title} ({items.length})</h3>
@@ -29,6 +34,11 @@ function ItemList({ title, items, onRemove }: { title: string; items: AdminUserD
             {i.kind === "playlist" ? <span className="min-w-0 flex-1 truncate">{i.title}</span>
               : <Link href={`/read/${i.id}`} className="min-w-0 flex-1 truncate underline">{i.title}</Link>}
             <span className="text-xs text-muted">{i.isPublic ? "shared" : "private"}{i.kind === "video" ? " · video" : ""}</span>
+            {tidy && i.kind === "video" && (
+              <button type="button" className="text-xs underline disabled:opacity-60" disabled={tidy.busy === i.id} onClick={() => tidy.onTidy(i.id)}>
+                {tidy.busy === i.id ? "Tidying…" : "Tidy transcript"}
+              </button>
+            )}
             {onRemove && <button type="button" className="text-xs text-danger underline" onClick={() => onRemove(i.id)}>Remove</button>}
           </li>
         ))}
@@ -64,6 +74,7 @@ export function UserPanel({ id, onChanged }: { id: number; onChanged: () => void
   const [done, setDone] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [reload, setReload] = useState(0);
+  const [tidying, setTidying] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -98,6 +109,20 @@ export function UserPanel({ id, onChanged }: { id: number; onChanged: () => void
       onChanged();
     } catch (e) {
       setError(errorMessage(e));
+    }
+  }
+
+  async function tidy(textId: number) {
+    setDone(null);
+    setError(null);
+    setTidying(textId);
+    try {
+      setDone(tidySummary(await api<TidyReport>(`admin/texts/${textId}/tidy-transcript`, { method: "POST", body: {} })));
+      onChanged();
+    } catch (e) {
+      setError(errorMessage(e));
+    } finally {
+      setTidying(null);
     }
   }
 
@@ -136,7 +161,8 @@ export function UserPanel({ id, onChanged }: { id: number; onChanged: () => void
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <ItemList title="Texts and videos" items={detail.texts}
-          onRemove={(textId) => void act(`admin/texts/${textId}`, undefined, "DELETE", "Removed the text")} />
+          onRemove={(textId) => void act(`admin/texts/${textId}`, undefined, "DELETE", "Removed the text")}
+          tidy={{ busy: tidying, onTidy: (textId) => void tidy(textId) }} />
         <ItemList title="Playlists" items={detail.playlists} />
       </div>
     </section>
