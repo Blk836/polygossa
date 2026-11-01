@@ -79,7 +79,7 @@ different one each time; the same commit has gone red then green on a re-run sin
 when its test is fixed.
 - `e2e/page-skeletons.spec.ts` › "with reduced motion the outline doesn't pulse": the outline's animation name read
   "" instead of "pulse" (suspected: read before the stylesheet applied). Seen 2026-10-24, PR #73 (sentence view);
-  passed 3 of 3 alone.
+  passed 3 of 3 alone. Again on 2026-11-01, PR #84 (fourth run); passed 3 of 3 alone.
 - `e2e/playlist-save.spec.ts` › "Explore's playlist cards have a Save button that keeps its state": after reloading,
   the card's Save button wasn't found within 5 s. Seen 2026-10-22, PR #209 (people's names); passed 3 of 3 alone.
 - `e2e/card-layout.spec.ts` › "a category or search grid follows the layout": Explore showed "This page couldn't
@@ -95,12 +95,14 @@ when its test is fixed.
   search": expected "known". Seen 2026-10-25, PR #78 (not-words); passed 24 of 24 alone.
 - `e2e/sentence-view-known.spec.ts` › "audio › Pause after each sentence stops at the sentence's end, and Space
   carries on with the next": still "1 / 30" where "2 / 30" was expected. Seen 2026-10-25, PR #78; passed 3 of 3 alone.
-  Again on 2026-10-28 (PR #79) and 2026-10-29 (PR #81, second run); passed 3 of 3 alone.
+  Again on 2026-10-28 (PR #79), 2026-10-29 (PR #81, second run) and 2026-11-01 (PR #84, second run); passed 3 of 3
+  alone.
 - `e2e/shelf-gutter.spec.ts` › "on a laptop every shelf's first card lines up with its heading": a shelf never became
   visible. Seen 2026-10-25, PR #78; passed 3 of 3 alone.
 - `e2e/long-video-speed.spec.ts` › "a five-hour video lesson opens, turns pages and opens a word nearly as quickly as
   a short one": over its time limit (1,542 ms) on GitHub. Seen 2026-10-25, PR #78's third run (it passed the first
   two); passed 3 of 3 alone. Again on 2026-10-29, PR #81 (Amazon Translate removed; opening a word over its limit);
+  passed 3 of 3 alone. Again on 2026-11-01, PR #84's fourth run (opening the lesson: 3,887 ms against 3,140);
   passed 3 of 3 alone.
 - `e2e/reader-media-resume.spec.ts` › "pressing Play twice while the video is still starting keeps the bar at the
   page's start". Seen 2026-10-10, PR #94; passed 20 of 20 alone on 2026-10-24 (PR #74), cause unknown.

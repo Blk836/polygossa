@@ -12,7 +12,11 @@ test("after the AI gave nothing, clicking the word again asks again, and an AI a
   const word = created.word(2);
   const asked: URL[] = [];
   await page.route("**/api/dictionary?*", (route) => {
-    asked.push(new URL(route.request().url()));
+    const url = new URL(route.request().url());
+    if (url.searchParams.get("term") !== word) {
+      return route.fulfill({ json: { term: url.searchParams.get("term"), language: created!.language, meaningLanguage: "en", meanings: [], source: null } });
+    }
+    asked.push(url);
     const answered = asked.length > 1;
     return route.fulfill({ json: { term: word, language: created!.language, meaningLanguage: "en",
       meanings: answered ? ["unequal"] : [], source: answered ? "sentence" : null } });

@@ -7,50 +7,10 @@ import type { DictionaryResult, LanguageCode, WordLookup, WordStatus } from "@/l
 import { useMe } from "../me-context";
 import { UpgradeNote } from "../ui";
 import { AnkiNote } from "./anki-note";
+import { cacheKey, forgetUnlessFromTheAi, lookup, pickEverywhere, rememberPicked } from "./lookup-cache";
 import { BackToPhrase, PhraseWords } from "./phrase-words";
 import type { Range, TextAround } from "./reader-text";
 import { AiExplanation, DictionaryLinks, ExtraActions, Meanings, PopupHeader, StatusButtons, type SentenceState } from "./popup-parts";
-
-const lookupCache = new Map<string, Promise<WordLookup>>();
-const unpicked = new WeakSet<Promise<WordLookup>>();
-
-function wordKey(language: LanguageCode, term: string, nativeLanguage: string): string {
-  return JSON.stringify([nativeLanguage, language, term]);
-}
-
-function cacheKey(language: LanguageCode, term: string, nativeLanguage: string, around: TextAround): string {
-  return JSON.stringify([wordKey(language, term, nativeLanguage), around.before, around.after]);
-}
-
-function pickEverywhere(language: LanguageCode, term: string, nativeLanguage: string, meaning: string) {
-  const prefix = JSON.stringify([wordKey(language, term, nativeLanguage)]).slice(0, -1) + ",";
-  for (const [key, p] of lookupCache) {
-    if (key.startsWith(prefix)) lookupCache.set(key, p.then((r) => withMeaningFirst(r, meaning)));
-  }
-}
-
-function lookup(language: LanguageCode, term: string, nativeLanguage: string, around: TextAround): Promise<WordLookup> {
-  const key = cacheKey(language, term, nativeLanguage, around);
-  let p = lookupCache.get(key);
-  if (!p) {
-    const params = new URLSearchParams({ language, term });
-    if (around.before) params.set("before", around.before);
-    if (around.after) params.set("after", around.after);
-    p = api<WordLookup>(`dictionary?${params}`);
-    p.catch(() => lookupCache.delete(key));
-    lookupCache.set(key, p);
-    unpicked.add(p);
-  }
-  return p;
-}
-
-function forgetUnlessFromTheAi(key: string) {
-  const p = lookupCache.get(key);
-  if (!p || !unpicked.has(p)) return;
-  void p.then((r) => {
-    if (r.source !== "sentence" && lookupCache.get(key) === p) lookupCache.delete(key);
-  }, () => undefined);
-}
 
 function lookupTerm(target: PopupTarget): string {
   return target.kind === "word" ? target.display : target.term;
@@ -143,7 +103,7 @@ export function WordPopup(props: Props) {
     const picked = withMeaningFirst(result, meaning);
     setResult(picked);
     pickEverywhere(language, lookupTerm(target), me.nativeLanguage, meaning);
-    lookupCache.set(cacheKey(language, lookupTerm(target), me.nativeLanguage, target.around), Promise.resolve(picked));
+    rememberPicked(cacheKey(language, lookupTerm(target), me.nativeLanguage, target.around), picked);
     props.onPickMeaning(meaning);
   }
 

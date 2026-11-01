@@ -30,6 +30,7 @@ import { useLessonActions } from "./use-lesson-actions";
 import { usePageTurns } from "./use-page-turns";
 import { useMediaShortcuts, useReaderInput } from "./use-reader-input";
 import { useReaderPages } from "./use-reader-pages";
+import { useNearPrefetch } from "./use-near-prefetch";
 import { useKeepPopupPlaced, usePopupOpeners, usePopupState } from "./use-reader-popup";
 import { useReaderSettings } from "./use-reader-settings";
 import { ListenContext, useReadingSession } from "./use-reading-session";
@@ -101,6 +102,7 @@ export function Reader({ initial, initialSettings, playlist }: {
   const pageStart = pageRange(paging.paragraphs)?.from ?? null;
   const cueToken = page > 1 ? pageStart : null;
   const isShown = useCallback((i: number) => pageOfToken(pages, i) === page, [pages, page]);
+  useNearPrefetch({ articleRef, tokens, language, page, isShown });
   const goToNear = useCallback((i: number, mode?: "push" | "replace") => Math.abs(pageOfToken(pages, i) - page) > reach && goToToken(i, mode), [pages, page, reach, goToToken]);
   const startPage = useCallback((i: number | null) => mediaRef.current?.startPage(i), []);
 
