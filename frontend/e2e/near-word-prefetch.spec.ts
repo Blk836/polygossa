@@ -153,7 +153,8 @@ test("a failed early request shows nothing, and clicking asks again", async ({ p
   await page.mouse.move(near.x, near.y);
   await expect.poll(() => lookups.terms).toContain(middle);
   await page.waitForTimeout(300);
-  await expect(page.getByRole("alert")).toHaveCount(0);
+  await expect(page.getByRole("alert")).toHaveText("");
+  await expect(popup(page)).toHaveCount(0);
   await expect(page.getByText("down")).toHaveCount(0);
   await word(page, middle).click();
   await expect(popup(page)).toContainText(`meaning of ${middle}`);

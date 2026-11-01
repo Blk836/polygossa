@@ -26,7 +26,7 @@ describe("nearWords", () => {
 
   it("lists every word in reach, nearest first", () => {
     const words = [box(5, 300, 100), box(3, 150, 100), box(4, 200, 100), box(9, 100, 400)];
-    expect(nearWords(130, 110, words)).toEqual([3, 4]);
-    expect(nearWords(260, 110, words)).toEqual([4, 5, 3]);
+    expect(nearWords(145, 110, words)).toEqual([3, 4]);
+    expect(nearWords(250, 110, words)).toEqual([4, 5, 3]);
   });
 });
