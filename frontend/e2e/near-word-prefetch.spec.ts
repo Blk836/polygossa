@@ -167,9 +167,14 @@ test("turning the page drops the old page's waiting words", async ({ page }) => 
   await openReader(page, `/read/${created.id}`);
   lookups.hold = true;
   const middle = article(page).locator("[data-i]").nth(40);
-  const b = await box(middle);
-  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
-  await expect.poll(() => lookups.terms.length).toBe(4);
+  let nudge = 0;
+  await expect(async () => {
+    const b = await box(middle);
+    await page.mouse.move(b.x + b.width / 2 + (nudge++ % 3), b.y + b.height / 2);
+    expect(lookups.terms.length).toBe(4);
+  }).toPass();
+  await page.waitForTimeout(300);
+  expect(lookups.terms).toHaveLength(4);
   const before = lookups.terms.length;
   await page.keyboard.press("ArrowRight");
   await expect(word(page, created.word(1))).toHaveCount(0);
