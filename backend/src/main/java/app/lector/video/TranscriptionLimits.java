@@ -14,7 +14,7 @@ public class TranscriptionLimits {
     private final long maxAudioBytes;
     private final AudioTranscriptionRepository usage;
 
-    public TranscriptionLimits(@Value("${app.transcription.max-minutes:30}") int maxMinutes,
+    public TranscriptionLimits(@Value("${app.transcription.max-minutes:70}") int maxMinutes,
                                @Value("${app.transcription.budget-usd:10}") double budgetUsd,
                                @Value("${app.transcription.usd-per-minute:0.006}") double usdPerMinute,
                                @Value("${app.transcription.max-audio-bytes:26214400}") long maxAudioBytes,

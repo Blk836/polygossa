@@ -151,7 +151,7 @@ Chrome's and Edge's sign-ins can't be read on Windows; a `cookies.txt` export (`
 The downloads are made as that Google account, so keep the volume modest.
 
 Whisper costs about $0.006 a minute. The backend refuses, before anything is downloaded or spent, a video over
-`TRANSCRIPTION_MAX_MINUTES` (default 30), one whose length YouTube doesn't give, and any that would take total
+`TRANSCRIPTION_MAX_MINUTES` (default 70), one whose length YouTube doesn't give, and any that would take total
 transcription spending past `TRANSCRIPTION_BUDGET_USD` (default $10, counted from every Whisper call ever made on that
 backend's database). Run `--dry-run` first: it lists each video's length and cost, and the total.
 
