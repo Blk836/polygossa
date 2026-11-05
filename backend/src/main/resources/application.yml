@@ -92,5 +92,5 @@ app:
       yt-dlp: ${YTDLP:yt-dlp}
       cookies-from-browser: ${YTDLP_COOKIES_FROM_BROWSER:firefox}
   transcription:
-    max-minutes: ${TRANSCRIPTION_MAX_MINUTES:30}
+    max-minutes: ${TRANSCRIPTION_MAX_MINUTES:70}
     budget-usd: ${TRANSCRIPTION_BUDGET_USD:10}

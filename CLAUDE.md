@@ -87,8 +87,6 @@ when its test is fixed.
   (`frontend/e2e-logs`) with its report, so the next occurrence shows the cause.
 - `e2e/card-layout.spec.ts` › mobile › "Explore's list rows fit the screen, with no sideways page scroll": timed out
   at 30 s. Seen 2026-10-25, PR #75 (AI import levels, backend only); passed 3 of 3 alone.
-- `e2e/long-video-speed.spec.ts` › "a five-hour video lesson opens, turns pages and opens a word nearly as quickly as
-  a short one": failed its timing in a full run. Seen 2026-10-25, PR #75; passed 3 of 3 alone.
 - `e2e/reader-colours.spec.ts` › "the word being spoken still shows, quiet or not": after "]" the word never got
   `w-speaking` within 5 s. Seen 2026-10-10, PR #90; passed 20 of 20 alone on 2026-10-24 (PR #74), cause unknown.
 - `e2e/tab-click-restart.spec.ts` › "clicking the tab you are on › Words drops the address's filter and the typed
@@ -99,13 +97,10 @@ when its test is fixed.
   alone.
 - `e2e/shelf-gutter.spec.ts` › "on a laptop every shelf's first card lines up with its heading": a shelf never became
   visible. Seen 2026-10-25, PR #78; passed 3 of 3 alone.
-- `e2e/long-video-speed.spec.ts` › "a five-hour video lesson opens, turns pages and opens a word nearly as quickly as
-  a short one": over its time limit (1,542 ms) on GitHub. Seen 2026-10-25, PR #78's third run (it passed the first
-  two); passed 3 of 3 alone. Again on 2026-10-29, PR #81 (Amazon Translate removed; opening a word over its limit);
-  passed 3 of 3 alone. Again on 2026-11-01, PR #84's fourth run (opening the lesson: 3,887 ms against 3,140);
-  passed 3 of 3 alone.
 - `e2e/reader-media-resume.spec.ts` › "pressing Play twice while the video is still starting keeps the bar at the
   page's start". Seen 2026-10-10, PR #94; passed 20 of 20 alone on 2026-10-24 (PR #74), cause unknown.
+- `e2e/near-word-prefetch.spec.ts` › "turning the page drops the old page's waiting words": timed out at 30 s.
+  Seen 2026-11-05, PR #85 (transcription limit, backend only), two runs in a row; passed 3 of 3 alone.
 
 ### One worktree per session
 Several Claude sessions often work on this repository at once, and in one shared folder they switch branches under
