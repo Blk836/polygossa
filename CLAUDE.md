@@ -99,6 +99,8 @@ when its test is fixed.
   visible. Seen 2026-10-25, PR #78; passed 3 of 3 alone.
 - `e2e/reader-media-resume.spec.ts` › "pressing Play twice while the video is still starting keeps the bar at the
   page's start". Seen 2026-10-10, PR #94; passed 20 of 20 alone on 2026-10-24 (PR #74), cause unknown.
+- `e2e/near-word-prefetch.spec.ts` › "turning the page drops the old page's waiting words": timed out at 30 s.
+  Seen 2026-11-05, PR #85 (transcription limit, backend only), two runs in a row; passed 3 of 3 alone.
 
 ### One worktree per session
 Several Claude sessions often work on this repository at once, and in one shared folder they switch branches under
